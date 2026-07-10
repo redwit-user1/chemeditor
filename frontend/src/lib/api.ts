@@ -58,6 +58,12 @@ export interface SearchHit {
   mol_weight: number | null;
   score: number | null;
   matched_component: number | null;
+  smiles: string | null;
+}
+
+/** URL of the server-rendered 2D depiction (SVG) for a structure. */
+export function depictUrl(smiles: string, w = 140, h = 100): string {
+  return `${V1}/depict?smiles=${encodeURIComponent(smiles)}&w=${w}&h=${h}`;
 }
 
 export interface SearchResponse {

@@ -242,6 +242,15 @@ def _run_search(query_type: str, fn, request: SearchRequest) -> SearchResponse:
         )
     elapsed = (time.perf_counter() - start) * 1000.0
     hits = hits[: request.limit]
+
+    def _hit_smiles(h) -> str | None:
+        # Thumbnail lookup from the compound store — keeps the search layer
+        # (equivalence-gated) untouched.
+        for comp in _COMPOUND_STORE.get(h.regid, []):
+            if comp.comp_index == h.matched_component:
+                return comp.smiles
+        return None
+
     return SearchResponse(
         ok=True,
         backend=_SEARCH_BACKEND.name,
@@ -255,6 +264,7 @@ def _run_search(query_type: str, fn, request: SearchRequest) -> SearchResponse:
                 mol_weight=h.mol_weight,
                 score=h.score,
                 matched_component=h.matched_component,
+                smiles=_hit_smiles(h),
             )
             for h in hits
         ],
@@ -286,6 +296,38 @@ def search_similarity(request: SearchRequest) -> SearchResponse:
         lambda smiles: _SEARCH_BACKEND.similarity_search(smiles, request.threshold),
         request,
     )
+
+
+# ---------- depiction (structure thumbnails, SPEC §6 M6 result grid) ----------
+
+from functools import lru_cache
+
+
+@lru_cache(maxsize=4096)
+def _depict_svg(smiles: str, width: int, height: int) -> str | None:
+    from rdkit import Chem
+    from rdkit.Chem.Draw import rdMolDraw2D
+
+    mol = Chem.MolFromSmiles(smiles)
+    if mol is None:
+        return None
+    drawer = rdMolDraw2D.MolDraw2DSVG(width, height)
+    drawer.DrawMolecule(mol)
+    drawer.FinishDrawing()
+    return drawer.GetDrawingText()
+
+
+@app.get(f"{V1}/depict")
+def depict(
+    smiles: str = Query(...),
+    w: int = Query(140, ge=32, le=600),
+    h: int = Query(100, ge=32, le=600),
+):
+    """2D structure depiction as SVG (search-result thumbnails)."""
+    svg = _depict_svg(smiles, w, h)
+    if svg is None:
+        return PlainTextResponse("bad structure", status_code=422)
+    return PlainTextResponse(svg, media_type="image/svg+xml")
 
 
 # ---------- compounds ----------

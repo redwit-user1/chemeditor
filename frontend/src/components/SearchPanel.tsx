@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Ketcher } from 'ketcher-core';
 import {
+  depictUrl,
   fetchHealth,
   searchStructures,
   type QueryType,
@@ -140,16 +141,26 @@ export default function SearchPanel({
             <div className="search-count">{hits.length} REGID(s)</div>
             <ul className="hit-list">
               {hits.map((h) => (
-                <li key={h.reg_id} className="hit">
-                  <div className="hit-regid">{h.reg_id}</div>
-                  <div className="hit-meta">
-                    {h.mol_formula}
-                    {h.mol_weight ? ` · ${h.mol_weight.toFixed(2)}` : ''}
-                    {h.score != null && (
-                      <span className="hit-score">
-                        Tanimoto {h.score.toFixed(3)}
-                      </span>
-                    )}
+                <li key={h.reg_id} className="hit hit--thumb">
+                  {h.smiles && (
+                    <img
+                      className="hit-structure"
+                      src={depictUrl(h.smiles)}
+                      alt={h.mol_formula ?? h.reg_id}
+                      loading="lazy"
+                    />
+                  )}
+                  <div>
+                    <div className="hit-regid">{h.reg_id}</div>
+                    <div className="hit-meta">
+                      {h.mol_formula}
+                      {h.mol_weight ? ` · ${h.mol_weight.toFixed(2)}` : ''}
+                      {h.score != null && (
+                        <span className="hit-score">
+                          Tanimoto {h.score.toFixed(3)}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </li>
               ))}

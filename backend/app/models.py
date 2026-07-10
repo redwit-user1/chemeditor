@@ -139,6 +139,7 @@ class SearchHit(BaseModel):
     mol_weight: float | None = None
     score: float | None = None
     matched_component: int | None = None
+    smiles: str | None = None  # matched component structure (for thumbnails)
 
 
 class SearchResponse(BaseModel):

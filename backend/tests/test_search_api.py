@@ -99,3 +99,21 @@ def test_sdf_import_reports_counts():
     body = resp.json()
     assert body["ok"] is True
     assert body["imported"] == 7 and body["failed"] == 0
+
+
+def test_depict_returns_svg():
+    resp = client.get("/api/v1/depict", params={"smiles": "c1ccccc1O"})
+    assert resp.status_code == 200
+    assert resp.headers["content-type"].startswith("image/svg+xml")
+    assert "<svg" in resp.text
+
+
+def test_depict_bad_structure_422():
+    assert client.get("/api/v1/depict", params={"smiles": "!!!"}).status_code == 422
+
+
+def test_search_hits_carry_smiles_for_thumbnails():
+    body = client.post(
+        "/api/v1/search/substructure", json={"structure": "c1ccccc1"}
+    ).json()
+    assert all(h["smiles"] for h in body["hits"])
