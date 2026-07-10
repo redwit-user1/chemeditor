@@ -236,6 +236,9 @@ export default function StoichiometryPanel({
                       <td>
                         {r.is_limiting ? (
                           <span className="derived">{fmt(d?.eq, 3)}</span>
+                        ) : r.given === 'volume' ? (
+                          // Solution rows: eq is DERIVED from vol × molarity.
+                          <span className="derived">{fmt(d?.eq, 3)}</span>
                         ) : (
                           <input
                             className="cell-input"
