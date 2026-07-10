@@ -16,6 +16,9 @@ services:
       # Point at a mounted SDF directory to index real data instead of the
       # bundled fixture. Leave unset to use the fixture.
       CHEM_INDEX_SDF: ${CHEM_INDEX_SDF:-}
+      # portable_fp (default, Oracle-portable) | pg_cartridge (needs PG_DSN)
+      CHEM_SEARCH_BACKEND: ${CHEM_SEARCH_BACKEND:-portable_fp}
+      PG_DSN: ${PG_DSN:-}
     volumes:
       - ./data:/app/data:ro
 
