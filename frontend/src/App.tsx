@@ -5,7 +5,7 @@ import Toolbar from './components/Toolbar';
 import PropertyBar from './components/PropertyBar';
 import SearchPanel from './components/SearchPanel';
 import StoichiometryPanel from './components/StoichiometryPanel';
-import ReagentPopup from './components/ReagentPopup';
+import InventoryDialog from './components/InventoryDialog';
 import { useLiveProperties } from './hooks/useLiveProperties';
 
 type Notice = { kind: 'info' | 'error'; text: string } | null;
@@ -15,7 +15,7 @@ export default function App() {
   const [notice, setNotice] = useState<Notice>(null);
   const [showSearch, setShowSearch] = useState(false);
   const [showStoich, setShowStoich] = useState(false);
-  const [showReagents, setShowReagents] = useState(false);
+  const [showInventory, setShowInventory] = useState(false);
 
   // The core loop: every structure change recomputes properties via RDKit.
   const live = useLiveProperties(ketcher);
@@ -42,7 +42,7 @@ export default function App() {
           setShowStoich((v) => !v);
           setShowSearch(false);
         }}
-        onOpenReagents={() => setShowReagents(true)}
+        onOpenReagents={() => setShowInventory(true)}
       />
 
       <div className="workspace">
@@ -65,10 +65,10 @@ export default function App() {
         )}
       </div>
 
-      {showReagents && (
-        <ReagentPopup
+      {showInventory && (
+        <InventoryDialog
           ketcher={ketcher}
-          onClose={() => setShowReagents(false)}
+          onClose={() => setShowInventory(false)}
           onStatus={handleStatus}
           onError={handleError}
         />
@@ -79,6 +79,8 @@ export default function App() {
         status={live.status}
         error={live.error}
         inputFormat={live.inputFormat}
+        elapsedMs={live.elapsedMs}
+        serverMs={live.serverMs}
       />
 
       <div className={`status-bar${notice?.kind === 'error' ? ' is-error' : ''}`}>

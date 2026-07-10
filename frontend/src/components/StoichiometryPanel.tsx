@@ -1,7 +1,11 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Ketcher } from 'ketcher-core';
-import { parseReaction, type Species } from '../lib/api';
-import { computeStoichiometry } from '../lib/stoichiometry';
+import {
+  computeStoich,
+  parseReaction,
+  type StoichRowIn,
+  type StoichRowOut,
+} from '../lib/api';
 
 interface StoichiometryPanelProps {
   ketcher: Ketcher | null;
@@ -9,26 +13,58 @@ interface StoichiometryPanelProps {
   onError: (message: string) => void;
 }
 
-interface Row {
-  species: Species;
-  equiv: number; // reactants only
+/** Editable state for one row; server derives the rest. */
+interface RowState extends StoichRowIn {
+  id: number;
 }
 
+let nextId = 1;
+
 /**
- * Reaction stoichiometry table. Reads the reaction drawn on the canvas, gets
- * per-species molecular weights from RDKit, then computes mmol / mass /
- * theoretical yield from a reference reagent's amount and per-reactant
- * equivalents — the arithmetic a chemist does by hand in ChemDraw's table.
+ * Reaction stoichiometry table (SPEC §6.3) — synthesis-note columns, with all
+ * arithmetic done by the backend pure module (chem/stoich.py). Rows are
+ * DIRECTIONAL: the limiting reactant is mass-given; other reactants are
+ * eq-given by default (edit eq → mass/vol derive; edit mass → eq derives).
+ * Toggling Limit? recomputes every row server-side.
  */
 export default function StoichiometryPanel({
   ketcher,
   onClose,
   onError,
 }: StoichiometryPanelProps) {
-  const [reactants, setReactants] = useState<Row[]>([]);
-  const [products, setProducts] = useState<Species[]>([]);
-  const [refMass, setRefMass] = useState(100); // mg of the reference reagent
+  const [rows, setRows] = useState<RowState[]>([]);
+  const [out, setOut] = useState<StoichRowOut[]>([]);
+  const [molarity, setMolarity] = useState<number | null>(null);
+  const [temperature, setTemperature] = useState<number>(25);
   const [loaded, setLoaded] = useState(false);
+  const [computeError, setComputeError] = useState<string | null>(null);
+  const seq = useRef(0);
+
+  const recompute = useCallback(
+    async (current: RowState[], tempC: number) => {
+      if (!current.some((r) => r.role === 'reactant')) return;
+      const call = ++seq.current;
+      try {
+        const res = await computeStoich(
+          current.map(({ id: _id, ...rest }) => rest),
+          tempC,
+        );
+        if (call !== seq.current) return; // stale response
+        if (res.ok) {
+          setOut(res.rows);
+          setMolarity(res.reaction_molarity);
+          setComputeError(null);
+        } else {
+          setComputeError(res.error);
+        }
+      } catch (err) {
+        if (call === seq.current) {
+          setComputeError(err instanceof Error ? err.message : String(err));
+        }
+      }
+    },
+    [],
+  );
 
   const loadReaction = async () => {
     if (!ketcher) return;
@@ -36,10 +72,10 @@ export default function StoichiometryPanel({
     try {
       rxn = await ketcher.getRxn();
     } catch {
-      /* no reaction */
+      /* no reaction on canvas */
     }
     if (!rxn || !rxn.includes('$RXN')) {
-      onError('Draw a reaction (reactants, arrow, products) on the canvas first.');
+      onError('Draw a reaction (reactants → products) on the canvas first.');
       return;
     }
     try {
@@ -48,23 +84,96 @@ export default function StoichiometryPanel({
         onError(`Reaction parse failed: ${res.error ?? 'unknown'}`);
         return;
       }
-      setReactants(res.reactants.map((s) => ({ species: s, equiv: 1 })));
-      setProducts(res.products);
+      const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
+      const initial: RowState[] = [
+        ...res.reactants.map((s, i) => ({
+          id: nextId++,
+          rxn_id: roman[i] ?? String(i + 1),
+          role: 'reactant' as const,
+          name: s.mol_formula,
+          formula: s.mol_formula,
+          fw: s.mol_weight,
+          is_limiting: i === 0,
+          given: (i === 0 ? 'mass' : 'eq') as 'mass' | 'eq',
+          mass_g: i === 0 ? 0.5 : null,
+          eq: i === 0 ? null : 1.0,
+        })),
+        ...res.products.map((s, i) => ({
+          id: nextId++,
+          rxn_id: `P${i + 1}`,
+          role: 'product' as const,
+          name: s.mol_formula,
+          formula: s.mol_formula,
+          fw: s.mol_weight,
+        })),
+      ];
+      setRows(initial);
       setLoaded(true);
+      await recompute(initial, temperature);
     } catch (err) {
       onError(err instanceof Error ? err.message : String(err));
     }
   };
 
-  // Reference reagent = the first reactant. Its mmol drives the table.
-  const rows = computeStoichiometry(reactants, products, refMass);
-  const reactantRows = rows.filter((r) => r.role === 'reactant');
-  const productRows = rows.filter((r) => r.role === 'product');
+  const update = (id: number, patch: Partial<RowState>) => {
+    setRows((prev) => {
+      const next = prev.map((r) => (r.id === id ? { ...r, ...patch } : r));
+      void recompute(next, temperature);
+      return next;
+    });
+  };
 
-  const setEquiv = (i: number, equiv: number) =>
-    setReactants((rows) =>
-      rows.map((r, idx) => (idx === i ? { ...r, equiv } : r)),
-    );
+  const setLimiting = (id: number) => {
+    setRows((prev) => {
+      const next = prev.map((r) => {
+        if (r.role !== 'reactant') return r;
+        const isLim = r.id === id;
+        return {
+          ...r,
+          is_limiting: isLim,
+          // Limiting must be mass-given (eq-driven limiting is circular).
+          given: (isLim ? 'mass' : r.given === 'mass' && r.mass_g ? 'mass' : 'eq') as
+            | 'mass'
+            | 'eq',
+          mass_g: isLim ? (r.mass_g ?? 0.5) : r.mass_g,
+          eq: isLim ? null : (r.eq ?? 1.0),
+        };
+      });
+      void recompute(next, temperature);
+      return next;
+    });
+  };
+
+  const addSolvent = () => {
+    setRows((prev) => {
+      const next = [
+        ...prev,
+        {
+          id: nextId++,
+          rxn_id: '',
+          role: 'solvent' as const,
+          name: 'Solvent',
+          volume_ml: 5,
+        },
+      ];
+      void recompute(next, temperature);
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    if (loaded) void recompute(rows, temperature);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [temperature]);
+
+  const derived = (id: number): StoichRowOut | undefined => {
+    const idx = rows.findIndex((r) => r.id === id);
+    return out[idx];
+  };
+
+  const reactants = rows.filter((r) => r.role === 'reactant');
+  const products = rows.filter((r) => r.role === 'product');
+  const solvents = rows.filter((r) => r.role === 'solvent');
 
   return (
     <aside className="stoich-panel">
@@ -76,91 +185,210 @@ export default function StoichiometryPanel({
       </div>
 
       <div className="search-controls">
-        <button
-          type="button"
-          className="primary-btn"
-          onClick={loadReaction}
-          disabled={!ketcher}
-        >
+        <button type="button" className="primary-btn" onClick={loadReaction} disabled={!ketcher}>
           Load reaction from canvas
         </button>
-        {loaded && reactants[0] && (
-          <label className="threshold">
-            Reference amount (mg of {reactants[0].species.mol_formula})
-            <input
-              type="number"
-              min={0}
-              value={refMass}
-              onChange={(e) => setRefMass(Number(e.target.value))}
-            />
-          </label>
-        )}
+        {computeError && <p className="stoich-error">{computeError}</p>}
       </div>
 
       <div className="search-results">
         {!loaded && (
-          <p className="search-empty">
-            Draw a reaction, then load it to compute the table.
-          </p>
+          <p className="search-empty">Draw a reaction, then load it.</p>
         )}
         {loaded && (
-          <table className="stoich-table">
-            <thead>
-              <tr>
-                <th>Species</th>
-                <th>MW</th>
-                <th>equiv</th>
-                <th>mmol</th>
-                <th>mass (mg)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {reactantRows.map((r, i) => (
-                <tr key={`r${i}`}>
-                  <td>
-                    <span className="sp-role sp-react">R</span>
-                    {r.formula}
-                  </td>
-                  <td>{r.mw.toFixed(2)}</td>
-                  <td>
-                    {r.isReference ? (
-                      <span className="ref-tag">ref</span>
-                    ) : (
+          <>
+            <div className="stoich-section">Reactants</div>
+            <table className="stoich-table">
+              <thead>
+                <tr>
+                  <th>Rxn</th><th>MF</th><th>FW</th><th>Limit?</th><th>Eq</th>
+                  <th>Mass (g)</th><th>mmol</th><th>Vol (ml)</th><th>d</th>
+                </tr>
+              </thead>
+              <tbody>
+                {reactants.map((r) => {
+                  const d = derived(r.id);
+                  return (
+                    <tr key={r.id}>
+                      <td>{r.rxn_id}</td>
+                      <td>{r.formula}</td>
+                      <td>{r.fw?.toFixed(3)}</td>
+                      <td>
+                        <input
+                          type="radio"
+                          name="limiting"
+                          checked={!!r.is_limiting}
+                          onChange={() => setLimiting(r.id)}
+                        />
+                      </td>
+                      <td>
+                        {r.is_limiting ? (
+                          <span className="derived">{fmt(d?.eq, 3)}</span>
+                        ) : (
+                          <input
+                            className="cell-input"
+                            type="number" step={0.05} min={0}
+                            value={r.eq ?? ''}
+                            onChange={(e) =>
+                              update(r.id, {
+                                eq: numOrNull(e.target.value),
+                                given: 'eq',
+                              })
+                            }
+                          />
+                        )}
+                      </td>
+                      <td>
+                        {r.given === 'mass' ? (
+                          <input
+                            className="cell-input"
+                            type="number" step={0.01} min={0}
+                            value={r.mass_g ?? ''}
+                            onChange={(e) =>
+                              update(r.id, { mass_g: numOrNull(e.target.value) })
+                            }
+                          />
+                        ) : (
+                          <span className="derived">{fmt(d?.mass_g, 3)}</span>
+                        )}
+                      </td>
+                      <td className="derived">{fmt(d?.mmol, 2)}</td>
+                      <td className="derived">{fmt(d?.volume_ml, 3)}</td>
+                      <td>
+                        <input
+                          className="cell-input"
+                          type="number" step={0.001} min={0}
+                          placeholder="—"
+                          value={r.density ?? ''}
+                          onChange={(e) =>
+                            update(r.id, { density: numOrNull(e.target.value) })
+                          }
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+
+            <div className="stoich-section">Products</div>
+            <table className="stoich-table">
+              <thead>
+                <tr>
+                  <th>ID</th><th>MF</th><th>FW</th><th>Theo Mass</th>
+                  <th>Actual Mass</th><th>Purity</th><th>Yield %</th>
+                  <th>Theo mmol</th><th>Act mmol</th>
+                </tr>
+              </thead>
+              <tbody>
+                {products.map((r) => {
+                  const d = derived(r.id);
+                  return (
+                    <tr key={r.id} className="product-row">
+                      <td>{r.rxn_id}</td>
+                      <td>{r.formula}</td>
+                      <td>{r.fw?.toFixed(3)}</td>
+                      <td className="derived">{fmt(d?.theo_mass_g, 3)}</td>
+                      <td>
+                        <input
+                          className="cell-input"
+                          type="number" step={0.001} min={0}
+                          placeholder="—"
+                          value={r.actual_mass_g ?? ''}
+                          onChange={(e) =>
+                            update(r.id, {
+                              actual_mass_g: numOrNull(e.target.value),
+                            })
+                          }
+                        />
+                      </td>
+                      <td>
+                        <input
+                          className="cell-input"
+                          type="number" step={1} min={0} max={100}
+                          placeholder="—"
+                          value={r.purity ?? ''}
+                          onChange={(e) =>
+                            update(r.id, { purity: numOrNull(e.target.value) })
+                          }
+                        />
+                      </td>
+                      <td className="derived">{fmt(d?.yield_pct, 1)}</td>
+                      <td className="derived">{fmt(d?.theo_mol_mmol, 2)}</td>
+                      <td className="derived">{fmt(d?.actual_mol_mmol, 3)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+
+            <div className="stoich-section">
+              Solvents
+              <button type="button" className="flat-btn small" onClick={addSolvent}>
+                + Add Blank Solvent
+              </button>
+            </div>
+            <table className="stoich-table">
+              <thead>
+                <tr><th>Name</th><th>Volume (ml)</th></tr>
+              </thead>
+              <tbody>
+                {solvents.map((r) => (
+                  <tr key={r.id}>
+                    <td>
                       <input
-                        type="number"
-                        className="equiv-input"
-                        min={0}
-                        step={0.1}
-                        value={reactants[i].equiv}
-                        onChange={(e) => setEquiv(i, Number(e.target.value))}
+                        className="cell-input wide"
+                        type="text"
+                        value={r.name ?? ''}
+                        onChange={(e) => update(r.id, { name: e.target.value })}
                       />
-                    )}
-                  </td>
-                  <td>{r.mmol.toFixed(3)}</td>
-                  <td>{r.massMg.toFixed(1)}</td>
-                </tr>
-              ))}
-              {productRows.map((p, i) => (
-                <tr key={`p${i}`} className="product-row">
-                  <td>
-                    <span className="sp-role sp-prod">P</span>
-                    {p.formula}
-                  </td>
-                  <td>{p.mw.toFixed(2)}</td>
-                  <td>—</td>
-                  <td>{p.mmol.toFixed(3)}</td>
-                  <td>{p.massMg.toFixed(1)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-        {loaded && products.length > 0 && (
-          <p className="yield-note">
-            Product mass = 100% theoretical yield (1:1 from reference).
-          </p>
+                    </td>
+                    <td>
+                      <input
+                        className="cell-input"
+                        type="number" step={0.5} min={0}
+                        value={r.volume_ml ?? ''}
+                        onChange={(e) =>
+                          update(r.id, { volume_ml: numOrNull(e.target.value) })
+                        }
+                      />
+                    </td>
+                  </tr>
+                ))}
+                {solvents.length === 0 && (
+                  <tr><td colSpan={2} className="search-empty">No solvent rows.</td></tr>
+                )}
+              </tbody>
+            </table>
+
+            <div className="stoich-section">Reaction Conditions</div>
+            <div className="stoich-conditions">
+              <span>
+                Molarity: <strong>{molarity != null ? `${fmt(molarity, 3)} M` : '—'}</strong>
+              </span>
+              <label>
+                Temperature (°C):
+                <input
+                  className="cell-input"
+                  type="number" step={5}
+                  value={temperature}
+                  onChange={(e) => setTemperature(Number(e.target.value))}
+                />
+              </label>
+            </div>
+          </>
         )}
       </div>
     </aside>
   );
+}
+
+function fmt(v: number | null | undefined, ndigits: number): string {
+  return v == null ? '—' : v.toFixed(ndigits);
+}
+
+function numOrNull(v: string): number | null {
+  if (v === '') return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
 }

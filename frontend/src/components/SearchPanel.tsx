@@ -16,7 +16,8 @@ interface SearchPanelProps {
 /**
  * Structure search over the indexed library. Takes the structure currently on
  * the canvas as the query and runs exact / substructure / similarity search
- * against the RDKit-backed portable index. Results roll up to parent REGID.
+ * against the RDKit-backed portable index. Results roll up to parent REGID;
+ * the server-side elapsed_ms and backend name are displayed, not hidden.
  */
 export default function SearchPanel({
   ketcher,
@@ -30,6 +31,7 @@ export default function SearchPanel({
   const [ran, setRan] = useState(false);
   const [backend, setBackend] = useState<string>('');
   const [indexInfo, setIndexInfo] = useState<string>('');
+  const [elapsed, setElapsed] = useState<number | null>(null);
 
   useEffect(() => {
     fetchHealth()
@@ -42,22 +44,26 @@ export default function SearchPanel({
 
   const runSearch = async () => {
     if (!ketcher) return;
-    let smiles = '';
+    // NB: never trim() a molfile — its first line is a blank name line and
+    // removing it shifts the V2000 counts line (parse silently fails).
+    let molfile = '';
     try {
-      smiles = (await ketcher.getSmiles()).trim();
+      molfile = await ketcher.getMolfile();
     } catch {
       /* empty canvas */
     }
-    if (!smiles) {
+    if (!molfile.trim()) {
       onError('Draw or paste a query structure first.');
       return;
     }
     setLoading(true);
     setRan(true);
     try {
-      const res = await searchStructures(smiles, queryType, threshold);
+      const res = await searchStructures(molfile, queryType, threshold);
       if (res.ok) {
         setHits(res.hits);
+        setElapsed(res.elapsed_ms);
+        setBackend(res.backend);
       } else {
         setHits([]);
         onError(`Search failed: ${res.error ?? 'unknown error'}`);
@@ -118,6 +124,7 @@ export default function SearchPanel({
         {backend && (
           <p className="search-meta">
             backend: <code>{backend}</code>
+            {elapsed != null && <> · ⏱ {elapsed.toFixed(1)} ms</>}
             <br />
             index: {indexInfo}
           </p>
@@ -133,8 +140,8 @@ export default function SearchPanel({
             <div className="search-count">{hits.length} REGID(s)</div>
             <ul className="hit-list">
               {hits.map((h) => (
-                <li key={h.regid} className="hit">
-                  <div className="hit-regid">{h.regid}</div>
+                <li key={h.reg_id} className="hit">
+                  <div className="hit-regid">{h.reg_id}</div>
                   <div className="hit-meta">
                     {h.mol_formula}
                     {h.mol_weight ? ` · ${h.mol_weight.toFixed(2)}` : ''}
