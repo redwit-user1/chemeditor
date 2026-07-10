@@ -30,6 +30,19 @@ class PropertiesResponse(BaseModel):
     error: str | None = None
 
 
+class SearchRequest(BaseModel):
+    """A chemical search request."""
+
+    query: str = Field(..., description="SMILES (or molfile) query structure")
+    query_type: str = Field(
+        "substructure",
+        description="'exact' | 'substructure' | 'similarity'",
+    )
+    threshold: float = Field(
+        0.7, ge=0.0, le=1.0, description="Tanimoto cutoff for similarity search"
+    )
+
+
 class SearchHit(BaseModel):
     regid: str
     mixture_id: str | None = None

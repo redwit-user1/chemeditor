@@ -19,11 +19,17 @@ Oracle unchanged.
 from __future__ import annotations
 
 from rdkit import Chem
-from rdkit.Chem import rdMolDescriptors
+from rdkit.Chem import rdFingerprintGenerator
 from rdkit.DataStructs import ExplicitBitVect
 
 FP_SIZE = 2048
 MORGAN_RADIUS = 2
+
+# One shared Morgan generator (current RDKit API; the deprecated
+# GetMorganFingerprintAsBitVect is avoided).
+_MORGAN_GEN = rdFingerprintGenerator.GetMorganGenerator(
+    radius=MORGAN_RADIUS, fpSize=FP_SIZE
+)
 
 
 def pattern_bits(mol: Chem.Mol) -> list[int]:
@@ -34,9 +40,7 @@ def pattern_bits(mol: Chem.Mol) -> list[int]:
 
 def morgan_fp(mol: Chem.Mol) -> ExplicitBitVect:
     """Return the Morgan (ECFP) bit-vector fingerprint used for similarity."""
-    return rdMolDescriptors.GetMorganFingerprintAsBitVect(
-        mol, MORGAN_RADIUS, nBits=FP_SIZE
-    )
+    return _MORGAN_GEN.GetFingerprint(mol)
 
 
 def morgan_bits(mol: Chem.Mol) -> list[int]:

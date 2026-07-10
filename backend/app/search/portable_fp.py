@@ -19,6 +19,7 @@ pass any DB-API connection to target Postgres or, in production, Oracle.
 from __future__ import annotations
 
 import sqlite3
+import threading
 
 from rdkit import Chem
 
@@ -39,7 +40,13 @@ class PortableFPBackend(ChemSearchBackend):
     name = "portable_fp"
 
     def __init__(self, connection: sqlite3.Connection | None = None) -> None:
-        self._conn = connection or sqlite3.connect(":memory:")
+        # check_same_thread=False: the API builds the index on one thread and
+        # serves queries on worker threads. A lock serializes access since a
+        # single SQLite connection is not safe for concurrent use.
+        self._conn = connection or sqlite3.connect(
+            ":memory:", check_same_thread=False
+        )
+        self._lock = threading.Lock()
         self._pending: list[tuple] = []
         self._pending_bits: list[tuple[int, list[int]]] = []
         self._next_id = 0
@@ -117,14 +124,15 @@ class PortableFPBackend(ChemSearchBackend):
         if qmol is None:
             return []
         canonical = Chem.MolToSmiles(qmol)
-        cur = self._conn.cursor()
-        cur.execute(
-            "SELECT regid, mixture_id, comp_index, mol_formula, mol_weight "
-            "FROM component WHERE canonical_smiles = ?",
-            (canonical,),
-        )
-        hits = [_row_hit(r) for r in cur.fetchall()]
-        return rollup_by_regid(hits)
+        with self._lock:
+            cur = self._conn.cursor()
+            cur.execute(
+                "SELECT regid, mixture_id, comp_index, mol_formula, mol_weight "
+                "FROM component WHERE canonical_smiles = ?",
+                (canonical,),
+            )
+            rows = cur.fetchall()
+        return rollup_by_regid([_row_hit(r) for r in rows])
 
     def substructure_search(self, query_smiles: str) -> list[Hit]:
         qmol = Chem.MolFromSmiles(query_smiles)
@@ -132,12 +140,14 @@ class PortableFPBackend(ChemSearchBackend):
             return []
         qbits = pattern_bits(qmol)
 
-        # Phase 1 — SQL screening: candidates whose pattern bits ⊇ query bits.
-        candidate_ids = self._screen_superset(qbits)
+        with self._lock:
+            # Phase 1 — SQL screening: candidates whose pattern bits ⊇ query bits.
+            candidate_ids = self._screen_superset(qbits)
+            rows = self._fetch_components(candidate_ids)
 
         # Phase 2 — exact substructure match in RDKit on the survivors.
         hits: list[Hit] = []
-        for row in self._fetch_components(candidate_ids):
+        for row in rows:
             cid, regid, mixture_id, comp_index, smiles, formula, weight, _, _ = row
             mol = Chem.MolFromSmiles(smiles)
             if mol is not None and mol.HasSubstructMatch(qmol):
@@ -159,14 +169,16 @@ class PortableFPBackend(ChemSearchBackend):
             lo = int(threshold * qp)
             hi = int(qp / threshold) + 1
 
-        cur = self._conn.cursor()
-        cur.execute(
-            "SELECT regid, mixture_id, comp_index, mol_formula, mol_weight, "
-            "morgan_blob FROM component WHERE morgan_popcount BETWEEN ? AND ?",
-            (lo, hi),
-        )
+        with self._lock:
+            cur = self._conn.cursor()
+            cur.execute(
+                "SELECT regid, mixture_id, comp_index, mol_formula, mol_weight, "
+                "morgan_blob FROM component WHERE morgan_popcount BETWEEN ? AND ?",
+                (lo, hi),
+            )
+            rows = cur.fetchall()
         hits: list[Hit] = []
-        for regid, mixture_id, comp_index, formula, weight, blob in cur.fetchall():
+        for regid, mixture_id, comp_index, formula, weight, blob in rows:
             score = tanimoto(qbits, set(bytes_to_bits(blob)))
             if score >= threshold:
                 hits.append(
