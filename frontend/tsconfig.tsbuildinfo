@@ -1,0 +1,1 @@
+{"root":["./src/App.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/components/KetcherEditor.tsx","./src/components/PropertyBar.tsx","./src/components/SearchPanel.tsx","./src/components/Toolbar.tsx","./src/hooks/useLiveProperties.ts","./src/lib/api.ts","./src/lib/ketcherFormats.ts"],"version":"5.9.3"}
