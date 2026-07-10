@@ -80,6 +80,35 @@ export async function searchStructures(
   return (await res.json()) as SearchResponse;
 }
 
+export interface Reagent {
+  name: string;
+  cas: string;
+  smiles: string;
+  mol_formula: string;
+  mol_weight: number;
+}
+
+export interface ReagentResponse {
+  ok: boolean;
+  count: number;
+  reagents: Reagent[];
+  error: string | null;
+}
+
+export async function searchReagents(
+  q: string,
+  structure = '',
+): Promise<ReagentResponse> {
+  const params = new URLSearchParams();
+  if (q) params.set('q', q);
+  if (structure) params.set('structure', structure);
+  const res = await fetch(`${API_BASE}/api/reagents?${params.toString()}`);
+  if (!res.ok) {
+    throw new Error(`Reagent API returned ${res.status}`);
+  }
+  return (await res.json()) as ReagentResponse;
+}
+
 export interface Species {
   role: 'reactant' | 'product';
   smiles: string;

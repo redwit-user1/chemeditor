@@ -72,6 +72,9 @@ make load-sdf     # data/*.sdf → SQLite 색인
 
 ## 현재 상태
 
-구현: 물성 자동계산 · 구조 에디터 · SDF/MOL/SMILES 입출력 · 3종 검색(양 백엔드).
-미구현: Reaction Stoichiometry, Reagent Inventory 팝업. 실데이터 정합·Oracle 실검증 미완.
-자세한 내용은 [feasibility.md](reports/feasibility.md) §6.
+**P0 6종 전부 구현·검증:** 물성 자동계산 · 구조 에디터(그리기/붙여넣기) · SDF/MOL/SMILES
+입출력 · 3종 검색(substructure/exact/similarity, 양 백엔드) · Reaction Stoichiometry ·
+Reagent Inventory 팝업.
+
+잔여(운영 검증): 재단 실데이터 정합, Oracle SE 실계측, Docker 실기동.
+자세한 내용은 [feasibility.md](reports/feasibility.md).

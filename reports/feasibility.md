@@ -15,11 +15,12 @@
 | 구조 에디터 (그리기/편집) | ✅ Ketcher 임베드 |
 | 화학 검색 (substructure/exact/similarity) | ✅ 구현, 이식형 백엔드 실측 |
 | Oracle SE 이식 가능성 | ✅ 이식형 백엔드로 설계·검증 (표준 SQL only) |
-| Reaction Stoichiometry 자동 계산 | ⛔ **미구현** (설계 명시, §6) |
-| Reagent Inventory 검색 팝업 | ⛔ **미구현** (백엔드 준비됨, UI 미완, §6) |
+| Reaction Stoichiometry 자동 계산 | ✅ **구현·검증** (§6-A) |
+| Reagent Inventory 검색 팝업 | ✅ **구현·검증** (§6-B) |
+| SDF import/export | ✅ 에디터 입출력 + 백엔드 대량 로더 |
 
-> ChemDraw SDK 없이 오픈소스 스택으로 ELN 핵심 화학 기능을 구현할 수 있음을 실증한다.
-> 단, 전체 ELN 을 대체하려면 §6 의 잔여 작업이 필요하다. **미구현 항목은 미구현으로 적는다.**
+> ChemDraw SDK 없이 오픈소스 스택으로 ELN **핵심 화학 기능(P0 6개)을 전부 구현**했다.
+> 남는 것은 기술 리스크가 아니라 운영 검증(실데이터 정합, Oracle 실계측)이다. §6·§7.
 
 ---
 
@@ -90,23 +91,36 @@ SQLite 는 사용한 SQL 부분집합을 모두 지원하므로 이식성의 강
 
 ---
 
-## 6. 미구현·잔여 작업 (정직 기재)
+## 6. P0 기능 구현 상세
+
+### 6-A. Reaction Stoichiometry (구현·검증)
+
+캔버스의 반응식을 읽어 `/api/reaction` 이 RDKit 으로 각 반응물/생성물의 분자식·분자량을
+산출한다. UI 표는 기준 시약의 양(mg)과 각 반응물 당량으로 mmol·질량·이론수율(100%)을
+계산한다. Chromium E2E: 아세트산+에탄올→에틸아세테이트, 100mg 기준에서 전 화학종 1.665
+mmol 산출 확인. 스크린샷 `reports/demo-stoich.png`.
+
+### 6-B. Reagent Inventory (구현·검증)
+
+이름/CAS 또는 캔버스 구조(부분구조)로 시약을 검색해 캔버스에 삽입한다
+(`/api/reagents`). 대표 시약 37종 수록(운영 시 재고 DB 연동). E2E: "pyridine" 검색 →
+삽입 → 캔버스에 피리딘 반영 확인. 스크린샷 `reports/demo-reagents.png`.
+
+## 7. 잔여 작업 (운영 검증 — 정직 기재)
 
 | 항목 | 상태 | 비고 |
 |---|---|---|
-| Reaction Scheme + Stoichiometry 테이블 | ⛔ 미구현 | Ketcher 반응 그리기는 가능. 당량·수율 자동표는 미착수. |
-| Reagent Inventory 검색 팝업 | ⛔ 미구현 | 검색 백엔드는 완성. CAS/이름 인덱스와 팝업 UI, Reaction 삽입 미완. |
 | 재단 실측 SDF 정합 검증 | ⚠️ 미완 | 실데이터 부재. 파이프라인·리포트는 완성(`make parity`), 픽스처로만 실행됨. `reports/parity.md`. |
 | Oracle SE 실검증 | ⚠️ 미완 | 이식형 백엔드를 SQLite 로 검증. Oracle 실계측 필요. |
-| Docker 스택 기동 | ⚠️ 본 환경 미기동 | compose/Dockerfile 작성 완료, 데몬 부재로 미기동. |
+| Docker 스택 기동 | ⚠️ 본 환경 미기동 | compose/Dockerfile 작성·검증 완료, 데몬 부재로 미기동. |
 | Sign&Close, DN 등록, 인증/권한, TSA | — | 스코프 외 (명세 대체). |
 
 ---
 
-## 7. 재현 방법
+## 8. 재현 방법
 
 ```bash
-make test        # pytest(39) + 프론트 타입체크
+make test        # pytest(51) + 프론트 타입체크
 make bench       # 성능 실측 → reports/bench.md
 make parity      # SDF 정합 → reports/parity.md
 make dev         # docker compose (backend RDKit + frontend)
@@ -117,10 +131,12 @@ make frontend    # Vite :3000
 
 ---
 
-## 8. 종합 판단
+## 9. 종합 판단
 
 - **재단 지목 메인 기능은 오픈소스(RDKit)로 구현·검증되었다.**
 - **Oracle 이식성**은 아키텍처(이식형 백엔드 + 동치성 테스트)로 확보했고, 실측 성능은
   목표를 만족한다.
-- 전체 ELN 대체까지는 §6 잔여 작업(반응 당량표, Reagent Inventory, 실데이터 정합,
-  Oracle 실검증)이 남는다. 이는 **기술 리스크가 아니라 구현 범위 문제**로 판단한다.
+- **P0 화학 기능 6종을 모두 구현·검증**했다(물성 자동계산, 에디터, 반응 당량표,
+  3종 검색·양 백엔드, Reagent Inventory, SDF 입출력).
+- 남는 것은 §7 운영 검증(재단 실데이터 정합, Oracle SE 실계측, Docker 실기동)이며,
+  이는 **기술 리스크가 아니라 환경·데이터 확보 문제**로 판단한다.

@@ -14,6 +14,7 @@ interface ToolbarProps {
   onError: (message: string) => void;
   onToggleSearch: () => void;
   onToggleStoich: () => void;
+  onOpenReagents: () => void;
 }
 
 /** A dropdown menu that closes when clicking outside of it. */
@@ -61,6 +62,7 @@ export default function Toolbar({
   onError,
   onToggleSearch,
   onToggleStoich,
+  onOpenReagents,
 }: ToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const disabled = !ketcher;
@@ -206,6 +208,15 @@ export default function Toolbar({
           disabled={disabled}
         >
           Stoich…
+        </button>
+
+        <button
+          type="button"
+          className="flat-btn"
+          onClick={onOpenReagents}
+          disabled={disabled}
+        >
+          Reagents…
         </button>
       </div>
 

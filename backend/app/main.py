@@ -9,6 +9,8 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from fastapi import Query
+
 from .chem.properties import properties_from_text
 from .chem.reaction import parse_reaction
 from .models import (
@@ -16,12 +18,15 @@ from .models import (
     PropertiesResponse,
     ReactionRequest,
     ReactionResponse,
+    ReagentHit,
+    ReagentResponse,
     SearchHit,
     SearchRequest,
     SearchResponse,
     SpeciesPayload,
     StructureRequest,
 )
+from .reagents.inventory import search_by_substructure, search_by_text
 from .search.service import build_index
 
 app = FastAPI(
@@ -71,6 +76,39 @@ def properties(request: StructureRequest) -> PropertiesResponse:
         input_format=result.input_format,
         properties=payload,
         error=result.error,
+    )
+
+
+@app.get("/api/reagents", response_model=ReagentResponse)
+def reagents(
+    q: str = Query("", description="name or CAS substring"),
+    structure: str = Query("", description="optional SMILES substructure filter"),
+) -> ReagentResponse:
+    """Reagent inventory search by name/CAS and/or structure.
+
+    Returns reagents the chemist can insert onto the reaction canvas.
+    """
+    try:
+        if structure.strip():
+            hits = search_by_substructure(structure)
+        else:
+            hits = search_by_text(q)
+    except Exception as exc:
+        return ReagentResponse(ok=False, count=0, error=str(exc))
+
+    return ReagentResponse(
+        ok=True,
+        count=len(hits),
+        reagents=[
+            ReagentHit(
+                name=r.name,
+                cas=r.cas,
+                smiles=r.smiles,
+                mol_formula=r.mol_formula,
+                mol_weight=r.mol_weight,
+            )
+            for r in hits
+        ],
     )
 
 

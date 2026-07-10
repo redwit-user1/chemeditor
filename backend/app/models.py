@@ -30,6 +30,21 @@ class PropertiesResponse(BaseModel):
     error: str | None = None
 
 
+class ReagentHit(BaseModel):
+    name: str
+    cas: str
+    smiles: str
+    mol_formula: str
+    mol_weight: float
+
+
+class ReagentResponse(BaseModel):
+    ok: bool
+    count: int
+    reagents: list[ReagentHit] = []
+    error: str | None = None
+
+
 class ReactionRequest(BaseModel):
     """An Rxnfile or reaction SMILES to break into species."""
 
