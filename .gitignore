@@ -1,0 +1,25 @@
+# Node / frontend
+node_modules/
+frontend/dist/
+frontend/node_modules/
+*.log
+
+# Python / backend
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+*.egg-info/
+
+# Foundation data — real SDF is confidential, kept out of git
+data/*.sdf
+data/*.sd
+
+# Generated local DB
+*.sqlite
+*.sqlite3
+backend/*.db
+
+# OS
+.DS_Store
