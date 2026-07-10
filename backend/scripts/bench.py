@@ -16,6 +16,7 @@ import statistics
 import sys
 import time
 
+from app.chem.properties import properties_from_text
 from app.search.portable_fp import PortableFPBackend
 from scripts.synthetic import generate
 
@@ -59,8 +60,29 @@ def _time_calls(fn, queries, iterations: int) -> list[float]:
     return times
 
 
+def _bench_properties(lib, iterations: int) -> dict:
+    """Latency of the core feature: text structure -> formula/weights (RDKit).
+
+    This is the backend cost behind the 'paste -> properties' loop. End-to-end
+    (browser -> HTTP -> render) adds network + React overhead on top; the
+    compute cost measured here is the dominant, controllable part.
+    """
+    samples = [c.smiles for c in lib]
+    # Warmup.
+    for i in range(WARMUP):
+        properties_from_text(samples[i % len(samples)])
+    times: list[float] = []
+    for i in range(iterations):
+        smiles = samples[i % len(samples)]
+        start = time.perf_counter()
+        properties_from_text(smiles)
+        times.append((time.perf_counter() - start) * 1000.0)
+    return _percentiles(times)
+
+
 def run(n: int, iterations: int) -> dict:
     lib = generate(n)
+    property_ms = _bench_properties(lib, iterations)
     backend = PortableFPBackend()
     t0 = time.perf_counter()
     for comp in lib:
@@ -85,6 +107,7 @@ def run(n: int, iterations: int) -> dict:
         "n_components": len(lib),
         "build_s": build_s,
         "iterations": iterations,
+        "properties": property_ms,
         "substructure": _percentiles(sub_ms),
         "similarity": _percentiles(sim_ms),
     }
@@ -99,6 +122,7 @@ def render_md(result: dict) -> str:
 
     sub_ok = "✅" if result["substructure"]["p95"] <= 3000 else "❌"
     sim_ok = "✅" if result["similarity"]["p95"] <= 3000 else "❌"
+    prop_ok = "✅" if result["properties"]["p95"] <= 1000 else "❌"
 
     return f"""# 성능 벤치마크 (reports/bench.md)
 
@@ -115,8 +139,9 @@ def render_md(result: dict) -> str:
 
 ## 결과 (ms)
 
-| 검색 | p50 | p95 | p99 | mean | max |
+| 항목 | p50 | p95 | p99 | mean | max |
 |---|---|---|---|---|---|
+{row('물성 계산 (RDKit)', result['properties'])}
 {row('Substructure', result['substructure'])}
 {row('Similarity', result['similarity'])}
 
@@ -124,8 +149,12 @@ def render_md(result: dict) -> str:
 
 | 항목 | 목표 (p95) | 실측 (p95) | 판정 |
 |---|---|---|---|
+| 물성 계산 (paste→계산, 백엔드) | ≤ 1000 ms | {result['properties']['p95']:.1f} ms | {prop_ok} |
 | Substructure 검색 | ≤ 3000 ms | {result['substructure']['p95']:.1f} ms | {sub_ok} |
 | Similarity 검색 | ≤ 3000 ms | {result['similarity']['p95']:.1f} ms | {sim_ok} |
+
+> 물성 계산은 **백엔드 compute** (parse + RDKit). E2E(paste→화면)는 여기에
+> 네트워크 왕복 + React 렌더가 더해지나, 로컬 기준 수 ms 수준(디바운스 150ms 별도).
 
 ## 주의
 

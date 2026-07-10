@@ -50,6 +50,11 @@ class PortableFPBackend(ChemSearchBackend):
         self._pending: list[tuple] = []
         self._pending_bits: list[tuple[int, list[int]]] = []
         self._next_id = 0
+        # App-layer cache of parsed mols, keyed by component id. Built once at
+        # index time so the substructure precise phase never re-parses SMILES.
+        # Portable: the SQL layer still stores only text/BLOB; this is an
+        # in-process accelerator (memory cost ~ one RDKit mol per component).
+        self._mols: dict[int, Chem.Mol] = {}
 
     # ---- indexing ----
 
@@ -59,6 +64,7 @@ class PortableFPBackend(ChemSearchBackend):
             return  # loader counts parse failures; search skips them
         cid = self._next_id
         self._next_id += 1
+        self._mols[cid] = mol
         canonical = Chem.MolToSmiles(mol)
         mbits = morgan_bits(mol)
         self._pending.append(
@@ -145,11 +151,14 @@ class PortableFPBackend(ChemSearchBackend):
             candidate_ids = self._screen_superset(qbits)
             rows = self._fetch_components(candidate_ids)
 
-        # Phase 2 — exact substructure match in RDKit on the survivors.
+        # Phase 2 — exact substructure match in RDKit on the survivors, using
+        # the cached parsed mols (no SMILES re-parse).
         hits: list[Hit] = []
         for row in rows:
             cid, regid, mixture_id, comp_index, smiles, formula, weight, _, _ = row
-            mol = Chem.MolFromSmiles(smiles)
+            mol = self._mols.get(cid)
+            if mol is None:  # cache miss (e.g. external connection) → parse
+                mol = Chem.MolFromSmiles(smiles)
             if mol is not None and mol.HasSubstructMatch(qmol):
                 hits.append(
                     Hit(regid, mixture_id, formula, weight, comp_index, None)
