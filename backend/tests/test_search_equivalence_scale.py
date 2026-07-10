@@ -33,20 +33,45 @@ def backends():
     return portable, reference
 
 
-# Draw query structures from the library itself + common substructures, so
-# most queries return non-trivial result sets.
+# The 30-query gate (SPEC §4.4 / TASKS M3). A diverse set of distinct SMILES —
+# scaffolds, functional groups, halobenzenes, fused rings — run at 600-molecule
+# scale against the brute-force reference. Some (piperazine, Boc, morpholine)
+# do not occur in the synthetic library and correctly yield empty sets on both
+# sides; complete equality must still hold for every query.
 SUBSTRUCTURE_QUERIES = [
-    "c1ccccc1",
-    "c1ccncc1",
-    "C(=O)O",
-    "C(=O)N",
-    "S(=O)(=O)N",
-    "OC(F)(F)F",
-    "c1ccc(Cl)cc1",
-    "N(C)C",
-    "C#N",
-    "C1CCCCC1",
+    "c1ccccc1",                     # benzene
+    "Nc1ccccc1",                    # aniline
+    "C1CNCCN1",                     # piperazine
+    "O=C(OC(C)(C)C)",               # Boc group
+    "c1ccncn1",                     # pyrimidine
+    "c1ccc(-c2ccccc2)cc1",          # biphenyl
+    "c1ccncc1",                     # pyridine
+    "C1COCCN1",                     # morpholine
+    "S(=O)(=O)N",                   # sulfonamide
+    "C(=O)O",                       # carboxylic acid
+    "C(=O)OC",                      # ester
+    "C(=O)N",                       # amide
+    "C#N",                          # nitrile
+    "C(F)(F)F",                     # CF3
+    "OC(F)(F)F",                    # OCF3
+    "c1ccc(Cl)cc1",                 # chlorobenzene
+    "c1ccc(F)cc1",                  # fluorobenzene
+    "c1ccc(Br)cc1",                 # bromobenzene
+    "c1ccc(I)cc1",                  # iodobenzene
+    "c1ccc2ccccc2c1",               # naphthalene (fused rings)
+    "C1CCCCC1",                     # cyclohexane
+    "c1ccc(O)cc1",                  # phenol
+    "c1ccc(C)cc1",                  # toluene
+    "N(C)C",                        # dimethylamino
+    "SC",                           # methylthioether
+    "c1ccc(OC)cc1",                 # anisole
+    "OCC",                          # ethoxy/ethanol fragment
+    "c1ccc(C(=O)O)cc1",             # benzoic acid
+    "c1ccc(C(=O)N)cc1",             # benzamide
+    "c1ccc(S(=O)(=O)N)cc1",         # benzenesulfonamide
 ]
+
+assert len(SUBSTRUCTURE_QUERIES) == len(set(SUBSTRUCTURE_QUERIES)) == 30
 
 SIMILARITY_QUERIES = [
     ("Cc1ccc(C(=O)O)cc1", 0.3),
@@ -95,10 +120,25 @@ def test_exact_equivalence_samples_every_10th(backends):
 
 
 def test_substructure_screening_is_lossless_vs_bruteforce(backends):
-    # Aggregate check: across all substructure queries, PortableFP must never
-    # miss a hit the brute-force reference found.
+    # Explicit 100%-recall gate: across all 30 substructure queries, the
+    # brute-force reference result set must be a SUBSET of PortableFP's result
+    # set (no false negatives from the pattern-word screen). Precision is
+    # handled by the precise phase; the equivalence test above pins full equality.
     portable, reference = backends
     for query in SUBSTRUCTURE_QUERIES:
         ref = _regids(reference.substructure_search(query))
         got = _regids(portable.substructure_search(query))
         assert ref.issubset(got), f"{query}: screening dropped {ref - got}"
+
+
+def test_screening_candidate_count_is_recorded(backends):
+    # The backend exposes last_candidate_count for benchmark precision
+    # diagnostics: candidates (post-screen, pre-precise) must be >= final hits,
+    # since the precise RDKit phase only removes false positives.
+    portable, _ = backends
+    for query in SUBSTRUCTURE_QUERIES:
+        hits = portable.substructure_search(query)
+        assert portable.last_candidate_count >= len(hits), (
+            f"{query}: candidates {portable.last_candidate_count} "
+            f"< hits {len(hits)}"
+        )

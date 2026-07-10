@@ -1,16 +1,45 @@
 """Portable fingerprint backend — the implementation that ports to Oracle SE.
 
-Storage and screening use only standard SQL and a BLOB column. Explicitly
-avoided: ``bit_count``, ``ARRAY``, the ``@>`` containment operator, the ``%``
-similarity operator — anything Postgres-specific. What remains (``IN``,
-``GROUP BY … HAVING COUNT``, ``BETWEEN``, ``=``, BLOB) exists in Oracle SE, so
-the same schema and queries move across unchanged.
+Storage and screening use only standard SQL and integer/BLOB columns.
+Explicitly avoided: ``bit_count``, ``ARRAY``, the ``@>`` containment operator,
+the ``%`` similarity operator — anything Postgres-specific. What remains
+(``SELECT``/``WHERE``/``JOIN``/``IN``/``BETWEEN``, standard aggregates, and the
+bitwise ``&`` operator) exists in Oracle SE, so the same schema and queries move
+across unchanged. Bitwise ``&`` maps to Oracle ``BITAND(a, b)``; on SQLite and
+Postgres it is the ``&`` operator.
 
 Two-phase search everywhere:
 
-1. **SQL screening** narrows millions of rows to a small candidate set using an
-   inverted bit index (substructure) or a popcount range (similarity).
+1. **SQL screening** narrows millions of rows to a small candidate set using
+   per-word bitwise-AND conditions (substructure) or a popcount range
+   (similarity).
 2. **App-layer RDKit** does the exact match on the survivors.
+
+--------------------------------------------------------------------------------
+DEVIATION FROM SPEC §4.3 (intentional — the SPEC has a chemistry bug)
+--------------------------------------------------------------------------------
+SPEC §4.3 says to decompose the *Morgan* fingerprint into word columns for
+substructure screening. That is wrong: Morgan/ECFP does **not** have the
+substructure-containment property. If Q is a substructure of T, the bits of Q's
+Morgan FP are NOT guaranteed to be a subset of T's (Morgan hashes circular
+environments of a fixed radius; a fragment's environments differ from the same
+atoms embedded in a larger molecule). Screening on Morgan therefore produces
+false negatives, and the §4.4 "screening recall = 100%" gate collapses.
+
+Corrected design (what this file implements):
+
+* SUBSTRUCTURE screening uses ``Chem.PatternFingerprint(mol, fpSize=2048)``,
+  which is *designed* for substructure screening and for which containment
+  provably holds. It is decomposed into 32 signed 64-bit word columns
+  (``pat_00``..``pat_31``); a candidate must satisfy, for every non-zero query
+  word ``i``, ``(pat_i & :qi) = :qi``.
+* MORGAN fingerprint is kept strictly for SIMILARITY (Tanimoto), with the
+  popcount range prune ``[t*|A|, |A|/t]``.
+
+Signed 64-bit note: SQLite (and Oracle NUMBER/INTEGER) store signed integers.
+Each pattern word is produced by ``int.from_bytes(..., 'big', signed=True)`` so
+words with the high bit set become negative. Two's-complement bitwise AND still
+computes containment correctly — verified by a dedicated unit test.
 
 The default connection is in-memory SQLite (used by the PoC and the test suite);
 pass any DB-API connection to target Postgres or, in production, Oracle.
@@ -24,16 +53,20 @@ import threading
 from rdkit import Chem
 
 from ..chem.fingerprint import (
+    PATTERN_WORD_COUNT,
     bits_to_bytes,
     bytes_to_bits,
     morgan_bits,
-    pattern_bits,
+    pattern_words,
     tanimoto,
 )
 from .backend import ChemSearchBackend, Component, Hit, rollup_by_regid
 
-# Oracle caps IN-lists at 1000 entries; chunk screening below that everywhere.
+# Oracle caps IN-lists at 1000 entries; chunk any IN-list below that.
 _IN_CHUNK = 900
+
+# Column names for the 32 pattern-fingerprint words.
+_PAT_COLS = [f"pat_{i:02d}" for i in range(PATTERN_WORD_COUNT)]
 
 
 class PortableFPBackend(ChemSearchBackend):
@@ -48,13 +81,16 @@ class PortableFPBackend(ChemSearchBackend):
         )
         self._lock = threading.Lock()
         self._pending: list[tuple] = []
-        self._pending_bits: list[tuple[int, list[int]]] = []
         self._next_id = 0
         # App-layer cache of parsed mols, keyed by component id. Built once at
         # index time so the substructure precise phase never re-parses SMILES.
-        # Portable: the SQL layer still stores only text/BLOB; this is an
+        # Portable: the SQL layer still stores only text/int/BLOB; this is an
         # in-process accelerator (memory cost ~ one RDKit mol per component).
         self._mols: dict[int, Chem.Mol] = {}
+        # Diagnostic: number of screening candidates from the most recent
+        # substructure query (before the precise RDKit phase). Used by the
+        # benchmark to report screening precision.
+        self.last_candidate_count: int = 0
 
     # ---- indexing ----
 
@@ -67,6 +103,7 @@ class PortableFPBackend(ChemSearchBackend):
         self._mols[cid] = mol
         canonical = Chem.MolToSmiles(mol)
         mbits = morgan_bits(mol)
+        words = pattern_words(mol)
         self._pending.append(
             (
                 cid,
@@ -76,18 +113,19 @@ class PortableFPBackend(ChemSearchBackend):
                 canonical,
                 component.mol_formula,
                 component.mol_weight,
+                mol.GetNumHeavyAtoms(),
+                *words,
                 bits_to_bytes(mbits),
                 len(mbits),
             )
         )
-        self._pending_bits.append((cid, pattern_bits(mol)))
 
     def build(self) -> None:
+        pat_defs = ",\n                ".join(f"{c} INTEGER" for c in _PAT_COLS)
         cur = self._conn.cursor()
         cur.executescript(
-            """
+            f"""
             DROP TABLE IF EXISTS component;
-            DROP TABLE IF EXISTS pattern_bit;
             CREATE TABLE component (
                 id INTEGER PRIMARY KEY,
                 regid TEXT NOT NULL,
@@ -96,29 +134,24 @@ class PortableFPBackend(ChemSearchBackend):
                 canonical_smiles TEXT,
                 mol_formula TEXT,
                 mol_weight REAL,
+                heavy_atom_count INTEGER,
+                {pat_defs},
                 morgan_blob BLOB,
                 morgan_popcount INTEGER
             );
-            CREATE TABLE pattern_bit (
-                component_id INTEGER NOT NULL,
-                bit_index INTEGER NOT NULL
-            );
             """
         )
+        # 8 fixed leading cols + 32 pattern words + morgan_blob + morgan_popcount.
+        n_cols = 8 + PATTERN_WORD_COUNT + 2
+        placeholders = ",".join("?" for _ in range(n_cols))
         cur.executemany(
-            "INSERT INTO component VALUES (?,?,?,?,?,?,?,?,?)", self._pending
-        )
-        rows = [
-            (cid, bit) for cid, bits in self._pending_bits for bit in bits
-        ]
-        cur.executemany(
-            "INSERT INTO pattern_bit (component_id, bit_index) VALUES (?,?)", rows
+            f"INSERT INTO component VALUES ({placeholders})", self._pending
         )
         cur.executescript(
             """
             CREATE INDEX ix_component_smiles ON component(canonical_smiles);
             CREATE INDEX ix_component_popcount ON component(morgan_popcount);
-            CREATE INDEX ix_pattern_bit ON pattern_bit(bit_index);
+            CREATE INDEX ix_component_heavy ON component(heavy_atom_count);
             """
         )
         self._conn.commit()
@@ -143,19 +176,38 @@ class PortableFPBackend(ChemSearchBackend):
     def substructure_search(self, query_smiles: str) -> list[Hit]:
         qmol = Chem.MolFromSmiles(query_smiles)
         if qmol is None:
+            self.last_candidate_count = 0
             return []
-        qbits = pattern_bits(qmol)
+        qwords = pattern_words(qmol)
+        qheavy = qmol.GetNumHeavyAtoms()
 
         with self._lock:
-            # Phase 1 — SQL screening: candidates whose pattern bits ⊇ query bits.
-            candidate_ids = self._screen_superset(qbits)
-            rows = self._fetch_components(candidate_ids)
+            # Phase 1 — SQL screening. A candidate must contain every atom of
+            # the query (heavy_atom_count >= qheavy) AND, for each non-zero
+            # query word, carry all of that word's bits: (pat_i & :qi) = :qi.
+            # Zero query words add no constraint, so they are omitted → fewer
+            # AND-conditions. Bitwise & is Oracle BITAND / Postgres & / SQLite &.
+            conds = ["heavy_atom_count >= ?"]
+            params: list = [qheavy]
+            for i, word in enumerate(qwords):
+                if word != 0:
+                    conds.append(f"({_PAT_COLS[i]} & ?) = ?")
+                    params.extend((word, word))
+            sql = (
+                "SELECT id, regid, mixture_id, comp_index, canonical_smiles, "
+                "mol_formula, mol_weight FROM component WHERE "
+                + " AND ".join(conds)
+            )
+            cur = self._conn.cursor()
+            cur.execute(sql, params)
+            rows = cur.fetchall()
+
+        self.last_candidate_count = len(rows)
 
         # Phase 2 — exact substructure match in RDKit on the survivors, using
         # the cached parsed mols (no SMILES re-parse).
         hits: list[Hit] = []
-        for row in rows:
-            cid, regid, mixture_id, comp_index, smiles, formula, weight, _, _ = row
+        for cid, regid, mixture_id, comp_index, smiles, formula, weight in rows:
             mol = self._mols.get(cid)
             if mol is None:  # cache miss (e.g. external connection) → parse
                 mol = Chem.MolFromSmiles(smiles)
@@ -194,50 +246,6 @@ class PortableFPBackend(ChemSearchBackend):
                     Hit(regid, mixture_id, formula, weight, comp_index, score)
                 )
         return rollup_by_regid(hits)
-
-    # ---- helpers ----
-
-    def _screen_superset(self, qbits: list[int]) -> list[int]:
-        """IDs of components whose pattern bits are a superset of ``qbits``."""
-        if not qbits:
-            # No discriminating bits → every component is a candidate.
-            cur = self._conn.cursor()
-            cur.execute("SELECT id FROM component")
-            return [r[0] for r in cur.fetchall()]
-
-        # Count, per component, how many query bits it carries; a full match
-        # means it carries all of them. Chunk the IN-list for Oracle's 1000 cap.
-        counts: dict[int, int] = {}
-        cur = self._conn.cursor()
-        for start in range(0, len(qbits), _IN_CHUNK):
-            chunk = qbits[start : start + _IN_CHUNK]
-            placeholders = ",".join("?" for _ in chunk)
-            cur.execute(
-                f"SELECT component_id, COUNT(*) FROM pattern_bit "
-                f"WHERE bit_index IN ({placeholders}) GROUP BY component_id",
-                chunk,
-            )
-            for cid, n in cur.fetchall():
-                counts[cid] = counts.get(cid, 0) + n
-        need = len(qbits)
-        return [cid for cid, n in counts.items() if n == need]
-
-    def _fetch_components(self, ids: list[int]):
-        if not ids:
-            return []
-        rows = []
-        cur = self._conn.cursor()
-        for start in range(0, len(ids), _IN_CHUNK):
-            chunk = ids[start : start + _IN_CHUNK]
-            placeholders = ",".join("?" for _ in chunk)
-            cur.execute(
-                f"SELECT id, regid, mixture_id, comp_index, canonical_smiles, "
-                f"mol_formula, mol_weight, morgan_blob, morgan_popcount "
-                f"FROM component WHERE id IN ({placeholders})",
-                chunk,
-            )
-            rows.extend(cur.fetchall())
-        return rows
 
 
 def _row_hit(row) -> Hit:

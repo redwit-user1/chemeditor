@@ -25,6 +25,11 @@ from rdkit.DataStructs import ExplicitBitVect
 FP_SIZE = 2048
 MORGAN_RADIUS = 2
 
+# The pattern fingerprint (2048 bits) decomposes into 32 columns of 64 bits each
+# for word-column substructure screening (see portable_fp.py).
+WORD_BITS = 64
+PATTERN_WORD_COUNT = FP_SIZE // WORD_BITS  # 32
+
 # One shared Morgan generator (current RDKit API; the deprecated
 # GetMorganFingerprintAsBitVect is avoided).
 _MORGAN_GEN = rdFingerprintGenerator.GetMorganGenerator(
@@ -36,6 +41,36 @@ def pattern_bits(mol: Chem.Mol) -> list[int]:
     """Return the sorted list of set bit indices of the pattern fingerprint."""
     fp = Chem.PatternFingerprint(mol, fpSize=FP_SIZE)
     return list(fp.GetOnBits())
+
+
+def _pack_pattern_be(mol: Chem.Mol) -> bytes:
+    """Pack the 2048-bit pattern fingerprint into 256 big-endian bytes.
+
+    Bit ``b`` lands in byte ``b // 8``, MSB-first within that byte. The mapping
+    is arbitrary but fixed: query and stored fingerprints go through this same
+    function, so the per-word bitwise AND compares like against like.
+    """
+    fp = Chem.PatternFingerprint(mol, fpSize=FP_SIZE)
+    buf = bytearray(FP_SIZE // 8)
+    for b in fp.GetOnBits():
+        buf[b >> 3] |= 1 << (7 - (b & 7))
+    return bytes(buf)
+
+
+def pattern_words(mol: Chem.Mol) -> list[int]:
+    """Decompose the pattern fingerprint into 32 SIGNED 64-bit words.
+
+    Each 8-byte big-endian slice becomes one integer via
+    ``int.from_bytes(..., 'big', signed=True)`` so it round-trips through a
+    SQLite/Oracle *signed* 64-bit integer column unchanged. Two's-complement
+    bitwise AND preserves containment: ``(pat_i & q_i) == q_i`` holds exactly
+    when ``q_i``'s set bits are a subset of ``pat_i``'s — regardless of sign.
+    """
+    raw = _pack_pattern_be(mol)
+    return [
+        int.from_bytes(raw[j * 8 : j * 8 + 8], "big", signed=True)
+        for j in range(PATTERN_WORD_COUNT)
+    ]
 
 
 def morgan_fp(mol: Chem.Mol) -> ExplicitBitVect:

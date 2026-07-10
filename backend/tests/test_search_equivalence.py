@@ -120,3 +120,38 @@ def test_rollup_collapses_mixture_components():
     hits = backend.substructure_search("c1ccccc1")
     regids = [h.regid for h in hits]
     assert len(regids) == len(set(regids))
+
+
+def test_signed_word_bitwise_and_preserves_containment():
+    # The pat_00..pat_31 columns are SIGNED 64-bit integers. Words with the top
+    # bit set become negative under int.from_bytes(..., signed=True). This test
+    # verifies two's-complement bitwise AND still computes bit-containment — the
+    # exact predicate the SQL screening uses: (pat_i & :qi) = :qi.
+    from rdkit import Chem
+
+    from app.chem.fingerprint import PATTERN_WORD_COUNT, pattern_words
+
+    # Explicit two's-complement check on hand-picked signed words.
+    all_bits = int.from_bytes(b"\xff" * 8, "big", signed=True)   # -1
+    top_bit = int.from_bytes(b"\x80" + b"\x00" * 7, "big", signed=True)
+    assert all_bits == -1 and top_bit < 0
+    assert (all_bits & top_bit) == top_bit  # containment under signed AND
+
+    sub = Chem.MolFromSmiles("c1ccccc1")        # benzene
+    sup = Chem.MolFromSmiles("c1ccc(O)cc1")     # phenol ⊇ benzene
+    other = Chem.MolFromSmiles("CCCCCC")        # hexane ⊉ benzene
+    qw = pattern_words(sub)
+    tw = pattern_words(sup)
+    ow = pattern_words(other)
+
+    assert len(qw) == PATTERN_WORD_COUNT == 32
+    # The signed path is actually exercised (some word has the high bit set).
+    assert any(w < 0 for w in qw + tw)
+
+    # Containment: benzene's words ⊆ phenol's words under signed AND.
+    for q, t in zip(qw, tw):
+        if q != 0:
+            assert (t & q) == q
+    # Non-containment: at least one benzene word is NOT carried by hexane, so
+    # the screen correctly rejects it.
+    assert any(q != 0 and (o & q) != q for q, o in zip(qw, ow))
