@@ -55,10 +55,8 @@ from rdkit import Chem
 from ..chem.fingerprint import (
     PATTERN_WORD_COUNT,
     bits_to_bytes,
-    bytes_to_bits,
     morgan_bits,
     pattern_words,
-    tanimoto,
 )
 from .backend import ChemSearchBackend, Component, Hit, rollup_by_regid
 
@@ -87,6 +85,10 @@ class PortableFPBackend(ChemSearchBackend):
         # Portable: the SQL layer still stores only text/int/BLOB; this is an
         # in-process accelerator (memory cost ~ one RDKit mol per component).
         self._mols: dict[int, Chem.Mol] = {}
+        # Morgan FP as a big int per component id — the similarity precise
+        # phase computes |A∩B| with (a & b).bit_count() instead of building a
+        # Python bit-set per candidate. Same in-process-cache pattern as _mols.
+        self._fp_ints: dict[int, int] = {}
         # Diagnostic: number of screening candidates from the most recent
         # substructure query (before the precise RDKit phase). Used by the
         # benchmark to report screening precision.
@@ -104,6 +106,8 @@ class PortableFPBackend(ChemSearchBackend):
         canonical = Chem.MolToSmiles(mol)
         mbits = morgan_bits(mol)
         words = pattern_words(mol)
+        morgan_blob = bits_to_bytes(mbits)
+        self._fp_ints[cid] = int.from_bytes(morgan_blob, "big")
         self._pending.append(
             (
                 cid,
@@ -115,7 +119,7 @@ class PortableFPBackend(ChemSearchBackend):
                 component.mol_weight,
                 mol.GetNumHeavyAtoms(),
                 *words,
-                bits_to_bytes(mbits),
+                morgan_blob,
                 len(mbits),
             )
         )
@@ -221,7 +225,7 @@ class PortableFPBackend(ChemSearchBackend):
         qmol = Chem.MolFromSmiles(query_smiles)
         if qmol is None:
             return []
-        qbits = set(morgan_bits(qmol))
+        qbits = morgan_bits(qmol)
         qp = len(qbits)
         if qp == 0 or threshold <= 0:
             lo, hi = 0, 1 << 30
@@ -233,14 +237,26 @@ class PortableFPBackend(ChemSearchBackend):
         with self._lock:
             cur = self._conn.cursor()
             cur.execute(
-                "SELECT regid, mixture_id, comp_index, mol_formula, mol_weight, "
-                "morgan_blob FROM component WHERE morgan_popcount BETWEEN ? AND ?",
+                "SELECT id, regid, mixture_id, comp_index, mol_formula, "
+                "mol_weight, morgan_blob, morgan_popcount "
+                "FROM component WHERE morgan_popcount BETWEEN ? AND ?",
                 (lo, hi),
             )
             rows = cur.fetchall()
+
+        # Precise Tanimoto on big ints: |A∩B| = (a & b).bit_count(). Identical
+        # arithmetic to the set-based reference (int ratio), but ~100× cheaper
+        # per candidate than materialising a Python bit-index set from the
+        # BLOB. The app-layer _fp_ints cache avoids even the from_bytes step.
+        qint = int.from_bytes(bits_to_bytes(qbits), "big")
         hits: list[Hit] = []
-        for regid, mixture_id, comp_index, formula, weight, blob in rows:
-            score = tanimoto(qbits, set(bytes_to_bits(blob)))
+        for cid, regid, mixture_id, comp_index, formula, weight, blob, cpop in rows:
+            cint = self._fp_ints.get(cid)
+            if cint is None:  # external connection / cache miss
+                cint = int.from_bytes(blob, "big")
+            inter = (qint & cint).bit_count()
+            union = qp + cpop - inter
+            score = inter / union if union else (1.0 if qp == cpop == 0 else 0.0)
             if score >= threshold:
                 hits.append(
                     Hit(regid, mixture_id, formula, weight, comp_index, score)

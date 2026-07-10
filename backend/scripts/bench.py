@@ -104,6 +104,7 @@ def build_backend(scale: int) -> tuple[PortableFPBackend, float]:
             dup = (cid, f"DUP{cid:06d}", f"DM{cid:06d}") + src[3:]
             backend._pending.append(dup)  # noqa: SLF001
             backend._mols[cid] = backend._mols[src[0]]  # shared mol object
+            backend._fp_ints[cid] = backend._fp_ints[src[0]]  # shared FP int
             idx += 1
 
     backend.build()
@@ -174,7 +175,8 @@ def render(results: list[dict], prop_ms: dict) -> str:
     for r in results:
         verdict = "✅" if r["sub_overall_p95"] <= 3000 else "❌"
         lines += [
-            f"## Substructure — {r['scale']:,}건 (빌드 {r['build_s']:.1f}s, 워밍업 {WARMUP} + 쿼리당 {r['reps']}회)",
+            f"## Substructure — {r['scale']:,}건 (빌드 {r['build_s']:.1f}s, 워밍업 {WARMUP} + 쿼리당 {r['reps']}회"
+            + (" — SPEC 기본 100회 미만, 소요시간 사유로 축소·명시)" if r["reps"] < DEFAULT_REPS else ")"),
             "",
             f"최악 쿼리 p95 = **{r['sub_overall_p95']:.1f} ms** (목표 ≤ 3,000 ms {verdict}) · 쿼리 p50 중앙값 {r['sub_median_p50']:.1f} ms",
             "",
@@ -226,17 +228,23 @@ def bench_properties(reps: int = 200) -> dict:
 
 def main() -> None:
     out = sys.argv[1] if len(sys.argv) > 1 else "../reports/bench.md"
-    scales = (
-        [int(x) for x in sys.argv[2].split(",")]
-        if len(sys.argv) > 2
-        else [5342, 50000, 500000]
-    )
-    reps = int(sys.argv[3]) if len(sys.argv) > 3 else DEFAULT_REPS
+    # Scales as "N" or "N:reps" (e.g. 5342:100,50000:100,500000:20). The actual
+    # rep count per scale is printed in the report — protocol deviations from
+    # the default 100 are visible, never silent.
+    spec = sys.argv[2] if len(sys.argv) > 2 else "5342,50000,500000"
+    default_reps = int(sys.argv[3]) if len(sys.argv) > 3 else DEFAULT_REPS
+    scales: list[tuple[int, int]] = []
+    for part in spec.split(","):
+        if ":" in part:
+            n, r = part.split(":")
+            scales.append((int(n), int(r)))
+        else:
+            scales.append((int(part), default_reps))
 
     prop_ms = bench_properties()
     results = []
-    for scale in scales:
-        print(f"[bench] scale={scale:,} …", flush=True)
+    for scale, reps in scales:
+        print(f"[bench] scale={scale:,} reps={reps} …", flush=True)
         r = bench_scale(scale, reps)
         print(
             f"[bench]   worst sub p95={r['sub_overall_p95']:.1f}ms "
