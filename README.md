@@ -52,7 +52,7 @@ make frontend     # Vite     :3000   (다른 터미널)
 ## 테스트 · 벤치 · 검증
 
 ```bash
-make test         # pytest (39) + 프론트 타입체크
+make test         # pytest (74) + vitest (9) + 프론트 타입체크
 make bench        # 성능 실측 → reports/bench.md
 make parity       # SDF 정합 → reports/parity.md
 make load-sdf     # data/*.sdf → SQLite 색인

@@ -110,7 +110,7 @@ mmol 산출 확인. 스크린샷 `reports/demo-stoich.png`.
 
 | 항목 | 상태 | 비고 |
 |---|---|---|
-| 재단 실측 SDF 정합 검증 | ⚠️ 미완 | 실데이터 부재. 파이프라인·리포트는 완성(`make parity`), 픽스처로만 실행됨. `reports/parity.md`. |
+| 재단 실측 SDF 정합 검증 | ⚠️ 미완 | 실데이터 부재. 로더는 **문서화된 다중컴포넌트 임베드 스키마**(`VW_MIXTURE_STRUCTURE.STRUCTURE (n)`)를 처리하고 픽스처로 검증됨. 실제 태그 접미사 규칙만 실데이터로 최종 확인 필요. `reports/parity.md`. |
 | Oracle SE 실검증 | ⚠️ 미완 | 이식형 백엔드를 SQLite 로 검증. Oracle 실계측 필요. |
 | Docker 스택 기동 | ⚠️ 본 환경 미기동 | compose/Dockerfile 작성·검증 완료, 데몬 부재로 미기동. |
 | Sign&Close, DN 등록, 인증/권한, TSA | — | 스코프 외 (명세 대체). |
@@ -120,7 +120,7 @@ mmol 산출 확인. 스크린샷 `reports/demo-stoich.png`.
 ## 8. 재현 방법
 
 ```bash
-make test        # pytest(51) + 프론트 타입체크
+make test        # pytest(74) + vitest(9) + 프론트 타입체크
 make bench       # 성능 실측 → reports/bench.md
 make parity      # SDF 정합 → reports/parity.md
 make dev         # docker compose (backend RDKit + frontend)
