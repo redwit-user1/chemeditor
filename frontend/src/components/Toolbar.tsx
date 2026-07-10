@@ -12,6 +12,7 @@ interface ToolbarProps {
   ketcher: Ketcher | null;
   onStatus: (message: string) => void;
   onError: (message: string) => void;
+  onToggleSearch: () => void;
 }
 
 /** A dropdown menu that closes when clicking outside of it. */
@@ -53,7 +54,12 @@ function Menu({
   );
 }
 
-export default function Toolbar({ ketcher, onStatus, onError }: ToolbarProps) {
+export default function Toolbar({
+  ketcher,
+  onStatus,
+  onError,
+  onToggleSearch,
+}: ToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const disabled = !ketcher;
 
@@ -180,6 +186,15 @@ export default function Toolbar({ ketcher, onStatus, onError }: ToolbarProps) {
           disabled={disabled}
         >
           Paste
+        </button>
+
+        <button
+          type="button"
+          className="flat-btn"
+          onClick={onToggleSearch}
+          disabled={disabled}
+        >
+          Search…
         </button>
       </div>
 

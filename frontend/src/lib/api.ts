@@ -43,3 +43,51 @@ export async function fetchProperties(
   }
   return (await res.json()) as PropertiesResponse;
 }
+
+export type QueryType = 'exact' | 'substructure' | 'similarity';
+
+export interface SearchHit {
+  regid: string;
+  mixture_id: string | null;
+  mol_formula: string | null;
+  mol_weight: number | null;
+  score: number | null;
+  matched_component: number | null;
+}
+
+export interface SearchResponse {
+  ok: boolean;
+  backend: string;
+  query_type: string;
+  count: number;
+  hits: SearchHit[];
+  error: string | null;
+}
+
+export async function searchStructures(
+  query: string,
+  queryType: QueryType,
+  threshold = 0.7,
+): Promise<SearchResponse> {
+  const res = await fetch(`${API_BASE}/api/search`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query, query_type: queryType, threshold }),
+  });
+  if (!res.ok) {
+    throw new Error(`Search API returned ${res.status}`);
+  }
+  return (await res.json()) as SearchResponse;
+}
+
+export interface HealthResponse {
+  status: string;
+  index_size: number;
+  index_source: string;
+  search_backend: string;
+}
+
+export async function fetchHealth(): Promise<HealthResponse> {
+  const res = await fetch(`${API_BASE}/api/health`);
+  return (await res.json()) as HealthResponse;
+}
