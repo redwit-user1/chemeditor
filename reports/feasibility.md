@@ -1,142 +1,123 @@
 # 구현 실현가능성 회신서 (reports/feasibility.md)
 
-**대상:** 대구경북첨단의료산업진흥재단(KMEDIhub) 신약개발지원센터 전자연구노트(ELN) 대체
-**질문:** PerkinElmer Signals ELN + ChemDraw SDK 를 **오픈소스 화학정보학 스택**으로 대체 가능한가?
-**답:** **핵심 기능은 구현·검증되었다.** 이 PoC 는 그 근거를 코드와 실측으로 제시한다.
+**수신:** KMEDIhub 정보전산팀장 · 원장
+**건:** PerkinElmer Signals ELN + CBOE 대체 시 화학 엔진의 오픈소스 스택(Ketcher + RDKit) 구현 가능 여부
+**근거:** 본 문서의 모든 수치는 `reports/bench.md`(실측 성능)와 `reports/parity.md`(정합 검증)에서 가져왔다.
+그 두 파일에 없는 숫자는 쓰지 않았다.
 
 ---
 
-## 1. 결론 요약
+## 결론 요약
 
-| 재단 관심사 | 결과 |
-|---|---|
-| 구조식 붙여넣기 → 분자식·분자량 자동 계산 (재단 지목 "메인 기능") | ✅ **구현·검증** (RDKit) |
-| ChemDraw SDK 의존 제거 | ✅ 전 계산 경로에서 ChemDraw/Indigo 미사용 |
-| 구조 에디터 (그리기/편집) | ✅ Ketcher 임베드 |
-| 화학 검색 (substructure/exact/similarity) | ✅ 구현, 이식형 백엔드 실측 |
-| Oracle SE 이식 가능성 | ✅ 이식형 백엔드로 설계·검증 (표준 SQL only) |
-| Reaction Stoichiometry 자동 계산 | ✅ **구현·검증** (§6-A) |
-| Reagent Inventory 검색 팝업 | ✅ **구현·검증** (§6-B) |
-| SDF import/export | ✅ 에디터 입출력 + 백엔드 대량 로더 |
-
-> ChemDraw SDK 없이 오픈소스 스택으로 ELN **핵심 화학 기능(P0 6개)을 전부 구현**했다.
-> 남는 것은 기술 리스크가 아니라 운영 검증(실데이터 정합, Oracle 실계측)이다. §6·§7.
+| # | 질문 (SPEC §9) | 답 | 실측 근거 |
+|---|---|---|---|
+| 1 | ChemDraw SDK 없이 붙여넣기 → 즉시 물성 계산? | **예** | E2E p50 404 ms / p95 439 ms |
+| 2 | Oracle SE 제약 하 substructure 3초 내? (5,342건) | **예** | 최악 쿼리 p95 50.1 ms |
+| 3 | 5,342 → 50k → 500k 확장 임계점? | **~30만 후보에서 3s 초과** | 500k 광역 쿼리 p95 4,216 ms ❌ |
+| 4 | RDKit 계산 == 기존 CBOE 데이터? | **파이프라인 검증 완료, 실데이터 미확보** | 픽스처 6/7 일치 + 불일치 사유 분류 |
+| 5 | `.cdx` 파서 없이 ChemDraw 붙여넣기 동작? | **예** | text/plain 경로, E2E 검증 |
+| 6 | 남는 리스크? | UX 저항 (정량화 불가) + §6 상술 | — |
 
 ---
 
-## 2. 핵심 기능 — 붙여넣기 즉시 물성 계산
+## 1. ChemDraw SDK 없이 "붙여넣기 → 즉시 물성 계산"이 되는가
 
-재단이 "메인 기능"으로 지목한 항목. **동작하며 검증되었다.**
+**예. E2E p50 404 ms / p95 439 ms** (Chromium 30회, 150 ms 디바운스 포함;
+붙여넣기 → Ketcher 렌더 → HTTP → RDKit 계산 → 화면 갱신 전 구간).
+백엔드 계산 자체는 p95 **0.31 ms**. 목표 ≤ 1초를 여유 있게 만족한다.
 
-- 사용자가 구조를 그리거나 SMILES/MOL 을 붙여넣으면(⌘/Ctrl+V), 하단 패널이
-  **분자식·분자량·정확질량**을 즉시 표시한다.
-- 계산 주체는 **RDKit** (FastAPI 백엔드). Ketcher/Indigo 의 값이 아니다.
-- 구조 변경마다 디바운스 후 `/api/properties` 를 호출해 갱신한다.
+표시 항목은 기존 시스템과 동일하다: Mol Formula, Mol Weight, Exact Mass, Heavy Atoms.
+계산 주체는 전부 RDKit(BSD) — ChemDraw SDK도, Ketcher 내장 엔진(Indigo)도 수치에
+관여하지 않는다. 재단 합성노트 KJA-025-84의 stoichiometry 표(4.54 mmol / 0.464 g /
+0.428 ml / 0.691 g / 37.0% / 0.908 M)가 **인쇄 자릿수까지** 재현됨을 테스트로 고정했다.
 
-**검증 (Chromium E2E):** 아스피린 입력 → `C9H8O4`, `180.16 g/mol`, 정확질량 `180.0423`.
-스크린샷: `reports/demo-core.png`.
+## 2. Oracle SE 제약(Cartridge 불가) 하에서 substructure 검색이 3초 내인가
 
-계산 정확성은 pytest 로 고정 (벤젠/카페인/아스피린/글루코스 등, ±0.01 허용오차).
+**예 — 재단 현재 규모(5,342건)에서 최악 쿼리 p95 50.1 ms** (30개 대표 쿼리 × 100회,
+`PortableFPBackend`). Similarity p95 14.6 ms.
 
----
+이식 경로의 구성: fingerprint를 32개의 signed 64bit 정수 컬럼으로 분해 저장하고,
+표준 SQL(`WHERE (fp_i & :q) = :q` — Oracle `BITAND`)로 스크리닝한 뒤 앱 레이어
+RDKit이 정밀 확정한다. `bit_count`/`ARRAY`/`@>`/`%` 등 Postgres 전용 문법은 없다.
 
-## 3. ChemDraw 호환 — 클립보드 텍스트 경로
+**정합성 보증:** 30개 쿼리 전부에서 브루트포스 RDKit 정답지와 결과 집합
+**완전 일치**(부분집합 아님, 스크리닝 재현율 100%)를 테스트 게이트로 고정했다.
 
-`.cdx` 바이너리 파서는 **의도적으로 만들지 않았다.** ChemDraw 는 클립보드에
-`text/plain` 으로 SMILES/MOL 도 올린다. Paste 경로가 그 텍스트를 받아 Ketcher 에
-넣고 RDKit 이 처리한다. 바이너리 역공학 불필요 — 유지보수 리스크를 제거한다.
+> 기술 정정 1건: SPEC §4.3의 "Morgan FP로 substructure 스크리닝" 지시는 화학적으로
+> 성립하지 않아(부분구조 포함성 부재 → false negative) 스크리닝 전용으로 설계된
+> PatternFingerprint로 교체했다. 상세: `docs/DECISIONS.md`.
 
-SDF/MOL/SMILES/RXN/KET 가져오기·내보내기 지원. 재단 SDF 대량 적재는 백엔드 로더
-(`app/sdf/loader.py`) 가 담당하며, MOL 블록(V2000)을 정본으로, `STRUCTUREAGGREGATION`
-Base64 는 `raw_cdx` 로 보존만 하고 **파싱하지 않는다.**
+## 3. 5,342 → 50,000 → 500,000 확장 시 어디서 깨지는가
 
----
+| 규모 | Substructure 최악 p95 | Similarity p95 | ≤3s |
+|---|---|---|---|
+| 5,342 | 50.1 ms | 14.6 ms | ✅ |
+| 50,000 | 427.0 ms | 149.7 ms | ✅ |
+| 500,000 | **4,216.4 ms** | 1,795.8 ms | **❌** |
 
-## 4. DB 이식성 — 이 PoC 의 아키텍처 핵심
+**미달을 미달로 적는다.** 500,000건에서 benzene(후보 456,448건)·toluene(339,626건)
+두 광역 쿼리가 3초를 넘는다. 병목은 스크리닝이 아니라 **정밀 매칭 단계가 후보 수에
+선형**(약 9 µs/후보)이라는 점이다 — 즉 임계점은 "규모"가 아니라 **후보 약 30만 건**이며,
+50만 건 라이브러리에서도 선택적 쿼리(phenol 이하 28개)는 1.2~2.4초에 그친다.
 
-운영 DB 는 Oracle SE 이며 RDKit 카트리지를 못 쓴다. 따라서 모든 화학 검색을
-`ChemSearchBackend` 인터페이스 뒤에 두고 **구현체 2개**를 유지한다.
+개선안(미구현, 설계만 제시): ① 결과 상한(limit) 도달 시 정밀 매칭 조기 종료 —
+실제 UI는 200건만 표시하므로 광역 쿼리일수록 효과가 큼, ② 후보 정밀 매칭 병렬화,
+③ ring-count 등 추가 프리필터. 참고로 재단 라이브러리는 현재 5,342건이고 500k는
+94배 성장 시나리오다. 500k 측정은 소요시간 사유로 쿼리당 20회 반복(기본 100회
+미만)이며 표에 명시했다.
 
-- **`PgCartridgeBackend`** — Postgres + RDKit 카트리지 (개발/벤치 기준선).
-- **`PortableFPBackend`** — 표준 SQL + BLOB 만 사용. **이것이 Oracle 로 이식될 실제 구현이다.**
-  - Substructure: pattern-fingerprint 역색인 → `GROUP BY … HAVING COUNT` 스크리닝 → 앱단 RDKit 정밀 매칭.
-  - Similarity: Morgan FP popcount `BETWEEN` 범위 스크리닝 → 앱단 Tanimoto 정밀 계산.
-  - Exact: 정규 SMILES 동등 비교.
-  - **금지 문법 미사용:** `bit_count`, `ARRAY`, `@>`, `%` 없음. `IN`/`GROUP BY`/`HAVING`/`BETWEEN`/BLOB 만 — Oracle SE 로 그대로 이동.
+## 4. RDKit 계산값이 기존 CBOE 데이터와 일치하는가
 
-**동치성 검증:** 두 백엔드(및 이식형 백엔드)는 브루트포스 RDKit 기준 결과와
-**완전 일치**해야 하며, exact/substructure/similarity 전 쿼리에 대해 테스트로 고정되어 있다.
-스크리닝 무손실도 검증한다. (`tests/test_search_equivalence.py`)
+**실데이터 미확보 — 검증 파이프라인은 완성, 수치는 픽스처 기준.** 재단 실측 SDF가
+본 저장소에 없어(비공개) 전 레코드 대조는 실행하지 못했다. 파이프라인은 재단 스키마
+(다중 컴포넌트 임베드 `VW_MIXTURE_STRUCTURE.STRUCTURE (n)` 레이아웃, `STRUCTUREAGGREGATION`
+보존·비파싱)를 처리하며, 픽스처에서 **의도적으로 주입한 불일치 2건(염 counter-ion 누락,
+저장값 오류)을 정확히 사유와 함께 검출**했다 (6/7 일치, `reports/parity.md`).
+허용오차는 MolWt ±0.01, MolFormula 완전 일치로 고정했고 조정하지 않는다.
+실측 SDF를 `data/`에 넣고 `make parity` 실행이 필요하다 — **이것이 회신 확정 전
+반드시 남은 한 단계다.**
 
-> 이 동치성이 유지되는 한 "Postgres 로 개발하고 Oracle 로 이식한다"는 주장이 성립한다.
+## 5. ChemDraw 클립보드 붙여넣기가 `.cdx` 파서 없이 동작하는가
 
-**한계:** 본 환경에는 Docker/Oracle 이 없어 이식형 백엔드를 **SQLite** 로 실검증했다.
-SQLite 는 사용한 SQL 부분집합을 모두 지원하므로 이식성의 강한 근거이나, **Oracle SE
-실계측은 별도 필요**하다 (§6).
+**예.** ChemDraw는 복사 시 클립보드에 `text/plain`으로 SMILES 또는 MOL 텍스트를
+함께 올린다. 본 구현의 paste 경로는 그 텍스트를 받아 RDKit이 파싱한다 — `.cdx`
+바이너리 코드 경로는 존재하지 않는다(코드베이스에서 확인 가능). SMILES/MOL 텍스트
+붙여넣기 → 물성 계산은 E2E로 검증했다(§1의 404 ms가 그 측정). 한계의 정직한 기재:
+**실제 ChemDraw 데스크톱이 설치된 환경에서의 상호운용 확인은 본 PoC 환경(폐쇄
+컨테이너)에서 수행하지 못했다.** MOL 블록 경로가 동일하므로 리스크는 낮게 보나,
+파일럿 첫 주에 실기기 확인을 권장한다.
 
----
+## 6. 남는 리스크는 무엇인가
 
-## 5. 성능 (실측)
+**① 연구원의 그리기 UX 저항 — 정량화 불가.** Ketcher는 기능적으로 충분하지만
+(그리기·템플릿·reaction 모드·단축키), ChemDraw에 10년 익은 손과는 다르다. 이것은
+벤치마크로 측정할 수 없는 종류의 리스크이며, 측정할 수 없다는 사실을 그대로 적는다.
+"교육으로 해결 가능합니다" 같은 근거 없는 낙관은 쓰지 않는다. 완화 수단은 파일럿
+부서 우선 적용과 병행 사용 기간 확보뿐이다.
 
-`PortableFPBackend` 기준, 합성 라이브러리 **5,342 컴포넌트**, SQLite in-memory.
-(재단 실측 SDF 부재 → 동일 규모 결정적 합성셋. 상세 `reports/bench.md`.)
+**② 재단이 지금 겪는 문제의 본질은 벤더 종속이다.** PerkinElmer(현 Revvity)
+라이선스 종속이 서비스 중단으로 이어진 것이 이 사업의 출발점이다. 그 해결책으로
+다시 Revvity의 ChemDraw SDK에 종속되는 것은 **같은 리스크의 재발**이다. 본 PoC의
+스택(Ketcher Apache-2.0 / RDKit BSD)은 소스가 공개되어 있어 공급 중단이라는 개념
+자체가 성립하지 않는다. — 이 논점을 제시하는 우리가 그 대안을 제공하는 당사자라는
+**이해상충은 숨기지 않는다.** 판단 근거는 전부 본 저장소의 실측·테스트로 공개되어
+있으며, 제3자가 `make test` / `make bench`로 재현할 수 있다.
 
-| 검색 | 목표 p95 | 실측 p95 |
-|---|---|---|
-| Substructure | ≤ 3,000 ms | ~412 ms ✅ |
-| Similarity | ≤ 3,000 ms | ~105 ms ✅ |
-
-목표를 크게 만족한다. 단, 합성 데이터 분포는 실측과 다르고 SQLite 기준이므로
-실측 SDF + Oracle 환경에서 재측정이 필요하다.
-
----
-
-## 6. P0 기능 구현 상세
-
-### 6-A. Reaction Stoichiometry (구현·검증)
-
-캔버스의 반응식을 읽어 `/api/reaction` 이 RDKit 으로 각 반응물/생성물의 분자식·분자량을
-산출한다. UI 표는 기준 시약의 양(mg)과 각 반응물 당량으로 mmol·질량·이론수율(100%)을
-계산한다. Chromium E2E: 아세트산+에탄올→에틸아세테이트, 100mg 기준에서 전 화학종 1.665
-mmol 산출 확인. 스크린샷 `reports/demo-stoich.png`.
-
-### 6-B. Reagent Inventory (구현·검증)
-
-이름/CAS 또는 캔버스 구조(부분구조)로 시약을 검색해 캔버스에 삽입한다
-(`/api/reagents`). 대표 시약 37종 수록(운영 시 재고 DB 연동). E2E: "pyridine" 검색 →
-삽입 → 캔버스에 피리딘 반영 확인. 스크린샷 `reports/demo-reagents.png`.
-
-## 7. 잔여 작업 (운영 검증 — 정직 기재)
-
-| 항목 | 상태 | 비고 |
-|---|---|---|
-| 재단 실측 SDF 정합 검증 | ⚠️ 미완 | 실데이터 부재. 로더는 **문서화된 다중컴포넌트 임베드 스키마**(`VW_MIXTURE_STRUCTURE.STRUCTURE (n)`)를 처리하고 픽스처로 검증됨. 실제 태그 접미사 규칙만 실데이터로 최종 확인 필요. `reports/parity.md`. |
-| Oracle SE 실검증 | ⚠️ 미완 | 이식형 백엔드를 SQLite 로 검증. Oracle 실계측 필요. |
-| Docker 스택 기동 | ⚠️ 본 환경 미기동 | compose/Dockerfile 작성·검증 완료, 데몬 부재로 미기동. |
-| Sign&Close, DN 등록, 인증/권한, TSA | — | 스코프 외 (명세 대체). |
+**③ 운영 환경 실검증 잔여.** 이식형 백엔드는 SQLite로 실검증했고(사용 SQL 부분집합은
+Oracle SE와 호환) Postgres+Cartridge 기준선은 `PG_DSN` 제공 시 동일 동치성 스위트에
+편입되도록 준비되어 있으나, **Oracle SE 실계측과 Docker 스택 실기동은 본 환경(데몬
+부재)에서 수행하지 못했다.** 실데이터 parity(§4)와 함께 파일럿 착수 시 최우선 항목이다.
 
 ---
 
-## 8. 재현 방법
+## 재현 방법
 
 ```bash
-make test        # pytest(74) + vitest(9) + 프론트 타입체크
-make bench       # 성능 실측 → reports/bench.md
-make parity      # SDF 정합 → reports/parity.md
-make dev         # docker compose (backend RDKit + frontend)
-# 또는 Docker 없이:
-make backend     # FastAPI :8000
-make frontend    # Vite :3000
+make test    # pytest 175 + vitest + tsc
+make bench   # 30쿼리 × 3규모 실측 → reports/bench.md
+make parity  # 실측 SDF 전수 대조 → reports/parity.md (data/*.sdf 필요)
+make dev     # docker compose — 데모 스택
 ```
 
----
-
-## 9. 종합 판단
-
-- **재단 지목 메인 기능은 오픈소스(RDKit)로 구현·검증되었다.**
-- **Oracle 이식성**은 아키텍처(이식형 백엔드 + 동치성 테스트)로 확보했고, 실측 성능은
-  목표를 만족한다.
-- **P0 화학 기능 6종을 모두 구현·검증**했다(물성 자동계산, 에디터, 반응 당량표,
-  3종 검색·양 백엔드, Reagent Inventory, SDF 입출력).
-- 남는 것은 §7 운영 검증(재단 실데이터 정합, Oracle SE 실계측, Docker 실기동)이며,
-  이는 **기술 리스크가 아니라 환경·데이터 확보 문제**로 판단한다.
+산출물: 데모 앱(스크린샷 `reports/demo-v1.png`, `demo-stoich-v1.png`,
+`demo-search-v1.png`) · 설계 결정 기록 `docs/DECISIONS.md`.
