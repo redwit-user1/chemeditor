@@ -115,3 +115,5 @@ make load-sdf   # data/*.sdf → DB 적재
 - `reports/bench.md` — 실측 성능
 - `reports/parity.md` — 데이터 정합 검증
 - 데모 가능한 로컬 앱
+
+숫자가 목표에 못 미치면 **미달로 적는다.** 통과하도록 목표를 조정하지 않는다.
