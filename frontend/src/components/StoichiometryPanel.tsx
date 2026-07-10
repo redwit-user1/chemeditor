@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Ketcher } from 'ketcher-core';
 import { parseReaction, type Species } from '../lib/api';
+import { computeStoichiometry } from '../lib/stoichiometry';
 
 interface StoichiometryPanelProps {
   ketcher: Ketcher | null;
@@ -56,8 +57,9 @@ export default function StoichiometryPanel({
   };
 
   // Reference reagent = the first reactant. Its mmol drives the table.
-  const refMol = reactants[0]?.species.mol_weight ?? 0;
-  const refMmol = refMol > 0 ? refMass / refMol : 0;
+  const rows = computeStoichiometry(reactants, products, refMass);
+  const reactantRows = rows.filter((r) => r.role === 'reactant');
+  const productRows = rows.filter((r) => r.role === 'product');
 
   const setEquiv = (i: number, equiv: number) =>
     setReactants((rows) =>
@@ -113,51 +115,43 @@ export default function StoichiometryPanel({
               </tr>
             </thead>
             <tbody>
-              {reactants.map((r, i) => {
-                const mmol = i === 0 ? refMmol : refMmol * r.equiv;
-                const mass = mmol * r.species.mol_weight;
-                return (
-                  <tr key={`r${i}`}>
-                    <td>
-                      <span className="sp-role sp-react">R</span>
-                      {r.species.mol_formula}
-                    </td>
-                    <td>{r.species.mol_weight.toFixed(2)}</td>
-                    <td>
-                      {i === 0 ? (
-                        <span className="ref-tag">ref</span>
-                      ) : (
-                        <input
-                          type="number"
-                          className="equiv-input"
-                          min={0}
-                          step={0.1}
-                          value={r.equiv}
-                          onChange={(e) => setEquiv(i, Number(e.target.value))}
-                        />
-                      )}
-                    </td>
-                    <td>{mmol.toFixed(3)}</td>
-                    <td>{mass.toFixed(1)}</td>
-                  </tr>
-                );
-              })}
-              {products.map((p, i) => {
-                const mmol = refMmol; // 1:1 theoretical
-                const mass = mmol * p.mol_weight;
-                return (
-                  <tr key={`p${i}`} className="product-row">
-                    <td>
-                      <span className="sp-role sp-prod">P</span>
-                      {p.mol_formula}
-                    </td>
-                    <td>{p.mol_weight.toFixed(2)}</td>
-                    <td>—</td>
-                    <td>{mmol.toFixed(3)}</td>
-                    <td>{mass.toFixed(1)}</td>
-                  </tr>
-                );
-              })}
+              {reactantRows.map((r, i) => (
+                <tr key={`r${i}`}>
+                  <td>
+                    <span className="sp-role sp-react">R</span>
+                    {r.formula}
+                  </td>
+                  <td>{r.mw.toFixed(2)}</td>
+                  <td>
+                    {r.isReference ? (
+                      <span className="ref-tag">ref</span>
+                    ) : (
+                      <input
+                        type="number"
+                        className="equiv-input"
+                        min={0}
+                        step={0.1}
+                        value={reactants[i].equiv}
+                        onChange={(e) => setEquiv(i, Number(e.target.value))}
+                      />
+                    )}
+                  </td>
+                  <td>{r.mmol.toFixed(3)}</td>
+                  <td>{r.massMg.toFixed(1)}</td>
+                </tr>
+              ))}
+              {productRows.map((p, i) => (
+                <tr key={`p${i}`} className="product-row">
+                  <td>
+                    <span className="sp-role sp-prod">P</span>
+                    {p.formula}
+                  </td>
+                  <td>{p.mw.toFixed(2)}</td>
+                  <td>—</td>
+                  <td>{p.mmol.toFixed(3)}</td>
+                  <td>{p.massMg.toFixed(1)}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         )}

@@ -1,4 +1,5 @@
 import type { Properties } from '../lib/api';
+import { splitFormula } from '../lib/formula';
 
 interface PropertyBarProps {
   properties: Properties | null;
@@ -88,8 +89,7 @@ function num(v: number | undefined): string {
 
 /** Render subscripts in a molecular formula (C6H6 → C₆H₆-ish via <sub>). */
 function formatFormula(formula: string): React.ReactNode {
-  const parts = formula.split(/(\d+)/);
-  return parts.map((part, i) =>
-    /^\d+$/.test(part) ? <sub key={i}>{part}</sub> : <span key={i}>{part}</span>,
+  return splitFormula(formula).map((seg, i) =>
+    seg.isNumber ? <sub key={i}>{seg.text}</sub> : <span key={i}>{seg.text}</span>,
   );
 }
