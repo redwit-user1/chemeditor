@@ -60,8 +60,30 @@ def _components_from_sdf(paths: list[str]) -> list[Component]:
     return components
 
 
-def build_index() -> tuple[ChemSearchBackend, int, str]:
-    """Return ``(backend, n_indexed, source_label)``."""
+def _make_backend() -> ChemSearchBackend:
+    """Select the backend via ``CHEM_SEARCH_BACKEND`` (SPEC §5).
+
+    Default ``portable_fp`` — the Oracle-portable path is what ships and what
+    the feasibility numbers are measured on. ``pg_cartridge`` requires PG_DSN.
+    """
+    choice = os.environ.get("CHEM_SEARCH_BACKEND", "portable_fp")
+    if choice == "pg_cartridge":
+        dsn = os.environ.get("PG_DSN")
+        if not dsn:
+            raise RuntimeError("CHEM_SEARCH_BACKEND=pg_cartridge requires PG_DSN")
+        from .pg_cartridge import PgCartridgeBackend
+
+        return PgCartridgeBackend(dsn)
+    if choice != "portable_fp":
+        raise RuntimeError(f"unknown CHEM_SEARCH_BACKEND: {choice!r}")
+    return PortableFPBackend()
+
+
+def build_index() -> tuple[ChemSearchBackend, int, str, dict[str, list[Component]]]:
+    """Return ``(backend, n_indexed, source_label, components_by_regid)``.
+
+    The component store backs ``GET /compounds/{reg_id}`` and SDF export.
+    """
     target = os.environ.get("CHEM_INDEX_SDF", "")
     paths = _sdf_paths(target) if target else []
     source = target
@@ -70,8 +92,10 @@ def build_index() -> tuple[ChemSearchBackend, int, str]:
         source = "bundled fixture"
 
     components = _components_from_sdf(paths)
-    backend = PortableFPBackend()
+    backend = _make_backend()
+    store: dict[str, list[Component]] = {}
     for comp in components:
         backend.add_component(comp)
+        store.setdefault(comp.regid, []).append(comp)
     backend.build()
-    return backend, len(components), source
+    return backend, len(components), source, store

@@ -1,53 +1,107 @@
-"""Pydantic request/response models for the API surface."""
+"""Pydantic request/response models for the /api/v1 surface (SPEC §5)."""
 
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
+
+# ---------- chem/properties ----------
 
 class StructureRequest(BaseModel):
-    """A text structure (SMILES or MDL molfile) to analyse."""
+    """A text structure to analyse. SPEC names the field ``molblock``; the
+    paste path also sends SMILES, so ``structure`` is accepted as an alias."""
 
-    structure: str = Field(..., description="SMILES or MDL molfile text")
+    molblock: str | None = None
+    structure: str | None = None
 
+    @model_validator(mode="after")
+    def _one_of(self) -> "StructureRequest":
+        if not (self.molblock or self.structure):
+            raise ValueError("either 'molblock' or 'structure' is required")
+        return self
 
-class PropertiesPayload(BaseModel):
-    mol_formula: str
-    mol_weight: float
-    exact_mol_weight: float
-    num_heavy_atoms: int
-    num_rings: int
-    num_h_donors: int
-    num_h_acceptors: int
-    tpsa: float
-    logp: float
+    @property
+    def text(self) -> str:
+        return self.molblock or self.structure or ""
 
 
 class PropertiesResponse(BaseModel):
     ok: bool
     input_format: str
-    properties: PropertiesPayload | None = None
+    formula: str | None = None
+    mol_weight: float | None = None
+    exact_mass: float | None = None
+    heavy_atoms: int | None = None
+    num_rings: int | None = None
+    num_h_donors: int | None = None
+    num_h_acceptors: int | None = None
+    tpsa: float | None = None
+    logp: float | None = None
+    sanitized: bool = False
+    elapsed_ms: float = 0.0
     error: str | None = None
 
 
-class ReagentHit(BaseModel):
-    name: str
-    cas: str
-    smiles: str
-    mol_formula: str
-    mol_weight: float
+# ---------- chem/convert ----------
+
+class ConvertRequest(BaseModel):
+    input: str
+    from_: str = Field(..., alias="from_", description="'mol'|'smiles'|'inchi'")
+    to: str = Field(..., description="'mol'|'smiles'|'inchi'|'inchikey'")
+
+    model_config = {"populate_by_name": True}
 
 
-class ReagentResponse(BaseModel):
+class ConvertResponse(BaseModel):
     ok: bool
-    count: int
-    reagents: list[ReagentHit] = []
+    output: str | None = None
     error: str | None = None
 
+
+# ---------- chem/stoich ----------
+
+class StoichRowIn(BaseModel):
+    rxn_id: str = ""
+    role: str = "reactant"  # 'reactant' | 'product' | 'solvent'
+    name: str = ""
+    formula: str = ""
+    fw: float = 0.0
+    is_limiting: bool = False
+    given: str = "mass"  # 'mass' | 'eq' | 'volume'
+    mass_g: float | None = None
+    eq: float | None = None
+    volume_ml: float | None = None
+    density: float | None = None
+    molarity: float | None = None
+    coeff: float = 1.0
+    actual_mass_g: float | None = None
+    purity: float | None = None
+
+
+class StoichRowOut(StoichRowIn):
+    mmol: float | None = None
+    theo_mass_g: float | None = None
+    theo_mol_mmol: float | None = None
+    actual_mol_mmol: float | None = None
+    yield_pct: float | None = None
+
+
+class StoichRequest(BaseModel):
+    rows: list[StoichRowIn]
+    temperature_c: float | None = None
+
+
+class StoichResponse(BaseModel):
+    ok: bool
+    rows: list[StoichRowOut] = []
+    reaction_molarity: float | None = None
+    temperature_c: float | None = None
+    error: str | None = None
+
+
+# ---------- reaction (species extraction for the stoich table) ----------
 
 class ReactionRequest(BaseModel):
-    """An Rxnfile or reaction SMILES to break into species."""
-
     reaction: str = Field(..., description="MDL Rxnfile or reaction SMILES")
 
 
@@ -65,27 +119,25 @@ class ReactionResponse(BaseModel):
     error: str | None = None
 
 
-class SearchRequest(BaseModel):
-    """A chemical search request."""
+# ---------- search ----------
 
-    query: str = Field(..., description="SMILES (or molfile) query structure")
-    query_type: str = Field(
-        "substructure",
-        description="'exact' | 'substructure' | 'similarity'",
-    )
-    threshold: float = Field(
-        0.7, ge=0.0, le=1.0, description="Tanimoto cutoff for similarity search"
-    )
+class SearchRequest(BaseModel):
+    molblock: str | None = None
+    structure: str | None = None
+    threshold: float = Field(0.7, ge=0.0, le=1.0)
+    limit: int = Field(200, ge=1, le=2000)
+
+    @property
+    def text(self) -> str:
+        return self.molblock or self.structure or ""
 
 
 class SearchHit(BaseModel):
-    regid: str
+    reg_id: str
     mixture_id: str | None = None
     mol_formula: str | None = None
     mol_weight: float | None = None
-    score: float | None = Field(
-        None, description="Tanimoto similarity for similarity search; else null"
-    )
+    score: float | None = None
     matched_component: int | None = None
 
 
@@ -95,4 +147,73 @@ class SearchResponse(BaseModel):
     query_type: str
     count: int
     hits: list[SearchHit] = []
+    elapsed_ms: float = 0.0
+    candidate_count: int | None = None  # screening candidates (substructure)
     error: str | None = None
+
+
+# ---------- compounds ----------
+
+class ComponentPayload(BaseModel):
+    ordinal: int
+    smiles: str
+    mol_formula: str | None = None
+    mol_weight: float | None = None
+
+
+class CompoundResponse(BaseModel):
+    ok: bool
+    reg_id: str | None = None
+    mixture_id: str | None = None
+    components: list[ComponentPayload] = []
+    error: str | None = None
+
+
+# ---------- inventory ----------
+
+class ContainerPayload(BaseModel):
+    internal_id: int
+    container_id: str
+    location: str
+    name: str
+    cas: str
+    smiles: str
+    mol_formula: str
+    mol_weight: float
+    amount: float
+    unit: str
+    supplier: str
+    catalog_no: str
+    cost: float | None = None
+    lot_no: str
+    owner: str
+
+
+class InventoryResponse(BaseModel):
+    ok: bool
+    count: int
+    containers: list[ContainerPayload] = []
+    error: str | None = None
+
+
+class InventoryStructureRequest(BaseModel):
+    molblock: str | None = None
+    structure: str | None = None
+    mode: str = "substructure"  # 'substructure' | 'exact'
+
+    @property
+    def text(self) -> str:
+        return self.molblock or self.structure or ""
+
+
+# ---------- sdf ----------
+
+class SdfImportResponse(BaseModel):
+    ok: bool
+    imported: int = 0
+    failed: int = 0
+    errors: list[str] = []
+
+
+class SdfExportRequest(BaseModel):
+    reg_ids: list[str]
