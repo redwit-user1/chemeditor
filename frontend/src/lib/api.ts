@@ -80,6 +80,32 @@ export async function searchStructures(
   return (await res.json()) as SearchResponse;
 }
 
+export interface Species {
+  role: 'reactant' | 'product';
+  smiles: string;
+  mol_formula: string;
+  mol_weight: number;
+}
+
+export interface ReactionResponse {
+  ok: boolean;
+  reactants: Species[];
+  products: Species[];
+  error: string | null;
+}
+
+export async function parseReaction(reaction: string): Promise<ReactionResponse> {
+  const res = await fetch(`${API_BASE}/api/reaction`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reaction }),
+  });
+  if (!res.ok) {
+    throw new Error(`Reaction API returned ${res.status}`);
+  }
+  return (await res.json()) as ReactionResponse;
+}
+
 export interface HealthResponse {
   status: string;
   index_size: number;

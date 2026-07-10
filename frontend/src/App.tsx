@@ -4,6 +4,7 @@ import KetcherEditor from './components/KetcherEditor';
 import Toolbar from './components/Toolbar';
 import PropertyBar from './components/PropertyBar';
 import SearchPanel from './components/SearchPanel';
+import StoichiometryPanel from './components/StoichiometryPanel';
 import { useLiveProperties } from './hooks/useLiveProperties';
 
 type Notice = { kind: 'info' | 'error'; text: string } | null;
@@ -12,6 +13,7 @@ export default function App() {
   const [ketcher, setKetcher] = useState<Ketcher | null>(null);
   const [notice, setNotice] = useState<Notice>(null);
   const [showSearch, setShowSearch] = useState(false);
+  const [showStoich, setShowStoich] = useState(false);
 
   // The core loop: every structure change recomputes properties via RDKit.
   const live = useLiveProperties(ketcher);
@@ -30,7 +32,14 @@ export default function App() {
         ketcher={ketcher}
         onStatus={handleStatus}
         onError={handleError}
-        onToggleSearch={() => setShowSearch((v) => !v)}
+        onToggleSearch={() => {
+          setShowSearch((v) => !v);
+          setShowStoich(false);
+        }}
+        onToggleStoich={() => {
+          setShowStoich((v) => !v);
+          setShowSearch(false);
+        }}
       />
 
       <div className="workspace">
@@ -41,6 +50,13 @@ export default function App() {
           <SearchPanel
             ketcher={ketcher}
             onClose={() => setShowSearch(false)}
+            onError={handleError}
+          />
+        )}
+        {showStoich && (
+          <StoichiometryPanel
+            ketcher={ketcher}
+            onClose={() => setShowStoich(false)}
             onError={handleError}
           />
         )}

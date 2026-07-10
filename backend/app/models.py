@@ -30,6 +30,26 @@ class PropertiesResponse(BaseModel):
     error: str | None = None
 
 
+class ReactionRequest(BaseModel):
+    """An Rxnfile or reaction SMILES to break into species."""
+
+    reaction: str = Field(..., description="MDL Rxnfile or reaction SMILES")
+
+
+class SpeciesPayload(BaseModel):
+    role: str
+    smiles: str
+    mol_formula: str
+    mol_weight: float
+
+
+class ReactionResponse(BaseModel):
+    ok: bool
+    reactants: list[SpeciesPayload] = []
+    products: list[SpeciesPayload] = []
+    error: str | None = None
+
+
 class SearchRequest(BaseModel):
     """A chemical search request."""
 

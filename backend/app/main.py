@@ -10,12 +10,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .chem.properties import properties_from_text
+from .chem.reaction import parse_reaction
 from .models import (
     PropertiesPayload,
     PropertiesResponse,
+    ReactionRequest,
+    ReactionResponse,
     SearchHit,
     SearchRequest,
     SearchResponse,
+    SpeciesPayload,
     StructureRequest,
 )
 from .search.service import build_index
@@ -66,6 +70,22 @@ def properties(request: StructureRequest) -> PropertiesResponse:
         ok=result.ok,
         input_format=result.input_format,
         properties=payload,
+        error=result.error,
+    )
+
+
+@app.post("/api/reaction", response_model=ReactionResponse)
+def reaction(request: ReactionRequest) -> ReactionResponse:
+    """Break a reaction into reactant/product species with RDKit weights.
+
+    Feeds the stoichiometry table; the UI does the equivalents/moles/yield math
+    from these per-species molecular weights.
+    """
+    result = parse_reaction(request.reaction)
+    return ReactionResponse(
+        ok=result.ok,
+        reactants=[SpeciesPayload(**vars(s)) for s in result.reactants],
+        products=[SpeciesPayload(**vars(s)) for s in result.products],
         error=result.error,
     )
 
