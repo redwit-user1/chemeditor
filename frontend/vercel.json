@@ -1,10 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "//": "Vercel serves the built Vite SPA. The frontend calls /api/v1/* on its own origin; this rewrite proxies those calls server-side to the RDKit backend running on the VPS — so there is no CORS and no mixed-content issue even if the backend is plain HTTP. Replace the destination host with your VPS backend URL, then redeploy.",
+  "//": "Vercel serves the built Vite SPA. The frontend calls /api/v1/* on its own origin; this rewrite proxies those calls server-side to the RDKit backend on the VPS (Caddy-fronted HTTPS) — so there is no CORS and no mixed-content issue. If your backend host changes, update the destination below and redeploy.",
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://REPLACE-WITH-YOUR-VPS-BACKEND-HOST/api/:path*"
+      "destination": "https://srv1711580.hstgr.cloud/api/:path*"
     }
   ]
 }

@@ -1,0 +1,41 @@
+# VPS deploy: RDKit backend behind Caddy (automatic HTTPS on your hostname).
+#
+#   SITE_ADDRESS=srv1711580.hstgr.cloud \
+#     docker compose -f docker-compose.vps.yml up -d --build
+#
+# The frontend lives on Vercel; frontend/vercel.json proxies /api to
+# https://$SITE_ADDRESS. Only Caddy (80/443) is published — the backend is
+# reachable only inside the compose network, so RDKit is never exposed raw.
+
+services:
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      # Leave unset to use the bundled fixture. Point at a mounted SDF (see
+      # ./data volume) to index real / synthetic data instead.
+      CHEM_INDEX_SDF: ${CHEM_INDEX_SDF:-}
+      CHEM_SEARCH_BACKEND: ${CHEM_SEARCH_BACKEND:-portable_fp}
+    volumes:
+      - ./data:/app/data:ro
+    expose:
+      - "8000"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:?set SITE_ADDRESS to your VPS hostname, e.g. srv1711580.hstgr.cloud}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  caddy_data:
+  caddy_config:
