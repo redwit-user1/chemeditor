@@ -33,6 +33,8 @@
 
 화면은 위에서부터 아래로 4개 영역으로 나뉩니다.
 
+![초기 화면 — 상단 툴바 / 중앙 캔버스 / 하단 물성 패널 / 상태 바](images/01-main.png)
+
 | 영역 | 위치 | 내용 |
 |---|---|---|
 | **상단 툴바** | 맨 위 | `New`, `Open…`, `Save As`, `Paste`, `Search…`, `Stoich…`, `Reagents…` 버튼이 한 줄로 있습니다. |
@@ -63,6 +65,8 @@
    - **Exact Mass**: 46.0419
    - **Heavy Atoms**: 3
 6. 물성 패널 오른쪽 끝에 **"RDKit · mol"** 과 함께 **⏱ (숫자) ms** 가 표시됩니다. → 이번 계산에 실제로 걸린 시간입니다. 별도 조작 없이 구조가 바뀔 때마다 자동으로 다시 계산됩니다.
+
+![에탄올 붙여넣기 결과 — 하단 물성 패널에 C₂H₆O · 46.07 · 46.0419 · Heavy Atoms 3이 자동 표시되고, 오른쪽 끝에 계산 소요 시간(⏱ ms)이 보입니다](images/02-quickstart-ethanol.png)
 
 여기까지 되면 시스템의 핵심 기능을 모두 확인한 것입니다.
 
@@ -142,6 +146,8 @@
 9. 캔버스가 비어 있으면 상태 바에 **"Draw or paste a query structure first."** 오류가 표시됩니다.
 10. 패널 오른쪽 위 **×** 를 클릭하면 닫힙니다.
 
+![벤젠으로 substructure 검색한 결과 — 3 REGID(s), 각 결과에 구조 썸네일·REGID·분자식·분자량이 표시됩니다](images/03-search.png)
+
 ### 3.6 `Stoich…` — 반응식 몰수 계산표
 
 캔버스에 그린 반응식(반응물 → 생성물)에서 각 물질의 필요량·수율을 자동 계산합니다.
@@ -163,6 +169,8 @@
 8. **`+ Add Blank Solvent`** 를 클릭하면 용매 행이 추가됩니다. Name/Ratio/Volume (ml)을 직접 입력합니다.
 9. 맨 아래 **Reaction Conditions** 에서 전체 Molarity(자동 계산), Pressure(메모용), Temperature (°C, 기본 25)를 확인·입력합니다.
 10. 캔버스에 화살표가 없는 그림만 있으면 **"Draw a reaction (reactants → products) on the canvas first."** 오류가 표시됩니다.
+
+![스티렌 → 에틸벤젠 반응을 로드한 Stoichiometry 표 — 반응물 I(C8H8)이 Limit로 지정되고 Mass 0.5 g 기준으로 mmol·생성물 이론 질량이 자동 계산됩니다](images/04-stoich.png)
 
 ### 3.7 `Reagents…` — 시약 재고 검색
 
@@ -193,6 +201,8 @@
 1. 원하는 행 오른쪽 끝의 **`Insert`** 버튼을 클릭합니다.
 2. → 해당 시약의 구조가 캔버스에 추가되고 대화창이 닫히며, 상태 바에 **"Inserted (이름) ((용기 ID), (위치))."** 가 표시됩니다.
 3. 결과가 없으면 **"No containers found."** 가 표시됩니다.
+
+!["acet"로 Simple Search한 결과 — Acetic acid, Acetone 등 용기 단위 재고가 위치·CAS·공급사와 함께 나오고, 행마다 Insert 버튼이 있습니다](images/05-inventory.png)
 
 ---
 
