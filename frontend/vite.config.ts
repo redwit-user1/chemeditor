@@ -21,5 +21,14 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     chunkSizeWarningLimit: 4096,
+    commonjsOptions: {
+      // Ketcher's bundled UMD deps (raphael, and its optional acorn path) keep
+      // bare `require()` calls in their CommonJS branch. Vite's dev server shims
+      // these, but the production Rollup build leaves them as `require`, which is
+      // undefined in the browser ESM bundle — Raphael then fails to construct and
+      // the whole editor (and React tree) unmounts to a blank page. Transforming
+      // mixed ES/CJS modules makes Rollup rewrite those requires into imports.
+      transformMixedEsModules: true,
+    },
   },
 });
