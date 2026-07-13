@@ -36,7 +36,7 @@ test-backend:
 	cd backend && PYTHONPATH=. python3 -m pytest
 
 test-frontend:
-	cd frontend && npm run test --if-present
+	cd frontend && npm run typecheck && npm test
 
 # ---- Data / validation / benchmarks ----
 load-sdf:

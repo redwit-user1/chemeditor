@@ -1,0 +1,43 @@
+# KMEDIhub ELN PoC — local demo stack.
+#
+#   docker compose up --build      # backend (RDKit) + frontend (nginx)
+#   docker compose --profile pg up # also start Postgres+cartridge baseline
+#
+# The default stack runs the PoC entirely on the portable path (RDKit in the
+# backend, SQLite index) — the same path that ports to Oracle SE. Postgres is
+# optional and only used to exercise the PgCartridgeBackend baseline.
+
+services:
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # Point at a mounted SDF directory to index real data instead of the
+      # bundled fixture. Leave unset to use the fixture.
+      CHEM_INDEX_SDF: ${CHEM_INDEX_SDF:-}
+      # portable_fp (default, Oracle-portable) | pg_cartridge (needs PG_DSN)
+      CHEM_SEARCH_BACKEND: ${CHEM_SEARCH_BACKEND:-portable_fp}
+      PG_DSN: ${PG_DSN:-}
+    volumes:
+      - ./data:/app/data:ro
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+  # Optional: RDKit cartridge baseline. Enable with `--profile pg`.
+  db:
+    image: informaticsmatters/rdkit-cartridge-debian:latest
+    profiles: ["pg"]
+    environment:
+      POSTGRES_USER: chem
+      POSTGRES_PASSWORD: chem
+      POSTGRES_DB: chem
+    ports:
+      - "5432:5432"

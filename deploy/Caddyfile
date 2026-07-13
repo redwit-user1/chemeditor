@@ -1,0 +1,7 @@
+# Caddy auto-provisions a Let's Encrypt TLS cert for $SITE_ADDRESS and proxies
+# every request (including /api/v1/*) to the RDKit backend container. The
+# backend is not published directly — only Caddy's 80/443 are public.
+{$SITE_ADDRESS} {
+	encode gzip
+	reverse_proxy backend:8000
+}

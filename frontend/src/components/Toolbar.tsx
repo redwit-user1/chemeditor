@@ -12,6 +12,9 @@ interface ToolbarProps {
   ketcher: Ketcher | null;
   onStatus: (message: string) => void;
   onError: (message: string) => void;
+  onToggleSearch: () => void;
+  onToggleStoich: () => void;
+  onOpenReagents: () => void;
 }
 
 /** A dropdown menu that closes when clicking outside of it. */
@@ -53,7 +56,14 @@ function Menu({
   );
 }
 
-export default function Toolbar({ ketcher, onStatus, onError }: ToolbarProps) {
+export default function Toolbar({
+  ketcher,
+  onStatus,
+  onError,
+  onToggleSearch,
+  onToggleStoich,
+  onOpenReagents,
+}: ToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const disabled = !ketcher;
 
@@ -180,6 +190,33 @@ export default function Toolbar({ ketcher, onStatus, onError }: ToolbarProps) {
           disabled={disabled}
         >
           Paste
+        </button>
+
+        <button
+          type="button"
+          className="flat-btn"
+          onClick={onToggleSearch}
+          disabled={disabled}
+        >
+          Search…
+        </button>
+
+        <button
+          type="button"
+          className="flat-btn"
+          onClick={onToggleStoich}
+          disabled={disabled}
+        >
+          Stoich…
+        </button>
+
+        <button
+          type="button"
+          className="flat-btn"
+          onClick={onOpenReagents}
+          disabled={disabled}
+        >
+          Reagents…
         </button>
       </div>
 

@@ -23,3 +23,5 @@ backend/*.db
 
 # OS
 .DS_Store
+frontend/tsconfig.tsbuildinfo
+*.tsbuildinfo

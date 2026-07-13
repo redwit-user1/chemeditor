@@ -1,22 +1,28 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Ketcher } from 'ketcher-core';
-import { fetchProperties, type Properties } from '../lib/api';
+import { fetchProperties, type PropertiesResponse } from '../lib/api';
 
 export type PropStatus = 'idle' | 'loading' | 'error' | 'empty';
 
 interface LiveProperties {
-  properties: Properties | null;
+  properties: PropertiesResponse | null;
   status: PropStatus;
   error: string | null;
   inputFormat: string | null;
+  /** Full round-trip latency (getMolfile → HTTP → response), ms. */
+  elapsedMs: number | null;
+  /** Server-side compute latency reported by the API, ms. */
+  serverMs: number | null;
 }
 
-const DEBOUNCE_MS = 150;
+const DEBOUNCE_MS = 150; // SPEC §6.1
 
 /**
  * Subscribes to Ketcher structure changes and keeps the property panel in sync
  * with the RDKit backend. Debounced so rapid drawing doesn't flood the API, and
  * abortable so a stale in-flight request can never overwrite a newer result.
+ * Measures the real end-to-end latency — the panel displays it (SPEC §6.2:
+ * "응답 지연을 화면에 표시한다. 숨기지 않는다").
  */
 export function useLiveProperties(ketcher: Ketcher | null): LiveProperties {
   const [state, setState] = useState<LiveProperties>({
@@ -24,6 +30,8 @@ export function useLiveProperties(ketcher: Ketcher | null): LiveProperties {
     status: 'empty',
     error: null,
     inputFormat: null,
+    elapsedMs: null,
+    serverMs: null,
   });
 
   const timerRef = useRef<number | null>(null);
@@ -33,6 +41,7 @@ export function useLiveProperties(ketcher: Ketcher | null): LiveProperties {
     if (!ketcher) return;
 
     const recompute = async () => {
+      const t0 = performance.now();
       let molfile = '';
       try {
         molfile = await ketcher.getMolfile();
@@ -47,6 +56,8 @@ export function useLiveProperties(ketcher: Ketcher | null): LiveProperties {
           status: 'empty',
           error: null,
           inputFormat: null,
+          elapsedMs: null,
+          serverMs: null,
         });
         return;
       }
@@ -59,12 +70,15 @@ export function useLiveProperties(ketcher: Ketcher | null): LiveProperties {
       try {
         const res = await fetchProperties(molfile, controller.signal);
         if (controller.signal.aborted) return;
-        if (res.ok && res.properties) {
+        const elapsed = performance.now() - t0;
+        if (res.ok && res.formula) {
           setState({
-            properties: res.properties,
+            properties: res,
             status: 'idle',
             error: null,
             inputFormat: res.input_format,
+            elapsedMs: Math.round(elapsed),
+            serverMs: res.elapsed_ms,
           });
         } else {
           setState({
@@ -72,6 +86,8 @@ export function useLiveProperties(ketcher: Ketcher | null): LiveProperties {
             status: 'error',
             error: res.error,
             inputFormat: res.input_format,
+            elapsedMs: Math.round(elapsed),
+            serverMs: res.elapsed_ms,
           });
         }
       } catch (err) {
@@ -81,6 +97,8 @@ export function useLiveProperties(ketcher: Ketcher | null): LiveProperties {
           status: 'error',
           error: err instanceof Error ? err.message : String(err),
           inputFormat: null,
+          elapsedMs: null,
+          serverMs: null,
         });
       }
     };
@@ -98,8 +116,6 @@ export function useLiveProperties(ketcher: Ketcher | null): LiveProperties {
     return () => {
       if (timerRef.current) window.clearTimeout(timerRef.current);
       abortRef.current?.abort();
-      // Ketcher's unsubscribe needs the same event name; the handler ref is
-      // captured internally, so unsubscribing the whole event is sufficient here.
       try {
         ketcher.editor.unsubscribe('change', schedule as never);
       } catch {
@@ -114,7 +130,6 @@ export function useLiveProperties(ketcher: Ketcher | null): LiveProperties {
 /** An MDL molfile with a 0-atom counts line represents an empty canvas. */
 function isEmptyMolfile(molfile: string): boolean {
   const lines = molfile.split('\n');
-  // Counts line is the 4th line: "  0  0  0 ..." → 0 atoms.
   const counts = lines[3] ?? '';
   const atomCount = parseInt(counts.slice(0, 3).trim(), 10);
   return Number.isNaN(atomCount) || atomCount === 0;
