@@ -1,11 +1,18 @@
-# VPS deploy: RDKit backend behind Caddy (automatic HTTPS on your hostname).
+# VPS deploy: RDKit backend routed through Hostinger's built-in Traefik.
 #
-#   SITE_ADDRESS=srv1711580.hstgr.cloud \
-#     docker compose -f docker-compose.vps.yml up -d --build
+#   docker compose -f docker-compose.vps.yml up -d --build
 #
-# The frontend lives on Vercel; frontend/vercel.json proxies /api to
-# https://$SITE_ADDRESS. Only Caddy (80/443) is published — the backend is
-# reachable only inside the compose network, so RDKit is never exposed raw.
+# This VPS already runs Traefik (host network, Docker-label provider, Let's
+# Encrypt HTTP-01 resolver named "letsencrypt"). We do NOT publish any host
+# port and we do NOT run our own reverse proxy — Traefik discovers this
+# backend by its labels and terminates TLS for us.
+#
+# The backend becomes reachable at:  https://chemeditor.srv1711580.hstgr.cloud
+# (Hostinger provides wildcard DNS *.srv1711580.hstgr.cloud → this VPS.)
+#
+# The frontend lives on Vercel; frontend/vercel.json proxies /api to that host.
+# Traefik reaches this container by its IP on chemeditor_default:8000, so no
+# host port is exposed — RDKit is never published raw.
 
 services:
   backend:
@@ -20,22 +27,9 @@ services:
       - ./data:/app/data:ro
     expose:
       - "8000"
-
-  caddy:
-    image: caddy:2-alpine
-    restart: unless-stopped
-    depends_on:
-      - backend
-    ports:
-      - "80:80"
-      - "443:443"
-    environment:
-      SITE_ADDRESS: ${SITE_ADDRESS:?set SITE_ADDRESS to your VPS hostname, e.g. srv1711580.hstgr.cloud}
-    volumes:
-      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-
-volumes:
-  caddy_data:
-  caddy_config:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.chemeditor.entrypoints=websecure"
+      - "traefik.http.routers.chemeditor.rule=Host(`chemeditor.srv1711580.hstgr.cloud`)"
+      - "traefik.http.routers.chemeditor.tls.certresolver=letsencrypt"
+      - "traefik.http.services.chemeditor.loadbalancer.server.port=8000"

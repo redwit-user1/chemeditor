@@ -13,16 +13,36 @@
 
 ## 1) VPS: 백엔드 기동 (Docker)
 
-```bash
-# Docker 설치 (Ubuntu, 1회)
-curl -fsSL https://get.docker.com | sh
-sudo usermod -aG docker $USER && newgrp docker
+### Hostinger VPS (Traefik 내장) — 권장 경로
 
-# 코드
+Hostinger VPS의 Docker Manager는 **Traefik**을 host 네트워크로 이미 띄워둔다
+(Docker 라벨 provider + Let's Encrypt HTTP-01 resolver `letsencrypt`,
+와일드카드 DNS `*.srv1711580.hstgr.cloud`). 따라서 우리는 리버스 프록시를
+직접 돌리지 않고 `docker-compose.vps.yml`의 **Traefik 라벨**만으로 라우팅 +
+TLS를 위임한다. 호스트 포트를 전혀 열지 않으므로 RDKit은 raw로 노출되지 않는다.
+
+```bash
 git clone <레포주소> chemeditor && cd chemeditor
 git checkout claude/ketcher-chemical-editor-4srsjz
 
-# 백엔드만 기동 (프론트는 Vercel이 담당)
+# Traefik이 라벨을 읽어 자동 라우팅 + 인증서 발급
+docker compose -f docker-compose.vps.yml up -d --build
+
+# 인증서 발급까지 30초~1분. 그 뒤:
+curl https://chemeditor.srv1711580.hstgr.cloud/api/v1/health   # {"status":"ok",...}
+```
+
+백엔드는 `https://chemeditor.srv1711580.hstgr.cloud`로 접근된다.
+호스트명을 바꾸려면 `docker-compose.vps.yml`의 `Host(...)` 라벨과
+`frontend/vercel.json` destination을 함께 고친다.
+
+### 그 외 VPS (Traefik 없음) — Caddy 경로
+
+Traefik이 없는 일반 VPS면 `deploy/Caddyfile` + Caddy 컨테이너로 자동 TLS를
+씌운다(이 레포의 이전 버전 compose 참고). 또는 아래처럼 백엔드만 로컬에 띄우고
+직접 리버스 프록시를 구성한다:
+
+```bash
 docker compose up --build -d backend
 curl http://localhost:8000/api/v1/health      # {"status":"ok",...}
 ```
