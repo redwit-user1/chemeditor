@@ -9,6 +9,8 @@ interface LiveProperties {
   status: PropStatus;
   error: string | null;
   inputFormat: string | null;
+  /** The molfile that produced the current properties (for the embed bridge). */
+  molfile: string | null;
   /** Full round-trip latency (getMolfile → HTTP → response), ms. */
   elapsedMs: number | null;
   /** Server-side compute latency reported by the API, ms. */
@@ -30,6 +32,7 @@ export function useLiveProperties(ketcher: Ketcher | null): LiveProperties {
     status: 'empty',
     error: null,
     inputFormat: null,
+    molfile: null,
     elapsedMs: null,
     serverMs: null,
   });
@@ -56,6 +59,7 @@ export function useLiveProperties(ketcher: Ketcher | null): LiveProperties {
           status: 'empty',
           error: null,
           inputFormat: null,
+          molfile: null,
           elapsedMs: null,
           serverMs: null,
         });
@@ -77,6 +81,7 @@ export function useLiveProperties(ketcher: Ketcher | null): LiveProperties {
             status: 'idle',
             error: null,
             inputFormat: res.input_format,
+            molfile,
             elapsedMs: Math.round(elapsed),
             serverMs: res.elapsed_ms,
           });
@@ -86,6 +91,7 @@ export function useLiveProperties(ketcher: Ketcher | null): LiveProperties {
             status: 'error',
             error: res.error,
             inputFormat: res.input_format,
+            molfile: null,
             elapsedMs: Math.round(elapsed),
             serverMs: res.elapsed_ms,
           });
@@ -97,6 +103,7 @@ export function useLiveProperties(ketcher: Ketcher | null): LiveProperties {
           status: 'error',
           error: err instanceof Error ? err.message : String(err),
           inputFormat: null,
+          molfile: null,
           elapsedMs: null,
           serverMs: null,
         });

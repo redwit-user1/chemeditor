@@ -10,6 +10,8 @@ import {
 
 interface ToolbarProps {
   ketcher: Ketcher | null;
+  /** Embed mode (Goono iframe): hide search / stoich / reagents chrome. */
+  embed?: boolean;
   onStatus: (message: string) => void;
   onError: (message: string) => void;
   onToggleSearch: () => void;
@@ -58,6 +60,7 @@ function Menu({
 
 export default function Toolbar({
   ketcher,
+  embed = false,
   onStatus,
   onError,
   onToggleSearch,
@@ -192,32 +195,36 @@ export default function Toolbar({
           Paste
         </button>
 
-        <button
-          type="button"
-          className="flat-btn"
-          onClick={onToggleSearch}
-          disabled={disabled}
-        >
-          Search…
-        </button>
+        {!embed && (
+          <>
+            <button
+              type="button"
+              className="flat-btn"
+              onClick={onToggleSearch}
+              disabled={disabled}
+            >
+              Search…
+            </button>
 
-        <button
-          type="button"
-          className="flat-btn"
-          onClick={onToggleStoich}
-          disabled={disabled}
-        >
-          Stoich…
-        </button>
+            <button
+              type="button"
+              className="flat-btn"
+              onClick={onToggleStoich}
+              disabled={disabled}
+            >
+              Stoich…
+            </button>
 
-        <button
-          type="button"
-          className="flat-btn"
-          onClick={onOpenReagents}
-          disabled={disabled}
-        >
-          Reagents…
-        </button>
+            <button
+              type="button"
+              className="flat-btn"
+              onClick={onOpenReagents}
+              disabled={disabled}
+            >
+              Reagents…
+            </button>
+          </>
+        )}
       </div>
 
       <div className="toolbar__hint">

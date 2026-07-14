@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { Ketcher } from 'ketcher-core';
 import KetcherEditor from './components/KetcherEditor';
 import Toolbar from './components/Toolbar';
@@ -7,6 +7,8 @@ import SearchPanel from './components/SearchPanel';
 import StoichiometryPanel from './components/StoichiometryPanel';
 import InventoryDialog from './components/InventoryDialog';
 import { useLiveProperties } from './hooks/useLiveProperties';
+import { useEmbedBridge } from './hooks/useEmbedBridge';
+import { readEmbedConfig } from './lib/embed';
 
 type Notice = { kind: 'info' | 'error'; text: string } | null;
 
@@ -17,8 +19,22 @@ export default function App() {
   const [showStoich, setShowStoich] = useState(false);
   const [showInventory, setShowInventory] = useState(false);
 
+  // Goono ELN iframe embed (docs/EMBED.md). In embed mode the search / stoich /
+  // reagents chrome is hidden — only the paste→properties core remains.
+  const embedConfig = useMemo(
+    () => readEmbedConfig(window.location.search),
+    [],
+  );
+
   // The core loop: every structure change recomputes properties via RDKit.
   const live = useLiveProperties(ketcher);
+
+  // Bridge the property stream to the parent window when framed by Goono.
+  useEmbedBridge(embedConfig, ketcher, {
+    properties: live.properties,
+    status: live.status,
+    molfile: live.molfile,
+  });
 
   const handleStatus = useCallback((text: string) => {
     setNotice({ kind: 'info', text });
@@ -29,9 +45,10 @@ export default function App() {
   }, []);
 
   return (
-    <div className="app">
+    <div className={`app${embedConfig.embed ? ' app--embed' : ''}`}>
       <Toolbar
         ketcher={ketcher}
+        embed={embedConfig.embed}
         onStatus={handleStatus}
         onError={handleError}
         onToggleSearch={() => {
