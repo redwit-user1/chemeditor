@@ -81,3 +81,47 @@ Similarity (3 쿼리 × 20회): p50 1651.3 / p95 1795.8 / p99 1826.5 ms ✅
 | 500,000 | 4216.4 ms | 1795.8 ms | ❌ |
 
 미달 항목이 있으면 위 표에 그대로 남는다. 목표를 조정하지 않는다.
+
+## Chem Service HTTP 실측 (Goono 프록시 전 단계)
+
+> Goono ELN 통합(iframe ChemModal, Epic #23 / E4 #27) 대비, Chem Service 두 개
+> write-path 엔드포인트의 **클라이언트 관측 HTTP 왕복 지연**을 실측한다.
+> 위의 물성 계산 표(0.23 ms p50)는 백엔드 compute 함수 그 자체만 잰 값이고,
+> 아래는 그 위에 얹힌 FastAPI + Uvicorn + 루프백 HTTP + JSON 직렬화까지 포함한
+> 실제 요청 지연이다. 그 차이(≈0.2 ms → ≈1.6 ms)가 프레임워크·전송 오버헤드다.
+>
+> **주의: 이 수치에는 Goono 리버스 프록시 홉이 포함되지 않는다.** 이 샌드박스에서
+> Goono(Spring Boot)를 빌드할 수 없어 프록시 구간은 측정 불가. 아래 값은 Goono
+> 프록시가 얹힐 **하한(lower bound)** 이다. Goono 통합 후 프록시 포함 E2E는
+> 별도 재측정이 필요하다.
+
+측정 방법:
+- 서버: `uvicorn app.main:app` (127.0.0.1, portable_fp 백엔드, 번들 fixture 7건 인덱스).
+- 클라이언트: 동일 호스트 `httpx.Client`, 루프백. 재현 스크립트 `scripts/bench_http.py`.
+- 물성: 워밍업 20회(3 구조 전체) 후 **구조당 200회**. 대표 구조 3종 —
+  small(aspirin SMILES, 13 heavy) / medium(caffeine V2000 molblock, 14 heavy) /
+  large(reserpine V2000 molblock, 44 heavy).
+- 등록: 워밍업 20회 후 **100회**, 매 요청 고유 `reg_id`(라이브 인덱스에 실제 삽입).
+- 백분위: nearest-rank. 환경: Python 3.11.15 · Linux x86_64 · RDKit 2026.03.3 ·
+  FastAPI 0.139.0 · Uvicorn 0.51.0 · httpx 0.28.1.
+
+### POST /api/v1/chem/properties (paste→물성 코어)
+
+| 구조 | p50 | p95 | p99 | mean | n |
+|---|---|---|---|---|---|
+| small (aspirin SMILES, 13 heavy) | 1.62 | 1.97 | 2.12 | 1.64 | 200 |
+| medium (caffeine molblock, 14 heavy) | 1.69 | 1.96 | 2.01 | 1.69 | 200 |
+| large (reserpine molblock, 44 heavy) | 2.29 | 2.68 | 3.07 | 2.37 | 200 |
+| **집계 (3×200)** | **1.77** | **2.53** | **2.79** | 1.90 | 600 |
+
+paste→화면 갱신 목표 ≤ 1,000 ms 대비, 서버 HTTP 지연은 p99 3 ms 수준 ✅
+(브라우저 debounce 150 ms + Ketcher molfile 직렬화는 별도이며 프런트 E2E에 포함).
+
+### POST /api/v1/compounds (화합물 등록, 고유 reg_id)
+
+| p50 | p95 | p99 | mean | n |
+|---|---|---|---|---|
+| 2.22 | 2.52 | 2.67 | 2.25 | 100 |
+
+등록은 파싱 + 물성 계산 + 라이브 인덱스 삽입(`add_and_index`)을 포함하므로
+물성 단독 조회보다 소폭 높다. 단위: ms.
