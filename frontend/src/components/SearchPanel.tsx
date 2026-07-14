@@ -14,6 +14,12 @@ interface SearchPanelProps {
   onError: (message: string) => void;
 }
 
+const QUERY_LABELS: Record<QueryType, string> = {
+  substructure: '부분구조',
+  similarity: '유사도',
+  exact: '정확일치',
+};
+
 /**
  * Structure search over the indexed library. Takes the structure currently on
  * the canvas as the query and runs exact / substructure / similarity search
@@ -38,7 +44,7 @@ export default function SearchPanel({
     fetchHealth()
       .then((h) => {
         setBackend(h.search_backend);
-        setIndexInfo(`${h.index_size} components · ${h.index_source}`);
+        setIndexInfo(`${h.index_size}개 성분 · ${h.index_source}`);
       })
       .catch(() => undefined);
   }, []);
@@ -54,7 +60,7 @@ export default function SearchPanel({
       /* empty canvas */
     }
     if (!molfile.trim()) {
-      onError('Draw or paste a query structure first.');
+      onError('먼저 검색할 구조를 그리거나 붙여넣으세요.');
       return;
     }
     setLoading(true);
@@ -67,7 +73,7 @@ export default function SearchPanel({
         setBackend(res.backend);
       } else {
         setHits([]);
-        onError(`Search failed: ${res.error ?? 'unknown error'}`);
+        onError(`검색 실패: ${res.error ?? '알 수 없는 오류'}`);
       }
     } catch (err) {
       onError(err instanceof Error ? err.message : String(err));
@@ -79,8 +85,8 @@ export default function SearchPanel({
   return (
     <aside className="search-panel">
       <div className="search-header">
-        <h2>Structure Search</h2>
-        <button type="button" className="icon-btn" onClick={onClose} aria-label="Close">
+        <h2>구조 검색</h2>
+        <button type="button" className="icon-btn" onClick={onClose} aria-label="닫기">
           ×
         </button>
       </div>
@@ -94,7 +100,7 @@ export default function SearchPanel({
               className={`seg-btn${queryType === t ? ' is-active' : ''}`}
               onClick={() => setQueryType(t)}
             >
-              {t}
+              {QUERY_LABELS[t]}
             </button>
           ))}
         </div>
@@ -119,26 +125,26 @@ export default function SearchPanel({
           onClick={runSearch}
           disabled={!ketcher || loading}
         >
-          {loading ? 'Searching…' : 'Search using current structure'}
+          {loading ? '검색 중…' : '현재 구조로 검색'}
         </button>
 
         {backend && (
           <p className="search-meta">
-            backend: <code>{backend}</code>
+            백엔드: <code>{backend}</code>
             {elapsed != null && <> · ⏱ {elapsed.toFixed(1)} ms</>}
             <br />
-            index: {indexInfo}
+            인덱스: {indexInfo}
           </p>
         )}
       </div>
 
       <div className="search-results">
         {ran && !loading && hits.length === 0 && (
-          <p className="search-empty">No matches.</p>
+          <p className="search-empty">검색 결과가 없습니다.</p>
         )}
         {hits.length > 0 && (
           <>
-            <div className="search-count">{hits.length} REGID(s)</div>
+            <div className="search-count">REGID {hits.length}건</div>
             <ul className="hit-list">
               {hits.map((h) => (
                 <li key={h.reg_id} className="hit hit--thumb">

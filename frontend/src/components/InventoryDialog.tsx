@@ -70,7 +70,7 @@ export default function InventoryDialog({
       /* empty */
     }
     if (!molfile.trim()) {
-      onError('Draw a structure on the canvas to search by structure.');
+      onError('구조 검색을 하려면 캔버스에 구조를 그리세요.');
       return;
     }
     try {
@@ -86,11 +86,11 @@ export default function InventoryDialog({
     if (!ketcher) return;
     try {
       await ketcher.addFragment(ct.smiles);
-      onStatus(`Inserted ${ct.name} (${ct.container_id}, ${ct.location}).`);
+      onStatus(`${ct.name} 삽입됨 (${ct.container_id}, ${ct.location}).`);
       onClose();
     } catch (err) {
       onError(
-        `Could not insert ${ct.name}: ${err instanceof Error ? err.message : String(err)}`,
+        `${ct.name} 삽입 실패: ${err instanceof Error ? err.message : String(err)}`,
       );
     }
   };
@@ -102,8 +102,8 @@ export default function InventoryDialog({
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="search-header">
-          <h2>Inventory Search</h2>
-          <button type="button" className="icon-btn" onClick={onClose} aria-label="Close">
+          <h2>시약 재고 검색</h2>
+          <button type="button" className="icon-btn" onClick={onClose} aria-label="닫기">
             ×
           </button>
         </div>
@@ -114,14 +114,14 @@ export default function InventoryDialog({
             className={`seg-btn${tab === 'simple' ? ' is-active' : ''}`}
             onClick={() => setTab('simple')}
           >
-            Simple Search
+            이름·CAS 검색
           </button>
           <button
             type="button"
             className={`seg-btn${tab === 'structure' ? ' is-active' : ''}`}
             onClick={() => setTab('structure')}
           >
-            Structure Search
+            구조 검색
           </button>
         </div>
 
@@ -130,19 +130,19 @@ export default function InventoryDialog({
             <input
               ref={nameRef}
               type="text"
-              placeholder="Substance name…"
+              placeholder="물질명…"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
             <input
               type="text"
-              placeholder="CAS No…"
+              placeholder="CAS 번호…"
               value={cas}
               onChange={(e) => setCas(e.target.value)}
             />
             <input
               type="text"
-              placeholder="Location… (e.g. Stock Room 3)"
+              placeholder="보관 위치… (예: 시약고 3)"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
             />
@@ -157,12 +157,12 @@ export default function InventoryDialog({
                   className={`seg-btn${mode === m ? ' is-active' : ''}`}
                   onClick={() => setMode(m)}
                 >
-                  {m}
+                  {m === 'substructure' ? '부분구조' : '정확일치'}
                 </button>
               ))}
             </div>
             <button type="button" className="primary-btn" onClick={runStructureSearch}>
-              Search using canvas structure
+              캔버스 구조로 검색
             </button>
           </div>
         )}
@@ -171,25 +171,25 @@ export default function InventoryDialog({
           {!ran && (
             <p className="search-empty">
               {tab === 'simple'
-                ? 'Filter by name, CAS, or location.'
-                : 'Draw a structure, pick a mode, and search.'}
+                ? '이름, CAS, 위치로 검색하세요.'
+                : '구조를 그리고 방식을 선택해 검색하세요.'}
             </p>
           )}
           {ran && containers.length === 0 && (
-            <p className="search-empty">No containers found.</p>
+            <p className="search-empty">검색된 재고가 없습니다.</p>
           )}
           {containers.length > 0 && (
             <table className="inventory-table">
               <thead>
                 <tr>
-                  <th>Internal ID</th>
-                  <th>Container ID</th>
-                  <th>Location</th>
-                  <th>Name</th>
+                  <th>내부ID</th>
+                  <th>용기ID</th>
+                  <th>위치</th>
+                  <th>이름</th>
                   <th>CAS</th>
-                  <th>Cost</th>
-                  <th>Size</th>
-                  <th>Supplier</th>
+                  <th>단가</th>
+                  <th>용량</th>
+                  <th>공급사</th>
                   <th />
                 </tr>
               </thead>
@@ -212,7 +212,7 @@ export default function InventoryDialog({
                         className="primary-btn small"
                         onClick={() => insert(ct)}
                       >
-                        Insert
+                        삽입
                       </button>
                     </td>
                   </tr>

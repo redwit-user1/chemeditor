@@ -78,13 +78,13 @@ export default function StoichiometryPanel({
       /* no reaction on canvas */
     }
     if (!rxn || !rxn.includes('$RXN')) {
-      onError('Draw a reaction (reactants → products) on the canvas first.');
+      onError('먼저 캔버스에 반응식(반응물 → 생성물)을 그리세요.');
       return;
     }
     try {
       const res = await parseReaction(rxn);
       if (!res.ok) {
-        onError(`Reaction parse failed: ${res.error ?? 'unknown'}`);
+        onError(`반응식 파싱 실패: ${res.error ?? '알 수 없는 오류'}`);
         return;
       }
       const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
@@ -155,7 +155,7 @@ export default function StoichiometryPanel({
           id: nextId++,
           rxn_id: '',
           role: 'solvent' as const,
-          name: 'Solvent',
+          name: '용매',
           volume_ml: 5,
         },
       ];
@@ -181,32 +181,33 @@ export default function StoichiometryPanel({
   return (
     <aside className="stoich-panel">
       <div className="search-header">
-        <h2>Stoichiometry</h2>
-        <button type="button" className="icon-btn" onClick={onClose} aria-label="Close">
+        <h2>반응식·수율 계산</h2>
+        <button type="button" className="icon-btn" onClick={onClose} aria-label="닫기">
           ×
         </button>
       </div>
 
       <div className="search-controls">
         <button type="button" className="primary-btn" onClick={loadReaction} disabled={!ketcher}>
-          Load reaction from canvas
+          캔버스에서 반응식 불러오기
         </button>
         {computeError && <p className="stoich-error">{computeError}</p>}
       </div>
 
       <div className="search-results">
         {!loaded && (
-          <p className="search-empty">Draw a reaction, then load it.</p>
+          <p className="search-empty">반응식을 그린 뒤 불러오세요.</p>
         )}
         {loaded && (
           <>
-            <div className="stoich-section">Reactants</div>
+            <div className="stoich-section">반응물</div>
+            <div className="table-scroll">
             <table className="stoich-table">
               <thead>
                 <tr>
-                  <th>Rxn</th><th>Reactant</th><th>MF</th><th>FW</th>
-                  <th>Limit?</th><th>Eq</th><th>Mass (g)</th><th>mmol</th>
-                  <th>Vol (ml)</th><th>Molarity</th><th>d</th>
+                  <th>번호</th><th>반응물</th><th>분자식</th><th>FW</th>
+                  <th>기준</th><th>당량</th><th>질량(g)</th><th>mmol</th>
+                  <th>부피(mL)</th><th>몰농도</th><th>밀도</th>
                 </tr>
               </thead>
               <tbody>
@@ -318,14 +319,16 @@ export default function StoichiometryPanel({
                 })}
               </tbody>
             </table>
+            </div>
 
-            <div className="stoich-section">Products</div>
+            <div className="stoich-section">생성물</div>
+            <div className="table-scroll">
             <table className="stoich-table">
               <thead>
                 <tr>
-                  <th>ID</th><th>Product</th><th>MF</th><th>FW</th><th>Theo Mass</th>
-                  <th>Actual Mass</th><th>Purity</th><th>Yield %</th>
-                  <th>Theo mmol</th><th>Act mmol</th>
+                  <th>번호</th><th>생성물</th><th>분자식</th><th>FW</th><th>이론질량</th>
+                  <th>실제질량</th><th>순도</th><th>수율%</th>
+                  <th>이론mmol</th><th>실제mmol</th>
                 </tr>
               </thead>
               <tbody>
@@ -377,16 +380,18 @@ export default function StoichiometryPanel({
                 })}
               </tbody>
             </table>
+            </div>
 
             <div className="stoich-section">
-              Solvents
+              용매
               <button type="button" className="flat-btn small" onClick={addSolvent}>
-                + Add Blank Solvent
+                + 용매 추가
               </button>
             </div>
+            <div className="table-scroll">
             <table className="stoich-table">
               <thead>
-                <tr><th>Name</th><th>Ratio</th><th>Volume (ml)</th></tr>
+                <tr><th>이름</th><th>비율</th><th>부피(mL)</th></tr>
               </thead>
               <tbody>
                 {solvents.map((r) => (
@@ -421,18 +426,19 @@ export default function StoichiometryPanel({
                   </tr>
                 ))}
                 {solvents.length === 0 && (
-                  <tr><td colSpan={3} className="search-empty">No solvent rows.</td></tr>
+                  <tr><td colSpan={3} className="search-empty">용매 없음.</td></tr>
                 )}
               </tbody>
             </table>
+            </div>
 
-            <div className="stoich-section">Reaction Conditions</div>
+            <div className="stoich-section">반응 조건</div>
             <div className="stoich-conditions">
               <span>
-                Molarity: <strong>{molarity != null ? `${fmt(molarity, 3)} M` : '—'}</strong>
+                몰농도: <strong>{molarity != null ? `${fmt(molarity, 3)} M` : '—'}</strong>
               </span>
               <label>
-                Pressure:
+                압력:
                 <input
                   className="cell-input wide"
                   type="text"
@@ -442,7 +448,7 @@ export default function StoichiometryPanel({
                 />
               </label>
               <label>
-                Temperature (°C):
+                온도(°C):
                 <input
                   className="cell-input"
                   type="number" step={5}

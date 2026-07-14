@@ -7,6 +7,17 @@ import {
   importStructure,
   downloadStructure,
 } from '../lib/ketcherFormats';
+import {
+  IconBrand,
+  IconDoc,
+  IconNew,
+  IconOpen,
+  IconPaste,
+  IconReaction,
+  IconReagent,
+  IconSave,
+  IconSearch,
+} from './icons';
 
 interface ToolbarProps {
   ketcher: Ketcher | null;
@@ -15,6 +26,8 @@ interface ToolbarProps {
   onToggleSearch: () => void;
   onToggleStoich: () => void;
   onOpenReagents: () => void;
+  searchActive: boolean;
+  stoichActive: boolean;
 }
 
 /** A dropdown menu that closes when clicking outside of it. */
@@ -22,7 +35,7 @@ function Menu({
   label,
   children,
 }: {
-  label: string;
+  label: React.ReactNode;
   children: (close: () => void) => React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -63,13 +76,15 @@ export default function Toolbar({
   onToggleSearch,
   onToggleStoich,
   onOpenReagents,
+  searchActive,
+  stoichActive,
 }: ToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const disabled = !ketcher;
 
   const requireKetcher = (): Ketcher | null => {
     if (!ketcher) {
-      onError('Editor is still loading — please wait a moment.');
+      onError('편집기를 아직 불러오는 중입니다. 잠시만 기다려 주세요.');
       return null;
     }
     return ketcher;
@@ -79,7 +94,7 @@ export default function Toolbar({
     const k = requireKetcher();
     if (!k) return;
     await k.setMolecule('');
-    onStatus('New document created.');
+    onStatus('새 구조를 시작합니다.');
   };
 
   const handleOpenClick = () => fileInputRef.current?.click();
@@ -97,9 +112,9 @@ export default function Toolbar({
       // Plain-text chemistry only (SDF / MOL / SMILES / KET). No binary .cdx.
       const content = await file.text();
       await importStructure(k, content);
-      onStatus(`Opened “${file.name}”.`);
+      onStatus(`“${file.name}” 파일을 열었습니다.`);
     } catch (err) {
-      onError(`Could not open “${file.name}”: ${describe(err)}`);
+      onError(`“${file.name}” 파일을 열 수 없습니다: ${describe(err)}`);
     }
   };
 
@@ -111,13 +126,13 @@ export default function Toolbar({
     try {
       const payload = await exportStructure(k, spec.id);
       if (!payload || payload.trim() === '') {
-        onError('Nothing to export — the canvas is empty.');
+        onError('내보낼 구조가 없습니다 — 캔버스가 비어 있습니다.');
         return;
       }
       downloadStructure(payload, spec);
-      onStatus(`Saved as ${spec.label}.`);
+      onStatus(`${spec.label} 형식으로 저장했습니다.`);
     } catch (err) {
-      onError(`Export to ${spec.label} failed: ${describe(err)}`);
+      onError(`${spec.label} 내보내기에 실패했습니다: ${describe(err)}`);
     }
   };
 
@@ -128,22 +143,22 @@ export default function Toolbar({
       // ChemDraw / other apps put text/plain SMILES or MOL on the clipboard.
       const text = await navigator.clipboard.readText();
       if (!text) {
-        onError('Clipboard is empty.');
+        onError('클립보드가 비어 있습니다.');
         return;
       }
       await k.addFragment(text);
-      onStatus('Pasted structure from clipboard.');
+      onStatus('클립보드에서 구조를 붙여넣었습니다.');
     } catch (err) {
-      onError(`Paste failed: ${describe(err)}`);
+      onError(`붙여넣기에 실패했습니다: ${describe(err)}`);
     }
   };
 
   return (
     <div className="toolbar">
       <div className="brand">
-        <span className="brand-mark">⬡</span>
+        <IconBrand />
         <span className="brand-name">KMEDIhub ELN</span>
-        <span className="brand-sub">PoC · RDKit + Ketcher</span>
+        <span className="brand-sub">연구노트</span>
       </div>
 
       <div className="menu-bar">
@@ -153,7 +168,8 @@ export default function Toolbar({
           onClick={handleNew}
           disabled={disabled}
         >
-          New
+          <IconNew />
+          새로 만들기
         </button>
 
         <button
@@ -162,20 +178,30 @@ export default function Toolbar({
           onClick={handleOpenClick}
           disabled={disabled}
         >
-          Open…
+          <IconOpen />
+          열기…
         </button>
 
-        <Menu label="Save As">
+        <Menu
+          label={
+            <>
+              <IconSave />
+              저장
+            </>
+          }
+        >
           {(close) => (
-            <ul className="menu-list">
+            <ul className="menu-list menu-list--rich">
               {EXPORT_FORMATS.map((spec, index) => (
                 <li key={spec.id}>
-                  <button
-                    type="button"
-                    onClick={() => handleExport(index, close)}
-                    title={spec.note}
-                  >
-                    {spec.label}
+                  <button type="button" onClick={() => handleExport(index, close)}>
+                    <span className="fmt-icon" aria-hidden>
+                      <IconDoc />
+                    </span>
+                    <span className="fmt-text">
+                      <span className="fmt-label">{spec.label}</span>
+                      {spec.note && <span className="fmt-note">{spec.note}</span>}
+                    </span>
                   </button>
                 </li>
               ))}
@@ -189,25 +215,32 @@ export default function Toolbar({
           onClick={handlePaste}
           disabled={disabled}
         >
-          Paste
+          <IconPaste />
+          붙여넣기
         </button>
+
+        <span className="menu-divider" aria-hidden />
 
         <button
           type="button"
-          className="flat-btn"
+          className={`flat-btn${searchActive ? ' is-active' : ''}`}
           onClick={onToggleSearch}
           disabled={disabled}
+          aria-pressed={searchActive}
         >
-          Search…
+          <IconSearch />
+          구조 검색
         </button>
 
         <button
           type="button"
-          className="flat-btn"
+          className={`flat-btn${stoichActive ? ' is-active' : ''}`}
           onClick={onToggleStoich}
           disabled={disabled}
+          aria-pressed={stoichActive}
         >
-          Stoich…
+          <IconReaction />
+          반응식 계산
         </button>
 
         <button
@@ -216,12 +249,13 @@ export default function Toolbar({
           onClick={onOpenReagents}
           disabled={disabled}
         >
-          Reagents…
+          <IconReagent />
+          시약 재고
         </button>
       </div>
 
       <div className="toolbar__hint">
-        Paste a structure (⌘/Ctrl+V) or draw — properties compute below.
+        구조를 붙여넣거나(⌘/Ctrl+V) 그리면 아래에서 물성이 계산됩니다.
       </div>
 
       <input

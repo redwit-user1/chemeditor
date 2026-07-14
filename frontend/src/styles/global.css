@@ -1,18 +1,28 @@
+/* Guno design tokens — pulled from the ADD-on Figma (fileKey 1Pq3Eqvhfubj1h2A0AQsix) */
+/* ponytail: no CDN font — on-prem/CSP-safe. Uses locally-installed Noto Sans KR
+   if present, else the OS Korean UI font (Malgun Gothic / Apple SD Gothic Neo). */
 :root {
-  --bg: #f5f7fa;
+  --bg: #f7f8fa;
   --surface: #ffffff;
-  --border: #d7dee8;
-  --text: #1b2733;
-  --text-soft: #5b6b7d;
-  --accent: #1a73c1;
-  --accent-dark: #135a97;
+  --surface-alt: #f8f9fa;
+  --border: #e9ecef;
+  --text: #212529;
+  --text-soft: #495057;
+  --text-faint: #868e96;
+  --accent: #1761de;
+  --accent-dark: #1150b8;
+  --accent-soft: #edf3fd;
   --error: #c0392b;
-  --ok: #34a853;
-  --shadow: 0 2px 10px rgba(20, 40, 70, 0.12);
+  --ok: #22a45d;
+  --shadow: 0 2px 10px rgba(20, 40, 70, 0.1);
+  --radius-btn: 10px;
+  --radius-card: 12px;
   --header-h: 52px;
   --status-h: 30px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
-    Arial, sans-serif;
+  font-family: 'Noto Sans KR', 'Malgun Gothic', 'Apple SD Gothic Neo',
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+    sans-serif;
+  letter-spacing: -0.01em;
 }
 
 * {
@@ -47,7 +57,7 @@ body {
   align-items: center;
   gap: 18px;
   padding: 0 14px;
-  background: linear-gradient(180deg, #ffffff, #eef2f7);
+  background: var(--surface);
   border-bottom: 1px solid var(--border);
   box-shadow: var(--shadow);
   z-index: 20;
@@ -55,14 +65,13 @@ body {
 
 .brand {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 8px;
 }
 
 .brand-mark {
-  font-size: 22px;
-  color: var(--accent);
-  transform: translateY(2px);
+  display: block;
+  flex: 0 0 auto;
 }
 
 .brand-name {
@@ -97,7 +106,7 @@ body {
   color: var(--text);
   font-size: 13px;
   padding: 7px 12px;
-  border-radius: 7px;
+  border-radius: var(--radius-btn);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -108,13 +117,50 @@ body {
 .flat-btn:hover:not(:disabled),
 .menu-trigger:hover,
 .menu-trigger.is-open {
-  background: #e3ecf6;
-  border-color: #cddcec;
+  background: var(--accent-soft);
+  border-color: var(--accent-soft);
 }
 
 .flat-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+/* Pressed/active toggle (search & stoich panels open) */
+.flat-btn.is-active {
+  background: var(--accent-soft);
+  border-color: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* Inline SVG icons inside buttons */
+.ic {
+  flex: 0 0 auto;
+}
+
+.flat-btn:not(.is-active) .ic,
+.menu-trigger .ic {
+  color: var(--text-soft);
+}
+
+/* Divider between file actions and analysis actions */
+.menu-divider {
+  width: 1px;
+  height: 20px;
+  margin: 0 4px;
+  background: var(--border);
+}
+
+/* Keyboard focus ring (a11y) */
+.flat-btn:focus-visible,
+.menu-trigger:focus-visible,
+.primary-btn:focus-visible,
+.seg-btn:focus-visible,
+.icon-btn:focus-visible,
+.cell-input:focus-visible,
+.status-dismiss:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 .caret {
@@ -158,7 +204,7 @@ body {
 }
 
 .menu-list button:hover {
-  background: #eef4fb;
+  background: var(--accent-soft);
   color: var(--accent-dark);
 }
 
@@ -184,7 +230,8 @@ body {
 
 /* ---------- Search panel ---------- */
 .search-panel {
-  flex: 0 0 320px;
+  flex: 0 1 320px;
+  min-width: 260px;
   background: var(--surface);
   border-left: 1px solid var(--border);
   display: flex;
@@ -268,7 +315,7 @@ body {
   background: var(--accent);
   color: #fff;
   padding: 9px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-btn);
   font-size: 13px;
   cursor: pointer;
 }
@@ -402,6 +449,8 @@ body {
 }
 
 .reagent-list {
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
   padding: 8px 10px 14px;
 }
@@ -458,9 +507,10 @@ body {
 }
 
 .inventory-results {
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: auto;
   padding: 10px 16px 16px;
-  max-height: 50vh;
 }
 
 .inventory-table {
@@ -559,13 +609,26 @@ body {
 
 /* ---------- Stoichiometry panel ---------- */
 .stoich-panel {
-  flex: 0 0 520px;
+  flex: 0 1 520px;
+  min-width: 360px;
   background: var(--surface);
   border-left: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   min-height: 0;
   z-index: 12;
+}
+
+/* Narrow viewports: let docked panels give the canvas room */
+@media (max-width: 900px) {
+  .search-panel {
+    flex-basis: 280px;
+    min-width: 220px;
+  }
+  .stoich-panel {
+    flex-basis: 44vw;
+    min-width: 300px;
+  }
 }
 
 .stoich-table {
@@ -585,6 +648,19 @@ body {
 .stoich-table th:first-child,
 .stoich-table td:first-child {
   text-align: left;
+  position: sticky;
+  left: 0;
+  background: var(--surface);
+  z-index: 1;
+}
+
+.product-row td:first-child {
+  background: var(--accent-soft);
+}
+
+/* Horizontal-scroll wrapper for wide reaction tables */
+.table-scroll {
+  overflow-x: auto;
 }
 
 .stoich-table th {
@@ -595,7 +671,7 @@ body {
 }
 
 .product-row td {
-  background: #f5f9fd;
+  background: var(--accent-soft);
 }
 
 .sp-role {
@@ -644,8 +720,10 @@ body {
 .prop-bar {
   flex: 0 0 auto;
   display: flex;
+  flex-wrap: wrap;
   align-items: stretch;
   gap: 28px;
+  row-gap: 10px;
   padding: 12px 20px;
   background: var(--surface);
   border-top: 2px solid var(--accent);
@@ -748,7 +826,7 @@ body {
   align-items: center;
   gap: 8px;
   padding: 0 14px;
-  background: #eef2f7;
+  background: var(--surface-alt);
   border-top: 1px solid var(--border);
   font-size: 12px;
   color: var(--text-soft);
@@ -785,4 +863,145 @@ body {
   cursor: pointer;
   font-size: 12px;
   text-decoration: underline;
+}
+
+/* ---------- Click-to-copy metrics ---------- */
+.metric--copy {
+  border: none;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  padding: 2px 6px;
+  margin: -2px -6px;
+  border-radius: 8px;
+  transition: background 0.12s ease;
+}
+
+.metric--copy:hover {
+  background: var(--accent-soft);
+}
+
+.metric--copy:hover .metric__label {
+  color: var(--accent);
+}
+
+/* ---------- Empty-canvas hint ---------- */
+.canvas-hint {
+  pointer-events: none;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-align: center;
+  padding: 0 24px;
+}
+
+.canvas-hint .brand-mark {
+  width: 44px;
+  height: 44px;
+  opacity: 0.4;
+}
+
+.canvas-hint__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+
+.canvas-hint__sub {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+/* ---------- Save menu: format icon + note ---------- */
+.menu-list--rich button {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 10px;
+}
+
+.fmt-icon {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: var(--text-faint);
+}
+
+.fmt-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.fmt-label {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.fmt-note {
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+.menu-list--rich button:hover .fmt-label {
+  color: var(--accent-dark);
+}
+
+/* ---------- Motion: panel / modal entrance ---------- */
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateX(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.search-panel,
+.stoich-panel {
+  animation: panel-in 0.18s ease;
+}
+
+.modal-overlay {
+  animation: overlay-in 0.15s ease;
+}
+
+.modal {
+  animation: modal-in 0.18s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .search-panel,
+  .stoich-panel,
+  .modal-overlay,
+  .modal,
+  .prop-bar--loading .engine-dot {
+    animation: none;
+  }
 }

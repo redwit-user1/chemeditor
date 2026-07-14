@@ -6,6 +6,7 @@ import PropertyBar from './components/PropertyBar';
 import SearchPanel from './components/SearchPanel';
 import StoichiometryPanel from './components/StoichiometryPanel';
 import InventoryDialog from './components/InventoryDialog';
+import { IconBrand } from './components/icons';
 import { useLiveProperties } from './hooks/useLiveProperties';
 
 type Notice = { kind: 'info' | 'error'; text: string } | null;
@@ -43,11 +44,24 @@ export default function App() {
           setShowSearch(false);
         }}
         onOpenReagents={() => setShowInventory(true)}
+        searchActive={showSearch}
+        stoichActive={showStoich}
       />
 
       <div className="workspace">
         <div className="editor-host">
           <KetcherEditor onReady={setKetcher} onError={handleError} />
+          {ketcher && live.status === 'empty' && (
+            <div className="canvas-hint" aria-hidden>
+              <IconBrand />
+              <p className="canvas-hint__title">
+                여기에 구조를 그리거나 붙여넣으세요
+              </p>
+              <span className="canvas-hint__sub">
+                ⌘/Ctrl+V 로 SMILES · MOL 붙여넣기 · 아래에서 분자식·분자량 자동 계산
+              </span>
+            </div>
+          )}
         </div>
         {showSearch && (
           <SearchPanel
@@ -88,8 +102,8 @@ export default function App() {
         <span className="status-text">
           {notice?.text ??
             (ketcher
-              ? 'Ready — draw a structure or paste a SMILES / MOL.'
-              : 'Loading chemistry engine…')}
+              ? '준비 완료 — 구조를 그리거나 SMILES / MOL을 붙여넣으세요.'
+              : '화학 엔진을 불러오는 중…')}
         </span>
         {notice && (
           <button
@@ -97,7 +111,7 @@ export default function App() {
             className="status-dismiss"
             onClick={() => setNotice(null)}
           >
-            Dismiss
+            닫기
           </button>
         )}
       </div>
