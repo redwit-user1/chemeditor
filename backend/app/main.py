@@ -8,15 +8,18 @@ Oracle-portable implementation whose numbers go into the feasibility report).
 
 from __future__ import annotations
 
+import os
 import time
 
-from fastapi import FastAPI, Query, UploadFile
+from fastapi import FastAPI, Query, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 
 from .chem.properties import properties_from_text
 from .chem.reaction import parse_reaction
 from .models import (
+    CompoundRegisterRequest,
+    CompoundRegisterResponse,
     CompoundResponse,
     ComponentPayload,
     ContainerPayload,
@@ -43,6 +46,7 @@ from .reagents.containers import (
     search_containers,
     search_containers_by_structure,
 )
+from .search.backend import Component
 from .search.service import build_index
 
 app = FastAPI(
@@ -51,10 +55,34 @@ app = FastAPI(
     description="Open-source (RDKit) replacement for the ChemDraw SDK chemistry engine.",
 )
 
-# The Vite dev server runs on a different origin; allow it in the PoC.
+# CORS whitelist. In production Goono proxies every call, so the browser only
+# ever reaches this service through the Vite dev server or the Goono origin —
+# never directly. The allowed origins are driven by CHEM_ALLOWED_ORIGINS
+# (comma-separated); when unset we default to the Vite dev server (5173) and
+# Goono (8080). Set CHEM_ALLOWED_ORIGINS to the real Goono origin(s) in prod.
+_DEFAULT_ALLOWED_ORIGINS = (
+    "http://localhost:5173,http://localhost:8080,http://127.0.0.1:8080"
+)
+
+
+def parse_allowed_origins(raw: str | None) -> list[str]:
+    """Parse the comma-separated CHEM_ALLOWED_ORIGINS value into a clean list.
+
+    Blanks and surrounding whitespace are dropped; an unset/empty value falls
+    back to the Vite-dev + Goono default. We never return ``["*"]`` — an empty
+    whitelist would silently disable CORS protection, so the default is used
+    instead.
+    """
+    if raw is None or not raw.strip():
+        raw = _DEFAULT_ALLOWED_ORIGINS
+    return [origin.strip() for origin in raw.split(",") if origin.strip()]
+
+
+ALLOWED_ORIGINS = parse_allowed_origins(os.environ.get("CHEM_ALLOWED_ORIGINS"))
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -331,6 +359,80 @@ def depict(
 
 
 # ---------- compounds ----------
+
+@app.post(f"{V1}/compounds", response_model=CompoundRegisterResponse)
+def register_compound(
+    request: CompoundRegisterRequest, response: Response
+) -> CompoundRegisterResponse:
+    """Register a compound into the LIVE search index (no restart needed).
+
+    Parses ``structure`` (molblock or SMILES), computes properties, adds the
+    component to the live backend via the incremental ``add_and_index`` path,
+    and records it in the compound store so ``GET /compounds/{reg_id}`` and
+    search thumbnails see it immediately.
+
+    Error shape follows the rest of the surface — ``ok=false`` + ``error`` in
+    the body. A duplicate ``reg_id`` additionally sets HTTP 409 (the depict
+    endpoint sets 422 the same way); a parse failure stays HTTP 200 with
+    ``ok=false`` and never a 500, never a swallowed RDKit ``None``.
+    """
+    from rdkit import Chem
+
+    from .chem.parsing import parse_structure
+    from .chem.properties import compute_properties
+
+    reg_id = request.reg_id.strip()
+    if not reg_id:
+        response.status_code = 422
+        return CompoundRegisterResponse(ok=False, error="reg_id is required")
+
+    if reg_id in _COMPOUND_STORE:
+        response.status_code = 409
+        return CompoundRegisterResponse(
+            ok=False, reg_id=reg_id, error=f"reg_id already registered: {reg_id}"
+        )
+
+    parsed = parse_structure(request.structure)
+    if not parsed.ok:
+        # Parse failure is a client-data problem, not a server fault: 200 +
+        # ok=false with the RDKit reason (never swallowed, per repo rule).
+        return CompoundRegisterResponse(
+            ok=False,
+            reg_id=reg_id,
+            error=parsed.error or "could not parse structure",
+        )
+
+    props = compute_properties(parsed.mol)
+    smiles = Chem.MolToSmiles(parsed.mol)
+    # Single-component registration: comp_index 1, mixture_id == reg_id. The
+    # raw_cdx blob is accepted for provenance but never parsed (CLAUDE.md).
+    component = Component(
+        regid=reg_id,
+        mixture_id=reg_id,
+        comp_index=1,
+        smiles=smiles,
+        mol_formula=props.mol_formula,
+        mol_weight=props.mol_weight,
+    )
+    indexed = _SEARCH_BACKEND.add_and_index(component)
+    if not indexed:
+        # add_and_index re-parses the canonical SMILES; a failure here would be
+        # an internal inconsistency, surfaced rather than swallowed.
+        return CompoundRegisterResponse(
+            ok=False,
+            reg_id=reg_id,
+            error="structure parsed but could not be indexed",
+        )
+    _COMPOUND_STORE.setdefault(reg_id, []).append(component)
+
+    return CompoundRegisterResponse(
+        ok=True,
+        reg_id=reg_id,
+        formula=props.mol_formula,
+        mol_wt=props.mol_weight,
+        exact_mol_wt=props.exact_mol_weight,
+    )
+
 
 @app.get(f"{V1}/compounds/{{reg_id}}", response_model=CompoundResponse)
 def get_compound(reg_id: str) -> CompoundResponse:

@@ -170,6 +170,28 @@ class CompoundResponse(BaseModel):
     error: str | None = None
 
 
+class CompoundRegisterRequest(BaseModel):
+    """Live compound registration (``POST /api/v1/compounds``).
+
+    ``structure`` is a V2000 molblock or a SMILES string (same auto-detection
+    as the paste/search paths). ``raw_cdx`` is the ChemDraw Base64 blob — kept
+    for provenance only and never parsed (CLAUDE.md: preserve, do not decode).
+    """
+
+    reg_id: str
+    structure: str
+    raw_cdx: str | None = None
+
+
+class CompoundRegisterResponse(BaseModel):
+    ok: bool
+    reg_id: str | None = None
+    formula: str | None = None
+    mol_wt: float | None = None
+    exact_mol_wt: float | None = None
+    error: str | None = None
+
+
 # ---------- inventory ----------
 
 class ContainerPayload(BaseModel):
