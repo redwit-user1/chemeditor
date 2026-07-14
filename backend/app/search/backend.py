@@ -61,6 +61,37 @@ class ChemSearchBackend(ABC):
     def build(self) -> None:
         """Finalize indexes after all components have been added."""
 
+    def add_and_index(self, component: Component) -> bool:
+        """Add ONE component to an already-built *live* index.
+
+        Used for online compound registration (``POST /api/v1/compounds``),
+        where the index must reflect the new structure immediately without a
+        server restart. The result set after this call must be identical to
+        the one a full rebuild (``add_component`` for every component +
+        ``build``) would produce — the two backends' equivalence guarantee
+        extends to incrementally-added rows.
+
+        Returns ``True`` if the component was indexed, ``False`` if its
+        structure was unparseable (never silently swallowed — the caller
+        surfaces the failure).
+
+        Default implementation appends and does a full ``build()``; backends
+        that support single-row insertion override this to avoid rebuilding
+        the whole index on every insert.
+        """
+        before = self._indexed_count()
+        self.add_component(component)
+        self.build()
+        return self._indexed_count() > before
+
+    def _indexed_count(self) -> int:
+        """Number of components accepted into the index so far.
+
+        Backs the default ``add_and_index`` parse-success check. Backends that
+        track pending rows expose that count; others may override.
+        """
+        return len(getattr(self, "_pending", []))
+
     @abstractmethod
     def exact_search(self, query_smiles: str) -> list[Hit]:
         """Structures whose canonical form equals the query's."""

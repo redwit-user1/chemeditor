@@ -96,10 +96,19 @@ class PortableFPBackend(ChemSearchBackend):
 
     # ---- indexing ----
 
-    def add_component(self, component: Component) -> None:
+    def _prepare_row(self, component: Component) -> tuple | None:
+        """Parse a component, update the in-process caches, and return its DB
+        row tuple (also appended to ``_pending`` for the batch ``build``).
+
+        Returns ``None`` for an unparseable structure — the loader counts parse
+        failures, and search skips them; never a silent swallow here either.
+        The single source of truth for a component's row, shared by the batch
+        ``add_component`` path and the incremental ``add_and_index`` path so the
+        two produce byte-identical rows (equivalence guarantee).
+        """
         mol = Chem.MolFromSmiles(component.smiles)
         if mol is None:
-            return  # loader counts parse failures; search skips them
+            return None
         cid = self._next_id
         self._next_id += 1
         self._mols[cid] = mol
@@ -108,21 +117,46 @@ class PortableFPBackend(ChemSearchBackend):
         words = pattern_words(mol)
         morgan_blob = bits_to_bytes(mbits)
         self._fp_ints[cid] = int.from_bytes(morgan_blob, "big")
-        self._pending.append(
-            (
-                cid,
-                component.regid,
-                component.mixture_id,
-                component.comp_index,
-                canonical,
-                component.mol_formula,
-                component.mol_weight,
-                mol.GetNumHeavyAtoms(),
-                *words,
-                morgan_blob,
-                len(mbits),
-            )
+        row = (
+            cid,
+            component.regid,
+            component.mixture_id,
+            component.comp_index,
+            canonical,
+            component.mol_formula,
+            component.mol_weight,
+            mol.GetNumHeavyAtoms(),
+            *words,
+            morgan_blob,
+            len(mbits),
         )
+        self._pending.append(row)
+        return row
+
+    def add_component(self, component: Component) -> None:
+        self._prepare_row(component)
+
+    def add_and_index(self, component: Component) -> bool:
+        """Insert ONE component into the already-built live ``component`` table
+        with a single ``INSERT`` — no ``DROP``/``CREATE``/bulk re-insert.
+
+        Portable: the statement is a plain positional ``INSERT`` (Oracle SE has
+        it verbatim). The row is built by the same ``_prepare_row`` the batch
+        build uses, so an incrementally-added component is indistinguishable
+        from a start-up-loaded one for every subsequent query.
+        """
+        with self._lock:
+            row = self._prepare_row(component)
+            if row is None:
+                return False
+            n_cols = 8 + PATTERN_WORD_COUNT + 2
+            placeholders = ",".join("?" for _ in range(n_cols))
+            cur = self._conn.cursor()
+            cur.execute(
+                f"INSERT INTO component VALUES ({placeholders})", row
+            )
+            self._conn.commit()
+        return True
 
     def build(self) -> None:
         pat_defs = ",\n                ".join(f"{c} INTEGER" for c in _PAT_COLS)
