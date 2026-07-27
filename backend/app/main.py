@@ -39,6 +39,9 @@ from .models import (
     StoichRequest,
     StoichResponse,
     StoichRowOut,
+    StoichUsageRequest,
+    StoichUsageResponse,
+    StoichUsageRowOut,
     StructureRequest,
 )
 from .reagents.containers import (
@@ -221,6 +224,56 @@ def chem_stoich(request: StoichRequest) -> StoichResponse:
         rows=out,
         reaction_molarity=result.reaction.get("molarity"),
         temperature_c=result.reaction.get("temperature_c"),
+    )
+
+
+@app.post(f"{V1}/chem/stoich/usage", response_model=StoichUsageResponse)
+def chem_stoich_usage(request: StoichUsageRequest) -> StoichUsageResponse:
+    """Stoichiometry over a LIMS reagent-usage list (Goono ELN).
+
+    Distinct from ``/chem/stoich``, which serves the synthesis-note table and
+    is all-or-nothing. Goono feeds this endpoint what the LIMS actually holds —
+    ``DELTA_AMOUNT`` + ``UNIT_CCD`` joined to a nullable ``MOL_WT`` — so rows
+    are routinely incomplete and the table must render anyway. Every row that
+    cannot be converted comes back ``ok=False`` with a ``reason_code`` the UI
+    renders in the cell; the remaining rows still compute.
+
+    Goono treats an unreachable chem service as a fallback signal and computes
+    locally, so this endpoint never needs to degrade — it either answers or is
+    not reached at all.
+    """
+    from .chem.stoich_usage import UsageEntry, compute_usage_stoichiometry
+
+    entries = [
+        UsageEntry(
+            key=e.key,
+            name=e.name,
+            role=e.role,
+            mol_wt=e.mol_wt,
+            smiles=e.smiles,
+            amount=e.amount,
+            unit=e.unit,
+            density=e.density,
+            purity=e.purity,
+            equiv=e.equiv,
+            coeff=e.coeff,
+        )
+        for e in request.entries
+    ]
+    result = compute_usage_stoichiometry(entries)
+
+    return StoichUsageResponse(
+        ok=True,
+        rows=[StoichUsageRowOut(**vars(r)) for r in result.rows],
+        limiting_key=result.limiting_key,
+        limiting_name=result.limiting_name,
+        limiting_mmol=result.limiting_mmol,
+        product_key=result.product_key,
+        theoretical_mmol=result.theoretical_mmol,
+        theoretical_mass_g=result.theoretical_mass_g,
+        yield_pct=result.yield_pct,
+        warnings=result.warnings,
+        n_rdkit_failures=result.n_rdkit_failures,
     )
 
 

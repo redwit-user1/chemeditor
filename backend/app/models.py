@@ -99,6 +99,72 @@ class StoichResponse(BaseModel):
     error: str | None = None
 
 
+# ---------- chem/stoich/usage (LIMS reagent-usage flow) ----------
+#
+# Separate from StoichRow* above on purpose. Those model the synthesis-note
+# table, where the chemist supplies a complete row and a bad row is an error.
+# These model what Goono's LIMS actually recorded (DELTA_AMOUNT + UNIT_CCD +
+# a possibly-null MOL_WT), where incomplete rows are normal and must still
+# render — so the response is per-row tolerant instead of all-or-nothing.
+
+class StoichUsageEntryIn(BaseModel):
+    key: str = ""                    # caller correlation id (LIMS txn id)
+    name: str = ""
+    role: str = "reactant"           # reactant|limiting|reagent|solvent|product
+    mol_wt: float | None = None
+    smiles: str = ""
+    amount: float | None = None
+    unit: str = ""                   # g|mg|kg|mol|mmol|mL|L
+    density: float | None = None     # g/mL
+    purity: float | None = None
+    equiv: float | None = None
+    coeff: float = 1.0
+
+
+class StoichUsageRowOut(BaseModel):
+    key: str = ""
+    name: str = ""
+    role: str = "reactant"
+    ok: bool = False
+    reason_code: str | None = None
+    reason: str | None = None
+    is_limiting: bool = False
+    mol_wt: float | None = None
+    mol_wt_source: str = ""
+    unit: str = ""
+    amount: float | None = None
+    mass_g: float | None = None
+    effective_mass_g: float | None = None
+    volume_ml: float | None = None
+    density: float | None = None
+    purity: float | None = None
+    coeff: float = 1.0
+    mmol: float | None = None
+    equiv: float | None = None
+    theoretical_mmol: float | None = None
+    theoretical_mass_g: float | None = None
+    yield_pct: float | None = None
+
+
+class StoichUsageRequest(BaseModel):
+    entries: list[StoichUsageEntryIn] = []
+
+
+class StoichUsageResponse(BaseModel):
+    ok: bool = True
+    rows: list[StoichUsageRowOut] = []
+    limiting_key: str | None = None
+    limiting_name: str | None = None
+    limiting_mmol: float | None = None
+    product_key: str | None = None
+    theoretical_mmol: float | None = None
+    theoretical_mass_g: float | None = None
+    yield_pct: float | None = None
+    warnings: list[str] = []
+    n_rdkit_failures: int = 0
+    error: str | None = None
+
+
 # ---------- reaction (species extraction for the stoich table) ----------
 
 class ReactionRequest(BaseModel):
