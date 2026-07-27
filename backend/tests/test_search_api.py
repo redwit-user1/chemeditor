@@ -112,6 +112,43 @@ def test_depict_bad_structure_422():
     assert client.get("/api/v1/depict", params={"smiles": "!!!"}).status_code == 422
 
 
+# The GET form takes SMILES only. Callers that hold a molblock — the Goono LIMS
+# compound table stores MOL, never SMILES — need a POST form that runs the same
+# molblock/SMILES auto-detection as /chem/properties.
+
+def test_depict_post_accepts_smiles():
+    resp = client.post("/api/v1/depict", json={"structure": "c1ccccc1O"})
+    assert resp.status_code == 200
+    assert resp.headers["content-type"].startswith("image/svg+xml")
+    assert "<svg" in resp.text
+
+
+def test_depict_post_accepts_molblock():
+    from rdkit import Chem
+
+    molblock = Chem.MolToMolBlock(Chem.MolFromSmiles("c1ccccc1O"))
+    resp = client.post("/api/v1/depict", json={"molblock": molblock})
+    assert resp.status_code == 200
+    assert "<svg" in resp.text
+
+
+def test_depict_post_honours_size():
+    resp = client.post(
+        "/api/v1/depict", json={"structure": "c1ccccc1", "w": 240, "h": 180}
+    )
+    assert resp.status_code == 200
+    assert "240" in resp.text and "180" in resp.text
+
+
+def test_depict_post_bad_structure_422():
+    # RDKit returning None must surface as an explicit failure, not an empty SVG.
+    assert client.post("/api/v1/depict", json={"structure": "!!!"}).status_code == 422
+
+
+def test_depict_post_requires_a_structure():
+    assert client.post("/api/v1/depict", json={"w": 140}).status_code == 422
+
+
 def test_search_hits_carry_smiles_for_thumbnails():
     body = client.post(
         "/api/v1/search/substructure", json={"structure": "c1ccccc1"}

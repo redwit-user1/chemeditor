@@ -15,6 +15,7 @@ from fastapi import FastAPI, Query, Response, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 
+from .chem.parsing import parse_structure
 from .chem.properties import properties_from_text
 from .chem.reaction import parse_reaction
 from .models import (
@@ -25,6 +26,7 @@ from .models import (
     ContainerPayload,
     ConvertRequest,
     ConvertResponse,
+    DepictRequest,
     InventoryResponse,
     InventoryStructureRequest,
     PropertiesResponse,
@@ -398,6 +400,25 @@ def _depict_svg(smiles: str, width: int, height: int) -> str | None:
     return drawer.GetDrawingText()
 
 
+@lru_cache(maxsize=2048)
+def _depict_svg_from_text(text: str, width: int, height: int) -> str | None:
+    """Same as :func:`_depict_svg` but accepts a molblock *or* SMILES.
+
+    Routed through :func:`parse_structure` so molblock/SMILES detection matches
+    ``/chem/properties`` exactly — one structure must not be readable by one
+    endpoint and unreadable by the other.
+    """
+    from rdkit.Chem.Draw import rdMolDraw2D
+
+    parsed = parse_structure(text)
+    if not parsed.ok:
+        return None
+    drawer = rdMolDraw2D.MolDraw2DSVG(width, height)
+    drawer.DrawMolecule(parsed.mol)
+    drawer.FinishDrawing()
+    return drawer.GetDrawingText()
+
+
 @app.get(f"{V1}/depict")
 def depict(
     smiles: str = Query(...),
@@ -408,6 +429,21 @@ def depict(
     svg = _depict_svg(smiles, w, h)
     if svg is None:
         return PlainTextResponse("bad structure", status_code=422)
+    return PlainTextResponse(svg, media_type="image/svg+xml")
+
+
+@app.post(f"{V1}/depict")
+def depict_post(request: DepictRequest):
+    """2D depiction for callers holding a molblock rather than SMILES.
+
+    A parse failure is a 422 with the reason, never an empty SVG — an empty
+    thumbnail is indistinguishable from a blank molecule on screen.
+    """
+    svg = _depict_svg_from_text(request.text, request.w, request.h)
+    if svg is None:
+        return PlainTextResponse(
+            parse_structure(request.text).error or "bad structure", status_code=422
+        )
     return PlainTextResponse(svg, media_type="image/svg+xml")
 
 

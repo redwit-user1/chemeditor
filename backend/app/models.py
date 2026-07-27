@@ -25,6 +25,17 @@ class StructureRequest(BaseModel):
         return self.molblock or self.structure or ""
 
 
+class DepictRequest(StructureRequest):
+    """A structure to render as SVG, plus the thumbnail box to render it into.
+
+    Separate from the GET form because that one takes SMILES only, and the
+    callers that need this (the Goono LIMS compound table) hold molblocks.
+    """
+
+    w: int = Field(140, ge=32, le=600)
+    h: int = Field(100, ge=32, le=600)
+
+
 class PropertiesResponse(BaseModel):
     ok: bool
     input_format: str
