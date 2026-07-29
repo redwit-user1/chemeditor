@@ -634,8 +634,19 @@
    전용 아이콘이 없어 기존 자산을 재사용한다. 성격이 가까운 것을 골랐고,
    전용 아이콘이 준비되면 이 블록의 URL 만 바꾸면 된다.
    ------------------------------------------------------------------ */
+/*
+  아이콘 두 건을 손봤다.
+
+  1) icon_note_sheet.png 는 초록색 'XLS' 배지다. GNB 는 남색 배경에 흰색 단색
+     아이콘으로 통일돼 있어 혼자 튀고, 시료를 스프레드시트로 오해하게 만든다.
+     같은 크기의 흰색 단색 아이콘으로 바꾼다.
+  2) icon_alert.png(40x41) 는 다른 메뉴 아이콘(24px 내외)보다 크다. 구노 기본
+     규칙은 background-size 를 지정하지 않고 원본 크기에 기대므로, 그대로 두면
+     메뉴 글자를 덮는다. 이 규칙에만 크기를 맞춘다.
+     색은 그대로 둔다 — 규격 이탈은 경고이므로 붉은 아이콘이 뜻에 맞는다.
+*/
 .nav-menu .menuCd.LIMS_SAMPLE {
-	background-image: url(../img/icon_note_sheet.png);
+	background-image: url(../img/icon_new_note_white.png);
 	background-repeat: no-repeat;
 	background-position: 12px;
 }
@@ -650,6 +661,7 @@
 	background-image: url(../img/icon_alert.png);
 	background-repeat: no-repeat;
 	background-position: 12px;
+	background-size: 24px 24px;
 }
 
 .nav-menu .menuCd.LIMS_METHOD {
