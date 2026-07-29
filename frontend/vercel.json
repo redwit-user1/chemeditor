@@ -5,5 +5,12 @@
       "source": "/api/:path*",
       "destination": "https://chemeditor.srv1711580.hstgr.cloud/api/:path*"
     }
+  ],
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/lims-poc/",
+      "permanent": false
+    }
   ]
 }
