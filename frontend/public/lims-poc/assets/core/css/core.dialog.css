@@ -1,0 +1,93 @@
+/**
+ * 공통 메시지 CSS
+ * @author GOONO
+ * @since  2019
+ * @version 1.0
+ * @see
+ * Copyright (C)  All right reserved.
+*/
+
+/* .modal-dialog {top: 30%;} */
+.core-dialog .modal {
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+
+.core-dialog .modal-dialog .modal-content {
+	border-radius: 10px;
+	border: none;
+	background: #e7e7e7;
+}
+
+.core-dialog .modal-dialog .modal-header {
+/* 	background: #1d8bdf;
+	color: #fff;
+	padding: 13px 13px 10px 20px;
+	font-size: 18px;
+	border-radius: 8px 8px 0 0;*/
+	min-height: 1.5rem;
+    height: 30px; 
+    background-color: #fff;
+    background: linear-gradient(to bottom, #e6e6e6, #c4c4c4);
+    border-radius: 5px 5px 0 0;
+    border-bottom: 1px solid #9e9e9e;
+    padding: 0;
+    cursor: move;
+}
+
+.core-dialog .modal-dialog .glyphicon-exclamation-sign {
+	color: yellow;
+	padding-right: 5px;
+	font-size: 17px;
+}
+
+.core-dialog .modal-dialog .modal-title {
+	font-size: 14px;
+	font-family: "Noto Sans KR", sans-serif;
+	padding-left: 10px;
+    padding-top: 5px;
+}
+
+.core-dialog .modal-dialog .modal-header .close {
+	border-radius: 4px;
+	width: 27px;
+	height: 27px;
+	opacity: 1;
+	color: #fff;
+	text-shadow: none;
+	font-size: 20px;
+	padding: 0px;
+	margin-top: -2px;
+	margin-right: 1px;
+	background: #84bae5;
+	display: none;
+}
+
+.core-dialog .modal-dialog .modal-header .close:hover {
+	background: #fff;
+	color: #84bae5;
+	opacity: 1;
+}
+
+.core-dialog .modal-dialog .modal-body {
+	word-break: keep-all;
+	/* text-align: center; */
+}
+
+.core-dialog .modal-dialog .modal-footer {
+	text-align: center;
+	font-family: "Noto Sans KR", sans-serif;
+}
+
+.core-dialog .modal-dialog .modal-footer button {
+	float: right;
+	margin-left: 10px;
+}
+
+.modal-backdrop.show {
+	opacity: .2;
+}
+
+.core-dialog .modal-dialog .form-group {
+    margin-bottom: 0.5rem;
+}

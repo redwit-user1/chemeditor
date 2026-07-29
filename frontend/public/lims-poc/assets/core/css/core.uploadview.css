@@ -1,0 +1,39 @@
+/**
+ * 업로드 진행 화면 
+ * @author GOONO
+ * @since  2022
+ * @version 1.0
+ * @see
+ * Copyright (C)  All right reserved.
+*/
+
+ 
+.core-upload-view-content {
+    --tblr-alert-color: #cacccd!important;     
+    background: rgba(55, 81, 126, 0.8)!important; 
+    z-index: 999999999!important; 
+    border-color: rgba(55, 81, 126, 0.8)!important;
+}
+.core-upload-view-content .upload-files {
+	height: 150px;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+.core-upload-view-content .progress {
+ 	position: relative;
+ 	height: 12px;
+ 	background-color : gray;
+}
+.core-upload-view-content .progress span {
+    position: absolute;
+    display: block;
+    width: 100%;
+    color: rgb(0, 0, 0);
+ }
+.core-upload-view-content .progress-bar{
+	font-family:  inherit;
+	font-size: inherit;
+	font-weight: inherit; 
+	font-size: 8px;
+    line-height: 12px;
+}

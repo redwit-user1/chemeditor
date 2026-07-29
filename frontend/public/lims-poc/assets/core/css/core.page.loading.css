@@ -1,0 +1,33 @@
+/**
+ * 페이지 로딩 프로그레스 바
+ * @author GOONO
+ * @since  2021
+ * @version 1.0
+ * @see
+ * Copyright (C)  All right reserved.
+*/
+.page-progress 
+{
+ position: fixed;
+ left: 0px;
+ top: 0px;
+ width: 100%;
+ height: 100%;
+ z-index: 9999;
+ background-color: transparent;
+ /* background: rgba(0,0,0,0.3); */
+}
+.page-progress-bar 
+{ 
+  background-color: #4e6ece; 
+  width:0%; 
+  height:5px; 
+  border-radius: 3px; 
+}
+.page-progress-percent 
+{ 
+  position:absolute; 
+  display:inline-block; 
+  top:3px; 
+  left:48%; 
+}

@@ -1,0 +1,78 @@
+/*
+ * PoC 전용 표시. 구노 실제 CSS 는 건드리지 않는다 — 여기 있는 규칙은 전부
+ * lims-poc- 접두사를 쓰고, 실서비스 클래스에 어떤 영향도 주지 않는다.
+ */
+.lims-poc-banner {
+  position: sticky;
+  top: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 18px;
+  background: #101828;
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.lims-poc-banner b {
+  padding: 2px 8px;
+  border-radius: 3px;
+  background: #2f6fed;
+  font-weight: 600;
+}
+.lims-poc-banner span {
+  color: #d0d5dd;
+}
+
+/* 업무 흐름 안내 — 지금 보는 화면이 전체 흐름의 어디인지 알려준다. */
+.lims-poc-flow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border: 1px solid #e4e7ec;
+  border-radius: 6px;
+  background: #f9fafb;
+}
+.lims-poc-flow .lims-poc-flow-label {
+  margin-right: 6px;
+  color: #667085;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.lims-poc-flow a,
+.lims-poc-flow span.lims-poc-step {
+  padding: 5px 11px;
+  border: 1px solid #e4e7ec;
+  border-radius: 14px;
+  background: #fff;
+  color: #475467;
+  font-size: 12px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.lims-poc-flow a:hover {
+  border-color: #2f6fed;
+  color: #2f6fed;
+}
+.lims-poc-flow .lims-poc-step.on {
+  border-color: #2f6fed;
+  background: #2f6fed;
+  color: #fff;
+  font-weight: 600;
+}
+.lims-poc-flow .lims-poc-arrow {
+  color: #d0d5dd;
+  font-size: 11px;
+}
+.lims-poc-flow .lims-poc-note {
+  flex-basis: 100%;
+  margin-top: 8px;
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.6;
+}

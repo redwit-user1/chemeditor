@@ -1,0 +1,84 @@
+/**
+ * jstree 기반 확장 트리
+ * @author GOONO
+ * @since  2021
+ * @version 1.0
+ * @see
+ * Copyright (C)  All right reserved.
+*/
+.flex-column {
+    padding: 15px;
+}
+
+.fa-use-tree {
+    color: #6b8be1;
+    font-size: 12px; /*아이콘크기*/
+}
+
+.fa-unuse-tree {
+    color: #dc5567;
+    font-size: 12px; /*아이콘크기*/
+}
+
+.jstree-default .jstree-node {
+    max-width: 560px;
+}
+.jstree-default.category .jstree-anchor {
+    width: 92%;
+    height: 36px;
+    margin: 4px 0px;
+    padding: 4px 8px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    background-color: #fff;
+    font-size: 14px;
+    line-height: 25px;
+    letter-spacing: 0;
+    box-shadow: 0px 1px 8px 0px #00000014;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.jstree-default.category .jstree-clicked,
+.jstree-default.category .jstree-anchor.active,
+.jstree-default.category .jstree-anchor:hover {
+    background: #edf3fd;
+    border: 1px solid #1761de;
+    box-shadow: 0px 1px 8px 0px #00000014;
+}
+.jstree-default.category .jstree-clicked,
+.jstree-default.category .jstree-anchor.active {
+    background-image: url(../../lib/eln/img/icon_check_blue_s.png);
+    background-repeat: no-repeat;
+    background-position: right 5px top 5px;
+}
+.jstree-default.category .jstree-themeicon-custom.jstree-icon {
+    margin-right: 8px;
+    background-image: url(../img/icon_category_tag.png);
+    background-repeat: no-repeat;
+    background-position: left 0px top 2px;
+}
+.jstree-default.category .jstree-anchor:hover .jstree-themeicon-custom.jstree-icon,
+.jstree-default.category .jstree-anchor.jstree-clicked .jstree-themeicon-custom.jstree-icon {
+    margin-right: 8px;
+    background-image: url(../../lib/eln/img/icon_category_tag_hover.png);
+    background-repeat: no-repeat;
+    background-position: left 0px top 2px;
+}
+
+.jstree-default .jstree-container-ul > .jstree-open > .jstree-ocl {
+    background-image: none;
+}
+
+.jstree-default .jstree-open > .jstree-ocl {
+    background-position: -100px 0;
+    background-image: url('../img/treeview32px.png');
+}
+.jstree-default .jstree-closed > .jstree-ocl {
+    background-position: -132px 0;
+    background-image: url('../img/treeview32px.png');
+}
+.jstree-contextmenu {
+    z-index: 9999999999;
+}

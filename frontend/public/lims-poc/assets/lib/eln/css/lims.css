@@ -1,0 +1,722 @@
+@charset "UTF-8";
+/* ============================================================================
+   LIMS 확장 스타일 (Epic #23)
+
+   원칙: 신규 색상/타이포/컴포넌트를 정의하지 않는다.
+   Figma(구축형 GOONO_디자인)의 토큰은 style.css 가 이미 구현하고 있으므로
+   (primary/600 #1761DE, Gray/900 #212529, Gray/700 #495057, Gray/300 #DEE2E6,
+    Gray/50 #F8F9FA, 모달그림자 0 4px 16px #21252929, radius 10px)
+   여기에는 style.css 가 커버하지 못하는 LIMS 전용 항목만 최소로 둔다.
+=============================================================================*/
+
+/* ---------------------------------------------------------------------------
+   1) GNB 메뉴 아이콘
+   .nav-menu .menuCd.<MENU_CD> 규칙으로 아이콘이 붙는 기존 규약을 따른다.
+   이 규칙이 없으면 신규 LIMS 메뉴만 아이콘 없이 렌더링되어 디자인이 깨진다.
+   네이비 사이드바(#08204A)용으로 제작된 기존 화이트 아이콘을 재사용한다.
+--------------------------------------------------------------------------- */
+.nav-menu .menuCd.LIMS_REAGENT {
+	background-image: url(../img/icon_project_list.png);
+	background-repeat: no-repeat;
+	background-position: 12px;
+}
+
+.nav-menu .menuCd.LIMS_LOCATION {
+	background-image: url(../img/icon_menu_folder.png);
+	background-repeat: no-repeat;
+	background-position: 12px;
+}
+
+.nav-menu .menuCd.LIMS_CHEM {
+	background-image: url(../img/icon_add_check.png);
+	background-repeat: no-repeat;
+	background-position: 12px;
+}
+
+.nav-menu .menuCd.LIMS_COMPOUND {
+	background-image: url(../img/icon_acive_summary.png);
+	background-repeat: no-repeat;
+	background-position: 12px;
+}
+
+.nav-menu .menuCd.LIMS_SCAN {
+	background-image: url(../img/icon_audit.png);
+	background-repeat: no-repeat;
+	background-position: 10px;
+}
+
+/* ---------------------------------------------------------------------------
+   2) 상태 표기
+   Figma 의 Gray/Primary 스케일만 사용한다. 위험(경과)은 style.css 의 #ee5139 계열.
+--------------------------------------------------------------------------- */
+.lims-state {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 4px;
+	font-size: 12px;
+	font-weight: 500;
+	line-height: 1.5;
+	letter-spacing: -0.02em;
+	white-space: nowrap;
+}
+
+.lims-state.expired {
+	background: #fdecea;
+	color: #ee5139;
+}
+
+.lims-state.soon {
+	background: #fff6e0;
+	color: #a1730a;
+}
+
+.lims-state.normal {
+	background: #edf3fd;
+	color: #1761de;
+}
+
+.lims-state.muted {
+	background: #f1f3f5;
+	color: #495057;
+}
+
+/* ---------------------------------------------------------------------------
+   3) 물성 패널 — 구조식 붙여넣기 직후 분자식/분자량이 표시되는 영역
+   재단이 지목한 메인 기능이라 시각적으로 확실히 구분되어야 한다.
+--------------------------------------------------------------------------- */
+.lims-prop-bar {
+	display: flex;
+	align-items: center;
+	gap: 32px;
+	padding: 14px 20px;
+	background: #f8f9fa;
+	border: 1px solid #dee2e6;
+	border-radius: 10px;
+}
+
+.lims-prop-bar .prop-item {
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+}
+
+.lims-prop-bar .prop-label {
+	font-size: 14px;
+	font-weight: 400;
+	color: #495057;
+	letter-spacing: -0.02em;
+}
+
+.lims-prop-bar .prop-value {
+	font-size: 18px;
+	font-weight: 700;
+	color: #1761de;
+	letter-spacing: -0.04em;
+	font-variant-numeric: tabular-nums;
+}
+
+.lims-prop-bar .prop-value.empty {
+	color: #adb5bd;
+	font-weight: 400;
+}
+
+/* ---------------------------------------------------------------------------
+   4) 보관위치 트리 들여쓰기
+--------------------------------------------------------------------------- */
+.lims-tree-depth {
+	display: inline-block;
+	color: #ced4da;
+	font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------------------
+   5) 구조 편집기 임베드 프레임
+--------------------------------------------------------------------------- */
+.lims-chem-frame {
+	display: block;
+	width: 100%;
+	height: 640px;
+	border: 1px solid #dee2e6;
+	border-radius: 10px;
+	background: #fff;
+}
+
+/* 숫자 컬럼 정렬 — 재고 수량/분자량 */
+.table-sty01 td.num,
+.table-sty01 th.num {
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+
+/* 물성 패널 우측 상태 표기 */
+.lims-prop-bar .lims-prop-status {
+	margin-left: auto;
+}
+
+/* ---------------------------------------------------------------------------
+   6) 화합물 검색 — 결과 카드 그리드
+   목록이 표가 아니라 구조 썸네일 중심이라 style.css 의 표 규격을 쓸 수 없다.
+   색상/라운드/타이포는 위 토큰과 동일한 값만 사용한다.
+--------------------------------------------------------------------------- */
+.lims-compound-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+	gap: 16px;
+}
+
+.lims-compound-card {
+	display: flex;
+	flex-direction: column;
+	padding: 16px;
+	border: 1px solid #dee2e6;
+	border-radius: 10px;
+	background: #fff;
+	cursor: pointer;
+}
+
+.lims-compound-card:hover {
+	border-color: #1761de;
+	box-shadow: 0 4px 16px rgba(33, 37, 41, 0.16);
+}
+
+.lims-compound-thumb {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 140px;
+	margin-bottom: 12px;
+	border-radius: 10px;
+	background: #f8f9fa;
+	overflow: hidden;
+}
+
+.lims-compound-thumb svg {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+.lims-compound-thumb.is-empty {
+	font-size: 12px;
+	font-weight: 400;
+	color: #868e96;
+	letter-spacing: -0.02em;
+	text-align: center;
+}
+
+.lims-compound-regid {
+	margin-bottom: 8px;
+	font-size: 16px;
+	font-weight: 700;
+	color: #212529;
+	letter-spacing: -0.04em;
+	word-break: break-all;
+}
+
+.lims-compound-meta {
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+	margin-bottom: 4px;
+	font-size: 13px;
+	letter-spacing: -0.02em;
+}
+
+.lims-compound-meta-label {
+	flex: 0 0 44px;
+	color: #868e96;
+}
+
+.lims-compound-meta-value {
+	color: #495057;
+	font-variant-numeric: tabular-nums;
+	word-break: break-all;
+}
+
+.lims-compound-notecnt {
+	margin-top: 8px;
+	padding-top: 8px;
+	border-top: 1px solid #dee2e6;
+	font-size: 12px;
+	color: #1761de;
+	letter-spacing: -0.02em;
+}
+
+.lims-compound-empty {
+	grid-column: 1 / -1;
+}
+
+/* 구조검색 결과 표시줄 */
+.lims-compound-resultbar {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 12px 20px;
+	border: 1px solid #dee2e6;
+	border-radius: 10px;
+	background: #edf3fd;
+}
+
+.lims-compound-resultbar .lims-compound-resultbar-text {
+	font-size: 14px;
+	color: #495057;
+	letter-spacing: -0.02em;
+}
+
+.lims-compound-resultbar .button-gray-line-sty01 {
+	margin-left: auto;
+}
+
+/* 상세 모달 — 좌측 구조 / 우측 물성 */
+.lims-compound-detail {
+	display: flex;
+	gap: 20px;
+	align-items: stretch;
+}
+
+.lims-compound-detail-structure {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 280px;
+	height: 220px;
+	border: 1px solid #dee2e6;
+	border-radius: 10px;
+	background: #f8f9fa;
+	overflow: hidden;
+}
+
+.lims-compound-detail-structure svg {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+.lims-compound-detail-structure.is-empty {
+	font-size: 13px;
+	color: #868e96;
+	letter-spacing: -0.02em;
+	text-align: center;
+}
+
+.lims-compound-detail-props {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   6) 화학량론(Stoichiometry) — 당량/몰수/한계시약/수율
+   style.css 에 없는 것만 최소로 정의한다. 색/타이포 토큰은 기존 값을 그대로 쓴다.
+   (w-140, ma-l-auto 같은 유틸리티는 style.css 에 존재하지 않으므로 쓰지 않는다)
+--------------------------------------------------------------------------- */
+.lims-stoich-summary {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 24px;
+	padding: 12px 16px;
+	background: #f8f9fa;
+	border-radius: 10px;
+}
+
+.lims-stoich-summary .stoich-item {
+	display: flex;
+	align-items: baseline;
+	gap: 6px;
+}
+
+.lims-stoich-summary .stoich-label {
+	font-size: 13px;
+	font-weight: 400;
+	color: #868e96;
+	letter-spacing: -0.02em;
+	white-space: nowrap;
+}
+
+.lims-stoich-summary .stoich-value {
+	font-size: 16px;
+	font-weight: 700;
+	color: #212529;
+	letter-spacing: -0.04em;
+	font-variant-numeric: tabular-nums;
+}
+
+.lims-stoich-summary .stoich-value.accent {
+	color: #1761de;
+}
+
+.lims-stoich-summary .stoich-value.empty {
+	font-size: 14px;
+	font-weight: 400;
+	color: #adb5bd;
+}
+
+/* 계산 출처 배지 — 이 숫자가 어디서 나왔는지 반드시 밝힌다 */
+.lims-stoich-source {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 10px;
+	font-size: 12px;
+	font-weight: 400;
+	letter-spacing: -0.02em;
+	white-space: nowrap;
+}
+
+.lims-stoich-source.chem {
+	background: #edf3fd;
+	color: #1761de;
+}
+
+.lims-stoich-source.local {
+	background: #f1f3f5;
+	color: #495057;
+}
+
+/* 한계시약 표시 */
+.table-sty01 tr.lims-stoich-limiting-row > td {
+	background: #edf3fd;
+}
+
+.lims-stoich-limiting-mark {
+	display: inline-block;
+	margin-left: 6px;
+	padding: 2px 8px;
+	border-radius: 10px;
+	background: #1761de;
+	color: #fff;
+	font-size: 12px;
+	font-weight: 400;
+	letter-spacing: -0.02em;
+	white-space: nowrap;
+}
+
+/* 계산 불가 사유 — 빈칸이나 0 대신 이유를 적는다 */
+.lims-stoich-reason {
+	display: inline-block;
+	color: #868e96;
+	font-size: 13px;
+	font-weight: 400;
+	letter-spacing: -0.02em;
+	line-height: 1.4;
+}
+
+.lims-stoich-reason.danger {
+	color: #ee5139;
+}
+
+/* 역할 선택 셀렉트 — style.css 에 맞는 폭 유틸리티가 없어 여기서만 지정 */
+.lims-stoich-role-sel {
+	min-width: 96px;
+}
+
+/* 수율 행 */
+.table-sty01 tr.lims-stoich-yield-row > td {
+	background: #f8f9fa;
+	font-weight: 700;
+	color: #212529;
+}
+
+/* 노트 우측 정보 컬럼용 축약 표기 */
+.lims-stoich-note-box .stoich-line {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 8px;
+	margin-top: 6px;
+}
+
+.lims-stoich-note-box .stoich-line .k {
+	font-size: 13px;
+	color: #868e96;
+	letter-spacing: -0.02em;
+}
+
+.lims-stoich-note-box .stoich-line .v {
+	font-size: 14px;
+	font-weight: 700;
+	color: #212529;
+	letter-spacing: -0.02em;
+	font-variant-numeric: tabular-nums;
+}
+
+.lims-stoich-note-box .stoich-line .v.empty {
+	font-weight: 400;
+	color: #adb5bd;
+}
+
+/* 화학량론 모달 표는 가로 스크롤을 허용한다(좁은 화면에서 열이 뭉개지지 않게) */
+.lims-stoich-table-wrap {
+	overflow-x: auto;
+}
+
+/* ---------------------------------------------------------------------------
+   7) 바코드 조회 — 스캔 입력과 단건 상세 카드
+   실험대에서 한 손으로 쓰는 화면이라 입력칸과 잔량이 크게 보여야 한다.
+   색상/라운드/타이포는 위 토큰과 동일한 값만 사용한다.
+--------------------------------------------------------------------------- */
+.lims-scan-box {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 20px 24px;
+	border: 1px solid #dee2e6;
+	border-radius: 10px;
+	background: #f8f9fa;
+}
+
+.lims-scan-box .lims-scan-label {
+	flex: 0 0 auto;
+	margin: 0;
+	font-size: 14px;
+	font-weight: 500;
+	color: #495057;
+	letter-spacing: -0.02em;
+}
+
+.lims-scan-box .lims-scan-input {
+	flex: 1 1 auto;
+	min-width: 0;
+	height: 56px;
+	padding: 0 16px;
+	border: 1px solid #ced4da;
+	border-radius: 10px;
+	background: #fff;
+	font-size: 24px;
+	font-weight: 700;
+	color: #212529;
+	letter-spacing: -0.02em;
+	font-variant-numeric: tabular-nums;
+}
+
+.lims-scan-box .lims-scan-input:focus {
+	border-color: #1761de;
+	outline: none;
+}
+
+.lims-scan-box .lims-scan-input::placeholder {
+	font-size: 15px;
+	font-weight: 400;
+	color: #adb5bd;
+}
+
+/* 단건 상세 카드 */
+.lims-scan-card {
+	padding: 24px;
+	border: 1px solid #dee2e6;
+	border-radius: 10px;
+	background: #fff;
+}
+
+.lims-scan-card .lims-scan-card-head {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.lims-scan-card .lims-scan-card-barcode {
+	margin: 0;
+	font-size: 20px;
+	font-weight: 700;
+	color: #1761de;
+	letter-spacing: -0.02em;
+	font-variant-numeric: tabular-nums;
+	word-break: break-all;
+}
+
+.lims-scan-card .lims-scan-card-nm {
+	margin: 4px 0 20px;
+	font-size: 16px;
+	font-weight: 500;
+	color: #212529;
+	letter-spacing: -0.02em;
+}
+
+.lims-scan-card .lims-scan-card-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 12px 24px;
+	padding: 16px 20px;
+	border-radius: 10px;
+	background: #f8f9fa;
+}
+
+.lims-scan-card .lims-scan-field {
+	display: flex;
+	align-items: baseline;
+	gap: 10px;
+	min-width: 0;
+}
+
+.lims-scan-card .lims-scan-field-label {
+	flex: 0 0 60px;
+	font-size: 13px;
+	color: #868e96;
+	letter-spacing: -0.02em;
+}
+
+.lims-scan-card .lims-scan-field-value {
+	font-size: 14px;
+	color: #495057;
+	letter-spacing: -0.02em;
+	word-break: break-all;
+}
+
+.lims-scan-card .lims-scan-field-value.strong {
+	font-size: 18px;
+	font-weight: 700;
+	color: #1761de;
+	font-variant-numeric: tabular-nums;
+}
+
+.lims-scan-card .lims-scan-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px;
+	margin-top: 20px;
+}
+
+/* 다건 조회 시의 선택 목록 */
+.lims-scan-choices {
+	padding: 20px 24px;
+	border: 1px solid #dee2e6;
+	border-radius: 10px;
+	background: #fff;
+}
+
+.lims-scan-choice-list {
+	margin: 12px 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.lims-scan-choice {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 8px 12px;
+	padding: 12px 16px;
+	border: 1px solid #dee2e6;
+	border-radius: 10px;
+	cursor: pointer;
+}
+
+.lims-scan-choice + .lims-scan-choice {
+	margin-top: 8px;
+}
+
+.lims-scan-choice:hover {
+	border-color: #1761de;
+	background: #edf3fd;
+}
+
+.lims-scan-choice .lims-scan-choice-barcode {
+	font-size: 14px;
+	font-weight: 700;
+	color: #1761de;
+	letter-spacing: -0.02em;
+	font-variant-numeric: tabular-nums;
+}
+
+.lims-scan-choice .lims-scan-choice-nm {
+	font-size: 14px;
+	color: #212529;
+	letter-spacing: -0.02em;
+}
+
+.lims-scan-choice .lims-scan-choice-sub {
+	font-size: 12px;
+	color: #868e96;
+	letter-spacing: -0.02em;
+}
+
+/* ------------------------------------------------------------------
+   LIMS 코어 도메인 (시료·시험·결과) — 메뉴 아이콘
+   전용 아이콘이 없어 기존 자산을 재사용한다. 성격이 가까운 것을 골랐고,
+   전용 아이콘이 준비되면 이 블록의 URL 만 바꾸면 된다.
+   ------------------------------------------------------------------ */
+.nav-menu .menuCd.LIMS_SAMPLE {
+	background-image: url(../img/icon_note_sheet.png);
+	background-repeat: no-repeat;
+	background-position: 12px;
+}
+
+.nav-menu .menuCd.LIMS_TEST {
+	background-image: url(../img/icon_note_list.png);
+	background-repeat: no-repeat;
+	background-position: 12px;
+}
+
+.nav-menu .menuCd.LIMS_OOS {
+	background-image: url(../img/icon_alert.png);
+	background-repeat: no-repeat;
+	background-position: 12px;
+}
+
+.nav-menu .menuCd.LIMS_METHOD {
+	background-image: url(../img/icon_file.png);
+	background-repeat: no-repeat;
+	background-position: 12px;
+}
+
+.nav-menu .menuCd.LIMS_SPEC {
+	background-image: url(../img/icon_note_status.png);
+	background-repeat: no-repeat;
+	background-position: 12px;
+}
+
+.nav-menu .menuCd.LIMS_INSTRUMENT {
+	background-image: url(../img/icon_audit.png);
+	background-repeat: no-repeat;
+	background-position: 12px;
+}
+
+/* ------------------------------------------------------------------
+   상태 배지 보강
+   기존 .lims-state 는 normal/soon/expired/muted 4종뿐이라
+   완료·취소·대기가 전부 muted 로 같아 보였다. 완료를 따로 뗀다.
+   ------------------------------------------------------------------ */
+.lims-state.done {
+	background-color: #e6f4ea;
+	color: #1e7e46;
+}
+
+/* ------------------------------------------------------------------
+   요약 카드 (워크리스트 상단 집계)
+   지금은 물성 패널(.lims-prop-bar)을 빌려 쓰고 있어 의미가 어긋난다.
+   ------------------------------------------------------------------ */
+.lims-summary-row {
+	display: flex;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+.lims-summary-row .lims-summary-card {
+	flex: 1 1 160px;
+	min-width: 160px;
+	padding: 14px 16px;
+	border: 1px solid #dee2e6;
+	border-radius: 10px;
+	background-color: #fff;
+}
+
+.lims-summary-row .lims-summary-label {
+	font-size: 12px;
+	color: #868e96;
+	letter-spacing: -0.02em;
+}
+
+.lims-summary-row .lims-summary-value {
+	font-size: 24px;
+	font-weight: 500;
+	color: #212529;
+	line-height: 1.3;
+}
+
+.lims-summary-row .lims-summary-value.warn { color: #f59f00; }
+.lims-summary-row .lims-summary-value.danger { color: #ee5139; }
+.lims-summary-row .lims-summary-value.primary { color: #1761de; }
+
+/* 물성 패널을 요약 용도로 빌려 쓴 화면이 좁을 때 넘치던 문제 — 줄바꿈을 허용한다. */
+.lims-prop-bar {
+	flex-wrap: wrap;
+}
