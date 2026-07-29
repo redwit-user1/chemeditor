@@ -30,7 +30,8 @@
     '/lims/reagent/reagentList': 'reagent_list.html',
     '/lims/location/locationList': 'location_list.html',
     '/lims/compound/compoundList': 'compound_list.html',
-    '/lims/container/scan': 'scan.html'
+    '/lims/container/scan': 'scan.html',
+    '/lims/chem/chemPopup': 'chem_editor.html'
   };
 
   function toStaticUrl(url) {
@@ -42,6 +43,40 @@
   /* ---------------------------------------------------------------
      고정 데이터 — 기획서/DDL 의 코드값을 그대로 쓴다.
   --------------------------------------------------------------- */
+  /*
+    검색 필터.
+
+    지금까지 목은 어떤 조건이 와도 같은 목록을 돌려줬다. 그래서 시연 중에 유형이나
+    상태를 골라도 화면이 그대로여서 "필터가 안 먹는다"로 보였다.
+    서버가 하는 일을 그대로 흉내내지는 못하지만, 화면에 있는 조건만큼은 실제로
+    걸리게 한다 — 눌렀을 때 목록이 바뀌는 것이 시연에서 중요한 사실이다.
+
+    spec: { 파라미터명: 'field' }            → 정확히 일치
+           { 파라미터명: ['f1','f2'] }        → 여러 필드 중 하나에 부분 일치(키워드)
+  */
+  function applyFilter(list, params, spec) {
+    return list.filter(function (row) {
+      for (var key in spec) {
+        var want = params[key];
+        if (want === undefined || want === null || want === '') {
+          continue;
+        }
+        var target = spec[key];
+        if (Object.prototype.toString.call(target) === '[object Array]') {
+          var hit = target.some(function (f) {
+            return String(row[f] === undefined || row[f] === null ? '' : row[f])
+              .toLowerCase().indexOf(String(want).toLowerCase()) >= 0;
+          });
+          if (!hit) return false;
+        } else if (String(row[target] === undefined || row[target] === null ? '' : row[target])
+            !== String(want)) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }
+
   function page(list, pageNo, unit) {
     var no = Number(pageNo) || 1;
     var per = Number(unit) || 10;
@@ -279,6 +314,15 @@
     DEPICT_BY_MOLBLOCK[c.molblock] = c.svg;
   });
 
+  var SAMPLE_NOTES = [
+    { noteMno: 9101, noteNm: 'KM00003710 합성 — batch A', projectNm: '표적단백질 저해제 발굴',
+      createUserNm: '이연구', modifyDtStr: '2026-07-12 17:40', writeStatusCcd: 'COMPLETE' },
+    { noteMno: 9102, noteNm: 'HPLC 순도 분석 (M-HPLC-001 v3)', projectNm: '표적단백질 저해제 발굴',
+      createUserNm: '김연구', modifyDtStr: '2026-07-27 14:22', writeStatusCcd: 'INSPECTION' },
+    { noteMno: 9104, noteNm: '분주 A03 이동 기록', projectNm: '표적단백질 저해제 발굴',
+      createUserNm: '박연구', modifyDtStr: '2026-07-14 09:05', writeStatusCcd: 'WRITING' }
+  ];
+
   var USERS = [
     { userMno: 1024, userNm: '김연구', orztNm: '분석팀', authGrpNm: '책임자' },
     { userMno: 1025, userNm: '박연구', orztNm: '분석팀', authGrpNm: '연구원' },
@@ -298,10 +342,30 @@
      엔드포인트 → 응답
   --------------------------------------------------------------- */
   var HANDLERS = {
-    '/api/lims/sample/sampleList': function (p) { return { sampleListInfo: page(SAMPLES, p.pageNo, p.pageUnit) }; },
+    '/api/lims/sample/sampleList': function (p) {
+      var rows = applyFilter(SAMPLES, p, {
+        schSampleNo: ['sampleNo'],
+        searchKeyword: ['sampleNm', 'sourceDesc'],
+        schSampleTpCcd: 'sampleTpCcd',
+        schSampleStatusCcd: 'sampleStatusCcd',
+        schProjectMno: 'projectMno'
+      });
+      // 상태를 고르지 않으면 폐기 시료는 빼고 보여준다(화면 기본값이 '폐기 제외').
+      if (!p.schSampleStatusCcd) {
+        rows = rows.filter(function (s) { return s.sampleStatusCcd !== 'DISPOSED'; });
+      }
+      return { sampleListInfo: page(rows, p.pageNo, p.pageUnit) };
+    },
     '/api/lims/sample/sampleLineage': function () { return { lineageList: LINEAGE }; },
     '/api/lims/sample/aliquotList': function (p) { return { aliquotListInfo: page(ALIQUOTS, p.pageNo, p.pageUnit) }; },
-    '/api/lims/sample/sampleNoteList': function () { return { noteListInfo: page([], 1, 10) }; },
+    /*
+      연결 연구노트. 서버 API 가 아직 없어 화면이 "아직 연동되지 않았습니다" 만
+      띄웠다. 시연에서는 시료와 연구노트가 이어진다는 사실 자체가 보여야 하므로
+      샘플을 넣는다. 실제 연동 시 이 핸들러만 지우면 된다.
+    */
+    '/api/lims/sample/sampleNoteList': function () {
+      return { noteList: SAMPLE_NOTES };
+    },
     '/api/lims/sample/projectOptionList': function () {
       return { optionList: [
         { projectMno: 301, projectNm: '표적단백질 저해제 발굴' },
@@ -311,8 +375,22 @@
       ] };
     },
 
-    '/api/lims/test/myWorklist': function (p) { return { worklistInfo: page(WORKLIST, p.pageNo, p.pageUnit) }; },
-    '/api/lims/test/testRequestList': function (p) { return { testRequestListInfo: page(REQUESTS, p.pageNo, p.pageUnit) }; },
+    '/api/lims/test/myWorklist': function (p) {
+      var rows = applyFilter(WORKLIST, p, {
+        searchKeyword: ['testReqstNo', 'sampleNo', 'sampleNm', 'testItemNm'],
+        schTestItemStatusCcd: 'testItemStatusCcd',
+        schUrgentYn: 'urgentYn'
+      });
+      return { worklistInfo: page(rows, p.pageNo, p.pageUnit) };
+    },
+    '/api/lims/test/testRequestList': function (p) {
+      var rows = applyFilter(REQUESTS, p, {
+        searchKeyword: ['testReqstNo', 'sampleNo', 'sampleNm'],
+        schTestReqstStatusCcd: 'testReqstStatusCcd',
+        schUrgentYn: 'urgentYn'
+      });
+      return { testRequestListInfo: page(rows, p.pageNo, p.pageUnit) };
+    },
     '/api/lims/test/worklistSummary': function () {
       return { summaryInfo: { assignedCnt: 1, inProgressCnt: 1, oosCnt: 1, overdueCnt: 0, totalCnt: 3 } };
     },
@@ -365,7 +443,16 @@
     },
     '/api/lims/result/instrumentOptions': function () { return { instrumentList: INSTRUMENTS }; },
 
-    '/api/lims/oos/oosList': function (p) { return { oosListInfo: page(OOS, p.pageNo, p.pageUnit) }; },
+    '/api/lims/oos/oosList': function (p) {
+      var rows = applyFilter(OOS, p, {
+        searchKeyword: ['oosNo', 'testItemNm', 'testReqstNo'],
+        schOosStatusCcd: 'oosStatusCcd'
+      });
+      if (p.schOpenOnlyYn === 'Y') {
+        rows = rows.filter(function (o) { return o.oosStatusCcd !== 'CLOSED'; });
+      }
+      return { oosListInfo: page(rows, p.pageNo, p.pageUnit) };
+    },
     '/api/lims/oos/oosInfo': function () {
       return {
         oos: {
@@ -380,7 +467,14 @@
       };
     },
 
-    '/api/lims/method/methodList': function (p) { return { methodListInfo: page(METHODS, p.pageNo, p.pageUnit) }; },
+    '/api/lims/method/methodList': function (p) {
+      var rows = applyFilter(METHODS, p, {
+        searchKeyword: ['methodCd', 'methodNm'],
+        schMethodTpCcd: 'methodTpCcd',
+        schMethodStatusCcd: 'methodStatusCcd'
+      });
+      return { methodListInfo: page(rows, p.pageNo, p.pageUnit) };
+    },
     '/api/lims/method/methodVerList': function () {
       return { methodVerList: [
         { methodMno: 401, verNo: 3, methodNm: '유연물질 및 순도 (HPLC)', methodStatusCcd: 'ACTIVE',
@@ -398,14 +492,36 @@
     '/api/lims/method/specDetail': function () { return { spec: SPECS[0] }; },
     '/api/lims/method/methodInProgressTestList': function () { return { testItemList: TEST_ITEMS }; },
 
-    '/api/lims/instrument/instrumentList': function (p) { return { instrumentListInfo: page(INSTRUMENTS, p.pageNo, p.pageUnit) }; },
+    '/api/lims/instrument/instrumentList': function (p) {
+      var rows = applyFilter(INSTRUMENTS, p, {
+        searchKeyword: ['instrumentCd', 'instrumentNm', 'modelNm'],
+        schInstrumentTpCcd: 'instrumentTpCcd',
+        schInstrumentStatusCcd: 'instrumentStatusCcd',
+        schCalState: 'calState'
+      });
+      return { instrumentListInfo: page(rows, p.pageNo, p.pageUnit) };
+    },
     '/api/lims/instrument/instrumentDetail': function () { return { instrument: INSTRUMENTS[0] }; },
     '/api/lims/instrument/calList': function () { return { calList: CALS }; },
 
-    '/api/lims/location/locationList': function () { return { locationList: LOCATIONS }; },
+    '/api/lims/location/locationList': function (p) {
+      return { locationList: applyFilter(LOCATIONS, p, { schLocationTpCcd: 'locationTpCcd' }) };
+    },
 
-    '/api/lims/reagent/reagentList': function (p) { return { reagentListInfo: page(REAGENTS, p.pageNo, p.pageUnit) }; },
-    '/api/lims/container/containerList': function (p) { return { containerListInfo: page(CONTAINERS, p.pageNo, p.pageUnit) }; },
+    '/api/lims/reagent/reagentList': function (p) {
+      var rows = applyFilter(REAGENTS, p, {
+        searchKeyword: ['reagentNm', 'molFormula'],
+        schCasNo: ['casNo']
+      });
+      return { reagentListInfo: page(rows, p.pageNo, p.pageUnit) };
+    },
+    '/api/lims/container/containerList': function (p) {
+      var rows = applyFilter(CONTAINERS, p, {
+        schStatusCcd: 'statusCcd',
+        schScanValue: ['barcode']
+      });
+      return { containerListInfo: page(rows, p.pageNo, p.pageUnit) };
+    },
     '/api/lims/container/stockTxnList': function () {
       return { stockTxnList: [
         { txnMno: 1, txnTpCcd: 'RECEIVE', deltaAmount: 1000, unitCcd: 'mL', afterAmount: 1000,
@@ -415,7 +531,13 @@
       ] };
     },
 
-    '/api/lims/compound/compoundList': function (p) { return { compoundListInfo: page(COMPOUNDS, p.pageNo, p.pageUnit) }; },
+    '/api/lims/compound/compoundList': function (p) {
+      var rows = applyFilter(COMPOUNDS, p, {
+        schRegId: ['regId'],
+        searchKeyword: ['regId', 'molFormula']
+      });
+      return { compoundListInfo: page(rows, p.pageNo, p.pageUnit) };
+    },
     '/api/lims/compound/searchByStructure': function () { return { compoundList: COMPOUNDS.slice(0, 2) }; },
     '/api/lims/compound/compoundDetail': function () { return { compound: COMPOUNDS[0], noteList: [] }; },
     '/api/lims/chem/depict': function (p) {
@@ -451,12 +573,164 @@
     molFormula: 'C29H32N2O2', molWt: 440.587
   };
 
+  /* ---------------------------------------------------------------
+     쓰기 — 저장한 것이 화면에 남아야 한다.
+
+     이전에는 성공만 돌려주고 데이터를 바꾸지 않았다. 그래서 시연 중에 시료를
+     등록하면 "저장됐습니다"가 뜬 뒤 목록이 그대로여서, 보는 사람은 저장이
+     실패한 것으로 읽는다. 메모리 배열에 실제로 반영한다.
+     (새로고침하면 초기값으로 돌아간다 — 서버가 없으므로 그 이상은 하지 않는다)
+  --------------------------------------------------------------- */
+  var seq = { sample: 5100, aliquot: 90, reqst: 7100, item: 8100, result: 100,
+              method: 450, spec: 550, instrument: 650, location: 50,
+              reagent: 250, container: 350, compound: 10, cal: 80 };
+
+  function nextNo(prefix, n) {
+    return prefix + '-20260729-' + String(n % 1000).padStart(3, '0');
+  }
+
+  var WRITERS = {
+    '/api/lims/sample/createSample': function (p) {
+      var mno = ++seq.sample;
+      var no = nextNo('SMP', mno);
+      SAMPLES.unshift({
+        sampleMno: mno, sampleNo: no, sampleNm: p.sampleNm || '(이름 없음)',
+        sampleTpCcd: p.sampleTpCcd || 'COMPOUND', sampleSrcCcd: p.sampleSrcCcd || 'INTERNAL',
+        sampleStatusCcd: 'STORED', projectMno: p.projectMno ? Number(p.projectMno) : null,
+        projectNm: projectNmOf(p.projectMno), receiveDt: '2026-07-29',
+        sourceDesc: p.sourceDesc || '', aliquotCnt: 1, activeAliquotCnt: 1,
+        depthNo: 1, parentSampleNo: null
+      });
+      return { newSampleNo: no, newSampleMno: mno };
+    },
+    '/api/lims/sample/createAliquot': function (p) {
+      var n = ++seq.aliquot;
+      var no = 'SMP-20260712-001-A' + String(n).padStart(2, '0');
+      ALIQUOTS.push({
+        aliquotMno: n, aliquotNo: no, aliquotTpCcd: p.aliquotTpCcd || 'SPLIT',
+        vesselTpCcd: p.vesselTpCcd || 'VIAL', amount: Number(p.amount) || 0,
+        unitCcd: p.unitCcd || 'mg', locationNm: locationNmOf(p.locationMno),
+        aliquotDt: '2026-07-29', aliquotStatusCcd: 'IN_USE',
+        parentAliquotNo: 'SMP-20260712-001-A01', childSampleNo: null
+      });
+      return { newAliquotNo: no };
+    },
+    '/api/lims/test/createTestRequest': function (p) {
+      var mno = ++seq.reqst;
+      var no = nextNo('TR', mno);
+      var s = findBy(SAMPLES, 'sampleMno', p.sampleMno) || SAMPLES[0];
+      REQUESTS.unshift({
+        testReqstMno: mno, testReqstNo: no, sampleMno: s.sampleMno, sampleNo: s.sampleNo,
+        sampleNm: s.sampleNm, testPurposeCcd: p.testPurposeCcd || 'RELEASE',
+        testPurposeCcdNm: '출하', testReqstStatusCcd: 'REQUESTED', testReqstStatusCcdNm: '접수대기',
+        hopeDe: (p.hopeDe || '20260810').replace(/-/g, ''), reqstUserNm: '김연구',
+        itemCnt: 1, doneItemCnt: 0, waitingItemCnt: 1, oosItemCnt: 0,
+        urgentYn: p.urgentYn === 'Y' ? 'Y' : 'N'
+      });
+      return { newTestReqstMno: mno, newTestReqstNo: no };
+    },
+    '/api/lims/result/createResult': function (p) {
+      var seqNo = RESULTS.length + 1;
+      var val = p.resultVal;
+      var judge = judgeAgainstSpec(val, SPECS[0]);
+      RESULTS.push({
+        resultMno: ++seq.result, resultSeqNo: seqNo, resultVerNo: 1, resultVal: val,
+        unitCcd: SPECS[0].unitCcd, specJudgeTpCcd: SPECS[0].judgeTpCcd,
+        specLowerVal: SPECS[0].lowerVal, specUpperVal: SPECS[0].upperVal, specExpectVal: null,
+        judgeCcd: judge, judgeRsn: null, inputUserNm: '김연구', inputDt: '2026-07-29 10:20'
+      });
+      return { resultSeqNo: seqNo, resultVerNo: 1, judgeCcd: judge };
+    },
+    '/api/lims/method/createMethod': function (p) {
+      var mno = ++seq.method;
+      METHODS.unshift({
+        methodMno: mno, methodCd: p.methodCd || ('M-NEW-' + mno),
+        methodNm: p.methodNm || '(이름 없음)', methodTpCcd: p.methodTpCcd || 'HPLC',
+        instrumentTpCcd: p.instrumentTpCcd || 'HPLC', methodStatusCcd: 'DRAFT',
+        effectDe: null, verNo: 1, verCnt: 1, inProgressCnt: 0
+      });
+      return { methodMno: mno };
+    },
+    '/api/lims/instrument/createInstrument': function (p) {
+      var mno = ++seq.instrument;
+      INSTRUMENTS.unshift({
+        instrumentMno: mno, instrumentCd: p.instrumentCd || ('EQ-' + mno),
+        instrumentNm: p.instrumentNm || '(이름 없음)', instrumentTpCcd: p.instrumentTpCcd || 'HPLC',
+        modelNm: p.modelNm || null, locationNm: locationNmOf(p.locationMno),
+        instrumentStatusCcd: 'ACTIVE', lastCalDe: null, nextCalDe: null, calState: 'NONE'
+      });
+      return { instrumentMno: mno };
+    },
+    '/api/lims/location/createLocation': function (p) {
+      var mno = ++seq.location;
+      LOCATIONS.push({
+        locationMno: mno, locationNm: p.locationNm || '(이름 없음)',
+        fullPathNm: p.locationNm || '(이름 없음)', locationTpCcd: p.locationTpCcd || 'SHELF',
+        level: p.upperLocationMno ? 2 : 1, barcodePrefix: p.barcodePrefix || null,
+        temperature: p.temperature || null, containerCnt: 0
+      });
+      return { locationMno: mno };
+    },
+    '/api/lims/reagent/createReagent': function (p) {
+      var mno = ++seq.reagent;
+      REAGENTS.unshift({
+        reagentMno: mno, reagentNm: p.reagentNm || '(이름 없음)', casNo: p.casNo || null,
+        molFormula: p.molFormula || null, molWt: p.molWt ? Number(p.molWt) : null,
+        density: p.density ? Number(p.density) : null, ghsCcd: p.ghsCcd || null,
+        containerCnt: 0, totalAmountDisp: null
+      });
+      return { reagentMno: mno };
+    }
+  };
+
+  function findBy(list, key, val) {
+    for (var i = 0; i < list.length; i++) {
+      if (String(list[i][key]) === String(val)) return list[i];
+    }
+    return null;
+  }
+
+  function projectNmOf(mno) {
+    var hit = findBy([
+      { projectMno: 301, projectNm: '표적단백질 저해제 발굴' },
+      { projectMno: 302, projectNm: '간독성 스크리닝' },
+      { projectMno: 303, projectNm: '분석법 검증 (KM-3719)' },
+      { projectMno: 304, projectNm: '장기 안정성 시험' }
+    ], 'projectMno', mno);
+    return hit ? hit.projectNm : null;
+  }
+
+  function locationNmOf(mno) {
+    var hit = findBy(LOCATIONS, 'locationMno', mno);
+    return hit ? hit.fullPathNm : LOCATIONS[2].fullPathNm;
+  }
+
+  /* 규격 판정 — 화면이 보여주는 규칙(경계값 포함, 소수 자리 반올림)과 같게 계산한다. */
+  function judgeAgainstSpec(rawVal, spec) {
+    var v = parseFloat(rawVal);
+    if (isNaN(v) || !spec) return 'NA';
+    if (spec.decimalPt !== null && spec.decimalPt !== undefined) {
+      var f = Math.pow(10, spec.decimalPt);
+      v = Math.round(v * f) / f;
+    }
+    if (spec.lowerVal !== null && spec.lowerVal !== undefined && v < spec.lowerVal) return 'FAIL';
+    if (spec.upperVal !== null && spec.upperVal !== undefined && v > spec.upperVal) return 'FAIL';
+    return 'PASS';
+  }
+
   function respond(path, params) {
     if (/userList|userOption|memberList/i.test(path)) {
       return userListResponse(params);
     }
     var handler = HANDLERS[path];
-    var body = handler ? handler(params) : JSON.parse(JSON.stringify(WRITE_DEFAULT));
+    var body;
+    if (handler) {
+      body = handler(params);
+    } else if (WRITERS[path]) {
+      body = Object.assign(JSON.parse(JSON.stringify(WRITE_DEFAULT)), WRITERS[path](params));
+    } else {
+      body = JSON.parse(JSON.stringify(WRITE_DEFAULT));
+    }
     body.status = { result: 'SUCCESS', message: '', code: '200' };
     body.s2ResultCode = 1;   /* 컨트롤러가 Constants.RESULT_CODE 로 넣는 값과 같은 숫자 1 이다 */
     return body;
@@ -531,6 +805,21 @@
       통째로 건너뛰어져 화면 이동이 서버 경로로 나가 404 가 됐다.
       전역 어휘 스코프의 이름을 직접 본다.
     */
+    /*
+      window.open 으로 여는 구조 편집기 팝업.
+      프로토타입에는 서버 라우트가 없어 팝업이 빈 창으로 뜬다. 같은 창에서
+      구조 편집기 화면으로 보내 시연 흐름이 끊기지 않게 한다.
+    */
+    var origOpen = window.open;
+    window.open = function (url) {
+      var target = toStaticUrl(url);
+      if (target) {
+        window.location.href = target;
+        return null;
+      }
+      return origOpen.apply(window, arguments);
+    };
+
     if (typeof S2Util !== 'undefined' && S2Util) {
       S2Util.goPage = function (url) {
         var target = toStaticUrl(url);
@@ -546,6 +835,104 @@
     document.body.insertBefore(banner, document.body.firstChild);
 
     installFlowBar();
+    installChemEditorStub();
+    installOutOfScopeNotice();
+  }
+
+  /* ---------------------------------------------------------------
+     범위 밖 메뉴.
+
+     GNB 에는 구노 ELN 기본 메뉴(대시보드·연구노트 등)도 함께 뜬다. 실제 서비스의
+     사이드바를 그대로 쓰기 때문이고, 그게 맞다. 다만 프로토타입에는 그 화면이 없어
+     눌러도 아무 일이 없다 — 시연에서는 "고장난 것"으로 읽힌다.
+     범위 밖이라는 사실을 눌렀을 때 말해 준다.
+  --------------------------------------------------------------- */
+  function installOutOfScopeNotice() {
+    document.querySelectorAll('.nav-menu a.menuCd').forEach(function (a) {
+      var href = a.getAttribute('href');
+      if (href && href !== '#') return;
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        toast('이 메뉴는 구노 ELN 기본 기능으로, 이번 LIMS PoC 범위 밖입니다.');
+      });
+    });
+  }
+
+  var toastTimer = null;
+  function toast(message) {
+    var el = document.getElementById('limsPocToast');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'limsPocToast';
+      el.className = 'lims-poc-toast';
+      document.body.appendChild(el);
+    }
+    el.textContent = message;
+    el.classList.add('on');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.classList.remove('on'); }, 2600);
+  }
+
+  /* ---------------------------------------------------------------
+     구조 편집기 — 실서비스는 Ketcher 를 iframe 으로 띄운다.
+     프로토타입에는 그 서버가 없어 빈 프레임만 남았다. 재단이 "메인 기능"으로
+     지목한 것이 바로 이 화면(구조를 넣으면 분자식·분자량이 즉시 나온다)이므로,
+     빈 채로 두지 않고 RDKit 이 미리 그려 둔 구조와 계산값으로 대신 보여준다.
+  --------------------------------------------------------------- */
+  function installChemEditorStub() {
+    var frame = document.getElementById('chem-frame');
+    if (!frame) return;
+
+    var lib = window.LIMS_POC_COMPOUNDS || [];
+    if (!lib.length) return;
+
+    var wrap = document.createElement('div');
+    wrap.className = 'lims-chem-stub';
+    wrap.innerHTML =
+      '<div class="lims-chem-stub-canvas" id="chemStubCanvas"></div>' +
+      '<div class="lims-chem-stub-side">' +
+      '  <div class="lims-chem-stub-title">구조 불러오기</div>' +
+      '  <div class="lims-chem-stub-note">실제 화면에서는 이 자리에 Ketcher 편집기가 열립니다. ' +
+      '구조를 그리거나 ChemDraw 에서 복사해 붙여넣으면 아래 물성이 즉시 갱신됩니다.</div>' +
+      '  <div class="lims-chem-stub-list" id="chemStubList"></div>' +
+      '</div>';
+    frame.parentNode.replaceChild(wrap, frame);
+
+    var list = document.getElementById('chemStubList');
+    lib.forEach(function (c, i) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'lims-chem-stub-item' + (i === 0 ? ' on' : '');
+      btn.textContent = c.regId;
+      btn.onclick = function () {
+        Array.prototype.forEach.call(list.children, function (el) { el.classList.remove('on'); });
+        btn.classList.add('on');
+        showStructure(c);
+      };
+      list.appendChild(btn);
+    });
+    showStructure(lib[0]);
+  }
+
+  function showStructure(c) {
+    var canvas = document.getElementById('chemStubCanvas');
+    if (canvas) canvas.innerHTML = c.svg;
+
+    setProp('prop-formula', c.molFormula);
+    setProp('prop-molwt', Number(c.molWt).toFixed(3));
+    setProp('prop-exact', Number(c.exactMolWt).toFixed(4));
+
+    var status = document.getElementById('chem-status');
+    if (status) {
+      status.textContent = 'RDKit 계산 완료 · ' + c.regId;
+    }
+  }
+
+  function setProp(id, value) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = value;
+    el.classList.remove('empty');
   }
 
   /* ---------------------------------------------------------------

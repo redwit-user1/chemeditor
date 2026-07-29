@@ -2483,403 +2483,166 @@
       /*]]*/
     </script>
   
-    <script type="text/javascript">
+    <script>
       /*<![CDATA[*/
 
-      let gOos = null;
-      let gRetestCount = 0;
-      let gRetestLimit = 3;
-      let gUserList = [];
-
-      const OOS_STATUS = {
-        OPEN: ['expired', '접수'],
-        PHASE1: ['soon', '실험실조사'],
-        PHASE2: ['soon', '확대조사'],
-        RETEST: ['normal', '재시험중'],
-        CLOSED: ['muted', '종결'],
-        CANCELED: ['muted', '취소']
-      };
-      const CAUSE_LABEL = {
-        LAB_ERROR: '실험실 오류',
-        INSTRUMENT: '장비 이상',
-        METHOD: '분석법 문제',
-        SAMPLE: '시료 문제',
-        TRUE_OOS: '진성 이탈',
-        UNKNOWN: '원인불명'
-      };
-      const CONCLUSION_LABEL = {
-        INVALIDATE: '결과 무효화',
-        CONFIRM: '이탈 확정',
-        INCONCLUSIVE: '결론 불가'
-      };
-      const JUDGE_LABEL = { PASS: '적합', FAIL: '부적합', NA: '판정불가' };
+      const chemEmbedUrl = "\/lims\/chem\/chemPopup";
+      const gProjectMno = null;
+      /* 'Y' 이면 화합물 검색 화면이 띄운 구조 질의용 창이다. */
+      const gSearchYn = null;
+      let gLastProperties = null;
+      let gReadyRetry = null;
 
       function initPage() {
-        getOosList();
-      }
+        /*
+          구조검색 진입 시에는 "화합물 등록" 대신 "이 구조로 검색" 을 노출한다.
+          호출한 창이 없으면(직접 URL 진입 등) 되돌려줄 대상이 없으므로 검색 버튼도 숨긴다.
+        */
+        if (gSearchYn === 'Y' && window.opener) {
+          $('#btn-register-structure').addClass('d-none');
+          $('#btn-apply-structure').removeClass('d-none');
+        }
 
-      /* ---------------------------------------------------------------
-         목록
-      --------------------------------------------------------------- */
-      function getOosList(pageNo) {
-        const targetSelector = '.oos-info-list';
+        if (!chemEmbedUrl) {
+          $('#chem-frame-wrap').html(
+            '<div class="no-data"><div class="no-data-back"></div>'
+            + '<span>구조 편집기 주소가 설정되지 않았습니다. 관리자에게 문의하세요.</span></div>'
+          );
+          $('#btn-register-structure').prop('disabled', true);
+          $('#btn-apply-structure').prop('disabled', true);
+          return;
+        }
 
-        ajaxPost(
-          '/api/lims/oos/oosList',
-          {
-            searchKeyword: $('#searchKeyword').val().trim(),
-            schOosStatusCcd: $('#schOosStatusCcd').val(),
-            schMineOnlyYn: $('#schMineOnlyChk').is(':checked') ? 'Y' : 'N',
-            schOpenOnlyYn: $('#schOpenOnlyChk').is(':checked') ? 'Y' : 'N',
-            schStartDe: $('#schStartDe').val(),
-            schEndDe: $('#schEndDe').val(),
-            pageNo: pageNo ? pageNo : 1,
-            pageUnit: 10
-          },
-          '데이터요청중입니다.잠시만 기다려주세요.',
-          function (res) {
-            const $target = $(targetSelector + ' tbody').empty();
+        const parentOrigin = encodeURIComponent(window.location.origin);
+        const sep = chemEmbedUrl.indexOf('?') < 0 ? '?' : '&';
+        $('#chem-frame').attr('src', `${chemEmbedUrl}${sep}embed=1&parentOrigin=${parentOrigin}`);
 
-            /* nullToEmpty 가 최상위 배열을 숫자키 객체로 바꾸므로 .length 는 늘 undefined 다. */
-            if (res.oosListInfo && S2Util.isJSON(res.oosListInfo.dataList)
-                && Object.keys(res.oosListInfo.dataList).length) {
-              for (const idx in res.oosListInfo.dataList) {
-                const o = res.oosListInfo.dataList[idx];
-                $target.append(S2Util.s2Template('template_oos_list', {
-                  oosMno: o.oosMno,
-                  oosNoDisp: '<span class="lims-id">' + escapeHtml(o.oosNo) + '</span>',
-                  /*
-                    이탈 건에서 원 시험·의뢰로 바로 갈 수 있어야 한다.
-                    조사자는 "무슨 값이 왜 벗어났는지" 를 원 화면에서 확인한다.
-                  */
-                  testItemNmDisp: o.testItemMno
-                    ? '<a href="#" class="lims-link" onclick="goResultEntry(\'' + o.testItemMno + '\'); return false;">'
-                      + escapeHtml(o.testItemNm || '-') + '</a>'
-                    : escapeHtml(o.testItemNm || '-'),
-                  reqstNoDisp: o.testReqstMno
-                    ? '<a href="#" class="lims-id lims-link" onclick="goTestRequestDetails(\'' + o.testReqstMno + '\'); return false;">'
-                      + escapeHtml(o.testReqstNo || '-') + '</a>'
-                    : escapeHtml(o.testReqstNo || '-'),
-                  resultDisp: `${escapeHtml(o.resultVal)} ${escapeHtml(o.unitCcd || '')}`,
-                  judgeDisp: judgeBadge(o.judgeCcd),
-                  statusDisp: statusBadge(o.oosStatusCcd),
-                  causeDisp: escapeHtml(CAUSE_LABEL[o.causeCcd] || '-'),
-                  detectDisp: `${escapeHtml(o.detectDt || '-')}<br /><span class="guidetext-sty01">${escapeHtml(o.detectUserNm || '')}</span>`,
-                  invstgDisp: escapeHtml(o.invstgUserNm || '미배정')
-                }));
-              }
-              $target.parents(targetSelector).find('.paging-box')
-                .html(S2Util.pagination(res.oosListInfo, 'getOosList'));
-            } else {
-              $target.html('<tr class="text-nowrap emptymessage"><td class="text-center" colspan="10">규격 이탈 건이 없습니다.</td></tr>');
+        window.addEventListener('message', function (ev) {
+          let embedOrigin;
+          try {
+            embedOrigin = new URL(chemEmbedUrl, window.location.origin).origin;
+          } catch (e) {
+            return;
+          }
+          if (ev.origin !== embedOrigin) {
+            return;
+          }
+
+          const msg = ev.data;
+          if (!msg || !msg.type) {
+            return;
+          }
+
+          if (msg.type === 'chemeditor:ready') {
+            // 편집기 초기화 완료. 이후 properties 수신으로 준비 상태를 확정한다.
+            $('#chem-status').text('편집기 준비됨');
+          }
+
+          if (msg.type === 'chemeditor:properties' && msg.payload) {
+            gLastProperties = msg.payload;
+            setProp('#prop-formula', msg.payload.formula);
+            setProp('#prop-molwt', msg.payload.molWt);
+            setProp('#prop-exact', msg.payload.exactMolWt);
+            $('#chem-status').text('물성 계산 완료');
+            if (gReadyRetry) {
+              clearInterval(gReadyRetry);
+              gReadyRetry = null;
             }
           }
-        );
+        });
       }
 
-      /* 원 시험(결과 입력)·원 의뢰로 이동. 화면 사이를 오가는 것이 조사 업무의 절반이다. */
-      function goResultEntry(testItemMno) {
-        coreCommon.href('/lims/result/resultEntry?testItemMno=' + testItemMno);
+      function setProp(selector, value) {
+        const $el = $(selector);
+        if (value == null || value === '') {
+          $el.text('-').addClass('empty');
+        } else {
+          $el.text(value).removeClass('empty');
+        }
       }
 
-      function goTestRequestDetails(testReqstMno) {
-        S2Util.goPage('/lims/test/testRequestDetails', { schTestReqstMno: testReqstMno });
+      /*
+        현재 구조를 호출한 창(화합물 검색 화면)으로 되돌려준다.
+        편집기 임베드 계약(chemeditor docs/EMBED.md)이 내려주는 구조는 SMILES 가 아니라
+        MOL블록(molfile)이며, searchByStructure 는 MOL블록/SMILES 를 모두 받는다.
+      */
+      function applyStructureToOpener() {
+        if (!gLastProperties || !gLastProperties.molfile) {
+          S2Util.toasts('검색할 구조가 없습니다. 편집기에서 구조를 그리거나 붙여넣으세요.', { class: 'Toast-bottom-web' });
+          return;
+        }
+        if (!window.opener || typeof window.opener.limsApplyStructureQuery !== 'function') {
+          S2Util.toasts('구조를 전달할 화면을 찾을 수 없습니다. 화합물 검색 화면에서 다시 열어주세요.', { class: 'Toast-bottom-web' });
+          return;
+        }
+        window.opener.limsApplyStructureQuery(gLastProperties.molfile, gLastProperties.formula);
+        window.close();
       }
 
-      function statusBadge(status) {
-        const v = OOS_STATUS[status] || ['muted', status || '-'];
-        return `<span class="lims-state ${v[0]}">${escapeHtml(v[1])}</span>`;
-      }
+      /* 현재 구조를 화합물 라이브러리에 등록 — 등록 즉시 구조 검색에 반영된다 */
+      function openModalCompoundRegister() {
+        if (!gLastProperties || !gLastProperties.molfile) {
+          S2Util.toasts('등록할 구조가 없습니다. 편집기에서 구조를 그리거나 붙여넣으세요.', { class: 'Toast-bottom-web' });
+          return;
+        }
 
-      function judgeBadge(judgeCcd) {
-        const cls = judgeCcd === 'PASS' ? 'normal' : (judgeCcd === 'FAIL' ? 'expired' : 'soon');
-        return `<span class="lims-state ${cls}">${escapeHtml(JUDGE_LABEL[judgeCcd] || judgeCcd || '-')}</span>`;
-      }
-
-      /* ---------------------------------------------------------------
-         조사 모달 (840x560)
-         두 요청을 나란히 보내면 reqAjax 가 뒤엣것을 조용히 버리므로 반드시 체이닝한다.
-      --------------------------------------------------------------- */
-      function openModalOos(oosMno) {
-        ajaxPost('/api/lims/oos/oosInfo', { oosMno: oosMno }, '데이터요청중입니다.잠시만 기다려주세요.',
-          function (res) {
-            if (res.s2ResultCode !== 1 || !res.oos || !Object.keys(res.oos).length) {
-              S2Util.toasts('조사를 찾을 수 없습니다.', { class: 'Toast-bottom-web' });
-              return;
-            }
-            gOos = res.oos;
-            gRetestCount = Number(res.retestCount || 0);
-            gRetestLimit = Number(res.retestLimit || 3);
-            renderOosModal();
-            // 조사자 후보는 모달을 그린 뒤에 이어서 받는다(요청 유실 방지).
-            loadUserOptions('#invstgUserMno');
-          });
-      }
-
-      function renderOosModal() {
-        const closed = gOos.oosStatusCcd === 'CLOSED' || gOos.oosStatusCcd === 'CANCELED';
-        const nextRetestNo = gRetestCount + 1;
-        const overLimit = nextRetestNo > gRetestLimit;
-
-        const retestBlock = gOos.retestTestItemMno
-          ? `<div class="lims-state normal">재시험 지시됨 (시험항목 ${escapeHtml(gOos.retestTestItemMno)})</div>`
-          : `
-            <button type="button" class="button-blue-line-sty01" id="btnRetest"><span>재시험 지시</span></button>
-            <input type="text" id="overLimitApproveRsn" maxlength="500"
-                   class="input-write-sty02-line ma-t10" title="상한 초과 승인 사유"
-                   placeholder="상한 초과 승인 사유 (QA)"
-                   style="display:${overLimit ? 'block' : 'none'};" />`;
-
-        $('#modal-lims-oos')
+        const p = gLastProperties;
+        $('#modal-lims-compound')
           .draggable({ handle: '.modal-header' })
           .modal('show')
           .find('.modal-content')
           .html(`
             <div class="modal-header cursor-move">
-              <p class="modal-title">규격 이탈 조사 · ${escapeHtml(gOos.oosNo)}</p>
-              <span class="modal-sub">${escapeHtml(gOos.testItemNm || '')} · 의뢰 ${escapeHtml(gOos.testReqstNo || '-')}</span>
+              <p class="modal-title">화합물 등록</p>
+              <span class="modal-sub" title="${p.formula}">${p.formula} · 분자량 ${p.molWt}</span>
             </div>
             <div class="modal-body">
-              <div class="lims-prop-bar ma-b20">
-                <div class="prop-item">
-                  <span class="prop-label">이탈 값</span>
-                  <span class="prop-value">${escapeHtml(gOos.resultVal)} ${escapeHtml(gOos.unitCcd || '')}</span>
-                </div>
-                <div class="prop-item">
-                  <span class="prop-label">판정</span>
-                  <span class="prop-value">${judgeBadge(gOos.judgeCcd)}</span>
-                </div>
-                <div class="prop-item">
-                  <span class="prop-label">입력자</span>
-                  <span class="prop-value">${escapeHtml(gOos.resultInputUserNm || '-')}</span>
-                </div>
-                <div class="lims-prop-status">${statusBadge(gOos.oosStatusCcd)}</div>
-              </div>
-              <div class="flex-sty04 ma-b20">
-                <div class="guidetext-sty01">${escapeHtml(gOos.judgeRsn || '')}</div>
-              </div>
-
-              <form method="post" role="form" id="limsOosForm">
+              <form method="post" role="form" id="limsCompoundForm">
                 <div class="flex-sty05 ma-b20">
-                  <label for="invstgUserMno" class="modal-cont-label">조사자</label>
-                  <select id="invstgUserMno" class="btn btn-xs select-xs select-sty02 wp-100" title="조사자"></select>
-                  <div class="flex-sty04"><div class="guidetext-sty01">결과 입력자(${escapeHtml(gOos.resultInputUserNm || '-')})는 조사자가 될 수 없습니다. 자기가 낸 값을 자기가 조사하면 조사가 성립하지 않습니다.</div></div>
-                </div>
-                <div class="flex-sty05 ma-b20">
-                  <label for="causeCcd" class="modal-cont-label">이탈 원인</label>
-                  <select id="causeCcd" class="btn btn-xs select-xs select-sty02 wp-100" title="이탈 원인">
-                    <option value="">선택하세요</option>
-                    <option value="LAB_ERROR">실험실 오류</option>
-                    <option value="INSTRUMENT">장비 이상</option>
-                    <option value="METHOD">분석법 문제</option>
-                    <option value="SAMPLE">시료 문제</option>
-                    <option value="TRUE_OOS">진성 이탈</option>
-                    <option value="UNKNOWN">원인불명</option>
-                  </select>
-                  <div class="flex-sty04"><div class="guidetext-sty01">원인을 입력해야 종결할 수 있습니다.</div></div>
-                </div>
-                <div class="flex-sty05 ma-b20">
-                  <label for="causeDesc" class="modal-cont-label">원인 상세</label>
-                  <input type="text" id="causeDesc" maxlength="1000"
-                         class="input-write-sty02-line" title="원인 상세" />
-                  <div class="flex-sty04"><div class="guidetext-sty01">무엇을 확인했고 무엇으로 판단했는지 적습니다.</div></div>
-                </div>
-                <div class="flex-sty05 ma-b20">
-                  <label for="actionDesc" class="modal-cont-label">조치 내용</label>
-                  <input type="text" id="actionDesc" maxlength="1000"
-                         class="input-write-sty02-line" title="조치 내용" />
-                  <div class="flex-sty04"><div class="guidetext-sty01">재시험 지시 이력은 여기에 자동으로 덧붙습니다.</div></div>
-                </div>
-                <div class="flex-sty05 ma-b20">
-                  <label class="modal-cont-label">재시험</label>
-                  <div>${retestBlock}</div>
-                  <div class="flex-sty04"><div class="guidetext-sty01">재시험은 <b>새 시험 항목</b>을 만듭니다. 원 결과를 덮어쓰지 않습니다. 지금까지 ${gRetestCount}회 수행했으며 상한은 ${gRetestLimit}회입니다.${overLimit ? ' <b>상한을 초과하므로 QA 권한자의 승인 사유가 필요합니다.</b>' : ''}</div></div>
-                </div>
-                <div class="flex-sty05 ma-b20">
-                  <label for="conclusionCcd" class="modal-cont-label">종결 결론</label>
-                  <select id="conclusionCcd" class="btn btn-xs select-xs select-sty02 wp-100" title="종결 결론">
-                    <option value="">선택하세요</option>
-                    <option value="INVALIDATE">결과 무효화 (명백한 실험실 오류)</option>
-                    <option value="CONFIRM">이탈 확정 (진성 이탈)</option>
-                    <option value="INCONCLUSIVE">결론 불가</option>
-                  </select>
-                  <div class="flex-sty04"><div class="guidetext-sty01">무효화해도 결과 행은 지워지지 않습니다. 무효화 사실이 이 조사에 기록될 뿐입니다. 이탈 확정은 부적합이라는 사실을 지우지 않고 시험 항목을 완료시킵니다.</div></div>
+                  <label for="regId" class="modal-cont-label">등록번호</label>
+                  <input type="text" id="regId" name="regId" maxlength="50"
+                         class="input-write-sty02-line" title="등록번호" />
+                  <div class="flex-sty04"><div class="guidetext-sty01">비워두면 자동으로 채번됩니다. 기존 등록번호 체계를 쓰려면 직접 입력하세요.</div></div>
                 </div>
                 <div class="flex-sty05">
-                  <label for="conclusionDesc" class="modal-cont-label">종결 상세</label>
-                  <input type="text" id="conclusionDesc" maxlength="1000"
-                         class="input-write-sty02-line" title="종결 상세" />
-                  <div class="flex-sty04"><div class="guidetext-sty01">종결에는 QA 권한이 필요합니다. 종결 근거는 감사 이력에 보존됩니다.</div></div>
+                  <label class="modal-cont-label">계산된 물성</label>
+                  <div class="lims-prop-bar">
+                    <div class="prop-item"><span class="prop-label">분자식</span><span class="prop-value">${p.formula}</span></div>
+                    <div class="prop-item"><span class="prop-label">분자량</span><span class="prop-value">${p.molWt}</span></div>
+                  </div>
+                  <div class="flex-sty04"><div class="guidetext-sty01">구조는 MOL 블록 원본으로 저장되며 물성은 RDKit 계산값입니다.</div></div>
                 </div>
               </form>
             </div>
             <div class="modal-footer">
               <div class="button-wrap02">
-                <button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">닫기</button>
-                <button type="button" class="button-gray-line-sty01" id="btnSaveInvstg"><span>조사 저장</span></button>
-                <button type="button" class="button-cnfm-sty01" id="btnCloseOos"><span>조사 종결</span></button>
+                <button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">"\uB2EB\uAE30"</button>
+                <button type="button" class="button-cnfm-sty01 button-cnfm">"\uD655\uC778"</button>
               </div>
             </div>
-          `);
-
-        const $modal = $('#modal-lims-oos');
-        $modal.find('#causeCcd').val(gOos.causeCcd || '');
-        $modal.find('#causeDesc').val(gOos.causeDesc || '');
-        $modal.find('#actionDesc').val(gOos.actionDesc || '');
-        $modal.find('#conclusionCcd').val(gOos.conclusionCcd || '');
-        $modal.find('#conclusionDesc').val(gOos.conclusionDesc || '');
-
-        if (closed) {
-          $modal.find('#limsOosForm').find('input, select, button').prop('disabled', true);
-          $modal.find('#btnSaveInvstg, #btnCloseOos').prop('disabled', true);
-        }
-
-        $modal.find('#btnSaveInvstg').off('click').on('click', saveInvestigation);
-        $modal.find('#btnRetest').off('click').on('click', directRetest);
-        $modal.find('#btnCloseOos').off('click').on('click', closeOos);
-      }
-
-      /**
-       * 조사 저장 — 조사자 배정과 조사 내용 갱신은 서버에서 경로가 다르다.
-       * 배정이 아직 없으면 배정 API 를 먼저 태우고, 그 응답 뒤에 내용 저장을 이어붙인다.
-       * (reqAjax 는 요청 하나가 떠 있으면 다음을 조용히 버린다)
-       */
-      function saveInvestigation() {
-        const $modal = $('#modal-lims-oos');
-        const invstgUserMno = $modal.find('#invstgUserMno').val();
-        if (!invstgUserMno) {
-          S2Util.toasts('조사자를 선택하세요.', { class: 'Toast-bottom-web' });
-          return;
-        }
-        const needAssign = !gOos.invstgUserMno || String(gOos.invstgUserMno) !== String(invstgUserMno);
-
-        const saveDetail = function () {
-          ajaxPost('/api/lims/oos/modifyInvestigation', {
-            oosMno: gOos.oosMno,
-            oosStatusCcd: $modal.find('#causeCcd').val() ? 'PHASE2' : 'PHASE1',
-            causeCcd: $modal.find('#causeCcd').val(),
-            causeDesc: $modal.find('#causeDesc').val().trim(),
-            actionDesc: $modal.find('#actionDesc').val().trim()
-          }, '데이터요청중입니다.잠시만 기다려주세요.', function (res) {
-            if (res.s2ResultCode !== 1) {
-              return;
+          `)
+          .find('button.button-cnfm')
+          .click(function () {
+            const params = {
+              regId: $('#regId').val().trim(),
+              molblock: gLastProperties.molfile
+            };
+            if (gProjectMno) {
+              params.projectMno = gProjectMno;
             }
-            S2Util.toasts('조사 내용이 저장되었습니다.', { class: 'Toast-bottom-web' });
-            $modal.modal('hide');
-            getOosList();
+            ajaxPost('/api/lims/compound/registerCompound', params,
+              '"\uB370\uC774\uD130\uC694\uCCAD\uC911\uC785\uB2C8\uB2E4.\uC7A0\uC2DC\uB9CC \uAE30\uB2E4\uB824\uC8FC\uC138\uC694."', function (res) {
+                if (res.s2ResultCode !== 1) {
+                  return;
+                }
+                $('#modal-lims-compound').modal('hide');
+                if (res.indexSyncYn === 'Y') {
+                  S2Util.toasts(`등록되었습니다. ${res.regId}`, { class: 'Toast-bottom-web' });
+                } else {
+                  S2Util.toasts(`등록되었습니다. ${res.regId} (구조 검색 반영은 잠시 후 완료됩니다)`, { class: 'Toast-bottom-web' });
+                }
+              });
           });
-        };
-
-        if (needAssign) {
-          ajaxPost('/api/lims/oos/assignInvestigator',
-            { oosMno: gOos.oosMno, invstgUserMno: invstgUserMno },
-            '데이터요청중입니다.잠시만 기다려주세요.',
-            function (res) {
-              if (res.s2ResultCode !== 1) {
-                return;
-              }
-              gOos.invstgUserMno = invstgUserMno;
-              saveDetail();
-            });
-        } else {
-          saveDetail();
-        }
-      }
-
-      function directRetest() {
-        const $modal = $('#modal-lims-oos');
-        const params = { oosMno: gOos.oosMno };
-        const rsn = $modal.find('#overLimitApproveRsn').val();
-        if (rsn) {
-          params.overLimitApproveRsn = rsn.trim();
-        }
-        ajaxPost('/api/lims/oos/directRetest', params, '데이터요청중입니다.잠시만 기다려주세요.', function (res) {
-          if (res.s2ResultCode !== 1) {
-            return;
-          }
-          S2Util.toasts(`재시험 시험 항목이 생성되었습니다. (항목 ${res.retestTestItemMno})`,
-            { class: 'Toast-bottom-web' });
-          $modal.modal('hide');
-          getOosList();
-        });
-      }
-
-      function closeOos() {
-        const $modal = $('#modal-lims-oos');
-        const conclusionCcd = $modal.find('#conclusionCcd').val();
-        const conclusionDesc = $modal.find('#conclusionDesc').val().trim();
-        if (!conclusionCcd) {
-          S2Util.toasts('종결 결론을 선택하세요.', { class: 'Toast-bottom-web' });
-          return;
-        }
-        if (conclusionDesc.length < 5) {
-          S2Util.toasts('종결 결론 상세를 5자 이상 입력하세요.', { class: 'Toast-bottom-web' });
-          return;
-        }
-        ajaxPost('/api/lims/oos/closeOos', {
-          oosMno: gOos.oosMno,
-          conclusionCcd: conclusionCcd,
-          conclusionDesc: conclusionDesc
-        }, '데이터요청중입니다.잠시만 기다려주세요.', function (res) {
-          if (res.s2ResultCode !== 1) {
-            return;
-          }
-          S2Util.toasts(`조사가 종결되었습니다. (${CONCLUSION_LABEL[conclusionCcd]})`,
-            { class: 'Toast-bottom-web' });
-          $modal.modal('hide');
-          getOosList();
-        });
-      }
-
-      /* ---------------------------------------------------------------
-         조사자 후보 — 기존 사용자 API(/api/system/user/researcherList) 재사용
-      --------------------------------------------------------------- */
-      function loadUserOptions(selector) {
-        const applyList = function () {
-          const $sel = $(selector).empty();
-          $sel.append($('<option></option>').attr('value', '').text('조사자를 선택하세요'));
-          gUserList.forEach(function (user) {
-            /* 결과 입력자는 조사자가 될 수 없다(서버 검증). 목록에서 미리 뺀다. */
-            if (gOos && String(user.userMno) === String(gOos.resultInputUserMno)) {
-              return;
-            }
-            const orztNm = user.orztNm ? ` (${user.orztNm})` : '';
-            $sel.append($('<option></option>').attr('value', user.userMno).text(`${user.userNm}${orztNm}`));
-          });
-          if (gOos && gOos.invstgUserMno) {
-            $sel.val(gOos.invstgUserMno);
-          }
-        };
-
-        if (gUserList.length) {
-          applyList();
-          return;
-        }
-        ajaxPost('/api/system/user/researcherList', { schPageYn: 'N', orderBy: 'USER_NM ASC' }, null,
-          function (res) {
-            gUserList = [];
-            if (res.userListInfo && S2Util.isJSON(res.userListInfo.dataList)) {
-              for (const idx in res.userListInfo.dataList) {
-                gUserList.push(res.userListInfo.dataList[idx]);
-              }
-            }
-            applyList();
-          },
-          applyList,
-          applyList
-        );
-      }
-
-      function escapeHtml(v) {
-        if (v === null || v === undefined) {
-          return '';
-        }
-        return String(v)
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#39;');
       }
 
       /*]]*/
@@ -5534,7 +5297,7 @@
                   <a class="menuCd LIMS_LOCATION"
                      href="location_list.html">보관위치 관리</a>
                 
-                  <a class="menuCd LIMS_CHEM"
+                  <a class="menuCd LIMS_CHEM active"
                      href="chem_editor.html">구조 편집기</a>
                 
                   <a class="menuCd LIMS_COMPOUND"
@@ -5549,7 +5312,7 @@
                   <a class="menuCd LIMS_TEST"
                      href="test_list.html">시험 의뢰</a>
                 
-                  <a class="menuCd LIMS_OOS active"
+                  <a class="menuCd LIMS_OOS"
                      href="oos_list.html">규격 이탈</a>
                 
                   <a class="menuCd LIMS_METHOD"
@@ -6032,133 +5795,59 @@
           <nav class="lims-crumb">
             <a href="index.html">LIMS</a>
             <span class="sep">/</span>
-            <span>규격 이탈</span>
+            <span>구조 편집기</span>
           </nav>
-          <h2 class="lims-title">규격 이탈 (OOS)</h2>
-          <p class="lims-head-desc">판정이 부적합·판정불가일 때 자동으로 열리는 조사 건입니다. 사람이 직접 등록하지 않습니다.</p>
+          <h2 class="lims-title">구조 편집기</h2>
+          <p class="lims-head-desc">구조를 그리거나 ChemDraw 등에서 복사해 붙여넣으면 분자식·분자량이 즉시 계산됩니다.</p>
+        </div>
+        <div class="lims-head-actions">
+          <button class="button-blue-full-sty01"
+                  id="btn-register-structure"
+                  onclick="openModalCompoundRegister();"><span>화합물 등록</span></button>
+          <button class="button-blue-full-sty01 d-none"
+                  id="btn-apply-structure"
+                  onclick="applyStructureToOpener();"><span>이 구조로 검색</span></button>
         </div>
       </header>
 
-      <div class="ma-tm20">
-        <div class="flex-sty04 ma-t10">
-          <div class="guidetext-sty01">
-            규격 이탈 조사는 판정이 부적합·판정불가일 때 자동으로 열립니다. 사람이 직접 등록하지 않습니다.
-          </div>
+      
+      <div class="lims-prop-bar ma-t20">
+        <div class="prop-item">
+          <span class="prop-label">분자식</span>
+          <span class="prop-value empty"
+                id="prop-formula">-</span>
         </div>
-
-        
-        <div class="target-info-tab lims-filter flex-sty04 ma-t20">
-          <div class="tabs-box">
-            <input type="checkbox" class="btn form-check-input basic" id="schMineOnlyChk"
-                   onchange="getOosList();" />
-            <label for="schMineOnlyChk" class="form-check-label2 ma-r10">내 조사 건</label>
-            <input type="checkbox" class="btn form-check-input basic" id="schOpenOnlyChk"
-                   onchange="getOosList();" />
-            <label for="schOpenOnlyChk" class="form-check-label2">미종결만</label>
-          </div>
-          <div class="flex-sty02 search-box">
-            <select id="schOosStatusCcd"
-                    class="btn btn-xs select-xs select-sty02 w-150 ma-r10"
-                    onchange="getOosList();">
-              <option value="">전체 상태</option>
-              <option value="OPEN">접수</option>
-              <option value="PHASE1">실험실조사</option>
-              <option value="PHASE2">확대조사</option>
-              <option value="RETEST">재시험중</option>
-              <option value="CLOSED">종결</option>
-              <option value="CANCELED">취소</option>
-            </select>
-            
-            <div class="input-group form_date w-350 ma-r10">
-              <input type="text"
-                     id="schStartDe"
-                     readonly="readonly"
-                     placeholder="감지일 시작"
-                     class="form-control input-xs input-write-date2" />
-              <input type="text"
-                     id="schEndDe"
-                     readonly="readonly"
-                     placeholder="감지일 종료"
-                     class="form-control input-xs input-write-date2" />
-            </div>
-            <div class="select-wrap">
-              <input type="text"
-                     id="searchKeyword"
-                     maxlength="255"
-                     sch-enter="getOosList"
-                     placeholder="OOS 번호 · 시험 항목 · 의뢰 번호"
-                     class="input-write-sty02-line w-250" />
-              <a href="#"
-                 class="c-pointer"
-                 onclick="getOosList(); return false;">
-                <i class="fa far fa-m fa-search small"></i>
-              </a>
-            </div>
-          </div>
+        <div class="prop-item">
+          <span class="prop-label">분자량</span>
+          <span class="prop-value empty"
+                id="prop-molwt">-</span>
         </div>
-
-        
-        <div class="oos-info-list ma-t20">
-          <div class="core-table">
-            <div class="box">
-              <div class="box-body">
-                <div class="core-table-body">
-                  <div class="table-responsive pa-b30 core-table-div">
-                    <table class="table table-hover table-sty01"
-                           id="tableOosList">
-                      <thead>
-                        <tr class="text-nowrap">
-                          <th class="text-left">OOS 번호</th>
-                          <th class="text-left">시험 항목</th>
-                          <th class="text-left">의뢰</th>
-                          <th class="text-left">이탈 값</th>
-                          <th class="text-left">판정</th>
-                          <th class="text-left">상태</th>
-                          <th class="text-left">원인</th>
-                          <th class="text-left">감지</th>
-                          <th class="text-left">조사자</th>
-                          <th class="text-center">조사</th>
-                        </tr>
-                      </thead>
-                      <tbody></tbody>
-                    </table>
-                    <div class="paging-box text-center"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div class="prop-item">
+          <span class="prop-label">Exact Mass</span>
+          <span class="prop-value empty"
+                id="prop-exact">-</span>
+        </div>
+        <div class="prop-item lims-prop-status">
+          <span class="guidetext-sty01"
+                id="chem-status">편집기 불러오는 중</span>
         </div>
       </div>
 
-      
-      <div id="modal-lims-oos"
+      <div id="chem-frame-wrap"
+           class="ma-t10">
+        <iframe id="chem-frame"
+                class="lims-chem-frame"
+                title="구조 편집기"></iframe>
+      </div>
+
+      <div id="modal-lims-compound"
            class="modal fade"
            data-bs-backdrop="static"
            data-bs-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-          <div class="modal-pop modal-wrap-sty01 modal-content"></div>
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-pop modal-wrap-sty02 modal-content"></div>
         </div>
       </div>
-
-      
-      <script id="template_oos_list"
-              type="text/template">
-        <tr>
-          <td class="text-left"><b>{{=oosNoDisp}}</b></td>
-          <td class="text-left">{{=testItemNmDisp}}</td>
-          <td class="text-left">{{=reqstNoDisp}}</td>
-          <td class="text-left">{{=resultDisp}}</td>
-          <td class="text-left">{{=judgeDisp}}</td>
-          <td class="text-left">{{=statusDisp}}</td>
-          <td class="text-left">{{=causeDisp}}</td>
-          <td class="text-left">{{=detectDisp}}</td>
-          <td class="text-left">{{=invstgDisp}}</td>
-          <td class="text-center">
-            <button class="button-blue-line-sty01" onclick="openModalOos('{{=oosMno}}');"><span>조사</span></button>
-          </td>
-        </tr>
-      </script>
     </div>
   </div>
         </div>

@@ -76,3 +76,99 @@
   font-size: 12px;
   line-height: 1.6;
 }
+
+/* 구조 편집기 대역 — Ketcher 자리에 RDKit 이 그린 구조와 계산값을 보여준다. */
+.lims-chem-stub {
+  display: flex;
+  gap: 20px;
+  align-items: stretch;
+  padding: 20px;
+  border: 1px solid #e9ecef;
+  border-radius: 10px;
+  background: #fff;
+}
+.lims-chem-stub-canvas {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 auto;
+  min-height: 380px;
+  border: 1px dashed #dee2e6;
+  border-radius: 8px;
+  background: #f8f9fa;
+}
+.lims-chem-stub-canvas svg {
+  width: 100%;
+  max-width: 520px;
+  height: auto;
+}
+.lims-chem-stub-side {
+  flex: 0 0 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.lims-chem-stub-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #212529;
+}
+.lims-chem-stub-note {
+  font-size: 12px;
+  line-height: 1.65;
+  color: #868e96;
+}
+.lims-chem-stub-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+.lims-chem-stub-item {
+  padding: 9px 12px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  background: #fff;
+  color: #495057;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+  cursor: pointer;
+}
+.lims-chem-stub-item:hover {
+  border-color: #1761de;
+  color: #1761de;
+}
+.lims-chem-stub-item.on {
+  border-color: #1761de;
+  background: #edf3fd;
+  color: #1761de;
+  font-weight: 600;
+}
+@media (max-width: 900px) {
+  .lims-chem-stub { flex-direction: column; }
+  .lims-chem-stub-side { flex: none; }
+}
+
+/* 범위 밖 안내 토스트 */
+.lims-poc-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 32px;
+  z-index: 3000;
+  max-width: 520px;
+  padding: 12px 18px;
+  transform: translate(-50%, 12px);
+  border-radius: 8px;
+  background: rgba(16, 24, 40, 0.94);
+  color: #fff;
+  font-size: 13px;
+  line-height: 1.5;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+.lims-poc-toast.on {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
