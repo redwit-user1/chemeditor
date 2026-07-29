@@ -87,6 +87,11 @@
       rel="stylesheet"
       href="assets/lib/eln/css/lims.css"
     />
+    
+    <link
+      rel="stylesheet"
+      href="assets/lib/eln/css/lims-ui.css"
+    />
 
     
 
@@ -2550,6 +2555,19 @@
         }
       }
 
+      /*
+        요약 타일에서 목록으로 — 숫자를 보여주기만 하고 거기서 끝나면
+        사용자는 그 숫자에 해당하는 건이 어느 것인지 다시 찾아야 한다.
+        타일을 누르면 내 담당 큐 탭으로 옮기고 그 상태로 필터를 건다.
+      */
+      function focusItemStatus(statusCcd) {
+        if (gCurrentTab !== TAB_MY_WORK) {
+          switchTab(TAB_MY_WORK);
+        }
+        $('#schTestItemStatusCcd').val(statusCcd);
+        getWorklist(1);
+      }
+
       /* ---------------------------------------------------------------
          내 담당 시험 큐
          담당자는 서버가 세션 사용자로 고정한다(파라미터로 받지 않는다).
@@ -2664,8 +2682,42 @@
         return de.substring(0, 4) + '-' + de.substring(4, 6) + '-' + de.substring(6, 8);
       }
 
+      /* 표에 값을 심기 전 이스케이프. oos_list.html 과 같은 구현이다. */
+      function escapeHtml(v) {
+        if (v === null || v === undefined) {
+          return '';
+        }
+        return String(v)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      /*
+        시료 칸 — 식별자(위)와 이름(아래) 두 줄.
+        번호는 시료 상세로 가는 링크다. 시험 화면에서 시료를 확인하려고
+        메뉴를 되짚어 들어가는 일이 없어야 한다.
+      */
+      function sampleCell(sampleMno, sampleNo, sampleNm) {
+        const no = escapeHtml(sampleNo || '-');
+        const head = sampleMno
+          ? '<a class="lims-id lims-link" href="#" onclick="goSampleDetail(\'' + sampleMno + '\'); return false;">' + no + '</a>'
+          : '<span class="lims-id">' + no + '</span>';
+        const sub = sampleNm
+          ? '<span class="lims-cell-sub" title="' + escapeHtml(sampleNm) + '">' + escapeHtml(sampleNm) + '</span>'
+          : '';
+        return '<span class="lims-cell">' + head + sub + '</span>';
+      }
+
+      /* 시료 상세로 이동 — 목록 화면과 같은 경로 규약을 쓴다. */
+      function goSampleDetail(sampleMno) {
+        coreCommon.href('/lims/sample/sampleDetails?schSampleMno=' + sampleMno);
+      }
+
       function decorateItem(item) {
-        item.sampleDisp = (item.sampleNo || '-') + (item.sampleNm ? ' · ' + item.sampleNm : '');
+        item.sampleDisp = sampleCell(item.sampleMno, item.sampleNo, item.sampleNm);
         item.methodDisp = item.methodNm
           ? item.methodNm + ' (v' + (item.methodVerNo || 1) + ')'
           : '<span class="lims-stoich-reason">분석법 미지정</span>';
@@ -2690,7 +2742,7 @@
       }
 
       function decorateRequest(reqst) {
-        reqst.sampleDisp = (reqst.sampleNo || '-') + (reqst.sampleNm ? ' · ' + reqst.sampleNm : '');
+        reqst.sampleDisp = sampleCell(reqst.sampleMno, reqst.sampleNo, reqst.sampleNm);
         reqst.purposeDisp = reqst.testPurposeCcdNm || reqst.testPurposeCcd || '-';
         reqst.hopeDeDisp = deDisp(reqst.hopeDe);
         reqst.urgentDisp = reqst.urgentYn === 'Y'
@@ -6270,33 +6322,42 @@
 
           <!-- body 영역  -->
           <div class="content-wrapper">
-    <div id="main">
-      <div class="flex-sty01">
-        <p class="main-title-sty01">시험 의뢰 · 워크리스트</p>
-      </div>
+    <div id="main" class="lims-page">
+      <header class="lims-head">
+        <div class="lims-head-main">
+          <nav class="lims-crumb">
+            <a href="index.html">LIMS</a>
+            <span class="sep">/</span>
+            <span>시험 의뢰</span>
+          </nav>
+          <h2 class="lims-title">시험 의뢰 · 워크리스트</h2>
+          <p class="lims-head-desc">내가 맡은 시험과 의뢰 목록입니다. 접수 대기 건을 열어 담당자를 배정하면 접수됩니다.</p>
+        </div>
+      </header>
 
       <div class="ma-tm20">
         
-        <div class="lims-prop-bar ma-t20">
-          <div class="prop-item">
-            <span class="prop-label">접수 대기</span>
-            <span class="prop-value" id="summaryWaitingCnt">0</span>
-          </div>
-          <div class="prop-item">
-            <span class="prop-label">진행 중</span>
-            <span class="prop-value" id="summaryInProgressCnt">0</span>
-          </div>
-          <div class="prop-item">
-            <span class="prop-label">판정 대기</span>
-            <span class="prop-value" id="summaryJudgeWaitCnt">0</span>
-          </div>
-          <div class="prop-item">
-            <span class="prop-label">규격 이탈</span>
-            <span class="prop-value" id="summaryOosCnt">0</span>
-          </div>
-          <div class="lims-prop-status">
-            <span class="guidetext-sty01">시험 항목 기준 · 전체 집계. 접수 대기는 담당자가 아직 배정되지 않은 항목입니다.</span>
-          </div>
+        <div class="lims-kpi">
+          <a href="#" class="lims-kpi-item" onclick="focusItemStatus(''); return false;">
+            <span class="lims-kpi-label">접수 대기</span>
+            <span class="lims-kpi-value" id="summaryWaitingCnt">0</span>
+            <span class="lims-kpi-note">담당자 미배정</span>
+          </a>
+          <a href="#" class="lims-kpi-item" onclick="focusItemStatus('IN_PROGRESS'); return false;">
+            <span class="lims-kpi-label">진행 중</span>
+            <span class="lims-kpi-value is-primary" id="summaryInProgressCnt">0</span>
+            <span class="lims-kpi-note">착수한 시험 항목</span>
+          </a>
+          <a href="#" class="lims-kpi-item" onclick="focusItemStatus('ASSIGNED'); return false;">
+            <span class="lims-kpi-label">판정 대기</span>
+            <span class="lims-kpi-value is-warn" id="summaryJudgeWaitCnt">0</span>
+            <span class="lims-kpi-note">결과 입력·판정 전</span>
+          </a>
+          <a href="#" class="lims-kpi-item" onclick="focusItemStatus('OOS_HOLD'); return false;">
+            <span class="lims-kpi-label">규격 이탈</span>
+            <span class="lims-kpi-value is-danger" id="summaryOosCnt">0</span>
+            <span class="lims-kpi-note">조사 진행 중</span>
+          </a>
         </div>
 
         
@@ -6387,9 +6448,9 @@
                             <th class="text-left">시험 항목</th>
                             <th class="text-left">분석법</th>
                             <th class="text-left">예정일</th>
-                            <th class="num">결과</th>
+                            <th class="lims-num">결과</th>
                             <th class="text-left">상태</th>
-                            <th class="text-center">조작</th>
+                            <th class="text-right">조작</th>
                           </tr>
                         </thead>
                         <tbody></tbody>
@@ -6460,23 +6521,26 @@
               type="text/template">
         <tr>
           <td class="text-left">
-            <a href="#" class="c-pointer" onclick="goTestRequestDetails('{{=testReqstMno}}'); return false;"><b>{{=testReqstNo}}</b></a>
+            <a href="#" class="lims-id lims-link" onclick="goTestRequestDetails('{{=testReqstMno}}'); return false;">{{=testReqstNo}}</a>
             {{=urgentDisp}}
           </td>
           <td class="text-left">{{=sampleDisp}}</td>
           <td class="text-left"><b>{{=testItemNm}}</b></td>
           <td class="text-left">{{=methodDisp}}</td>
           <td class="text-left">{{=planDeDisp}}</td>
-          <td class="num">{{=resultCntDisp}}</td>
+          <td class="lims-num">{{=resultCntDisp}}</td>
           <td class="text-left">{{=stateDisp}}</td>
-          <td class="text-center">{{=actionDisp}}</td>
+          <td class="lims-actions-cell">{{=actionDisp}}</td>
         </tr>
       </script>
 
       <script id="template_request_list"
               type="text/template">
         <tr>
-          <td class="text-left"><b>{{=testReqstNo}}</b> {{=urgentDisp}}</td>
+          <td class="text-left">
+            <a href="#" class="lims-id lims-link" onclick="goTestRequestDetails('{{=testReqstMno}}'); return false;">{{=testReqstNo}}</a>
+            {{=urgentDisp}}
+          </td>
           <td class="text-left">{{=sampleDisp}}</td>
           <td class="text-left">{{=purposeDisp}}</td>
           <td class="text-left">{{=reqstUserNm}}</td>

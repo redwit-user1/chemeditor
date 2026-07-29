@@ -87,6 +87,11 @@
       rel="stylesheet"
       href="assets/lib/eln/css/lims.css"
     />
+    
+    <link
+      rel="stylesheet"
+      href="assets/lib/eln/css/lims-ui.css"
+    />
 
     
 
@@ -2670,8 +2675,8 @@
                 const t = res.testHistoryList[idx];
                 rows += `
                   <tr>
-                    <td class="text-left">${t.testReqstNo || '-'}</td>
-                    <td class="text-left">${t.testItemNm || '-'}</td>
+                    <td class="text-left">${reqstLink(t.testReqstMno, t.testReqstNo)}</td>
+                    <td class="text-left">${itemLink(t.testItemMno, t.testItemNm)}</td>
                     <td class="text-left">${testItemStateBadge(t.testItemStatusCcd, t.testItemStatusCcdNm)}</td>
                     <td class="text-left">${testJudgeBadge(t.finalJudgeCcd, t.finalJudgeCcdNm)}</td>
                     <td class="text-left">${t.chargeUserNm || '-'}</td>
@@ -2691,6 +2696,33 @@
           notLinked,
           notLinked
         );
+      }
+
+      /*
+        시험 이력에서 원 의뢰·원 시험으로 건너간다.
+        시료 화면에서 "이 값이 왜 이렇게 나왔나"를 확인하려면 결국 그 시험 화면으로
+        가야 한다. 번호를 눈으로 읽고 메뉴를 되짚어 들어가게 두지 않는다.
+      */
+      function reqstLink(testReqstMno, testReqstNo) {
+        const label = testReqstNo || '-';
+        return testReqstMno
+          ? '<a href="#" class="lims-id lims-link" onclick="goTestRequestDetails(\'' + testReqstMno + '\'); return false;">' + label + '</a>'
+          : label;
+      }
+
+      function itemLink(testItemMno, testItemNm) {
+        const label = testItemNm || '-';
+        return testItemMno
+          ? '<a href="#" class="lims-link" onclick="goResultEntry(\'' + testItemMno + '\'); return false;">' + label + '</a>'
+          : label;
+      }
+
+      function goTestRequestDetails(testReqstMno) {
+        S2Util.goPage('/lims/test/testRequestDetails', { schTestReqstMno: testReqstMno });
+      }
+
+      function goResultEntry(testItemMno) {
+        coreCommon.href('/lims/result/resultEntry?testItemMno=' + testItemMno);
       }
 
       /*
@@ -6444,28 +6476,36 @@
 
           <!-- body 영역  -->
           <div class="content-wrapper">
-    <div id="main">
-      <div class="flex-sty01">
-        <p class="main-title-sty01">
-          시료 상세 — <span>SMP-20260712-001</span>
-        </p>
-        <div class="flex-sty02">
-          <button id="btnAliquotCreate"
-                  class="button-blue-full-sty01 ma-r10"
-                  onclick="openModalAliquotCreate();"><span>분주</span></button>
-          <button id="btnSampleModify"
-                  class="button-blue-line-sty01 ma-r10"
-                  onclick="openModalSampleModify();"><span>수정</span></button>
-          <button id="btnSampleDispose"
-                  class="button-gray-line-sty01 ma-r10"
-                  onclick="openModalSampleDispose();"><span>폐기</span></button>
-          <button id="btnSampleDelete"
-                  class="button-gray-line-sty01 ma-r10"
-                  onclick="openModalSampleDelete();"><span>삭제</span></button>
-          <button class="button-gray-line-sty01"
-                  onclick="goSampleList();"><span>목록</span></button>
+    <div id="main" class="lims-page">
+      <header class="lims-head">
+        <div class="lims-head-main">
+          <nav class="lims-crumb">
+            <a href="index.html">LIMS</a>
+            <span class="sep">/</span>
+            <a href="sample_list.html">시료 관리</a>
+            <span class="sep">/</span>
+            <span>시료 상세</span>
+          </nav>
+          <h2 class="lims-title">시료 상세 — <span>SMP-20260712-001</span></h2>
+          <p class="lims-head-desc">이 시료의 계통·분주·시험 이력을 한자리에서 봅니다. 분주는 물리적 분할, 새 시료는 화학적 변화입니다.</p>
         </div>
-      </div>
+        <div class="lims-head-actions">
+          <button id="btnAliquotCreate"
+          class="button-blue-full-sty01 ma-r10"
+          onclick="openModalAliquotCreate();"><span>분주</span></button>
+          <button id="btnSampleModify"
+          class="button-blue-line-sty01 ma-r10"
+          onclick="openModalSampleModify();"><span>수정</span></button>
+          <button id="btnSampleDispose"
+          class="button-gray-line-sty01 ma-r10"
+          onclick="openModalSampleDispose();"><span>폐기</span></button>
+          <button id="btnSampleDelete"
+          class="button-gray-line-sty01 ma-r10"
+          onclick="openModalSampleDelete();"><span>삭제</span></button>
+          <button class="button-gray-line-sty01"
+          onclick="goSampleList();"><span>목록</span></button>
+        </div>
+      </header>
 
       <div class="ma-tm20">
         
@@ -6567,8 +6607,8 @@
                           <th class="text-left">시료명</th>
                           <th class="text-left">유형</th>
                           <th class="text-left">상태</th>
-                          <th class="text-left">사용중 분주</th>
-                          <th class="text-center">바로가기</th>
+                          <th class="lims-num">사용중 분주</th>
+                          <th class="text-left">바로가기</th>
                         </tr>
                       </thead>
                       <tbody></tbody>
@@ -6608,12 +6648,12 @@
                           <th class="text-left">분주번호</th>
                           <th class="text-left">유형</th>
                           <th class="text-left">보관위치</th>
-                          <th class="text-left">용기</th>
-                          <th class="text-left">잔량</th>
+                          <th class="lims-num">용기</th>
+                          <th class="lims-num">잔량</th>
                           <th class="text-left">상태</th>
                           <th class="text-left">출처 바이알</th>
                           <th class="text-left">분주일시</th>
-                          <th class="text-center">관리</th>
+                          <th class="text-right">관리</th>
                         </tr>
                       </thead>
                       <tbody></tbody>
@@ -6727,9 +6767,9 @@
           <td class="text-left">{{=sampleNmDisp}}</td>
           <td class="text-left">{{=sampleTpNm}}</td>
           <td class="text-left">{{=statusState}}</td>
-          <td class="text-left">{{=activeAliquotCntDisp}}</td>
-          <td class="text-center">
-            <a href="#" class="c-pointer" onclick="goSampleDetail('{{=sampleMno}}'); return false;">열기</a>
+          <td class="lims-num">{{=activeAliquotCntDisp}}</td>
+          <td class="text-left">
+            <a href="#" class="lims-link" onclick="goSampleDetail('{{=sampleMno}}'); return false;">열기</a>
           </td>
         </tr>
       </script>
@@ -6740,12 +6780,12 @@
           <td class="text-left"><b>{{=aliquotNo}}</b></td>
           <td class="text-left">{{=aliquotTpNm}}</td>
           <td class="text-left">{{=locationNmDisp}}</td>
-          <td class="text-left">{{=vesselTpNm}}</td>
-          <td class="text-left">{{=amount}} {{=unitCcd}}</td>
+          <td class="lims-num">{{=vesselTpNm}}</td>
+          <td class="lims-num">{{=amount}} {{=unitCcd}}</td>
           <td class="text-left">{{=statusState}}</td>
           <td class="text-left">{{=parentAliquotNoDisp}}</td>
           <td class="text-left">{{=aliquotDtDisp}}</td>
-          <td class="text-center">{{=actionHtml}}</td>
+          <td class="lims-actions-cell">{{=actionHtml}}</td>
         </tr>
       </script>
     </div>

@@ -87,6 +87,11 @@
       rel="stylesheet"
       href="assets/lib/eln/css/lims.css"
     />
+    
+    <link
+      rel="stylesheet"
+      href="assets/lib/eln/css/lims-ui.css"
+    />
 
     
 
@@ -2879,7 +2884,7 @@
                       <tr class="text-nowrap">
                         <th class="text-left">교정일</th>
                         <th class="text-left">유형</th>
-                        <th class="text-left">결과</th>
+                        <th class="lims-num">결과</th>
                         <th class="text-left">차기 기한</th>
                         <th class="text-left">기관</th>
                         <th class="text-left">성적서</th>
@@ -6231,10 +6236,18 @@
 
           <!-- body 영역  -->
           <div class="content-wrapper">
-    <div id="main">
-      <div class="flex-sty01">
-        <p class="main-title-sty01">장비 관리</p>
-      </div>
+    <div id="main" class="lims-page">
+      <header class="lims-head">
+        <div class="lims-head-main">
+          <nav class="lims-crumb">
+            <a href="index.html">LIMS</a>
+            <span class="sep">/</span>
+            <span>장비 관리</span>
+          </nav>
+          <h2 class="lims-title">장비 관리</h2>
+          <p class="lims-head-desc">장비 대장과 교정 이력입니다. 교정이 만료된 장비로는 결과를 입력할 수 없습니다.</p>
+        </div>
+      </header>
 
       <div class="ma-tm20">
         <div class="target-info-tab lims-filter flex-sty04 ma-t30">
@@ -6310,7 +6323,7 @@
                           <th class="text-left">최근 교정</th>
                           <th class="text-left">차기 교정 기한</th>
                           <th class="text-left">상태</th>
-                          <th class="text-center">관리</th>
+                          <th class="text-right">관리</th>
                         </tr>
                       </thead>
                       <tbody></tbody>
@@ -6369,7 +6382,7 @@
           <td class="text-left">{{=lastCalDeDisp}}</td>
           <td class="text-left">{{=calDisp}}</td>
           <td class="text-left">{{=statusDisp}}</td>
-          <td class="text-center">
+          <td class="lims-actions-cell">
             <button class="button-blue-line-sty01" onclick="openModalCalHistory('{{=instrumentMno}}', '{{=instrumentCd}}', '{{=instrumentNm}}');"><span>교정 이력</span></button>
             <button class="button-blue-line-sty01" onclick="openModalInstrumentEdit('{{=instrumentMno}}');"><span>수정</span></button>
             {{=retireDisp}}

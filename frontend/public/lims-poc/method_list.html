@@ -87,6 +87,11 @@
       rel="stylesheet"
       href="assets/lib/eln/css/lims.css"
     />
+    
+    <link
+      rel="stylesheet"
+      href="assets/lib/eln/css/lims-ui.css"
+    />
 
     
 
@@ -5978,10 +5983,18 @@
 
           <!-- body 영역  -->
           <div class="content-wrapper">
-    <div id="main">
-      <div class="flex-sty01">
-        <p class="main-title-sty01">분석법 관리</p>
-      </div>
+    <div id="main" class="lims-page">
+      <header class="lims-head">
+        <div class="lims-head-main">
+          <nav class="lims-crumb">
+            <a href="index.html">LIMS</a>
+            <span class="sep">/</span>
+            <span>분석법 관리</span>
+          </nav>
+          <h2 class="lims-title">분석법 관리</h2>
+          <p class="lims-head-desc">시험에 쓰는 분석법과 규격을 버전으로 관리합니다. 개정하면 진행 중인 시험 건수를 먼저 알려줍니다.</p>
+        </div>
+      </header>
 
       <div class="ma-tm20">
         <div class="target-info-tab lims-filter flex-sty04 ma-t30">
@@ -6049,8 +6062,8 @@
                           <th class="text-left">버전</th>
                           <th class="text-left">상태</th>
                           <th class="text-left">시행일</th>
-                          <th class="text-left">진행중 시험</th>
-                          <th class="text-center">관리</th>
+                          <th class="lims-num">진행중 시험</th>
+                          <th class="text-right">관리</th>
                         </tr>
                       </thead>
                       <tbody></tbody>
@@ -6092,8 +6105,8 @@
           <td class="text-left">{{=verDisp}}</td>
           <td class="text-left">{{=statusDisp}}</td>
           <td class="text-left">{{=effectDeDisp}}</td>
-          <td class="text-left">{{=inProgressDisp}}</td>
-          <td class="text-center">
+          <td class="lims-num">{{=inProgressDisp}}</td>
+          <td class="lims-actions-cell">
             <button class="button-blue-line-sty01" onclick="goMethodDetail('{{=methodCd}}');"><span>버전·규격</span></button>
             <button class="button-blue-line-sty01" onclick="openModalMethodRevise('{{=methodMno}}', '{{=methodCd}}', '{{=methodNm}}');"><span>개정</span></button>
           </td>

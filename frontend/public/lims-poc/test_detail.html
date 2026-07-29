@@ -87,6 +87,11 @@
       rel="stylesheet"
       href="assets/lib/eln/css/lims.css"
     />
+    
+    <link
+      rel="stylesheet"
+      href="assets/lib/eln/css/lims-ui.css"
+    />
 
     
 
@@ -6138,17 +6143,27 @@
 
           <!-- body 영역  -->
           <div class="content-wrapper">
-    <div id="main">
-      <div class="flex-sty01">
-        <p class="main-title-sty01">시험 의뢰 상세</p>
-        <div>
-          <button class="button-gray-line-sty01"
-                  onclick="goTestRequestList();"><span>목록</span></button>
-          <button class="button-gray-line-sty01 d-none"
-                  id="buttonCancelReqst"
-                  onclick="cancelTestRequest();"><span>의뢰 취소</span></button>
+    <div id="main" class="lims-page">
+      <header class="lims-head">
+        <div class="lims-head-main">
+          <nav class="lims-crumb">
+            <a href="index.html">LIMS</a>
+            <span class="sep">/</span>
+            <a href="test_list.html">시험 의뢰</a>
+            <span class="sep">/</span>
+            <span>의뢰 상세</span>
+          </nav>
+          <h2 class="lims-title">시험 의뢰 상세</h2>
+          <p class="lims-head-desc">항목마다 분석법·규격 버전을 고정합니다. 착수한 시험은 분석법이 개정돼도 착수 시점 버전을 계속 씁니다.</p>
         </div>
-      </div>
+        <div class="lims-head-actions">
+          <button class="button-gray-line-sty01"
+          onclick="goTestRequestList();"><span>목록</span></button>
+          <button class="button-gray-line-sty01 d-none"
+          id="buttonCancelReqst"
+          onclick="cancelTestRequest();"><span>의뢰 취소</span></button>
+        </div>
+      </header>
 
       <div class="ma-tm20">
         
@@ -6248,9 +6263,9 @@
                           <th class="text-left">규격 (버전)</th>
                           <th class="text-left">담당자</th>
                           <th class="text-left">예정일</th>
-                          <th class="num">결과</th>
+                          <th class="lims-num">결과</th>
                           <th class="text-left">상태 / 판정</th>
-                          <th class="text-center">조작</th>
+                          <th class="text-right">조작</th>
                         </tr>
                       </thead>
                       <tbody></tbody>
@@ -6293,15 +6308,15 @@
       <script id="template_item_list"
               type="text/template">
         <tr>
-          <td class="num">{{=sortSn}}</td>
+          <td class="lims-num">{{=sortSn}}</td>
           <td class="text-left"><b>{{=testItemNm}}</b></td>
           <td class="text-left">{{=methodDisp}}</td>
           <td class="text-left">{{=specDisp}}</td>
           <td class="text-left">{{=chargeDisp}}</td>
           <td class="text-left">{{=planDeDisp}}</td>
-          <td class="num">{{=resultCntDisp}}</td>
+          <td class="lims-num">{{=resultCntDisp}}</td>
           <td class="text-left">{{=stateDisp}} {{=judgeDisp}}</td>
-          <td class="text-center">{{=actionDisp}}</td>
+          <td class="lims-actions-cell">{{=actionDisp}}</td>
         </tr>
       </script>
     </div>

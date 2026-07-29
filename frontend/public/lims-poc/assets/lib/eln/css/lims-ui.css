@@ -1,0 +1,562 @@
+@charset "UTF-8";
+/* ============================================================================
+   LIMS 콘텐츠 디자인 레이어
+
+   적용 범위는 `#main.lims-page` 안, 즉 본문 영역뿐이다.
+   GNB·헤더·로고 같은 구노 공통 구조는 건드리지 않는다 — 그 부분이 바뀌면
+   LIMS 화면만 다른 제품처럼 보이게 된다.
+
+   해결하려는 것은 하나다: 시험 데이터는 글자가 많다. 의뢰번호·시료번호·분석법
+   버전·규격·판정 사유가 한 행에 다 들어간다. 구노 기본 표는 행 높이 66px,
+   한 셀 한 줄을 전제로 만들어져 있어 그 밀도를 감당하지 못하고
+   "잘리거나, 뭉치거나, 화면을 넘긴다".
+
+   그래서 이 레이어는 세 가지를 한다.
+     1) 밀도 — 행 높이와 여백을 줄이고 글자 위계(12/13/14)를 세워 같은 화면에
+        더 많은 사실을 담되 읽히게 한다.
+     2) 위계 — 페이지 머리말 / KPI / 카드(탭·툴바·표·페이징)로 구조를 고정한다.
+        지금은 요약·탭·필터·표가 각자 떠 있어 소속이 보이지 않는다.
+     3) 연계 — 식별자(의뢰번호·시료번호·규격코드)를 링크로 세운다. LIMS 는
+        레코드 사이를 오가는 것이 본업이다.
+
+   색·폰트는 새로 만들지 않는다. style.css 가 이미 가진 값만 쓴다.
+     primary #1761de / gray900 #212529 / gray700 #495057 / gray600 #868e96
+     gray300 #dee2e6 / gray200 #e9ecef / gray50 #f8f9fa / danger #ee5139 / warn #a1730a
+=============================================================================*/
+
+.lims-page {
+	--lims-primary: #1761de;
+	--lims-ink: #212529;
+	--lims-ink-2: #495057;
+	--lims-ink-3: #868e96;
+	--lims-line: #e9ecef;
+	--lims-line-strong: #dee2e6;
+	--lims-surface: #ffffff;
+	--lims-surface-2: #f8f9fa;
+	--lims-danger: #ee5139;
+	--lims-warn: #a1730a;
+
+	font-size: 14px;
+	color: var(--lims-ink-2);
+	letter-spacing: -0.02em;
+}
+
+/* ---------------------------------------------------------------------------
+   1) 페이지 머리말
+   제목만 있고 설명·경로·주요 액션이 화면 여기저기 흩어져 있던 것을 한 블록으로 모은다.
+--------------------------------------------------------------------------- */
+.lims-page .lims-head {
+	display: flex;
+	align-items: flex-start;
+	gap: 16px;
+	padding: 4px 0 18px;
+	border-bottom: 1px solid var(--lims-line);
+}
+
+.lims-page .lims-head-main {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.lims-page .lims-crumb {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-bottom: 6px;
+	font-size: 12px;
+	color: var(--lims-ink-3);
+}
+
+.lims-page .lims-crumb a {
+	color: var(--lims-ink-3);
+	text-decoration: none;
+}
+
+.lims-page .lims-crumb a:hover {
+	color: var(--lims-primary);
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+
+.lims-page .lims-crumb .sep {
+	color: var(--lims-line-strong);
+}
+
+/* 구노 기본 제목(.main-title-sty01)을 그대로 쓰는 화면도 같은 크기로 맞춘다. */
+.lims-page .lims-title,
+.lims-page .main-title-sty01 {
+	margin: 0;
+	font-size: 22px;
+	font-weight: 700;
+	line-height: 1.35;
+	color: var(--lims-ink);
+	letter-spacing: -0.04em;
+	word-break: keep-all;
+}
+
+.lims-page .lims-title .lims-title-id {
+	margin-left: 8px;
+	font-size: 18px;
+	font-weight: 500;
+	color: var(--lims-ink-3);
+	font-variant-numeric: tabular-nums;
+}
+
+.lims-page .lims-head-desc {
+	margin: 6px 0 0;
+	font-size: 13px;
+	line-height: 1.6;
+	color: var(--lims-ink-3);
+}
+
+.lims-page .lims-head-actions {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: 8px;
+	flex: 0 0 auto;
+	padding-top: 2px;
+}
+
+/* ---------------------------------------------------------------------------
+   2) 요약 지표(KPI)
+   기존에는 물성 패널(.lims-prop-bar)을 빌려 써서 숫자와 라벨이 한 줄에 뭉쳐 있었다.
+   LIMS 첫 화면에서 가장 먼저 읽어야 하는 값이므로 타일로 세우고, 누르면 그 조건으로
+   목록이 걸리게 한다(누를 수 있는 타일은 커서와 테두리로 알린다).
+--------------------------------------------------------------------------- */
+.lims-page .lims-kpi {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+	gap: 10px;
+	margin-top: 18px;
+}
+
+.lims-page .lims-kpi-item {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding: 14px 16px;
+	border: 1px solid var(--lims-line);
+	border-radius: 10px;
+	background: var(--lims-surface);
+	text-decoration: none;
+	transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.lims-page a.lims-kpi-item:hover,
+.lims-page button.lims-kpi-item:hover {
+	border-color: var(--lims-primary);
+	box-shadow: 0 2px 8px rgba(23, 97, 222, 0.1);
+}
+
+.lims-page .lims-kpi-label {
+	font-size: 12px;
+	font-weight: 500;
+	color: var(--lims-ink-3);
+}
+
+.lims-page .lims-kpi-value {
+	font-size: 26px;
+	font-weight: 700;
+	line-height: 1.15;
+	color: var(--lims-ink);
+	font-variant-numeric: tabular-nums;
+}
+
+.lims-page .lims-kpi-value.is-warn { color: var(--lims-warn); }
+.lims-page .lims-kpi-value.is-danger { color: var(--lims-danger); }
+.lims-page .lims-kpi-value.is-primary { color: var(--lims-primary); }
+.lims-page .lims-kpi-value.is-zero { color: var(--lims-ink-3); }
+
+.lims-page .lims-kpi-note {
+	font-size: 12px;
+	line-height: 1.5;
+	color: var(--lims-ink-3);
+}
+
+/* ---------------------------------------------------------------------------
+   3) 카드 — 탭 / 툴바 / 표 / 페이징을 한 상자에 넣는다.
+   지금은 넷이 각각 떠 있어 어떤 필터가 어떤 표에 걸리는지 화면상 알 수 없다.
+--------------------------------------------------------------------------- */
+.lims-page .lims-card {
+	margin-top: 16px;
+	border: 1px solid var(--lims-line);
+	border-radius: 10px;
+	background: var(--lims-surface);
+	overflow: hidden;
+}
+
+.lims-page .lims-card + .lims-card {
+	margin-top: 20px;
+}
+
+.lims-page .lims-card-head {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 10px 16px;
+	padding: 12px 16px;
+	border-bottom: 1px solid var(--lims-line);
+	background: var(--lims-surface);
+}
+
+.lims-page .lims-card-title {
+	flex: 0 0 auto;
+	margin: 0;
+	font-size: 15px;
+	font-weight: 700;
+	color: var(--lims-ink);
+}
+
+.lims-page .lims-card-title .lims-card-count {
+	margin-left: 6px;
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--lims-ink-3);
+	font-variant-numeric: tabular-nums;
+}
+
+.lims-page .lims-card-desc {
+	flex: 1 1 100%;
+	margin: 0;
+	font-size: 12px;
+	line-height: 1.6;
+	color: var(--lims-ink-3);
+}
+
+.lims-page .lims-card-tools {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-left: auto;
+}
+
+.lims-page .lims-card-body {
+	padding: 16px;
+}
+
+.lims-page .lims-card-foot {
+	padding: 12px 16px;
+	border-top: 1px solid var(--lims-line);
+	background: var(--lims-surface-2);
+}
+
+.lims-page .lims-card-foot .paging-box {
+	margin: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   4) 표 — 이 레이어의 핵심
+   구노 기본 표는 셀 padding 14px 21px, 행 높이 66px 이다. 시험 데이터는 한 행에
+   식별자·이름·버전·상태·판정·담당·일자가 함께 오므로 이 밀도로는 한 화면에
+   6행밖에 담기지 않는다. 여백을 줄이고 위계를 글자 크기로 만든다.
+--------------------------------------------------------------------------- */
+.lims-page .core-table .core-table-body .table > thead > tr > th,
+.lims-page .lims-table > thead > tr > th {
+	padding: 11px 16px !important;
+	border-bottom: 1px solid var(--lims-line-strong) !important;
+	background: var(--lims-surface-2) !important;
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--lims-ink-2);
+	white-space: nowrap;
+}
+
+.lims-page .core-table .core-table-body .table > tbody > tr > td,
+.lims-page .lims-table > tbody > tr > td {
+	padding: 11px 16px !important;
+	border-bottom: 1px solid var(--lims-line) !important;
+	font-size: 13px;
+	line-height: 1.5;
+	color: var(--lims-ink-2);
+	vertical-align: middle;
+}
+
+.lims-page .core-table .core-table-body .table > tbody > tr:last-child > td,
+.lims-page .lims-table > tbody > tr:last-child > td {
+	border-bottom: 0 !important;
+}
+
+.lims-page .core-table .core-table-body .table > tbody > tr:hover > td {
+	background: #f5f8ff;
+}
+
+/* 표 안의 1차 식별자 — 굵기와 색으로 눈이 먼저 닿게 한다. */
+.lims-page .lims-id {
+	font-weight: 600;
+	color: var(--lims-ink);
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
+/* 링크형 식별자. LIMS 는 레코드 사이 이동이 본업이라 눌리는 곳을 분명히 한다. */
+.lims-page a.lims-id,
+.lims-page .lims-link {
+	color: var(--lims-primary);
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.lims-page a.lims-id:hover,
+.lims-page .lims-link:hover {
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+
+/*
+  두 줄 셀 — "SMP-20260712-001 · KM00003710 합성 원료" 처럼 식별자와 이름을
+  한 줄에 이어 붙이면 어디까지가 번호인지 읽히지 않는다. 위/아래로 나눈다.
+*/
+.lims-page .lims-cell {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+}
+
+.lims-page .lims-cell-sub {
+	font-size: 12px;
+	color: var(--lims-ink-3);
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* 숫자 열 — 자릿수가 맞아야 크기 비교가 된다. */
+.lims-page .lims-num {
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
+.lims-page th.lims-num { text-align: right; }
+
+/* 조작 열 — 버튼 폭이 행마다 달라 오른쪽 끝이 들쭉날쭉하던 것을 정렬한다. */
+.lims-page .lims-actions {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 6px;
+	white-space: nowrap;
+}
+
+.lims-page td.lims-actions-cell {
+	text-align: right;
+}
+
+/* 빈 상태 — 화면마다 문구·정렬이 달랐다. */
+.lims-page .emptymessage > td {
+	padding: 40px 16px !important;
+	color: var(--lims-ink-3);
+	font-size: 13px;
+	text-align: center;
+}
+
+/*
+  표를 카드로 감싼다.
+
+  지금은 필터·표·페이징이 각각 배경 없이 떠 있어 어떤 필터가 어떤 표에 걸리는지,
+  표가 어디서 끝나는지 화면상 경계가 없다. 표를 흰 카드로 세우면 그 경계가 생기고,
+  바로 위에 뜬 필터가 자연스럽게 그 카드의 도구 줄로 읽힌다.
+  마크업은 건드리지 않는다 — 구노 기존 구조(.core-table > .box > .box-body)에 입힌다.
+*/
+.lims-page .core-table {
+	border: 1px solid var(--lims-line);
+	border-radius: 10px;
+	background: var(--lims-surface);
+	overflow: hidden;
+}
+
+.lims-page .core-table .box,
+.lims-page .lims-card .core-table .box,
+.lims-page .core-table .box-body {
+	border: 0;
+	background: transparent;
+	box-shadow: none;
+	padding: 0;
+}
+
+/* 페이징은 카드 바닥에 붙는 영역이다. 표와 같은 상자 안에서 구분선으로만 나눈다. */
+.lims-page .core-table .core-table-div {
+	padding-bottom: 0 !important;
+}
+
+.lims-page .core-table .paging-box {
+	margin: 0;
+	padding: 12px 16px;
+	border-top: 1px solid var(--lims-line);
+	background: var(--lims-surface-2);
+}
+
+.lims-page .core-table .paging-box:empty {
+	display: none;
+}
+
+/* 필터는 카드 위에 놓인 도구 줄이다. 별도 상자로 보이지 않게 여백만 준다. */
+.lims-page .target-info-tab.lims-filter {
+	margin-top: 14px !important;
+	margin-bottom: 10px;
+}
+
+/* 카드 안에 다시 카드를 그리지 않는다. */
+.lims-page .lims-card .core-table {
+	border: 0;
+	border-radius: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   5) 정의형 상세(라벨 : 값)
+   상세 화면의 기본 정보를 표로 그리면 라벨과 값의 경계가 흐리다.
+--------------------------------------------------------------------------- */
+.lims-page .lims-def {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	gap: 0 24px;
+}
+
+.lims-page .lims-def-row {
+	display: flex;
+	gap: 16px;
+	padding: 11px 0;
+	border-bottom: 1px solid var(--lims-line);
+}
+
+.lims-page .lims-def-label {
+	flex: 0 0 116px;
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--lims-ink-3);
+}
+
+.lims-page .lims-def-value {
+	flex: 1 1 auto;
+	min-width: 0;
+	font-size: 13px;
+	color: var(--lims-ink);
+	word-break: break-word;
+}
+
+.lims-page .lims-def-value.is-empty {
+	color: #adb5bd;
+}
+
+/* ---------------------------------------------------------------------------
+   6) 배지 — lims.css 가 이미 4종(normal/soon/muted/expired)을 갖고 있다.
+   밀도가 올라간 표에 맞춰 크기만 낮춘다.
+--------------------------------------------------------------------------- */
+.lims-page .lims-state {
+	padding: 2px 7px;
+	font-size: 11px;
+	font-weight: 600;
+	border-radius: 4px;
+}
+
+/* ---------------------------------------------------------------------------
+   7) 툴바(검색 필터) — 카드 머리에 붙는다.
+--------------------------------------------------------------------------- */
+.lims-page .lims-card-head .select-sty02,
+.lims-page .lims-card-head .input-write-sty02-line,
+.lims-page .lims-card-head .form-control {
+	height: 34px;
+	font-size: 13px;
+}
+
+.lims-page .lims-card-head .button-blue-full-sty01,
+.lims-page .lims-card-head .button-blue-line-sty01,
+.lims-page .lims-card-head .button-gray-line-sty01 {
+	height: 34px;
+	font-size: 13px;
+	line-height: 26px;
+}
+
+/* ---------------------------------------------------------------------------
+   8) 탭 — 컨텍스트 전환. 액션 버튼과 같은 줄에 섞이지 않게 아래 테두리를 공유한다.
+--------------------------------------------------------------------------- */
+.lims-page .lims-tabs {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	margin: 0;
+}
+
+.lims-page .lims-tabs .lims-tab {
+	padding: 9px 14px;
+	border: 0;
+	border-bottom: 2px solid transparent;
+	background: transparent;
+	font-size: 14px;
+	font-weight: 500;
+	color: var(--lims-ink-3);
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.lims-page .lims-tabs .lims-tab:hover {
+	color: var(--lims-ink-2);
+}
+
+.lims-page .lims-tabs .lims-tab.active {
+	border-bottom-color: var(--lims-primary);
+	color: var(--lims-primary);
+	font-weight: 700;
+}
+
+/* ---------------------------------------------------------------------------
+   9) 안내 문구 — 화면마다 크기가 달랐다. 한 값으로 모은다.
+--------------------------------------------------------------------------- */
+.lims-page .guidetext-sty01,
+.lims-page .lims-note {
+	font-size: 12px;
+	line-height: 1.6;
+	color: var(--lims-ink-3);
+}
+
+.lims-page .lims-note-box {
+	display: flex;
+	gap: 8px;
+	padding: 12px 14px;
+	border: 1px solid var(--lims-line);
+	border-left: 3px solid var(--lims-primary);
+	border-radius: 6px;
+	background: var(--lims-surface-2);
+	font-size: 12px;
+	line-height: 1.65;
+	color: var(--lims-ink-2);
+}
+
+.lims-page .lims-note-box.is-danger {
+	border-left-color: var(--lims-danger);
+	background: #fdf3f2;
+}
+
+/* ---------------------------------------------------------------------------
+   10) 좁은 화면
+   표는 구노 규약대로 가로 스크롤을 유지하되, 머리말·툴바·KPI 는 접힌다.
+--------------------------------------------------------------------------- */
+@media (max-width: 1100px) {
+	.lims-page .lims-head {
+		flex-direction: column;
+	}
+
+	.lims-page .lims-head-actions {
+		justify-content: flex-start;
+		width: 100%;
+	}
+
+	.lims-page .lims-def {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media (max-width: 760px) {
+	.lims-page .lims-def-row {
+		flex-direction: column;
+		gap: 2px;
+	}
+
+	.lims-page .lims-def-label {
+		flex: none;
+	}
+}

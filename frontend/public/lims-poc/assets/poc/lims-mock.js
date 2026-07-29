@@ -113,32 +113,32 @@
   var WORKLIST = [
     { testItemMno: 8001, testReqstMno: 7001, testReqstNo: 'TR-20260713-02', testItemNm: 'HPLC 순도',
       methodNm: 'M-HPLC-001', methodVerNo: 3, planDe: '20260730', resultCnt: 1,
-      sampleNo: 'SMP-20260712-001', sampleNm: 'KM00003710 합성 원료 (batch A)',
+      sampleMno: 5001, sampleNo: 'SMP-20260712-001', sampleNm: 'KM00003710 합성 원료 (batch A)',
       testItemStatusCcd: 'IN_PROGRESS', testItemStatusCcdNm: '시험중', urgentYn: 'Y' },
     { testItemMno: 8002, testReqstMno: 7001, testReqstNo: 'TR-20260713-02', testItemNm: '수분 (KF)',
       methodNm: 'M-KF-004', methodVerNo: 1, planDe: '20260731', resultCnt: 0,
-      sampleNo: 'SMP-20260712-001', sampleNm: 'KM00003710 합성 원료 (batch A)',
+      sampleMno: 5001, sampleNo: 'SMP-20260712-001', sampleNm: 'KM00003710 합성 원료 (batch A)',
       testItemStatusCcd: 'ASSIGNED', testItemStatusCcdNm: '배정', urgentYn: 'N' },
     { testItemMno: 8003, testReqstMno: 7002, testReqstNo: 'TR-20260710-01', testItemNm: '잔류용매 (GC)',
       methodNm: 'M-GC-002', methodVerNo: 2, planDe: '20260728', resultCnt: 2,
-      sampleNo: 'SMP-20260705-014', sampleNm: 'HepG2 세포용해물 (P12)',
-      testItemStatusCcd: 'OOS', testItemStatusCcdNm: '규격이탈', urgentYn: 'N' }
+      sampleMno: 5003, sampleNo: 'SMP-20260705-014', sampleNm: 'HepG2 세포용해물 (P12)',
+      testItemStatusCcd: 'OOS_HOLD', testItemStatusCcdNm: '규격이탈', urgentYn: 'N' }
   ];
 
   var REQUESTS = [
-    { testReqstMno: 7001, testReqstNo: 'TR-20260713-02', sampleNo: 'SMP-20260712-001',
+    { testReqstMno: 7001, testReqstNo: 'TR-20260713-02', sampleMno: 5001, sampleNo: 'SMP-20260712-001',
       sampleNm: 'KM00003710 합성 원료 (batch A)', testPurposeCcd: 'RELEASE', testPurposeCcdNm: '출하',
       testReqstStatusCcd: 'IN_PROGRESS', testReqstStatusCcdNm: '시험중', hopeDe: '20260731',
       reqstUserNm: '김연구', itemCnt: 3, doneItemCnt: 1, waitingItemCnt: 1, oosItemCnt: 0, urgentYn: 'Y' },
-    { testReqstMno: 7002, testReqstNo: 'TR-20260710-01', sampleNo: 'SMP-20260705-014',
+    { testReqstMno: 7002, testReqstNo: 'TR-20260710-01', sampleMno: 5003, sampleNo: 'SMP-20260705-014',
       sampleNm: 'HepG2 세포용해물 (P12)', testPurposeCcd: 'STABILITY', testPurposeCcdNm: '안정성',
       testReqstStatusCcd: 'IN_PROGRESS', testReqstStatusCcdNm: '시험중', hopeDe: '20260728',
       reqstUserNm: '박연구', itemCnt: 2, doneItemCnt: 0, waitingItemCnt: 0, oosItemCnt: 1, urgentYn: 'N' },
-    { testReqstMno: 7003, testReqstNo: 'TR-20260702-03', sampleNo: 'SMP-20260628-003',
+    { testReqstMno: 7003, testReqstNo: 'TR-20260702-03', sampleMno: 5004, sampleNo: 'SMP-20260628-003',
       sampleNm: 'KM00003719 표준품', testPurposeCcd: 'VALIDATION', testPurposeCcdNm: '분석법검증',
       testReqstStatusCcd: 'DONE', testReqstStatusCcdNm: '완료', hopeDe: '20260715',
       reqstUserNm: '김연구', itemCnt: 4, doneItemCnt: 4, waitingItemCnt: 0, oosItemCnt: 0, urgentYn: 'N' },
-    { testReqstMno: 7004, testReqstNo: 'TR-20260729-01', sampleNo: 'SMP-20260712-002',
+    { testReqstMno: 7004, testReqstNo: 'TR-20260729-01', sampleMno: 5002, sampleNo: 'SMP-20260712-002',
       sampleNm: 'KM00003711 정제 분획 F-3', testPurposeCcd: 'IPC', testPurposeCcdNm: '공정중',
       testReqstStatusCcd: 'REQUESTED', testReqstStatusCcdNm: '접수대기', hopeDe: '20260805',
       reqstUserNm: '이연구', itemCnt: 2, doneItemCnt: 0, waitingItemCnt: 2, oosItemCnt: 0, urgentYn: 'N' }
@@ -167,11 +167,11 @@
 
   var OOS = [
     { oosMno: 21, oosNo: 'OOS-2026-0007', testItemMno: 8003, testItemNm: '잔류용매 (GC)',
-      testReqstNo: 'TR-20260710-01', resultVal: '0.62', unitCcd: '%',
+      testReqstMno: 7002, testReqstNo: 'TR-20260710-01', resultVal: '0.62', unitCcd: '%',
       oosStatusCcd: 'INVESTIGATING', detectDt: '2026-07-26', detectUserNm: '박연구',
       causeCcd: null, invstgUserNm: '최QA', judgeCcd: 'FAIL' },
     { oosMno: 22, oosNo: 'OOS-2026-0006', testItemMno: 8005, testItemNm: '수분 (KF)',
-      testReqstNo: 'TR-20260702-03', resultVal: '0.71', unitCcd: '%',
+      testReqstMno: 7003, testReqstNo: 'TR-20260702-03', resultVal: '0.71', unitCcd: '%',
       oosStatusCcd: 'CLOSED', detectDt: '2026-07-08', detectUserNm: '김연구',
       causeCcd: 'TEST_ERROR', invstgUserNm: '최QA', judgeCcd: 'INVALID' }
   ];
@@ -335,7 +335,7 @@
     '/api/lims/test/sampleTestHistory': function () {
       // 이력 표는 의뢰번호와 완료일시도 보여준다. 항목 데이터에 그 둘을 얹는다.
       return { testHistoryList: TEST_ITEMS.map(function (i) {
-        return Object.assign({ testReqstNo: 'TR-20260713-02', completeDt: null }, i);
+        return Object.assign({ testReqstMno: 7001, testReqstNo: 'TR-20260713-02', completeDt: null }, i);
       }) };
     },
     '/api/lims/test/methodOptionList': function () { return { optionList: METHODS }; },
@@ -513,7 +513,7 @@
     };
 
     // 페이지 이동을 정적 파일로 돌린다. 그대로 두면 서버 경로로 나가 404 가 뜬다.
-    if (window.coreCommon) {
+    if (typeof coreCommon !== 'undefined' && coreCommon) {
       coreCommon.href = function (url) {
         var target = toStaticUrl(url);
         window.location.href = target || '#';
@@ -525,7 +525,13 @@
         };
       }
     }
-    if (window.S2Util) {
+    /*
+      s2.util.js 는 `const S2Util = (function(){…})()` 로 선언한다. const 는 window 에
+      속성을 만들지 않으므로 window.S2Util 로 찾으면 없다고 나오고, 이 덮어쓰기가
+      통째로 건너뛰어져 화면 이동이 서버 경로로 나가 404 가 됐다.
+      전역 어휘 스코프의 이름을 직접 본다.
+    */
+    if (typeof S2Util !== 'undefined' && S2Util) {
       S2Util.goPage = function (url) {
         var target = toStaticUrl(url);
         window.location.href = target || '#';

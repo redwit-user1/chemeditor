@@ -87,6 +87,11 @@
       rel="stylesheet"
       href="assets/lib/eln/css/lims.css"
     />
+    
+    <link
+      rel="stylesheet"
+      href="assets/lib/eln/css/lims-ui.css"
+    />
 
     
 
@@ -6069,10 +6074,18 @@
 
           <!-- body 영역  -->
           <div class="content-wrapper">
-    <div id="main">
-      <div class="flex-sty01">
-        <p class="main-title-sty01">화합물 검색</p>
-      </div>
+    <div id="main" class="lims-page">
+      <header class="lims-head">
+        <div class="lims-head-main">
+          <nav class="lims-crumb">
+            <a href="index.html">LIMS</a>
+            <span class="sep">/</span>
+            <span>화합물 검색</span>
+          </nav>
+          <h2 class="lims-title">화합물 검색</h2>
+          <p class="lims-head-desc">구조를 그리거나 붙여넣어 부분구조·유사도로 검색합니다. 분자식·분자량은 RDKit 이 계산합니다.</p>
+        </div>
+      </header>
 
       <div class="ma-tm20">
         

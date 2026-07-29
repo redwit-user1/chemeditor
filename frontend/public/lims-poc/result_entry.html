@@ -87,6 +87,11 @@
       rel="stylesheet"
       href="assets/lib/eln/css/lims.css"
     />
+    
+    <link
+      rel="stylesheet"
+      href="assets/lib/eln/css/lims-ui.css"
+    />
 
     
 
@@ -2993,7 +2998,7 @@
                         <thead>
                           <tr class="text-nowrap">
                             <th class="text-left">버전</th>
-                            <th class="text-left">측정값</th>
+                            <th class="lims-num">측정값</th>
                             <th class="text-left">판정</th>
                             <th class="text-left">측정 일시</th>
                             <th class="text-left">장비</th>
@@ -6228,13 +6233,25 @@
 
           <!-- body 영역  -->
           <div class="content-wrapper">
-    <div id="main">
-      <div class="flex-sty01">
-        <p class="main-title-sty01">결과 입력 · 규격 판정</p>
-        <button class="button-blue-full-sty01 charge-only"
-                style="display:none;"
-                onclick="openModalCompleteItem();"><span>시험 항목 완료</span></button>
-      </div>
+    <div id="main" class="lims-page">
+      <header class="lims-head">
+        <div class="lims-head-main">
+          <nav class="lims-crumb">
+            <a href="index.html">LIMS</a>
+            <span class="sep">/</span>
+            <a href="test_list.html">시험 의뢰</a>
+            <span class="sep">/</span>
+            <span>결과 입력</span>
+          </nav>
+          <h2 class="lims-title">결과 입력 · 규격 판정</h2>
+          <p class="lims-head-desc">값을 저장하면 그 시점 규격으로 즉시 판정하고, 판정에 쓴 규격값을 결과에 함께 남깁니다. 결과는 지울 수 없고 정정은 새 버전으로 쌓입니다.</p>
+        </div>
+        <div class="lims-head-actions">
+          <button class="button-blue-full-sty01 charge-only"
+          style="display:none;"
+          onclick="openModalCompleteItem();"><span>시험 항목 완료</span></button>
+        </div>
+      </header>
 
       <div class="ma-tm20">
         
@@ -6272,14 +6289,14 @@
                       <thead>
                         <tr class="text-nowrap">
                           <th class="text-left">시험 항목</th>
-                          <th class="num">회차</th>
+                          <th class="lims-num">회차</th>
                           <th class="text-left">규격</th>
                           <th class="text-left">단위</th>
-                          <th class="text-left">측정값</th>
+                          <th class="lims-num">측정값</th>
                           <th class="text-left">판정</th>
                           <th class="text-left">저장</th>
                           <th class="text-left">입력</th>
-                          <th class="text-center">액션</th>
+                          <th class="text-right">액션</th>
                         </tr>
                       </thead>
                       <tbody></tbody>
@@ -6323,14 +6340,14 @@
               type="text/template">
         <tr>
           <td class="text-left">{{=testItemNm}}</td>
-          <td class="num">{{=resultSeqNo}}</td>
+          <td class="lims-num">{{=resultSeqNo}}</td>
           <td class="text-left">{{=specDisp}}</td>
           <td class="text-left">{{=unitDisp}}</td>
-          <td class="text-left"><b>{{=resultValDisp}}</b></td>
+          <td class="lims-num"><b>{{=resultValDisp}}</b></td>
           <td class="text-left">{{=judgeDisp}}</td>
           <td class="text-left">{{=saveDisp}}</td>
           <td class="text-left">{{=inputDisp}}</td>
-          <td class="text-center">{{=actionDisp}}</td>
+          <td class="lims-actions-cell">{{=actionDisp}}</td>
         </tr>
       </script>
     </div>

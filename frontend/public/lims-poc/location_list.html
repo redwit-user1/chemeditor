@@ -87,6 +87,11 @@
       rel="stylesheet"
       href="assets/lib/eln/css/lims.css"
     />
+    
+    <link
+      rel="stylesheet"
+      href="assets/lib/eln/css/lims-ui.css"
+    />
 
     
 
@@ -5807,10 +5812,18 @@
 
           <!-- body 영역  -->
           <div class="content-wrapper">
-    <div id="main">
-      <div class="flex-sty01">
-        <p class="main-title-sty01">보관위치 관리</p>
-      </div>
+    <div id="main" class="lims-page">
+      <header class="lims-head">
+        <div class="lims-head-main">
+          <nav class="lims-crumb">
+            <a href="index.html">LIMS</a>
+            <span class="sep">/</span>
+            <span>보관위치 관리</span>
+          </nav>
+          <h2 class="lims-title">보관위치 관리</h2>
+          <p class="lims-head-desc">보관위치 계층입니다. 바코드 접두사와 온도 조건을 위치에 매답니다.</p>
+        </div>
+      </header>
 
       <div class="ma-tm20">
         <div class="target-info-tab lims-filter flex-sty04 ma-t30">
@@ -5847,7 +5860,7 @@
                           <th class="text-left">보관 온도</th>
                           <th class="num">보관 재고</th>
                           <th class="text-left">전체 경로</th>
-                          <th class="text-center">관리</th>
+                          <th class="text-right">관리</th>
                         </tr>
                       </thead>
                       <tbody></tbody>
@@ -5884,9 +5897,9 @@
           <td class="text-left">{{=locationTpNm}}</td>
           <td class="text-left">{{=barcodePrefixDisp}}</td>
           <td class="text-left">{{=temperatureDisp}}</td>
-          <td class="num">{{=containerCnt}}</td>
+          <td class="lims-num">{{=containerCnt}}</td>
           <td class="text-left">{{=fullPathNm}}</td>
-          <td class="text-center">
+          <td class="lims-actions-cell">
             <button class="button-blue-line-sty01" onclick="openModalLocation('create', null, '{{=locationMno}}', '{{=locationNm}}', '', 'BOX', '', '');"><span>하위 추가</span></button>
             <button class="button-blue-line-sty01 ma-l5" onclick="openModalLocation('modify', '{{=locationMno}}', null, null, '{{=locationNm}}', '{{=locationTpCcd}}', '{{=barcodePrefix}}', '{{=temperature}}');"><span>수정</span></button>
             <button class="button-blue-line-sty01 ma-l5" onclick="openModalLocationDelete('{{=locationMno}}', '{{=locationNm}}');"><span>삭제</span></button>

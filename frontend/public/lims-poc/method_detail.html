@@ -87,6 +87,11 @@
       rel="stylesheet"
       href="assets/lib/eln/css/lims.css"
     />
+    
+    <link
+      rel="stylesheet"
+      href="assets/lib/eln/css/lims-ui.css"
+    />
 
     
 
@@ -2571,8 +2576,8 @@
                   <td class="text-left">${deDisp(m.effectDe)}</td>
                   <td class="text-left">${m.approveUserNm || '-'}</td>
                   <td class="text-left">${m.approveDtStr || '-'}</td>
-                  <td class="num">${m.inProgressCnt != null ? m.inProgressCnt : 0}</td>
-                  <td class="text-center">${actions}</td>
+                  <td class="lims-num">${m.inProgressCnt != null ? m.inProgressCnt : 0}</td>
+                  <td class="lims-actions-cell">${actions}</td>
                 </tr>`);
             }
 
@@ -2629,10 +2634,10 @@
                   <td class="text-left">${JUDGE_TP[s.judgeTpCcd] || s.judgeTpCcd || '-'}</td>
                   <td class="text-left">${criteriaDisp(s)}</td>
                   <td class="text-left">${RESULT_UNIT[s.unitCcd] || s.unitCcd || '-'}</td>
-                  <td class="num">${s.decimalPt != null ? s.decimalPt : '-'}</td>
+                  <td class="lims-num">${s.decimalPt != null ? s.decimalPt : '-'}</td>
                   <td class="text-left">${statusBadge(s.specStatusCcd)}</td>
                   <td class="text-left">${deDisp(s.effectDe)}</td>
-                  <td class="text-center">${actions}</td>
+                  <td class="lims-actions-cell">${actions}</td>
                 </tr>`);
             }
           }
@@ -6218,12 +6223,24 @@
 
           <!-- body 영역  -->
           <div class="content-wrapper">
-    <div id="main">
-      <div class="flex-sty01">
-        <p class="main-title-sty01">분석법 상세 — <span id="methodCdTitle"></span> <span id="methodNmTitle"></span></p>
-        <button class="button-gray-line-sty01"
-                onclick="goMethodList();"><span>목록</span></button>
-      </div>
+    <div id="main" class="lims-page">
+      <header class="lims-head">
+        <div class="lims-head-main">
+          <nav class="lims-crumb">
+            <a href="index.html">LIMS</a>
+            <span class="sep">/</span>
+            <a href="method_list.html">분석법 관리</a>
+            <span class="sep">/</span>
+            <span>분석법 상세</span>
+          </nav>
+          <h2 class="lims-title">분석법 상세 — <span id="methodCdTitle"></span> <span id="methodNmTitle"></span></h2>
+          <p class="lims-head-desc">개정 이력과 규격 목록입니다. 폐지된 버전도 지우지 않습니다 — 과거 판정을 재현해야 하기 때문입니다.</p>
+        </div>
+        <div class="lims-head-actions">
+          <button class="button-gray-line-sty01"
+          onclick="goMethodList();"><span>목록</span></button>
+        </div>
+      </header>
 
       <div class="ma-tm20">
         <div class="flex-sty04 ma-t30">
@@ -6250,8 +6267,8 @@
                           <th class="text-left">시행일</th>
                           <th class="text-left">승인자</th>
                           <th class="text-left">승인일시</th>
-                          <th class="num">진행중 시험</th>
-                          <th class="text-center">관리</th>
+                          <th class="lims-num">진행중 시험</th>
+                          <th class="text-right">관리</th>
                         </tr>
                       </thead>
                       <tbody></tbody>
@@ -6293,10 +6310,10 @@
                             <th class="text-left">판정 유형</th>
                             <th class="text-left">기준</th>
                             <th class="text-left">단위</th>
-                            <th class="num">소수자리</th>
+                            <th class="lims-num">소수자리</th>
                             <th class="text-left">상태</th>
                             <th class="text-left">시행일</th>
-                            <th class="text-center">관리</th>
+                            <th class="text-right">관리</th>
                           </tr>
                         </thead>
                         <tbody></tbody>

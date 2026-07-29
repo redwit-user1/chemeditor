@@ -87,6 +87,11 @@
       rel="stylesheet"
       href="assets/lib/eln/css/lims.css"
     />
+    
+    <link
+      rel="stylesheet"
+      href="assets/lib/eln/css/lims-ui.css"
+    />
 
     
 
@@ -6104,10 +6109,18 @@
 
           <!-- body 영역  -->
           <div class="content-wrapper">
-    <div id="main">
-      <div class="flex-sty01">
-        <p class="main-title-sty01">시료 관리</p>
-      </div>
+    <div id="main" class="lims-page">
+      <header class="lims-head">
+        <div class="lims-head-main">
+          <nav class="lims-crumb">
+            <a href="index.html">LIMS</a>
+            <span class="sep">/</span>
+            <span>시료 관리</span>
+          </nav>
+          <h2 class="lims-title">시료 관리</h2>
+          <p class="lims-head-desc">시료를 접수하고 분주(바이알)를 만듭니다. 시료번호는 접수일 기준 SMP-YYYYMMDD-NNN 으로 자동 발번됩니다.</p>
+        </div>
+      </header>
 
       <div class="ma-tm20">
         
@@ -6186,7 +6199,7 @@
                           <th class="text-left">수령일</th>
                           
                           <th class="text-left">분주(사용중/전체)<br />계통</th>
-                          <th class="text-center">관리</th>
+                          <th class="text-right">관리</th>
                         </tr>
                       </thead>
                       <tbody></tbody>
@@ -6223,7 +6236,7 @@
               type="text/template">
         <tr>
           <td class="text-left">
-            <a href="#" class="c-pointer" onclick="goSampleDetail('{{=sampleMno}}'); return false;"><b>{{=sampleNo}}</b></a>
+            <a href="#" class="lims-id lims-link" onclick="goSampleDetail('{{=sampleMno}}'); return false;">{{=sampleNo}}</a>
           </td>
           <td class="text-left">{{=sampleNm}}</td>
           <td class="text-left">{{=sampleTpNm}}</td>
@@ -6235,7 +6248,7 @@
           <td class="text-left">
             {{=aliquotDisp}}<br /><span class="guidetext-sty01">{{=lineageDisp}}</span>
           </td>
-          <td class="text-center">
+          <td class="lims-actions-cell">
             <button class="button-blue-line-sty01 ma-r10"
                     onclick="openModalAliquotCreate('{{=sampleMno}}', '{{=sampleNo}}', '{{=sampleNm}}');"><span>분주</span></button>
             <button class="button-gray-line-sty01"
