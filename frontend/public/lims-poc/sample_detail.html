@@ -2672,8 +2672,8 @@
                   <tr>
                     <td class="text-left">${t.testReqstNo || '-'}</td>
                     <td class="text-left">${t.testItemNm || '-'}</td>
-                    <td class="text-left">${t.testItemStatusCcd || '-'}</td>
-                    <td class="text-left">${t.finalJudgeCcd || '-'}</td>
+                    <td class="text-left">${testItemStateBadge(t.testItemStatusCcd, t.testItemStatusCcdNm)}</td>
+                    <td class="text-left">${testJudgeBadge(t.finalJudgeCcd, t.finalJudgeCcdNm)}</td>
                     <td class="text-left">${t.chargeUserNm || '-'}</td>
                     <td class="text-left">${t.completeDt || '-'}</td>
                   </tr>`;
@@ -2691,6 +2691,44 @@
           notLinked,
           notLinked
         );
+      }
+
+      /*
+        시험 이력의 상태·판정을 배지로 그린다.
+        코드값(IN_PROGRESS, ASSIGNED …)을 그대로 찍으면 이 표만 다른 화면과 달라진다.
+        라벨과 색 규칙은 시험 의뢰 화면(test_request_list / test_request_detail)과 같다.
+      */
+      const TEST_ITEM_STATUS_NM = {
+        WAITING: '대기', ASSIGNED: '배정', IN_PROGRESS: '시험중',
+        OOS_HOLD: '규격이탈', DONE: '완료', CANCELED: '취소'
+      };
+      const TEST_JUDGE_NM = { PASS: '적합', FAIL: '부적합', NA: '판정불가', INVALID: '무효' };
+
+      function testItemStateBadge(statusCcd, statusNm) {
+        if (!statusCcd) {
+          return '-';
+        }
+        const label = statusNm || TEST_ITEM_STATUS_NM[statusCcd] || statusCcd;
+        if (statusCcd === 'OOS_HOLD') {
+          return '<span class="lims-state expired">' + label + '</span>';
+        }
+        if (statusCcd === 'IN_PROGRESS') {
+          return '<span class="lims-state normal">' + label + '</span>';
+        }
+        if (statusCcd === 'ASSIGNED') {
+          return '<span class="lims-state soon">' + label + '</span>';
+        }
+        return '<span class="lims-state muted">' + label + '</span>';
+      }
+
+      function testJudgeBadge(judgeCcd, judgeNm) {
+        if (!judgeCcd) {
+          return '-';
+        }
+        const label = judgeNm || TEST_JUDGE_NM[judgeCcd] || judgeCcd;
+        return judgeCcd === 'PASS'
+          ? '<span class="lims-state normal">' + label + '</span>'
+          : '<span class="lims-state expired">' + label + '</span>';
       }
 
       /* ---------------------------------------------------------------
@@ -6543,7 +6581,7 @@
         </div>
 
         
-        <div class="target-info-tab flex-sty04 ma-t30">
+        <div class="target-info-tab lims-filter flex-sty04 ma-t30">
           <div class="tabs-box">
             <p class="sub-title-sty01">분주 목록</p>
           </div>

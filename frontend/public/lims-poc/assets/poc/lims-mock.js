@@ -196,12 +196,16 @@
 
   /* 규격 마스터의 판정 유형 컬럼명은 judgeTpCcd 다.
      결과 행에 박히는 스냅샷 컬럼(specJudgeTpCcd) 과 이름이 다르므로 섞지 않는다. */
+  /* 규격 목록 화면은 코드(specCd)와 시험 항목명(testItemNm)을 함께 읽는다.
+     specNm 만 채우면 규격 코드 칸이 undefined 로 찍힌다. */
   var SPECS = [
-    { specMno: 501, specNm: 'SPEC-3710-순도', verNo: 2, specStatusCcd: 'ACTIVE',
+    { specMno: 501, specCd: 'SPEC-3710-PURITY', specNm: 'SPEC-3710-순도',
+      testItemNm: 'HPLC 순도', verNo: 2, specStatusCcd: 'ACTIVE',
       judgeTpCcd: 'RANGE', lowerVal: 98.0, upperVal: 102.0, unitCcd: '%',
       lowerIncludeYn: 'Y', upperIncludeYn: 'Y', toleranceVal: null, expectVal: null,
       decimalPt: 2, effectDe: '20260302' },
-    { specMno: 502, specNm: 'SPEC-3710-수분', verNo: 1, specStatusCcd: 'ACTIVE',
+    { specMno: 502, specCd: 'SPEC-3710-WATER', specNm: 'SPEC-3710-수분',
+      testItemNm: '수분 (KF)', verNo: 1, specStatusCcd: 'ACTIVE',
       judgeTpCcd: 'MAX', lowerVal: null, upperVal: 0.5, unitCcd: '%',
       lowerIncludeYn: null, upperIncludeYn: 'Y', toleranceVal: null, expectVal: null,
       decimalPt: 2, effectDe: '20260105' }
@@ -328,7 +332,12 @@
         testItemList: TEST_ITEMS
       };
     },
-    '/api/lims/test/sampleTestHistory': function () { return { testHistoryList: TEST_ITEMS }; },
+    '/api/lims/test/sampleTestHistory': function () {
+      // 이력 표는 의뢰번호와 완료일시도 보여준다. 항목 데이터에 그 둘을 얹는다.
+      return { testHistoryList: TEST_ITEMS.map(function (i) {
+        return Object.assign({ testReqstNo: 'TR-20260713-02', completeDt: null }, i);
+      }) };
+    },
     '/api/lims/test/methodOptionList': function () { return { optionList: METHODS }; },
     '/api/lims/test/specOptionList': function () { return { optionList: SPECS }; },
     '/api/lims/test/sampleOptionList': function () { return { optionList: SAMPLES }; },
@@ -374,9 +383,15 @@
     '/api/lims/method/methodList': function (p) { return { methodListInfo: page(METHODS, p.pageNo, p.pageUnit) }; },
     '/api/lims/method/methodVerList': function () {
       return { methodVerList: [
-        { methodMno: 401, verNo: 3, methodStatusCcd: 'ACTIVE', effectDe: '20260302', reviseRsn: '컬럼 변경' },
-        { methodMno: 401, verNo: 2, methodStatusCcd: 'RETIRED', effectDe: '20250511', reviseRsn: '이동상 비율 조정' },
-        { methodMno: 401, verNo: 1, methodStatusCcd: 'RETIRED', effectDe: '20240201', reviseRsn: null }
+        { methodMno: 401, verNo: 3, methodNm: '유연물질 및 순도 (HPLC)', methodStatusCcd: 'ACTIVE',
+          effectDe: '20260302', approveUserNm: '최QA', approveDtStr: '2026-02-27 16:40',
+          inProgressCnt: 2, reviseRsn: '컬럼 변경' },
+        { methodMno: 401, verNo: 2, methodNm: '유연물질 및 순도 (HPLC)', methodStatusCcd: 'RETIRED',
+          effectDe: '20250511', approveUserNm: '최QA', approveDtStr: '2025-05-07 10:12',
+          inProgressCnt: 0, reviseRsn: '이동상 비율 조정' },
+        { methodMno: 401, verNo: 1, methodNm: '유연물질 및 순도 (HPLC)', methodStatusCcd: 'RETIRED',
+          effectDe: '20240201', approveUserNm: '최QA', approveDtStr: '2024-01-25 09:31',
+          inProgressCnt: 0, reviseRsn: null }
       ] };
     },
     '/api/lims/method/specList': function () { return { specList: SPECS }; },
