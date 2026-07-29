@@ -1,0 +1,19 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Goono LIMS · PoC 프로토타입</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/proto.css"></head><body>
+<div class="pb"><b>PoC 프로토타입</b><span>구노 실제 CSS·아이콘을 그대로 사용합니다. <b>백엔드·DB 없음</b> — 업무 흐름을 보여주기 위한 화면 미리보기입니다.</span></div>
+<div class="hero"><h1>Goono ELN → LIMS 확장 · 업무 흐름 미리보기</h1>
+<p class="sub">시료 하나가 접수되어 시험을 거쳐 규격 이탈 조사와 재시험까지 가는 <b>한 줄기 시나리오</b>를 화면으로 따라갑니다.<br>
+각 화면은 실제 구현된 Thymeleaf 화면과 같은 CSS·아이콘·클래스를 씁니다.</p>
+<div class="warn"><b>이 프로토타입이 아닌 것</b><br>
+· 백엔드가 붙어 있지 않습니다. 데이터는 고정값이고 입력·저장은 동작하지 않습니다.<br>
+· 실제 시스템은 Spring Boot(WAR) + MariaDB 로 동작하며, 이 프로토타입은 화면과 흐름만 떼어낸 것입니다.<br>
+· 화면에 적힌 규칙(채번·판정·권한)은 <b>재단 확인 전 임시 결정</b>입니다. 각 화면 하단에 근거를 적어두었습니다.</div>
+<a href="sample.html" style="display:block;text-decoration:none;border:1px solid #dee2e6;border-radius:10px;padding:16px 18px;margin-bottom:10px"><b style="color:#1761de;font-size:13px">① 시료 접수</b><p style="margin:6px 0 0;font-size:13px;color:#495057;line-height:1.6">합성 원료를 접수하고 시료번호를 자동 채번합니다.</p></a><a href="sample-detail.html" style="display:block;text-decoration:none;border:1px solid #dee2e6;border-radius:10px;padding:16px 18px;margin-bottom:10px"><b style="color:#1761de;font-size:13px">② 분주·계통</b><p style="margin:6px 0 0;font-size:13px;color:#495057;line-height:1.6">원 시료를 4개로 분주하고 계통을 남깁니다. 노트 역추적도 여기서 보입니다.</p></a><a href="test.html" style="display:block;text-decoration:none;border:1px solid #dee2e6;border-radius:10px;padding:16px 18px;margin-bottom:10px"><b style="color:#1761de;font-size:13px">③ 시험 의뢰</b><p style="margin:6px 0 0;font-size:13px;color:#495057;line-height:1.6">분주본에 시험을 의뢰합니다. 의뢰 1건에 항목 여러 개가 붙습니다.</p></a><a href="test-detail.html" style="display:block;text-decoration:none;border:1px solid #dee2e6;border-radius:10px;padding:16px 18px;margin-bottom:10px"><b style="color:#1761de;font-size:13px">④ 담당자 배정</b><p style="margin:6px 0 0;font-size:13px;color:#495057;line-height:1.6">책임자가 미배정 항목에 담당자를 붙입니다. 배정이 곧 접수입니다.</p></a><a href="result.html" style="display:block;text-decoration:none;border:1px solid #dee2e6;border-radius:10px;padding:16px 18px;margin-bottom:10px"><b style="color:#1761de;font-size:13px">⑤ 결과·판정</b><p style="margin:6px 0 0;font-size:13px;color:#495057;line-height:1.6">측정값을 넣으면 즉시 확정 저장되고 규격 대비 판정이 계산됩니다.</p></a><a href="oos.html" style="display:block;text-decoration:none;border:1px solid #dee2e6;border-radius:10px;padding:16px 18px;margin-bottom:10px"><b style="color:#1761de;font-size:13px">⑥ 규격 이탈 조사</b><p style="margin:6px 0 0;font-size:13px;color:#495057;line-height:1.6">부적합이 나면 조사가 자동 생성됩니다. 조사자는 입력자와 달라야 합니다.</p></a><a href="retest.html" style="display:block;text-decoration:none;border:1px solid #dee2e6;border-radius:10px;padding:16px 18px;margin-bottom:10px"><b style="color:#1761de;font-size:13px">⑦ 재시험</b><p style="margin:6px 0 0;font-size:13px;color:#495057;line-height:1.6">재시험 결과로 종결합니다. 원 결과와 재시험 결과가 둘 다 남습니다.</p></a>
+<div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:24px">
+<a href="method.html" style="flex:1 1 240px;text-decoration:none;border:1px solid #dee2e6;border-radius:10px;padding:16px 18px">
+<b style="color:#495057;font-size:13px">분석법·규격 마스터</b><p style="margin:6px 0 0;font-size:12.5px;color:#868e96">버전 관리. 결과는 특정 버전에 묶입니다.</p></a>
+<a href="instrument.html" style="flex:1 1 240px;text-decoration:none;border:1px solid #dee2e6;border-radius:10px;padding:16px 18px">
+<b style="color:#495057;font-size:13px">장비·교정 관리</b><p style="margin:6px 0 0;font-size:12.5px;color:#868e96">교정 만료 장비는 결과 입력을 차단합니다.</p></a>
+</div></div></body></html>
