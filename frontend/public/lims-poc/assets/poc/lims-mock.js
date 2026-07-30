@@ -1198,6 +1198,7 @@
 
     installFlowBar();
     installChemEditorStub();
+    installInlineEditorSwap();
     installOutOfScopeNotice();
   }
 
@@ -1247,19 +1248,34 @@
     그래서 "상위 디렉터리가 있으면 거기에 편집기가 있다"로 판단한다.
     로컬 정적 서버에서는 프로토타입 자체가 루트라 상위가 없고, 그때는 RDKit 대역을 쓴다.
     호스트 이름으로 가르지 않는 이유: 도메인이 바뀌면 조용히 틀리기 때문이다.
+
+    편집기 주소는 루트(`/`)가 아니라 `/editor` 다. 루트에는 "첫 화면을 LIMS 로"
+    보내는 리다이렉트가 걸려 있어서, iframe 에 `/` 를 넣으면 편집기가 아니라
+    LIMS 프로토타입이 자기 자신 안에 다시 뜬다. vercel.json 이 `/editor` 를
+    SPA 로 rewrite 한다(리다이렉트가 아니라 rewrite 라 주소가 바뀌지 않는다).
   */
+  var CHEM_EDITOR_PATH = 'editor';
+
   function chemEditorRoot() {
     var dir = window.location.pathname.replace(/[^/]*$/, '');
     if (dir === '/' || dir === '') return null;
     return dir.replace(/[^/]+\/$/, '');
   }
 
+  /* 편집기 임베드 URL. 없으면 null — 부르는 쪽이 RDKit 대역으로 넘어간다. */
+  function chemEditorUrl() {
+    var root = chemEditorRoot();
+    if (!root) return null;
+    return root + CHEM_EDITOR_PATH
+      + '?embed=1&parentOrigin=' + encodeURIComponent(window.location.origin);
+  }
+
   function installChemEditorStub() {
     var frame = document.getElementById('chem-frame');
     if (!frame) return;
 
-    var root = chemEditorRoot();
-    if (root) {
+    var url = chemEditorUrl();
+    if (url) {
       /*
         실제 편집기를 붙인다. 화면(chem_popup)의 postMessage 리스너는 이미 붙어
         있고 같은 오리진이라 origin 검사도 통과한다 — src 만 실물로 바꾸면 된다.
@@ -1267,14 +1283,85 @@
         화면의 initPage() 가 $(document).ready 에서 src 를 서버 경로로 넣는다.
         우리 스크립트가 그보다 뒤에 실리므로 ready 큐 맨 끝에 붙여 마지막에 덮는다.
         (지금 바로 넣으면 잠시 뒤 initPage 가 다시 서버 경로로 되돌려 놓는다.)
+
+        편집기가 8초 안에 아무 말도 하지 않으면 붙지 않은 것이다. 빈 사각형만
+        남겨 두지 않고 RDKit 대역으로 내려간다 — 시연 중 "화면이 비었다"가
+        제일 나쁜 결과다.
       */
       $(function () {
-        frame.src = root + '?embed=1&parentOrigin=' + encodeURIComponent(window.location.origin);
+        frame.src = url;
         var status = document.getElementById('chem-status');
         if (status) status.textContent = '편집기 불러오는 중';
+        var alive = false;
+        window.addEventListener('message', function (ev) {
+          if (ev.data && typeof ev.data.type === 'string'
+              && ev.data.type.indexOf('chemeditor:') === 0) alive = true;
+        });
+        setTimeout(function () {
+          if (alive || !document.getElementById('chem-frame')) return;
+          if (status) status.textContent = '편집기에 연결하지 못해 RDKit 구조로 대신 표시합니다';
+          installRdkitFallback();
+        }, 8000);
       });
       return;
     }
+    installRdkitFallback();
+  }
+
+  /*
+    연구노트의 인라인 구조 입력기.
+
+    화면은 서버 설정값(lims.chem.embed.url)으로 iframe 을 만든다. 프로토타입에는
+    그 설정이 없으므로 iframe 이 생기는 순간 실제 편집기 주소로 바꿔치기한다.
+    편집기가 없는 로컬에서는 iframe 을 걷어내고 RDKit 이 그려 둔 구조를 고르는
+    대역을 그 자리에 넣는다 — 빈 사각형을 남기지 않는다.
+  */
+  function installInlineEditorSwap() {
+    if (!document.getElementById('noteBlocks')) return;
+    var url = chemEditorUrl();
+
+    new MutationObserver(function (recs) {
+      recs.forEach(function (r) {
+        Array.prototype.forEach.call(r.addedNodes, function (n) {
+          if (!n.querySelectorAll) return;
+          var frames = n.matches && n.matches('iframe.lims-note-struct-frame')
+            ? [n] : n.querySelectorAll('iframe.lims-note-struct-frame');
+          Array.prototype.forEach.call(frames, function (f) {
+            if (url) { f.src = url; return; }
+            f.parentNode.replaceChild(inlinePicker(f), f);
+          });
+        });
+      });
+    }).observe(document.getElementById('noteBlocks'), { childList: true, subtree: true });
+  }
+
+  /* 편집기가 없을 때 쓰는 구조 선택 대역. 고르면 화면의 붙여넣기 경로로 들어간다. */
+  function inlinePicker(frame) {
+    var lib = window.LIMS_POC_COMPOUNDS || [];
+    var wrap = document.createElement('div');
+    wrap.className = 'lims-note-struct-picker';
+    wrap.innerHTML = '<p class="lims-note-struct-picker-note">'
+      + '이 환경에는 구조 입력기 서버가 없습니다. 배포본에서는 이 자리에 Ketcher 가 열립니다.<br>'
+      + '아래에서 구조를 고르면 편집기에서 확정한 것과 같은 경로로 들어갑니다.</p>';
+    lib.forEach(function (c) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'button-gray-line-sty01';
+      btn.innerHTML = '<span>' + c.regId + '</span>';
+      btn.onclick = function () {
+        if (typeof window.limsApplyStructureQuery === 'function') {
+          window.limsApplyStructureQuery(c.molblock);
+        }
+      };
+      wrap.appendChild(btn);
+    });
+    return wrap;
+  }
+
+  /* 편집기가 없을 때 그 자리를 채우는 RDKit 대역. */
+  function installRdkitFallback() {
+    var frame = document.getElementById('chem-frame');
+    if (!frame) return;
 
     var lib = window.LIMS_POC_COMPOUNDS || [];
     if (!lib.length) return;

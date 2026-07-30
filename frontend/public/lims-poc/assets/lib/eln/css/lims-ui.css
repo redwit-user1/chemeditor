@@ -1663,6 +1663,31 @@
 	padding: var(--lims-gap-3);
 }
 
+/* 본문 에디터(NewEditor) 를 블록 안에 앉힌다.
+   에디터는 원래 화면 하나를 다 쓰는 물건이라, 블록에 넣을 때는 높이를 우리가 정한다.
+   너무 낮으면 툴바만 보이고 너무 높으면 아래 블록이 화면 밖으로 밀린다. */
+.lims-page .lims-note-editor {
+	border: 1px solid var(--lims-line-strong);
+	border-radius: var(--lims-radius);
+	overflow: hidden;
+}
+
+.lims-page .lims-note-editor .rw-editor-ai {
+	--rw-page-w: 100%;
+	border: 0;
+}
+
+.lims-page .lims-note-editor .rw-editor-content {
+	max-height: 360px;
+	overflow-y: auto;
+}
+
+/* 본문 캔버스의 기본 최소 높이는 480px 이다 — 화면 하나를 다 쓰는 전제다.
+   블록 안에서는 그만큼이 빈 여백으로 남아 아래 블록을 밀어낸다. */
+.lims-page .lims-note-editor .rw-editor-content .tiptap {
+	min-height: 200px;
+}
+
 .lims-page .lims-note-text {
 	display: block;
 	width: 100%;
@@ -1699,6 +1724,44 @@
 	border: 1px solid var(--lims-line-strong);
 	border-radius: 10px;
 	background: var(--lims-surface);
+}
+
+/* 편집기가 열린 상태 — 구조 그림 자리를 편집기가 그대로 쓴다.
+   그림보다 훨씬 넓어야 그릴 수 있으므로 두 칸을 합쳐 쓰고 높이를 올린다. */
+.lims-page .lims-note-struct:has(.lims-note-struct-canvas.is-editing) {
+	grid-template-columns: minmax(0, 1fr);
+}
+
+.lims-page .lims-note-struct-canvas.is-editing {
+	display: block;
+	min-height: 480px;
+	padding: 0;
+	border-color: var(--lims-primary);
+	overflow: hidden;
+}
+
+.lims-page .lims-note-struct-frame {
+	display: block;
+	width: 100%;
+	height: 480px;
+	border: 0;
+}
+
+/* 편집기 서버가 없는 환경(로컬 시연)의 대역. 빈 사각형을 남기지 않는다. */
+.lims-page .lims-note-struct-picker {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--lims-gap-2);
+	padding: var(--lims-gap-4);
+}
+
+.lims-page .lims-note-struct-picker-note {
+	flex-basis: 100%;
+	margin: 0;
+	font-size: var(--lims-fs-caption);
+	line-height: 1.6;
+	color: var(--lims-ink-3);
 }
 
 .lims-page .lims-note-struct-canvas.is-empty {
