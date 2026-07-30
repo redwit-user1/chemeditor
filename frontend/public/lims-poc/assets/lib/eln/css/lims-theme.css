@@ -1,79 +1,385 @@
 @charset "UTF-8";
 /* ============================================================================
-   구노 셸 테마 — 사이드바 · 헤더 · 페이지 바탕
+   구노 디자인 시스템
 
-   이 파일이 하는 일은 하나다: 화면의 뼈대를 현행 구노 제품 디자인으로 맞춘다.
-   본문(카드·표·버튼)은 lims-ui.css 가 맡고, 여기서는 그 바깥만 다룬다.
+   이 파일 하나가 화면 전체의 비율을 정한다. 빼면 원래대로 돌아온다.
 
-   왜 새 파일인가.
-   AdminLTE 기본 셸(남색 사이드바 295px, 흰 배경 위 파란 링크)에 규칙을 하나씩
-   덧대는 방식으로는 끝이 안 났다. 고칠 때마다 어딘가가 어긋나고, 무엇이 원본이고
-   무엇이 우리 것인지 구분되지 않는다. 셸을 통째로 다시 칠하는 편이 값싸고,
-   되돌릴 때도 이 파일 하나만 빼면 된다.
+   ── 왜 다시 썼는가 ──────────────────────────────────────────────────────────
+   그동안은 AdminLTE + style.css(8천 줄) 위에 규칙을 얹는 방식이었다. 그래서
+   화면 계열마다 기준이 달랐다. 실측하면 이렇게 나왔다.
 
-   마크업은 건드리지 않는다. body_sidebar.html / body_header.html 은 실서비스
-   그대로 두고 색·치수·간격만 바꾼다 — 프로토타입이 실제 화면과 다른 마크업을
-   갖게 되는 순간 이 프로토타입의 존재 이유가 사라진다.
+     구노 ELN 화면(대시보드·프로젝트·내 연구노트) : 본문 기준 16px
+     LIMS 화면(시약·화합물·시험)                  : 본문 기준 13px
 
-   치수는 lims.css 의 --shell-* 토큰을 그대로 쓴다. 값 하나를 바꾸면 사이드바 폭·
-   본문 오프셋·헤더 높이가 함께 따라온다.
+   같은 앱인데 화면을 옮길 때마다 글자가 커졌다 작아진다. "비율이 안 맞는다"는
+   지적의 실체가 이것이었고, 개별 규칙을 고쳐서는 사라지지 않는다. 기준을 하나로
+   합치는 수밖에 없다.
+
+   ── 규칙 ───────────────────────────────────────────────────────────────────
+   1. 크기는 여기서만 정한다. 다른 파일에서 px 을 새로 적지 않는다.
+   2. 모든 값은 두 뿌리(--ds-unit, --ds-fs)에서 파생된다. 하나를 바꾸면 전부 따라온다.
+   3. 계열을 가르지 않는다. ELN 화면과 LIMS 화면이 같은 스케일을 쓴다.
+   4. 마크업은 고치지 않는다. 프로토타입이 실서비스와 다른 마크업을 갖는 순간
+      이 프로토타입의 존재 이유가 사라진다.
 =============================================================================*/
 
+/* ---------------------------------------------------------------------------
+   1) 뿌리 — 이 두 값이 화면 전체의 비율을 정한다
+--------------------------------------------------------------------------- */
 :root {
-	/* 브랜드 — 현행 구노 제품의 파랑 계열 */
-	--gn-primary: #2f5bf5;
-	--gn-primary-dark: #1f47d6;
-	--gn-primary-weak: #eef2ff;
-	--gn-primary-weak-2: #e0e7ff;
+	--ds-unit: 4px;   /* 여백·높이의 최소 단위 */
+	--ds-fs: 14px;    /* 본문 글자 — 나머지 크기는 여기서 더하고 뺀다 */
 
-	/* 중립 — 흰 셸을 전제로 한 계단 */
-	--gn-ink: #111827;
-	--gn-ink-2: #374151;
-	--gn-ink-3: #4b5563;
-	--gn-ink-4: #6b7280;
-	--gn-line: #eceef2;
-	--gn-line-2: #e2e5eb;
-	--gn-surface: #ffffff;
-	--gn-canvas: #f7f8fa;
-	--gn-hover: #f3f4f6;
+	/* 여백 */
+	--ds-1: var(--ds-unit);
+	--ds-2: calc(var(--ds-unit) * 2);
+	--ds-3: calc(var(--ds-unit) * 3);
+	--ds-4: calc(var(--ds-unit) * 4);
+	--ds-5: calc(var(--ds-unit) * 5);
+	--ds-6: calc(var(--ds-unit) * 6);
+	--ds-8: calc(var(--ds-unit) * 8);
+	--ds-10: calc(var(--ds-unit) * 10);
 
-	--gn-radius: 10px;
-	--gn-radius-lg: 14px;
-	--gn-radius-pill: 999px;
-	--gn-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+	/* 글자 — 역할로 부른다. 크기로 부르면 같은 뜻의 요소가 화면마다 달라진다. */
+	--ds-fs-micro: max(11px, calc(var(--ds-fs) - 3px)); /* 11 — 배지, 보조행. 좁은 화면에서도 11px 아래로 내려가지 않는다 */
+	--ds-fs-small: calc(var(--ds-fs) - 2px);   /* 12 — 라벨, 안내, 표 머리행 */
+	--ds-fs-cell: calc(var(--ds-fs) - 1px);    /* 13 — 표 데이터 셀 */
+	--ds-fs-body: var(--ds-fs);                /* 14 — 본문, 버튼, 입력 */
+	--ds-fs-card: calc(var(--ds-fs) + 1px);    /* 15 — 카드 제목 */
+	--ds-fs-lead: calc(var(--ds-fs) + 4px);    /* 18 — 구획 제목 */
+	--ds-fs-title: calc(var(--ds-fs) + 8px);   /* 22 — 페이지 제목 */
+	--ds-fs-metric: calc(var(--ds-fs) + 12px); /* 26 — 지표 숫자 */
+
+	--ds-lh-tight: 1.3;
+	--ds-lh: 1.5;
+
+	/* 조작 요소 — 한 줄에 서면 높이가 같아야 한다 */
+	--ds-control: calc(var(--ds-unit) * 9);     /* 36 */
+	--ds-control-sm: calc(var(--ds-unit) * 7);  /* 28 */
+
+	/* 셸 */
+	--ds-shell: 232px;
+	--ds-header: calc(var(--ds-unit) * 14);     /* 56 */
+
+	/* 색 */
+	--ds-primary: #2f5bf5;
+	--ds-primary-dark: #1f47d6;
+	--ds-primary-weak: #eef2ff;
+	--ds-ink: #111827;
+	--ds-ink-2: #374151;
+	--ds-ink-3: #4b5563;
+	--ds-ink-4: #6b7280;
+	--ds-line: #e8eaef;
+	--ds-line-2: #dfe2e8;
+	--ds-surface: #ffffff;
+	--ds-canvas: #f7f8fa;
+	--ds-hover: #f3f4f6;
+	--ds-danger: #c92a11;
+	--ds-warn: #8a6208;
+	--ds-ok: #0f766e;
+
+	--ds-radius: 10px;
+	--ds-radius-lg: 14px;
+	--ds-pill: 999px;
+	--ds-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+
+	/* 이전 파일들이 쓰는 이름을 여기로 잇는다 — 값의 출처를 하나로 모은다. */
+	--shell-w: var(--ds-shell);
+	--shell-header-h: var(--ds-header);
+	--shell-unit: var(--ds-unit);
+	--shell-nav-h: calc(var(--ds-unit) * 9);
+	--shell-nav-fs: var(--ds-fs-body);
+	--shell-nav-icon: 18px;
+	--gn-primary: var(--ds-primary);
+	--gn-primary-dark: var(--ds-primary-dark);
+	--gn-primary-weak: var(--ds-primary-weak);
+	--gn-ink: var(--ds-ink);
+	--gn-ink-2: var(--ds-ink-2);
+	--gn-ink-3: var(--ds-ink-3);
+	--gn-ink-4: var(--ds-ink-4);
+	--gn-line: var(--ds-line);
+	--gn-line-2: var(--ds-line-2);
+	--gn-surface: var(--ds-surface);
+	--gn-canvas: var(--ds-canvas);
+	--gn-hover: var(--ds-hover);
+	--gn-radius: var(--ds-radius);
+	--gn-radius-lg: var(--ds-radius-lg);
+	--gn-radius-pill: var(--ds-pill);
+	--gn-shadow: var(--ds-shadow);
+}
+
+/* 좁아지면 뿌리 값을 내린다. 개별 규칙을 매체 질의마다 다시 쓰지 않는다. */
+@media (max-width: 1440px) {
+	:root {
+		--ds-shell: 216px;
+		--ds-fs: 13px;
+	}
+}
+
+@media (max-width: 1200px) {
+	:root {
+		--ds-header: 48px;
+	}
 }
 
 /* ---------------------------------------------------------------------------
-   1) 바탕
+   2) 기준 맞추기 — 두 계열의 글자 크기를 하나로
 
-   본문 바탕을 아주 옅은 회색으로 두고 카드를 흰색으로 띄운다. 반대로 하면
-   (흰 바탕 + 회색 카드) 카드가 파인 것처럼 보이고, 표가 많은 화면에서 특히
-   답답해진다.
+   ELN 화면은 16px, LIMS 화면은 13px 로 돌고 있었다. 둘 다 본문 기준(--ds-fs)으로
+   끌어온다. :where() 로 특이도 0 에 두어, 개별 컴포넌트가 필요할 때 !important
+   없이 덮을 수 있게 한다.
+--------------------------------------------------------------------------- */
+:where(body, .content-wrapper, .content_wrap, #main, .lims-page) {
+	font-size: var(--ds-fs-body);
+	line-height: var(--ds-lh);
+	color: var(--ds-ink-2);
+	letter-spacing: -0.02em;
+}
+
+/* .lims-page 는 자체 스케일을 갖고 있었다. 뿌리 값으로 되돌린다. */
+.lims-page {
+	--lims-unit: var(--ds-unit);
+	--lims-fs-body: var(--ds-fs-cell);
+	/* lims-ui.css 는 나머지 크기를 --lims-fs-body 에서 더해 만든다. 그러면
+	   제목이 20px 로 ELN 화면(22px)과 어긋난다. 하나씩 척도로 되돌린다. */
+	--lims-fs-micro: var(--ds-fs-micro);
+	--lims-fs-caption: var(--ds-fs-small);
+	--lims-fs-strong: var(--ds-fs-body);
+	--lims-fs-lead: var(--ds-fs-lead);
+	--lims-fs-title: var(--ds-fs-title);
+	--lims-fs-metric: var(--ds-fs-metric);
+	--lims-control-h: var(--ds-control);
+	--lims-control-h-sm: var(--ds-control-sm);
+	--lims-radius: var(--ds-radius);
+	--lims-primary: var(--ds-primary);
+	--lims-primary-dark: var(--ds-primary-dark);
+	--lims-primary-weak: var(--ds-primary-weak);
+	--lims-ink: var(--ds-ink);
+	--lims-ink-2: var(--ds-ink-2);
+	--lims-ink-3: var(--ds-ink-4);
+	--lims-line: var(--ds-line);
+	--lims-line-strong: var(--ds-line-2);
+	--lims-surface: var(--ds-surface);
+	--lims-surface-2: var(--ds-canvas);
+	--lims-ring: 0 0 0 3px rgba(47, 91, 245, 0.14);
+	font-size: var(--ds-fs-body);
+}
+
+/* 역할별 크기 — 두 계열의 같은 뜻 요소를 같은 값으로 모은다.
+
+   :where() 는 특이도 0 이라 원본이 직접 박아 둔 값(제목 32px, .lims-title
+   20px)에 진다. 실제로 값을 옮겨야 하는 것들은 보통 선택자로 쓴다. */
+.project_simple_info p.main-title-sty01,
+p.main-title-sty01,
+h2.lims-title,
+.lims-title,
+.page-title,
+h2.title {
+	font-size: var(--ds-fs-title);
+	font-weight: 700;
+	line-height: var(--ds-lh-tight);
+	color: var(--ds-ink);
+}
+
+/* 제목 옆 개수 — 제목과 같은 줄에 서므로 크기를 따라간다 */
+.title_cnt,
+.noteCnt,
+.projectCnt,
+.note_cnt,
+.sub-title-sty01 .title_cnt,
+.sub-title-sty02 .title_cnt,
+.modal .modal-pop .modal-body .title_cnt {
+	font-size: var(--ds-fs-title);
+	font-weight: 500;
+}
+
+/* 연구노트 카드에서 .txt-project 는 위쪽 경로 줄이라 작게 간다 */
+.txt-project,
+.txt-folder,
+.guide_text {
+	font-size: var(--ds-fs-small);
+}
+
+/* 다만 프로젝트 카드에서는 같은 클래스가 카드 제목이다. 16px 이던 것을
+   카드 제목 척도(15)로 맞추되 작게 만들지는 않는다. */
+.project-card-board .project-card .project-card-cont .txt-title .txt-project {
+	font-size: var(--ds-fs-card);
+	font-weight: 700;
+	color: var(--ds-ink) !important;
+}
+
+.dropdown-select-sty01,
+.dropdown-select-sty01.dropdown-toggle {
+	font-size: var(--ds-fs-body);
+}
+
+/* 화면 안 탭, 구획 제목, 안내 띠 — 각각 16/20/16px 로 척도 밖에 있었다 */
+.nav-link.tab,
+.nav-link.tab span,
+.sub-title-sty01,
+.sub-title-sty01 > span,
+.sub-title-sty02,
+.sub-title-sty02 > span,
+.alert.alert-primary,
+.alert.alert-primary > div {
+	font-size: var(--ds-fs-body);
+}
+
+.sub-title-sty01,
+.sub-title-sty01 > span,
+.sub-title-sty02,
+.sub-title-sty02 > span {
+	font-size: var(--ds-fs-lead);
+	font-weight: 700;
+	color: var(--ds-ink);
+}
+
+.lims-kpi-value {
+	font-size: var(--ds-fs-metric);
+}
+
+/* ---------------------------------------------------------------------------
+   대시보드 첫 줄 — 인사말 카드 + 공지 카드
+
+   원본은 두 장 다 height: 238px 고정에 인사말 32px, 안쪽 여백 30px 였다.
+   내용은 170px 뿐이라 아래가 비었다. 높이를 내용에 맡기고 여백을 척도로 맞춘다.
+--------------------------------------------------------------------------- */
+/* 대시보드만 ≤1900px 에서 제목을 감추고 있었다. 다른 화면은 전부 보이므로
+   같이 보이게 둔다. */
+.main-title-sty01.dashboard {
+	display: block;
+	margin-bottom: var(--ds-5);
+}
+
+.main-wrap1 {
+	display: grid;
+	grid-template-columns: 1.35fr 1fr;
+	gap: var(--ds-4);
+	align-items: stretch;
+}
+
+/* 원본은 ≤1600px 미디어쿼리에서 .main-wrap1 .main-card01 { width: 49% } 로
+   폭을 다시 잡는다. 격자가 이미 칸을 정하므로 같은 형태로 눌러 준다. */
+.main-wrap1 .main-card01,
+.main-wrap1 .main-card02 {
+	width: auto;
+	height: auto;
+	margin: 0;
+	min-height: calc(var(--ds-unit) * 46); /* 184 — 두 장의 바닥을 맞춘다 */
+	border-radius: var(--ds-radius-lg);
+	border: 1px solid var(--ds-line);
+	box-shadow: var(--ds-shadow);
+}
+
+.main-card01 .wrap01 {
+	width: auto;
+	flex: 1 1 auto;
+	min-width: 0;
+	margin: 0;
+	padding: var(--ds-5) var(--ds-6);
+}
+
+/* 마스코트 그림 자리. ≤1440px 에서는 원본이 감추고, 그보다 넓으면 폭이
+   0 으로 무너져 세로선 하나만 남았다. 장식이므로 아예 내린다. */
+.main-card01 .wrap02,
+.main-card01 .card-profile {
+	display: none;
+}
+
+.main-card01 .title01 {
+	font-size: var(--ds-fs-metric);
+	font-weight: 700;
+	line-height: var(--ds-lh-tight);
+	color: var(--ds-ink);
+	letter-spacing: -0.03em;
+}
+
+.main-card01 .txt01 {
+	font-size: var(--ds-fs-small);
+	color: var(--ds-ink-4);
+}
+
+.main-card01 .txt02 {
+	margin-top: var(--ds-4);
+	font-size: var(--ds-fs-body);
+	line-height: var(--ds-lh);
+	color: var(--ds-ink-3);
+}
+
+.main-card01 .title01 {
+	padding: 0 0 var(--ds-2) 0;
+}
+
+:where(.sub-title-sty01, .lims-card-title, .note-info-box .title, .board-top .title) {
+	font-size: var(--ds-fs-card);
+	font-weight: 700;
+	line-height: var(--ds-lh-tight);
+	color: var(--ds-ink);
+}
+
+:where(.guidetext-sty01, .lims-def-label, .txt-info-txt, .txt-project, .txt-folder) {
+	font-size: var(--ds-fs-small);
+	line-height: var(--ds-lh);
+	color: var(--ds-ink-4);
+}
+
+:where(.core-table thead th) {
+	font-size: var(--ds-fs-small);
+	font-weight: 500;
+	color: var(--ds-ink-4);
+}
+
+:where(.core-table tbody td) {
+	font-size: var(--ds-fs-cell);
+	line-height: var(--ds-lh);
+	color: var(--ds-ink-2);
+}
+
+/* ---------------------------------------------------------------------------
+   3) 바탕
 --------------------------------------------------------------------------- */
 body,
 .wrapper,
 .content_wrap,
 .content-wrapper {
-	background: var(--gn-canvas) !important;
+	background: var(--ds-canvas) !important;
 }
 
 /* ---------------------------------------------------------------------------
-   2) 사이드바
-
-   남색 → 흰색. 로고가 흰색 PNG 라 그대로 두면 사라지므로 어둡게 반전한다
-   (원본 자산을 건드리지 않고 필터로 돌린다 — 브랜드 파일은 우리 소유가 아니다).
+   4) 셸 — 사이드바
 --------------------------------------------------------------------------- */
 .sidenav2 {
-	background: var(--gn-surface) !important;
-	border-right: 1px solid var(--gn-line);
+	width: var(--ds-shell);
+	background: var(--ds-surface) !important;
+	border-right: 1px solid var(--ds-line);
 	box-shadow: none;
+}
+
+.wrapper .content_wrap .content_div {
+	width: calc(100% - var(--ds-shell));
+}
+
+@media (min-width: 1201px) {
+	.wrapper .content_wrap .content_div {
+		width: calc(100% - var(--ds-shell));
+	}
+}
+
+@media (max-width: 1200px) {
+	.sidenav2 {
+		margin-left: calc(-1 * var(--ds-shell));
+	}
+
+	.wrapper .content_wrap .content_div {
+		width: 100%;
+	}
 }
 
 .sidenav2 .top-logo {
 	display: flex;
 	align-items: center;
-	height: var(--shell-header-h);
-	padding: 0 calc(var(--shell-unit) * 5);
+	height: var(--ds-header);
+	padding: 0 var(--ds-5);
 }
 
 .sidenav2 .top-logo h1 {
@@ -82,36 +388,46 @@ body,
 }
 
 .sidenav2 .top-logo img {
-	height: 22px;
+	height: 20px;
 	width: auto;
-	/* 흰 로고를 어두운 잉크로 뒤집는다. 색상은 그대로 두고 명도만 반전한다. */
 	filter: brightness(0) saturate(100%) invert(9%) sepia(12%) saturate(1200%) hue-rotate(190deg);
 }
 
-/* --- 주 동작(연구노트 생성) --- */
+.sidenav2 .ma-l24,
+.sidenav2 .ma-r24 {
+	margin-left: var(--ds-4) !important;
+	margin-right: var(--ds-4) !important;
+}
+
+/* --- 주 동작 --- */
 .sidenav2 .button-sty001_wrap {
-	margin: 0 0 calc(var(--shell-unit) * 3);
+	margin: 0 0 var(--ds-3);
 }
 
 .sidenav2 a.button-sty001 {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	gap: calc(var(--shell-unit) * 1.5);
-	height: calc(var(--shell-unit) * 10);
-	border-radius: var(--gn-radius);
-	background: var(--gn-primary) !important;
+	gap: var(--ds-2);
+	height: var(--ds-10);
+	padding: 0 var(--ds-2);
+	border-radius: var(--ds-radius);
+	background: var(--ds-primary) !important;
 	background-image: none !important;
 	color: #fff !important;
-	font-size: var(--shell-nav-fs);
+	font-size: var(--ds-fs-body);
 	font-weight: 500;
-	letter-spacing: -0.02em;
+	/*
+	  이 버튼이 두 줄로 접혀 "연구노트 생 / 성" 이 되고 있었다. 사이드바를 좁히면
+	  가장 먼저 깨지는 자리다. 줄바꿈을 막고, 대신 좁아지면 글자를 줄인다.
+	*/
+	white-space: nowrap;
 	opacity: 1;
-	transition: background-color 0.12s ease;
 }
 
 .sidenav2 a.button-sty001::before {
 	content: '';
+	flex: none;
 	width: 16px;
 	height: 16px;
 	background-color: currentColor;
@@ -120,37 +436,46 @@ body,
 }
 
 .sidenav2 a.button-sty001:hover {
-	background: var(--gn-primary-dark) !important;
+	background: var(--ds-primary-dark) !important;
 }
 
 /* --- 메뉴 --- */
+.nav-menu {
+	padding: var(--ds-1) var(--ds-2);
+}
+
 .nav-menu a.menuCd {
-	border-radius: var(--gn-radius);
-	color: var(--gn-ink-3) !important;
+	display: flex;
+	align-items: center;
+	min-height: var(--shell-nav-h);
+	margin: 1px 0;
+	padding: 0 var(--ds-2) 0 var(--ds-8);
+	border-radius: var(--ds-radius);
+	color: var(--ds-ink-3) !important;
+	font-size: var(--ds-fs-body);
 	font-weight: 400;
+	line-height: var(--ds-lh-tight);
 	opacity: 1;
+	background-repeat: no-repeat !important;
+	background-position: left var(--ds-2) center !important;
+	background-size: var(--shell-nav-icon) var(--shell-nav-icon) !important;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 	transition: background-color 0.12s ease, color 0.12s ease;
 }
 
 .nav-menu a.menuCd:hover {
-	background-color: var(--gn-hover);
-	color: var(--gn-ink) !important;
+	background-color: var(--ds-hover);
+	color: var(--ds-ink) !important;
 }
 
-/*
-  선택된 메뉴는 라운드 블록으로 세운다. 글자만 진하게 하면 목록이 길어질수록
-  "지금 어디"가 흐려진다.
-*/
 .nav-menu a.menuCd.active {
-	background-color: var(--gn-primary-weak);
-	color: var(--gn-primary) !important;
+	background-color: var(--ds-primary-weak);
+	color: var(--ds-primary) !important;
 	font-weight: 500;
 }
 
-/*
-  아이콘 — 흰 배경이 되었으므로 흰색으로 구운 것을 쓸 수 없다. 같은 도형을
-  잉크색으로 구운 -d 판으로 바꾼다. 선택된 항목만 브랜드색 판을 쓴다.
-*/
 .nav-menu a.menuCd.LIMS_COMPOUND { background-image: url(../img/lucide/hexagon-d.svg) !important; }
 .nav-menu a.menuCd.LIMS_CHEM { background-image: url(../img/lucide/pen-tool-d.svg) !important; }
 .nav-menu a.menuCd.LIMS_REAGENT { background-image: url(../img/lucide/beaker-d.svg) !important; }
@@ -167,264 +492,496 @@ body,
 .nav-menu a.menuCd.OPMS_RESEARCH_SUPPORT { background-image: url(../img/lucide/life-buoy-d.svg) !important; }
 .nav-menu a.menuCd.MAIN_COMPLETED_PROJECT { background-image: url(../img/lucide/circle-check-d.svg) !important; }
 
-.nav-menu a.menuCd {
-	background-repeat: no-repeat !important;
-	background-position: left calc(var(--shell-unit) * 2.5) center !important;
-	background-size: var(--shell-nav-icon) var(--shell-nav-icon) !important;
-}
-
-/* --- 목록 구획(참여 프로젝트 / 내 연구노트) --- */
+/* --- 사이드바 목록 구획 --- */
 .sidenav2 .nav-list-wrap {
-	margin: 0 calc(var(--shell-unit) * 6);
-	padding-top: calc(var(--shell-unit) * 3);
-	border-top: 1px solid var(--gn-line);
+	margin: 0 var(--ds-4);
+	padding-top: var(--ds-3);
+	border-top: 1px solid var(--ds-line);
 }
 
-.sidenav2 .nav-list-top,
-.sidenav2 .nav-list-title-wrap {
-	color: var(--gn-ink-4);
-}
-
-.sidenav2 .nav-list-title-wrap {
+.nav-list-wrap .nav-list-top .nav-list-title-wrap {
 	display: flex;
 	align-items: center;
-	gap: calc(var(--shell-unit) * 1.5);
-	min-height: calc(var(--shell-unit) * 8);
-	font-size: calc(var(--shell-nav-fs) - 1px);
-	font-weight: 500;
-	color: var(--gn-ink-4) !important;
+	gap: var(--ds-2);
+	min-height: var(--ds-8);
+	padding: 0 var(--ds-2);
+	border-radius: var(--ds-radius);
 	cursor: pointer;
 }
 
-.sidenav2 .nav-list-wrap a,
-.sidenav2 .nav-list-wrap .projectList,
-.sidenav2 .nav-list-wrap .noteList {
-	display: flex;
-	align-items: center;
-	min-height: calc(var(--shell-unit) * 7);
-	padding: 0 calc(var(--shell-unit) * 2);
-	border-radius: calc(var(--gn-radius) - 2px);
-	color: var(--gn-ink-3) !important;
-	font-size: calc(var(--shell-nav-fs) - 1px);
-	opacity: 1;
+.nav-list-wrap .nav-list-top .nav-list-title-wrap:hover {
+	background-color: var(--ds-hover);
 }
 
-.sidenav2 .nav-list-wrap a:hover {
-	background-color: var(--gn-hover);
-	color: var(--gn-ink) !important;
-}
-
-/*
-  구획 제목은 흰색으로 박혀 있다(#fff !important) — 흰 사이드바에서 사라진다.
-  개수 배지도 남색 칩이라 같은 문제다. 둘 다 새 셸 색으로 되돌린다.
-*/
 .nav-list-wrap .nav-list-top .nav-list-title-wrap .nav-list-title {
-	font-size: var(--shell-nav-fs);
+	font-size: var(--ds-fs-body);
 	font-weight: 600;
-	line-height: 1.4;
-	color: var(--gn-ink) !important;
+	line-height: var(--ds-lh-tight);
+	color: var(--ds-ink) !important;
 }
 
 .nav-list-wrap .nav-list-top .nav-list-cnt {
 	width: auto;
 	min-width: 20px;
+	margin-left: 0;
 	padding: 0 6px;
-	background: var(--gn-hover);
-	color: var(--gn-ink-4) !important;
-	font-size: 11px;
+	border-radius: var(--ds-pill);
+	background: var(--ds-hover);
+	color: var(--ds-ink-3) !important;
+	font-size: var(--ds-fs-micro);
 	font-weight: 500;
 	line-height: 18px;
 }
 
 .nav-list-wrap .nav-list-top .nav-list-all {
-	color: var(--gn-primary) !important;
+	color: var(--ds-primary) !important;
+	font-size: var(--ds-fs-small);
 }
 
-.nav-list-wrap .nav-list-top .nav-list-title-wrap:hover {
-	background-color: var(--gn-hover);
-	border-radius: var(--gn-radius);
+.sidenav2 .nav-list-wrap a,
+.sidenav2 .nav-list-wrap .projectList,
+.sidenav2 .nav-list-wrap .noteList {
+	/* flex 로 두면 text-overflow 가 먹지 않아 글자가 그냥 잘린다. 블록으로 둔다. */
+	display: block;
+	min-height: var(--ds-8);
+	padding: calc((var(--ds-8) - 1em * 1.3) / 2) var(--ds-2);
+	border-radius: calc(var(--ds-radius) - 2px);
+	color: var(--ds-ink-3) !important;
+	font-size: var(--ds-fs-small);
+	line-height: var(--ds-lh-tight);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	opacity: 1;
 }
 
-/* 사이드바 안의 개수 배지 */
-.sidenav2 .title_cnt {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	min-width: 20px;
-	height: 18px;
-	padding: 0 6px;
-	border-radius: var(--gn-radius-pill);
-	background: var(--gn-hover);
-	color: var(--gn-ink-4) !important;
-	font-size: 11px;
-	font-weight: 500;
+.sidenav2 .nav-list-wrap a:hover {
+	background-color: var(--ds-hover);
+	color: var(--ds-ink) !important;
 }
 
 /* ---------------------------------------------------------------------------
-   3) 헤더
-
-   가운데 알약 검색창 + 오른쪽 사용자 칩. 세션 타이머는 실제로 도는 값이라
-   지우지 않고 옅게 내려 둔다.
+   5) 셸 — 헤더
 --------------------------------------------------------------------------- */
 .sticky-sty-01 {
-	background: var(--gn-surface) !important;
-	border-bottom: 1px solid var(--gn-line);
+	height: var(--ds-header);
+	background: var(--ds-surface) !important;
+	border-bottom: 1px solid var(--ds-line);
 	box-shadow: none;
 }
 
 .sticky-sty-01 .top-nav {
 	display: flex;
 	align-items: center;
-	height: var(--shell-header-h);
-	padding: 0 calc(var(--shell-unit) * 6) !important;
+	height: var(--ds-header);
+	padding: 0 var(--ds-6) !important;
 }
 
 .sticky-sty-01 .navbar-collapse {
 	display: flex;
 	align-items: center;
 	width: 100%;
-	gap: calc(var(--shell-unit) * 4);
+	gap: var(--ds-4);
 }
 
-/* 검색 — 알약 모양으로, 가운데에 */
 .sticky-sty-01 .search-box-write {
 	position: relative;
-	flex: 0 1 460px;
+	flex: 0 1 420px;
 	margin: 0 auto !important;
 	padding: 0 !important;
 }
 
 .sticky-sty-01 .search-box-write .search_write {
 	width: 100%;
-	height: calc(var(--shell-unit) * 9);
-	padding: 0 calc(var(--shell-unit) * 10) 0 calc(var(--shell-unit) * 4);
+	height: var(--ds-control);
+	padding: 0 var(--ds-10) 0 var(--ds-4);
 	border: 1px solid transparent;
-	border-radius: var(--gn-radius-pill);
-	background: var(--gn-canvas);
-	font-size: 13px;
-	color: var(--gn-ink);
-	transition: background-color 0.12s ease, border-color 0.12s ease;
+	border-radius: var(--ds-pill);
+	background: var(--ds-canvas);
+	font-size: var(--ds-fs-cell);
+	color: var(--ds-ink);
 }
 
 .sticky-sty-01 .search-box-write .search_write::placeholder {
-	color: var(--gn-ink-4);
+	color: var(--ds-ink-4);
 }
 
 .sticky-sty-01 .search-box-write .search_write:focus {
 	outline: none;
-	border-color: var(--gn-primary);
-	background: var(--gn-surface);
+	border-color: var(--ds-primary);
+	background: var(--ds-surface);
 	box-shadow: 0 0 0 3px rgba(47, 91, 245, 0.14);
 }
 
 .sticky-sty-01 .search-box-write .search_btn {
 	position: absolute;
 	top: 50%;
-	right: calc(var(--shell-unit) * 3);
+	right: var(--ds-3);
 	width: 18px;
 	height: 18px;
 	transform: translateY(-50%);
 	border: 0;
-	background-color: var(--gn-ink-4);
+	background-color: var(--ds-ink-4);
 	background-image: none;
 	-webkit-mask: url(../img/lucide/search.svg) center / contain no-repeat;
 	mask: url(../img/lucide/search.svg) center / contain no-repeat;
 }
 
-/* 세션 타이머 — 정보이지 조작이 아니다. 한 단 내린다. */
 .sticky-sty-01 .auth_time {
-	padding: 0 calc(var(--shell-unit) * 2.5);
-	border: 1px solid var(--gn-line-2);
-	border-radius: var(--gn-radius-pill);
-	background: var(--gn-surface);
+	padding: 0 var(--ds-3);
+	border: 1px solid var(--ds-line-2);
+	border-radius: var(--ds-pill);
+	background: var(--ds-surface);
 }
 
 .sticky-sty-01 .auth_time a,
-.sticky-sty-01 .auth_time .session_txt,
 .sticky-sty-01 .auth_time span {
-	color: var(--gn-ink-4) !important;
-	font-size: 12px;
+	color: var(--ds-ink-4) !important;
+	font-size: var(--ds-fs-small);
 }
 
 .sticky-sty-01 .wrap_info {
-	gap: calc(var(--shell-unit) * 2);
+	gap: var(--ds-2);
 }
 
 /* ---------------------------------------------------------------------------
-   4) 본문 카드 — lims-ui.css 의 카드를 셸 색에 맞춘다
+   6) 카드 격자 — 화면 폭에 따라 스스로 열 수를 정한다
 
-   lims-ui.css 는 본문의 구조(밀도·위계)를 정하고, 여기서는 그 결과물이 새 셸
-   위에서 어떻게 보이는지만 손본다. 두 파일의 역할을 섞지 않는다.
+   프로젝트·연구노트 카드가 고정 폭(410px, min-width 420px)이라 1440px 에서는
+   칸을 넘겨 서로 겹치고 마지막 장이 화면 밖으로 밀려났다. 폭을 정하지 말고
+   "최소 300px, 남는 만큼 균등"으로 두면 어느 폭에서도 줄이 꽉 찬다.
+
+   min-width 는 원본이 .a .b .c 3단 선택자로 박아 두어 !important 로만 눌린다.
 --------------------------------------------------------------------------- */
-.lims-page {
-	--lims-primary: var(--gn-primary);
-	--lims-primary-dark: var(--gn-primary-dark);
-	--lims-primary-weak: var(--gn-primary-weak);
-	--lims-ink: var(--gn-ink);
-	--lims-ink-2: var(--gn-ink-2);
-	--lims-line: var(--gn-line);
-	--lims-line-strong: var(--gn-line-2);
-	--lims-surface: var(--gn-surface);
-	--lims-surface-2: var(--gn-canvas);
-	--lims-radius: var(--gn-radius);
-	--lims-ring: 0 0 0 3px rgba(47, 91, 245, 0.14);
+.project-card > ul,
+.note-card > ul,
+.note-card-board .note-card ul {
+	display: grid;
+	/* auto-fit 은 장이 하나뿐일 때 그 한 장을 줄 전체로 늘려 버린다(대시보드의
+	   "작성중인 연구노트 (1)"). auto-fill 로 두어 칸 크기를 유지한다. */
+	grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+	gap: var(--ds-4);
+	margin: 0;
+	padding: 0;
+	list-style: none;
 }
 
-.lims-page .lims-card {
-	border: 1px solid var(--gn-line);
-	border-radius: var(--gn-radius-lg);
-	background: var(--gn-surface);
-	box-shadow: var(--gn-shadow);
+.project-card > ul > li,
+.note-card > ul > li,
+.note-card-board .note-card ul > li {
+	width: auto !important;
+	min-width: 0 !important;
+	max-width: none !important;
+	margin: 0 !important;
+	float: none !important;
+}
+
+.project-card,
+.note-card {
+	display: block !important;
+}
+
+/* 카드 안의 라벨·값 줄. space-between 이라 카드가 넓어지면 값이 오른쪽 끝까지
+   밀려나 가운데가 텅 빈다. 라벨 폭만 잡고 값은 바로 옆에 붙인다. */
+.txt-info .flex-sty01 {
+	display: flex;
+	justify-content: flex-start;
+	gap: var(--ds-3);
+	align-items: baseline;
+}
+
+.txt-info .flex-sty01 .txt-info-txt {
+	flex: 0 0 auto;
+	width: 76px;
+	color: var(--ds-ink-4);
+}
+
+.txt-info .flex-sty01 .txt-info-cont {
+	flex: 1 1 auto;
+	min-width: 0;
+	font-size: var(--ds-fs-cell);
+	color: var(--ds-ink);
+}
+
+/* 카드 자체 */
+.project-card-cont,
+.note-card-cont {
+	border: 1px solid var(--ds-line);
+	border-radius: var(--ds-radius-lg);
+	background: var(--ds-surface);
+	box-shadow: var(--ds-shadow);
+	overflow: hidden;
+}
+
+/* ---------------------------------------------------------------------------
+   7) 본문 카드 · 표
+--------------------------------------------------------------------------- */
+.lims-page .lims-card,
+.core-table .box,
+.box-table .box {
+	border: 1px solid var(--ds-line);
+	border-radius: var(--ds-radius-lg);
+	background: var(--ds-surface);
+	box-shadow: var(--ds-shadow);
 }
 
 .lims-page .lims-card-head {
-	border-bottom-color: var(--gn-line);
+	border-bottom-color: var(--ds-line);
 }
 
-/* 표 머리행은 카드 안쪽 색으로 — 선이 아니라 면으로 구분한다. */
-.lims-page .core-table thead th {
-	background: var(--gn-canvas);
-	border-bottom: 1px solid var(--gn-line);
-	color: var(--gn-ink-4);
+.core-table thead th {
+	background: var(--ds-canvas);
+	border-bottom: 1px solid var(--ds-line);
 }
 
-.lims-page .core-table tbody td {
-	border-bottom: 1px solid var(--gn-line);
+.core-table tbody td {
+	border-bottom: 1px solid var(--ds-line);
 }
 
 /* ---------------------------------------------------------------------------
-   5) 노트 전용 레이아웃
+   8) 조작 요소 — 버튼·탭
 
-   GNB·헤더가 없는 창이다. 남은 두 조각(상단 바, 왼쪽 정보 패널)을 같은 언어로
-   맞춘다.
+   구노 기본 버튼은 높이 40px, 글자 15~16px 이다. 표 안에 두세 개가 들어가는
+   화면에서는 표가 버튼에 먹힌다. 한 규격으로 모은다.
+--------------------------------------------------------------------------- */
+.button-blue-full-sty01,
+.button-blue-line-sty01,
+.button-gray-line-sty01,
+.button-sty002,
+a.button-more-sty01 {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--ds-2);
+	min-height: var(--ds-control);
+	height: var(--ds-control);
+	padding: 0 var(--ds-4);
+	border-radius: var(--ds-radius);
+	font-size: var(--ds-fs-cell);
+	font-weight: 500;
+	line-height: 1;
+	white-space: nowrap;
+}
+
+/* 아이콘을 배경으로 그리는 것들. 원본은 padding-left 37px 로 자리를 비워
+   두는데, 위에서 좌우 여백을 평평하게 만드는 바람에 글자와 겹쳤다.
+   왼쪽만 아이콘 폭만큼 되돌리고 아이콘도 세로 가운데로 맞춘다. */
+.button-blue-full-sty01.create,
+.button-blue-full-sty01.down,
+.button-blue-full-sty01.note,
+.button-blue-line-sty01,
+.button-blue-sty03,
+.button-sty002 {
+	justify-content: flex-start;
+	padding-left: calc(var(--ds-4) + var(--ds-5));
+	background-repeat: no-repeat;
+	background-position: left var(--ds-3) center;
+	background-size: 16px 16px;
+}
+
+/* 아이콘이 없는 변형은 여백을 다시 좁힌다 */
+.button-blue-line-sty01.none,
+.button-blue-line-sty01.upload {
+	justify-content: center;
+	padding-left: var(--ds-4);
+	background-image: none;
+}
+
+/* ::before 로 아이콘을 그리는 변형 — 25px 짜리 그림을 버튼 높이에 맞춘다 */
+.button-blue-full-sty01.folder:before,
+.button-blue-full-sty01.step:before {
+	width: 16px;
+	height: 16px;
+	margin-right: var(--ds-2);
+	background-size: 16px 16px;
+	background-position: center;
+}
+
+.button-blue-full-sty01.step {
+	width: auto;
+	height: var(--ds-control);
+}
+
+/* "더보기" — 화살표를 배경으로 그리는데 좌표가 right -7px top -6px 이라
+   버튼 밖으로 나가 글자 위에 떠 있었다. 오른쪽 가운데로 되돌린다. */
+a.button-more-sty01 {
+	width: auto;   /* 원본은 45px 고정이라 "더보기" 가 화살표 밑에 깔렸다 */
+	height: auto;
+	min-height: 0;
+	padding: 0 calc(var(--ds-3) + 10px) 0 0;
+	background-repeat: no-repeat;
+	background-position: right center;
+	background-size: 14px 14px;
+	font-size: var(--ds-fs-small);
+	font-weight: 400;
+}
+
+/* 탭 */
+.board-top .tab,
+.nav-link.tap {
+	font-size: var(--ds-fs-body);
+	font-weight: 500;
+	color: var(--ds-ink-4) !important;
+}
+
+.board-top .tab.active,
+.nav-link.tap.active {
+	color: var(--ds-primary) !important;
+	font-weight: 600;
+}
+
+/* ---------------------------------------------------------------------------
+   9) 상태 배지 — 옅은 배경 + 어두운 글자
+
+   원래는 진한 배경 위 흰 글자였는데 하늘색·민트 계열이라 2.6~3.0:1 로 읽히지
+   않았다. 색 계열(파랑/초록/노랑/빨강)은 그대로 두고 명암을 뒤집는다.
+--------------------------------------------------------------------------- */
+.icon-status,
+.icon-grade,
+.note-type,
+.txt-info-icon,
+p.badge,
+.badge {
+	display: inline-flex;
+	align-items: center;
+	height: 22px;
+	padding: 0 var(--ds-2);
+	border-radius: 6px;
+	background-color: var(--ds-primary-weak) !important;
+	color: var(--ds-primary-dark) !important;
+	font-size: var(--ds-fs-micro);
+	font-weight: 500;
+	line-height: 1;
+}
+
+/* 원본 CSS 가 긴 선택자로 10px 을 박아 두었다. 배지 척도로 되돌린다. */
+.project-card-board .project-card .project-card-cont .txt-info .txt-info-cont .txt-info-icon,
+.note-card-board .note-card .note-card-cont .txt-info .txt-info-cont .txt-info-icon {
+	font-size: var(--ds-fs-micro);
+}
+
+.icon-status.write-status-COMPLETE {
+	background-color: #e6f4ea !important;
+	color: var(--ds-ok) !important;
+}
+
+.icon-status.write-status-INSPECTION {
+	background-color: #fff6e0 !important;
+	color: var(--ds-warn) !important;
+}
+
+.icon-status.write-status-REJECT {
+	background-color: #fdecea !important;
+	color: var(--ds-danger) !important;
+}
+
+/* ---------------------------------------------------------------------------
+   10) 보조 텍스트 — 읽히는 회색으로
+
+   style.css 는 #868e96 / #ced4da / #adb5bd 를 직접 박아 두었다. 흰 배경에서
+   3.3:1 / 1.5:1 / 2.0:1 로 WCAG AA(4.5:1)에 못 미친다. 값만 옮긴다.
+--------------------------------------------------------------------------- */
+.txt-project,
+.txt-folder,
+.project_title,
+.txt-info-txt,
+.txt-info .txt,
+span.txt,
+.button-more-sty01,
+.noteCnt,
+.projectCnt,
+.note_cnt,
+.title_cnt,
+.lims-tree-depth,
+.guidetext-sty01,
+.date_txt,
+.folder_text,
+.statusbar-hint,
+.button-gray-txt-sty01,
+.no-data span {
+	color: var(--ds-ink-4) !important;
+}
+
+/* 옅은 회색 바탕(#eceff1 / #dee2e6 / #f7f8fa) 위에서는 --ds-ink-4 도 4.19:1
+   까지 떨어진다. 그 위에 얹히는 글자만 한 단계 더 어둡게 간다. */
+.note_cnt,
+.folder_text,
+.lims-tree-depth,
+[class*='bg-gray'] .txt-info-txt,
+.wrap-note-cnt span {
+	color: var(--ds-ink-3) !important;
+}
+
+/* 표 머리행이 #eceff1 바탕이라 회색 글자가 4.19:1 로 걸렸다. 바탕을 캔버스
+   색으로 낮추고 글자를 한 단계 어둡게 해 둘 다 올린다. */
+.core-table thead th,
+table thead th,
+.board-list thead th {
+	background-color: var(--ds-canvas) !important;
+	color: var(--ds-ink-3) !important;
+}
+
+.core-table thead th span,
+table thead th span {
+	color: inherit !important;
+}
+
+/* NewEditor 상태 줄(#888888 on #fff = 3.54:1) */
+.rw-statusbar,
+.rw-statusbar span {
+	color: var(--ds-ink-4) !important;
+}
+
+/* 카드 제목이 하늘색(#03a9f4)·중간 파랑(#3578ea)이라 2.6:1 / 4.2:1 이었다 */
+.note-card-title,
+.note-card-title span {
+	color: var(--ds-ink) !important;
+}
+
+.note-card-title a,
+a.note-card-title {
+	color: var(--ds-primary-dark) !important;
+}
+
+.tab-board-sty01 .board-top .tab:hover .title_cnt,
+.tab-board-sty01 .board-top .tab.active .title_cnt,
+.tab-board-sty02 .board-top .tab:hover .title_cnt,
+.tab-board-sty02 .board-top .tab.active .title_cnt,
+.project-card-board .project-card .project-card-cont .wrap-note-cnt,
+.project-card-board .project-card .project-card-cont.project-prgrst-PROGRESS .wrap-note-cnt,
+.txt-blue,
+.txt_blue {
+	color: var(--ds-primary-dark) !important;
+}
+
+.tab-board-sty06 .board-top .tab:hover,
+.tab-board-sty06 .board-top .tab.active {
+	color: var(--ds-ok) !important;
+}
+
+/* ---------------------------------------------------------------------------
+   11) 노트 전용 창 (GNB·헤더 없음)
 --------------------------------------------------------------------------- */
 .note-detail #main-body-left {
-	border-right: 1px solid var(--gn-line);
-	background: var(--gn-surface) !important;
+	border-right: 1px solid var(--ds-line);
+	background: var(--ds-surface) !important;
 	box-shadow: none;
 }
 
 .note-detail .note-info-box {
-	border: 1px solid var(--gn-line);
-	border-radius: var(--gn-radius-lg);
-	background: var(--gn-surface);
-}
-
-.note-detail .note-info-box .title {
-	color: var(--gn-ink);
-	font-weight: 700;
+	border: 1px solid var(--ds-line);
+	border-radius: var(--ds-radius-lg);
+	background: var(--ds-surface);
 }
 
 .note-detail .note-title {
-	color: var(--gn-ink);
+	font-size: var(--ds-fs-lead);
 	font-weight: 700;
+	color: var(--ds-ink);
 }
 
 /* ---------------------------------------------------------------------------
-   6) 좁은 화면
-
-   치수 토큰은 lims.css 가 이미 폭에 따라 내린다. 여기서는 셸이 접혔을 때만
-   달라지는 것(검색창 폭)을 다룬다.
+   12) 좁은 화면
 --------------------------------------------------------------------------- */
 @media (max-width: 1200px) {
 	.sticky-sty-01 .search-box-write {
@@ -437,151 +994,4 @@ body,
 	.sticky-sty-01 .auth_time {
 		display: none;
 	}
-}
-
-/* ---------------------------------------------------------------------------
-   7) 대비 — 구노 공통 CSS 의 옅은 회색·연한 배지
-
-   style.css 는 보조 텍스트에 #868e96 / #ced4da / #adb5bd 를 직접 박아 두었다.
-   흰 배경에서 3.3:1 / 1.5:1 / 2.0:1 로 WCAG AA(4.5:1)에 크게 못 미친다.
-   상태 배지도 밝은 하늘색·민트 위에 흰 글자라 2.6~3.0:1 이다.
-
-   전에는 "전 화면 공통이라 못 고친다"고 남겨 뒀는데, 이제 셸을 통째로 다시
-   칠하는 파일이 생겼으므로 여기서 함께 정리한다. 뜻(보조·비활성·상태)은 그대로
-   두고 값만 새 계단으로 옮긴다.
-
-   수치는 렌더된 화면에서 계산한 실측이다.
---------------------------------------------------------------------------- */
-.txt-project,
-.txt-folder,
-.project_title,
-.txt-info-txt,
-.txt-info .txt,
-.button-gray-txt-sty01,
-.noteCnt,
-.projectCnt,
-.note_cnt {
-	color: var(--gn-ink-4) !important;
-}
-
-.title_cnt,
-.lims-tree-depth {
-	color: var(--gn-ink-4) !important;
-}
-
-/*
-  상태 배지 — 배경을 한 단 내려 흰 글자가 읽히게 한다. 색상 계열(파랑/민트/회색)은
-  그대로라 지금까지 색으로 구분하던 습관이 깨지지 않는다.
-*/
-.icon-status {
-	color: #fff !important;
-}
-
-.icon-status.write-status-WRITING,
-.icon-status.write-status-DRAFT {
-	background-color: #0284c7 !important;
-}
-
-.icon-status.write-status-COMPLETE {
-	background-color: #0f766e !important;
-}
-
-.icon-status.write-status-INSPECTION {
-	background-color: #b45309 !important;
-}
-
-.icon-status.write-status-REJECT {
-	background-color: #b91c1c !important;
-}
-
-/* 보안등급 칩 — 옅은 파랑 위 흰 글자였다. 옅은 배경 + 어두운 글자로 뒤집는다. */
-.icon-grade {
-	background-color: var(--gn-primary-weak) !important;
-	color: var(--gn-primary-dark) !important;
-}
-
-/* 옅은 파란 배경 위의 링크색 — 2.86:1 이다. 같은 계열의 어두운 쪽으로 내린다. */
-.txt-blue,
-.txt_blue,
-a.txt-blue {
-	color: var(--gn-primary-dark) !important;
-}
-
-/* 사이드바 개수 배지 — 4.39:1 로 아슬하게 모자란다. */
-.nav-list-wrap .nav-list-top .nav-list-cnt {
-	color: var(--gn-ink-3) !important;
-}
-
-/*
-  status 배지의 나머지 두 색. write-status-* 클래스가 붙지 않는 자리(카드 요약 등)에도
-  같은 규칙이 필요해 배경색 자체를 옮긴다.
-*/
-.icon-status,
-.icon-status[class*="write-status"] {
-	background-color: #0284c7 !important;
-}
-
-.icon-status.write-status-COMPLETE,
-.icon-status.COMPLETE {
-	background-color: #0f766e !important;
-}
-
-/* 카드 하단 집계(작성중/점검중/완료)와 개수 — 옅은 파랑이라 2.3~2.9:1 이다. */
-.card-note-cnt span,
-.card-note-cnt,
-.title_cnt,
-.nav-link.tap,
-.txt-info .txt,
-span.txt {
-	color: var(--gn-ink-4) !important;
-}
-
-/* 비활성 탭도 읽혀야 한다 — 지금은 1.97:1 로 배경과 거의 구분되지 않는다. */
-.nav-link.tap:not(.active) {
-	color: var(--gn-ink-4) !important;
-}
-
-/*
-  탭의 활성 개수·프로젝트 카드 하단 집계 — style.css 가 #598fee / #7ea8f1 / #26a69a 를
-  직접 쓴다. 전부 옅은 배경 위라 2.3~2.9:1 이다. 계열은 유지하고 명도만 내린다.
-*/
-.tab-board-sty01 .board-top .tab:hover .title_cnt,
-.tab-board-sty01 .board-top .tab.active .title_cnt,
-.tab-board-sty02 .board-top .tab:hover .title_cnt,
-.tab-board-sty02 .board-top .tab.active .title_cnt,
-#dropdown_note_history.dropdown-menu .dropdown_header .title .tab-btn:hover .title_cnt,
-#dropdown_note_history.dropdown-menu .dropdown_header .title .tab-btn.active .title_cnt {
-	color: var(--gn-primary-dark) !important;
-}
-
-.project-card-board .project-card .project-card-cont .wrap-note-cnt,
-.project-card-board .project-card .project-card-cont.project-prgrst-PROGRESS .wrap-note-cnt {
-	color: var(--gn-primary-dark) !important;
-}
-
-.tab-board-sty06 .board-top .tab:hover,
-.tab-board-sty06 .board-top .tab.active {
-	color: #0f766e !important;
-}
-
-/* 파랑 배지 위 흰 글자는 4.1:1 이다. 한 단 더 내려 기준을 넘긴다. */
-.icon-status,
-.icon-status[class*="write-status"] {
-	background-color: #0369a1 !important;
-}
-
-/* 마지막 잔여 — 개별 배지·보조 링크. 남기면 "거의 다 됐는데 몇 개"가 계속 남는다. */
-.txt-info-icon,
-.note-type,
-p.badge,
-.badge {
-	background-color: var(--gn-primary-weak) !important;
-	color: var(--gn-primary-dark) !important;
-}
-
-.button-more-sty01,
-.guidetext-sty01,
-.date_txt,
-.no-data span {
-	color: var(--gn-ink-4) !important;
 }
