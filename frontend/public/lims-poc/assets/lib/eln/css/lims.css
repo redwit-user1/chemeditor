@@ -10,39 +10,51 @@
 =============================================================================*/
 
 /* ---------------------------------------------------------------------------
-   1) GNB 메뉴 아이콘
-   .nav-menu .menuCd.<MENU_CD> 규칙으로 아이콘이 붙는 기존 규약을 따른다.
-   이 규칙이 없으면 신규 LIMS 메뉴만 아이콘 없이 렌더링되어 디자인이 깨진다.
-   네이비 사이드바(#08204A)용으로 제작된 기존 화이트 아이콘을 재사용한다.
+   1) GNB 메뉴 아이콘 — Lucide 라인 아이콘
+
+   이전에는 성격이 가까운 기존 PNG 를 빌려 썼다. 그 자산들은 굵기·채움·크기가
+   제각각인 데다(icon_alert.png 는 40x41 빨간 원, icon_acive_summary.png 는
+   채워진 그리드) 뜻과도 어긋나서, 사이드바가 "아무 아이콘이나 붙인 목록"으로
+   보였다. Lucide(24x24, stroke 기반) 한 세트로 통일해 굵기·크기·여백을 맞춘다.
+
+   구현 메모
+     - 외부 SVG 는 currentColor 를 상속받지 못한다. 그래서 네이비 사이드바
+       (#08204A)용으로 stroke 를 #ffffff 로 박아 구운 `-w.svg` 를 쓴다.
+       (굽는 스크립트가 아니라 결과물만 저장소에 둔다: img/lucide/*.svg)
+     - 규약은 기존과 같다 — `.nav-menu .menuCd.<MENU_CD>` 에 background-image.
+       구조·레이아웃은 손대지 않는다.
+     - background-size 를 20px 로 고정한다. 지정하지 않으면 SVG 의 24px 본래
+       크기로 그려져 42px 들여쓰기 안에서 글자와 붙는다.
 --------------------------------------------------------------------------- */
+.nav-menu .menuCd[class*="LIMS_"] {
+	background-repeat: no-repeat;
+	background-position: left 11px center;
+	background-size: 20px 20px;
+}
+
+/* 시약/재고 — 비커 */
 .nav-menu .menuCd.LIMS_REAGENT {
-	background-image: url(../img/icon_project_list.png);
-	background-repeat: no-repeat;
-	background-position: 12px;
+	background-image: url(../img/lucide/beaker-w.svg);
 }
 
+/* 보관위치 — 보관함 */
 .nav-menu .menuCd.LIMS_LOCATION {
-	background-image: url(../img/icon_menu_folder.png);
-	background-repeat: no-repeat;
-	background-position: 12px;
+	background-image: url(../img/lucide/archive-w.svg);
 }
 
+/* 구조 편집기 — 펜툴(그리기) */
 .nav-menu .menuCd.LIMS_CHEM {
-	background-image: url(../img/icon_add_check.png);
-	background-repeat: no-repeat;
-	background-position: 12px;
+	background-image: url(../img/lucide/pen-tool-w.svg);
 }
 
+/* 화합물 검색 — 육각형(고리) */
 .nav-menu .menuCd.LIMS_COMPOUND {
-	background-image: url(../img/icon_acive_summary.png);
-	background-repeat: no-repeat;
-	background-position: 12px;
+	background-image: url(../img/lucide/hexagon-w.svg);
 }
 
+/* 바코드 조회 — 스캔 라인 */
 .nav-menu .menuCd.LIMS_SCAN {
-	background-image: url(../img/icon_audit.png);
-	background-repeat: no-repeat;
-	background-position: 10px;
+	background-image: url(../img/lucide/scan-line-w.svg);
 }
 
 /* ---------------------------------------------------------------------------
@@ -631,55 +643,40 @@
 
 /* ------------------------------------------------------------------
    LIMS 코어 도메인 (시료·시험·결과) — 메뉴 아이콘
-   전용 아이콘이 없어 기존 자산을 재사용한다. 성격이 가까운 것을 골랐고,
-   전용 아이콘이 준비되면 이 블록의 URL 만 바꾸면 된다.
+   위 1) 블록과 같은 Lucide 세트다. 공통 규격(위치·크기)은
+   `.nav-menu .menuCd[class*="LIMS_"]` 에서 한 번만 준다.
    ------------------------------------------------------------------ */
-/*
-  아이콘 두 건을 손봤다.
 
-  1) icon_note_sheet.png 는 초록색 'XLS' 배지다. GNB 는 남색 배경에 흰색 단색
-     아이콘으로 통일돼 있어 혼자 튀고, 시료를 스프레드시트로 오해하게 만든다.
-     같은 크기의 흰색 단색 아이콘으로 바꾼다.
-  2) icon_alert.png(40x41) 는 다른 메뉴 아이콘(24px 내외)보다 크다. 구노 기본
-     규칙은 background-size 를 지정하지 않고 원본 크기에 기대므로, 그대로 두면
-     메뉴 글자를 덮는다. 이 규칙에만 크기를 맞춘다.
-     색은 그대로 둔다 — 규격 이탈은 경고이므로 붉은 아이콘이 뜻에 맞는다.
-*/
+/* 시료 — 플라스크 */
 .nav-menu .menuCd.LIMS_SAMPLE {
-	background-image: url(../img/icon_new_note_white.png);
-	background-repeat: no-repeat;
-	background-position: 12px;
+	background-image: url(../img/lucide/flask-conical-w.svg);
 }
 
+/* 시험 의뢰 — 클립보드 목록 */
 .nav-menu .menuCd.LIMS_TEST {
-	background-image: url(../img/icon_note_list.png);
-	background-repeat: no-repeat;
-	background-position: 12px;
+	background-image: url(../img/lucide/clipboard-list-w.svg);
 }
 
+/* 규격 이탈 — 경고 삼각형. 색은 흰색으로 통일한다.
+   이전 icon_alert.png 는 사이드바에서 유일한 유채색이라 상시 경보처럼 보였다.
+   경고는 목록/배지에서 색으로 말하고, 메뉴는 형태로만 말한다. */
 .nav-menu .menuCd.LIMS_OOS {
-	background-image: url(../img/icon_alert.png);
-	background-repeat: no-repeat;
-	background-position: 12px;
-	background-size: 24px 24px;
+	background-image: url(../img/lucide/triangle-alert-w.svg);
 }
 
+/* 분석법 — 문서 */
 .nav-menu .menuCd.LIMS_METHOD {
-	background-image: url(../img/icon_file.png);
-	background-repeat: no-repeat;
-	background-position: 12px;
+	background-image: url(../img/lucide/file-text-w.svg);
 }
 
+/* 규격(판정기준) — 자 */
 .nav-menu .menuCd.LIMS_SPEC {
-	background-image: url(../img/icon_note_status.png);
-	background-repeat: no-repeat;
-	background-position: 12px;
+	background-image: url(../img/lucide/ruler-w.svg);
 }
 
+/* 장비 — 현미경 */
 .nav-menu .menuCd.LIMS_INSTRUMENT {
-	background-image: url(../img/icon_audit.png);
-	background-repeat: no-repeat;
-	background-position: 12px;
+	background-image: url(../img/lucide/microscope-w.svg);
 }
 
 /* ------------------------------------------------------------------

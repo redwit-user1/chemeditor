@@ -2486,13 +2486,13 @@
     <script type="text/javascript">
       /*<![CDATA[*/
 
-      /* 탭 — 내 담당 시험 큐 / 전체 의뢰 / 내가 낸 의뢰 */
+      /* 탭 — 내 담당 시험 큐 / 전체 요청 / 내가 낸 요청 */
       const TAB_MY_WORK = 'MY_WORK';
       const TAB_ALL = 'ALL';
       const TAB_MY_REQST = 'MY_REQST';
 
       let gCurrentTab = TAB_MY_WORK;
-      /* 의뢰 등록 모달의 항목 행 일련번호. 삭제해도 재사용하지 않는다(라벨 for/id 충돌 방지). */
+      /* 요청 등록 모달의 항목 행 일련번호. 삭제해도 재사용하지 않는다(라벨 for/id 충돌 방지). */
       let gItemRowSeq = 0;
       /* 선택지는 모달을 열 때 한 번만 받아 두고 행이 늘 때마다 다시 요청하지 않는다. */
       let gMethodOptions = [];
@@ -2510,9 +2510,9 @@
       }
 
       /* ---------------------------------------------------------------
-         상단 요약 — 접수 대기 / 진행 중 / 판정 대기 / 규격 이탈
-         네 숫자 모두 "시험 항목" 기준이다. 의뢰 기준으로 세면 항목 5개 중 1개만 이탈한
-         의뢰가 "규격 이탈 1건"이 되어 실제로 손대야 할 작업 단위와 어긋난다.
+         상단 요약 — 접수 대기 / 진행 중 / 판정 대기 / 기준이탈
+         네 숫자 모두 "시험 항목" 기준이다. 요청 기준으로 세면 항목 5개 중 1개만 이탈한
+         요청이 "기준이탈 1건"이 되어 실제로 손대야 할 작업 단위와 어긋난다.
       --------------------------------------------------------------- */
       function getWorklistSummary(onDone) {
         const done = typeof onDone === 'function' ? onDone : function () {};
@@ -2609,7 +2609,7 @@
       }
 
       /* ---------------------------------------------------------------
-         의뢰 목록 — 전체 의뢰 / 내가 낸 의뢰
+         요청 목록 — 전체 요청 / 내가 낸 요청
       --------------------------------------------------------------- */
       function getTestRequestList(pageNo) {
         const targetSelector = '.request-info-list';
@@ -2641,7 +2641,7 @@
               $target.parents(targetSelector).find('.paging-box')
                 .html(S2Util.pagination(res.testRequestListInfo, 'getTestRequestList'));
             } else {
-              $target.html('<tr class="text-nowrap emptymessage"><td class="text-center" colspan="8">시험 의뢰가 없습니다.</td></tr>');
+              $target.html('<tr class="text-nowrap emptymessage"><td class="text-center" colspan="8">시험 요청이 없습니다.</td></tr>');
             }
           }
         );
@@ -2720,7 +2720,7 @@
         item.sampleDisp = sampleCell(item.sampleMno, item.sampleNo, item.sampleNm);
         item.methodDisp = item.methodNm
           ? item.methodNm + ' (v' + (item.methodVerNo || 1) + ')'
-          : '<span class="lims-stoich-reason">분석법 미지정</span>';
+          : '<span class="lims-stoich-reason">시험법 미지정</span>';
         item.planDeDisp = deDisp(item.planDe);
         item.urgentDisp = item.urgentYn === 'Y'
           ? '<span class="lims-state expired">긴급</span>' : '';
@@ -2775,7 +2775,7 @@
         openModalConfirm(
           '시험 착수',
           testItemNm,
-          '이 시험 항목을 착수 상태로 옮깁니다. 의뢰가 아직 접수 상태였다면 시험중으로 함께 이동합니다.',
+          '이 시험 항목을 착수 상태로 옮깁니다. 요청이 아직 접수 상태였다면 시험중으로 함께 이동합니다.',
           function () {
             ajaxPost('/api/lims/test/startTestItem', { testItemMno: testItemMno },
               '데이터요청중입니다.잠시만 기다려주세요.', function (res) {
@@ -2854,8 +2854,8 @@
       }
 
       /* ---------------------------------------------------------------
-         의뢰 등록 모달 (840x560)
-         시료 선택 → 시험 항목 N개 추가 → 항목마다 분석법·규격·예정일 지정
+         요청 등록 모달 (840x560)
+         시료 선택 → 시험 항목 N개 추가 → 항목마다 시험법·판정기준·예정일 지정
       --------------------------------------------------------------- */
       function openModalTestRequestCreate() {
         gItemRowSeq = 0;
@@ -2868,7 +2868,7 @@
           .find('.modal-content')
           .html(`
             <div class="modal-header cursor-move">
-              <p class="modal-title">시험 의뢰</p>
+              <p class="modal-title">시험 요청</p>
               <span class="modal-sub">등록 즉시 접수 상태가 됩니다. 담당자 배정이 실질적인 접수 행위입니다.</span>
             </div>
             <div class="modal-body">
@@ -2877,7 +2877,7 @@
                   <label for="newSampleMno" class="modal-cont-label">시료</label>
                   <select id="newSampleMno" name="sampleMno" class="btn btn-xs select-xs select-sty02 wp-100"
                           title="시료" required="required"></select>
-                  <div class="flex-sty04"><div class="guidetext-sty01">폐기된 시료는 목록에 나오지 않으며, 서버에서도 의뢰가 차단됩니다.</div></div>
+                  <div class="flex-sty04"><div class="guidetext-sty01">폐기된 시료는 목록에 나오지 않으며, 서버에서도 요청이 차단됩니다.</div></div>
                 </div>
                 <div class="flex-sty05 ma-b20">
                   <label for="newTestPurposeCcd" class="modal-cont-label">시험 목적</label>
@@ -2923,8 +2923,8 @@
                     <thead>
                       <tr class="text-nowrap">
                         <th class="text-left">시험 항목명</th>
-                        <th class="text-left">분석법 (버전)</th>
-                        <th class="text-left">규격 (버전)</th>
+                        <th class="text-left">시험법 (버전)</th>
+                        <th class="text-left">판정기준 (버전)</th>
                         <th class="text-left">담당자</th>
                         <th class="text-left">예정일</th>
                         <th class="text-center">삭제</th>
@@ -2934,7 +2934,7 @@
                   </table>
                 </div>
                 <div class="flex-sty04 ma-t10">
-                  <div class="guidetext-sty01">분석법·규격은 <b>버전 행</b>을 직접 가리킵니다. 여기서 고른 버전이 그대로 고정되며, 이후 분석법이 개정돼도 이 항목은 따라가지 않습니다.</div>
+                  <div class="guidetext-sty01">시험법·판정기준은 <b>버전 행</b>을 직접 가리킵니다. 여기서 고른 버전이 그대로 고정되며, 이후 시험법이 개정돼도 이 항목은 따라가지 않습니다.</div>
                 </div>
               </form>
             </div>
@@ -2950,7 +2950,7 @@
 
         /*
           선택지 4종을 나란히 호출하면 reqAjax 가 뒤의 요청들을 버린다.
-          시료 → 분석법 → 규격 → 담당자 순으로 반드시 이어 붙인다.
+          시료 → 시험법 → 판정기준 → 담당자 순으로 반드시 이어 붙인다.
         */
         loadSampleOptions(function () {
           loadMethodOptions(function () {
@@ -3067,7 +3067,7 @@
       }
 
       /**
-       * 의뢰 등록 모달의 시험 항목 행을 추가한다.
+       * 요청 등록 모달의 시험 항목 행을 추가한다.
        * <p>
        * name 을 itemList[n].xxx 형태의 <b>평면</b> 키로 만든다. jQuery 기본 직렬화가 만드는
        * itemList[n][xxx] 는 Spring 이 바인딩하지 못하므로 이 형태를 지켜야 한다.
@@ -3081,13 +3081,13 @@
                      maxlength="256" title="시험 항목명" required="required" />
             </td>
             <td class="text-left">
-              <select class="btn btn-xs select-xs select-sty02 wp-100 item-method" data-seq="${seq}" title="분석법">
-                ${optionTags(gMethodOptions, '', '분석법 선택')}
+              <select class="btn btn-xs select-xs select-sty02 wp-100 item-method" data-seq="${seq}" title="시험법">
+                ${optionTags(gMethodOptions, '', '시험법 선택')}
               </select>
             </td>
             <td class="text-left">
-              <select class="btn btn-xs select-xs select-sty02 wp-100 item-spec" data-seq="${seq}" title="규격">
-                ${optionTags(gSpecOptions, '', '규격 선택')}
+              <select class="btn btn-xs select-xs select-sty02 wp-100 item-spec" data-seq="${seq}" title="판정기준">
+                ${optionTags(gSpecOptions, '', '판정기준 선택')}
               </select>
             </td>
             <td class="text-left">
@@ -3158,7 +3158,7 @@
               return;
             }
             $('#modal-lims-test-reqst').modal('hide');
-            S2Util.toasts('의뢰되었습니다. ' + (res.newTestReqstNo || ''), { class: 'Toast-bottom-web' });
+            S2Util.toasts('요청되었습니다. ' + (res.newTestReqstNo || ''), { class: 'Toast-bottom-web' });
             S2Util.goPage('/lims/test/testRequestDetails', { schTestReqstMno: res.newTestReqstMno });
           });
       }
@@ -5812,6 +5812,24 @@
             
               
                 
+                  <a class="menuCd LIMS_NOTE"
+                     href="note_write.html">연구노트 작성</a>
+                
+                  <a class="menuCd LIMS_COMPOUND"
+                     href="compound_list.html">화합물 라이브러리</a>
+                
+                  <a class="menuCd LIMS_CHEM"
+                     href="chem_editor.html">구조 입력기</a>
+                
+                  <a class="menuCd LIMS_REAGENT"
+                     href="reagent_list.html">시약/재고 관리</a>
+                
+                  <a class="menuCd LIMS_SCAN"
+                     href="scan.html">바코드 스캔</a>
+                
+                  <a class="menuCd LIMS_LOCATION"
+                     href="location_list.html">보관위치 관리</a>
+                
                   <a class="menuCd MAIN_DASHBOARD"
                      href="#">대시보드 홈</a>
                 
@@ -5824,49 +5842,6 @@
                   <a class="menuCd MAIN_COMPLETED_PROJECT"
                      href="#">완료 프로젝트</a>
                 
-                  <a class="menuCd LIMS_REAGENT"
-                     href="reagent_list.html">시약/재고 관리</a>
-                
-                  <a class="menuCd LIMS_LOCATION"
-                     href="location_list.html">보관위치 관리</a>
-                
-                  <a class="menuCd LIMS_CHEM"
-                     href="chem_editor.html">구조 편집기</a>
-                
-                  <a class="menuCd LIMS_COMPOUND"
-                     href="compound_list.html">화합물 검색</a>
-                
-                  <a class="menuCd LIMS_SCAN"
-                     href="scan.html">바코드 조회</a>
-                
-                  <a class="menuCd LIMS_SAMPLE"
-                     href="sample_list.html">시료 관리</a>
-                
-                  <a class="menuCd LIMS_TEST active"
-                     href="test_list.html">시험 의뢰</a>
-                
-                  <a class="menuCd LIMS_OOS"
-                     href="oos_list.html">규격 이탈</a>
-                
-                  <a class="menuCd LIMS_METHOD"
-                     href="method_list.html">분석법 관리</a>
-                
-                  <a class="menuCd LIMS_SPEC"
-                     href="method_list.html">규격 관리</a>
-                
-                  <a class="menuCd LIMS_INSTRUMENT"
-                     href="instrument_list.html">장비 관리</a>
-                
-              
-            
-              
-            
-              
-            
-              
-            
-              
-            
               
             
               
@@ -5922,7 +5897,7 @@
                     <a href="#"
                        class="projectList"
                        onclick="gfn_openProjectDetail(&#39;/eln/project/projectDetails&#39;, &#39;303&#39;)"
-                       data-project-mno="303"><span title="분석법 검증 (KM-3719)">분석법 검증 (KM-3719)</span></a>
+                       data-project-mno="303"><span title="시험법 검증 (KM-3719)">시험법 검증 (KM-3719)</span></a>
                   </li>
                 
                   <li>
@@ -6328,10 +6303,10 @@
           <nav class="lims-crumb">
             <a href="index.html">LIMS</a>
             <span class="sep">/</span>
-            <span>시험 의뢰</span>
+            <span>시험 요청</span>
           </nav>
-          <h2 class="lims-title">시험 의뢰 · 워크리스트</h2>
-          <p class="lims-head-desc">내가 맡은 시험과 의뢰 목록입니다. 접수 대기 건을 열어 담당자를 배정하면 접수됩니다.</p>
+          <h2 class="lims-title">시험 요청 · 워크리스트</h2>
+          <p class="lims-head-desc">내가 맡은 시험과 요청 목록입니다. 접수 대기 건을 열어 담당자를 배정하면 접수됩니다.</p>
         </div>
       </header>
 
@@ -6354,7 +6329,7 @@
             <span class="lims-kpi-note">결과 입력·판정 전</span>
           </a>
           <a href="#" class="lims-kpi-item" onclick="focusItemStatus('OOS_HOLD'); return false;">
-            <span class="lims-kpi-label">규격 이탈</span>
+            <span class="lims-kpi-label">기준이탈</span>
             <span class="lims-kpi-value is-danger" id="summaryOosCnt">0</span>
             <span class="lims-kpi-note">조사 진행 중</span>
           </a>
@@ -6371,15 +6346,15 @@
               <a href="#"
                  class="tab test-tab"
                  data-tab="ALL"
-                 onclick="switchTab('ALL'); return false;">전체 의뢰</a>
+                 onclick="switchTab('ALL'); return false;">전체 요청</a>
               <a href="#"
                  class="tab test-tab"
                  data-tab="MY_REQST"
-                 onclick="switchTab('MY_REQST'); return false;">내가 낸 의뢰</a>
+                 onclick="switchTab('MY_REQST'); return false;">내가 낸 요청</a>
             </div>
           </nav>
           <button class="button-blue-full-sty01 ma-l10"
-                  onclick="openModalTestRequestCreate();"><span>시험 의뢰</span></button>
+                  onclick="openModalTestRequestCreate();"><span>시험 요청</span></button>
         </div>
 
         
@@ -6420,7 +6395,7 @@
                      id="searchKeyword"
                      maxlength="255"
                      sch-enter="searchCurrentTab"
-                     placeholder="의뢰번호 · 시료 · 항목명"
+                     placeholder="요청번호 · 시료 · 항목명"
                      class="input-write-sty02-line w-250" />
               <a href="#"
                  class="c-pointer"
@@ -6443,10 +6418,10 @@
                              id="tableWorklist">
                         <thead>
                           <tr class="text-nowrap">
-                            <th class="text-left">의뢰번호</th>
+                            <th class="text-left">요청번호</th>
                             <th class="text-left">시료</th>
                             <th class="text-left">시험 항목</th>
-                            <th class="text-left">분석법</th>
+                            <th class="text-left">시험법</th>
                             <th class="text-left">예정일</th>
                             <th class="lims-num">결과</th>
                             <th class="text-left">상태</th>
@@ -6476,10 +6451,10 @@
                              id="tableRequestList">
                         <thead>
                           <tr class="text-nowrap">
-                            <th class="text-left">의뢰번호</th>
+                            <th class="text-left">요청번호</th>
                             <th class="text-left">시료</th>
                             <th class="text-left">시험 목적</th>
-                            <th class="text-left">의뢰자</th>
+                            <th class="text-left">요청자</th>
                             <th class="text-left">진행 (완료/전체)</th>
                             <th class="text-left">희망 완료일</th>
                             <th class="text-left">상태</th>

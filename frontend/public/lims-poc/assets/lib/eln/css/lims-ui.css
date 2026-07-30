@@ -5,30 +5,40 @@
    적용 범위는 `#main.lims-page` 안, 즉 본문 영역뿐이다.
    GNB·헤더·로고 같은 구노 공통 구조는 건드리지 않는다 — 그 부분이 바뀌면
    LIMS 화면만 다른 제품처럼 보이게 된다.
+   (GNB 아이콘 교체만 예외이며 그 규칙은 lims.css 에 있다.)
 
    해결하려는 것은 하나다: 시험 데이터는 글자가 많다. 의뢰번호·시료번호·분석법
    버전·규격·판정 사유가 한 행에 다 들어간다. 구노 기본 표는 행 높이 66px,
    한 셀 한 줄을 전제로 만들어져 있어 그 밀도를 감당하지 못하고
    "잘리거나, 뭉치거나, 화면을 넘긴다".
 
-   그래서 이 레이어는 세 가지를 한다.
+   그래서 이 레이어는 네 가지를 한다.
      1) 밀도 — 행 높이와 여백을 줄이고 글자 위계(12/13/14)를 세워 같은 화면에
         더 많은 사실을 담되 읽히게 한다.
      2) 위계 — 페이지 머리말 / KPI / 카드(탭·툴바·표·페이징)로 구조를 고정한다.
-        지금은 요약·탭·필터·표가 각자 떠 있어 소속이 보이지 않는다.
      3) 연계 — 식별자(의뢰번호·시료번호·규격코드)를 링크로 세운다. LIMS 는
         레코드 사이를 오가는 것이 본업이다.
+     4) 조작 — 버튼·아이콘·입력의 규격을 하나로 모은다. 구노 기본 버튼은
+        높이 40px, 글자 15~16px, hover 가 opacity 뿐이고, 클래스마다 배경
+        아이콘이 하드코딩돼 있어 "삭제" 버튼에도 파란 + 가 붙는다.
+        LIMS 목록은 한 행에 버튼이 2~3개씩 들어가므로 이 규격으로는 표가 버튼에
+        먹힌다. 여기서 다시 세운다.
 
    색·폰트는 새로 만들지 않는다. style.css 가 이미 가진 값만 쓴다.
-     primary #1761de / gray900 #212529 / gray700 #495057 / gray600 #868e96
-     gray300 #dee2e6 / gray200 #e9ecef / gray50 #f8f9fa / danger #ee5139 / warn #a1730a
+     primary #1761de / primary-dark #0f4094 / primary-weak #edf3fd
+     gray900 #212529 / gray700 #495057 / gray600 #868e96 / gray500 #adb5bd
+     gray300 #dee2e6 / gray200 #e9ecef / gray50 #f8f9fa
+     danger #ee5139 / warn #a1730a
 =============================================================================*/
 
 .lims-page {
 	--lims-primary: #1761de;
+	--lims-primary-dark: #0f4094;
+	--lims-primary-weak: #edf3fd;
 	--lims-ink: #212529;
 	--lims-ink-2: #495057;
 	--lims-ink-3: #868e96;
+	--lims-ink-4: #adb5bd;
 	--lims-line: #e9ecef;
 	--lims-line-strong: #dee2e6;
 	--lims-surface: #ffffff;
@@ -36,13 +46,412 @@
 	--lims-danger: #ee5139;
 	--lims-warn: #a1730a;
 
+	/* 조작 요소 공통 규격 — 버튼/입력/셀렉트가 한 줄에 서면 높이가 같아야 한다 */
+	--lims-control-h: 34px;
+	--lims-radius: 8px;
+	--lims-ring: 0 0 0 3px rgba(23, 97, 222, 0.18);
+
 	font-size: 14px;
 	color: var(--lims-ink-2);
 	letter-spacing: -0.02em;
 }
 
 /* ---------------------------------------------------------------------------
-   1) 페이지 머리말
+   0) 아이콘 유틸 — Lucide(24x24 stroke) 를 CSS mask 로 찍는다.
+
+   HTML 을 고칠 수 없는 화면이 대부분이라 아이콘은 기존 버튼에 ::before 로
+   얹는다. 색을 파일에 박지 않고 mask + background-color: currentColor 로
+   칠하므로, 같은 SVG 한 장이 파란 버튼 위에서는 흰색, 회색 버튼 위에서는
+   회색으로 나온다. (GNB 는 background-image 라 흰색을 구워 쓴다 — lims.css)
+
+   `.lims-ico` 는 마크업을 고칠 수 있게 되면 쓸 수 있는 독립 유틸이다.
+--------------------------------------------------------------------------- */
+.lims-page .lims-ico {
+	display: inline-block;
+	flex: 0 0 auto;
+	width: 16px;
+	height: 16px;
+	vertical-align: -3px;
+	background-color: currentColor;
+	-webkit-mask: var(--lims-ico) center / contain no-repeat;
+	mask: var(--lims-ico) center / contain no-repeat;
+}
+
+.lims-page .lims-ico.i-plus { --lims-ico: url(../img/lucide/plus.svg); }
+.lims-page .lims-ico.i-search { --lims-ico: url(../img/lucide/search.svg); }
+.lims-page .lims-ico.i-pencil { --lims-ico: url(../img/lucide/pencil.svg); }
+.lims-page .lims-ico.i-trash { --lims-ico: url(../img/lucide/trash-2.svg); }
+.lims-page .lims-ico.i-download { --lims-ico: url(../img/lucide/download.svg); }
+.lims-page .lims-ico.i-upload { --lims-ico: url(../img/lucide/upload.svg); }
+.lims-page .lims-ico.i-next { --lims-ico: url(../img/lucide/chevron-right.svg); }
+.lims-page .lims-ico.i-external { --lims-ico: url(../img/lucide/external-link.svg); }
+.lims-page .lims-ico.i-check { --lims-ico: url(../img/lucide/check.svg); }
+.lims-page .lims-ico.i-x { --lims-ico: url(../img/lucide/x.svg); }
+.lims-page .lims-ico.i-filter { --lims-ico: url(../img/lucide/filter.svg); }
+.lims-page .lims-ico.i-refresh { --lims-ico: url(../img/lucide/refresh-cw.svg); }
+.lims-page .lims-ico.i-list { --lims-ico: url(../img/lucide/list.svg); }
+.lims-page .lims-ico.i-ban { --lims-ico: url(../img/lucide/ban.svg); }
+.lims-page .lims-ico.i-play { --lims-ico: url(../img/lucide/play.svg); }
+.lims-page .lims-ico.i-eye { --lims-ico: url(../img/lucide/eye.svg); }
+.lims-page .lims-ico.i-history { --lims-ico: url(../img/lucide/history.svg); }
+.lims-page .lims-ico.i-alert { --lims-ico: url(../img/lucide/circle-alert.svg); }
+
+/* ---------------------------------------------------------------------------
+   1) 버튼
+
+   구노 기본값의 문제 세 가지를 여기서 고친다.
+     a) `.button-blue-full-sty01` 은 padding-left:37px + background-position
+        left 9px 로 "아이콘 자리"를 상시 비워 둔다. 아이콘이 없는 버튼
+        (시료 등록·시험 의뢰·화합물 등록…)도 글자가 오른쪽으로 밀려
+        가운데가 아닌 곳에 놓인다. → 좌우 대칭 padding 으로 되돌리고,
+        아이콘이 실제로 붙는 버튼만 ::before 로 자리를 만든다.
+     b) `.button-blue-line-sty01` 은 icon_add_blue.png 가 클래스에 박혀 있어
+        "수정"·"삭제"·"상세"에도 + 가 붙는다. → 배경 아이콘을 끄고 뜻에 맞는
+        Lucide 아이콘을 버튼별로 지정한다.
+     c) hover 가 opacity 뿐이라 눌리는 느낌이 없고 focus 표시가 없다(키보드
+        접근 불가). → hover/active/focus-visible 을 각각 다르게 준다.
+--------------------------------------------------------------------------- */
+.lims-page .button-blue-full-sty01,
+.lims-page .button-blue-line-sty01,
+.lims-page .button-gray-line-sty01 {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	min-height: var(--lims-control-h);
+	height: var(--lims-control-h);
+	padding: 0 14px;
+	border-radius: var(--lims-radius);
+	background-image: none;
+	font-size: 13px;
+	font-weight: 500;
+	line-height: 1;
+	letter-spacing: -0.02em;
+	text-align: center;
+	white-space: nowrap;
+	vertical-align: middle;
+	cursor: pointer;
+	transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.lims-page .button-blue-full-sty01 > span,
+.lims-page .button-blue-line-sty01 > span,
+.lims-page .button-gray-line-sty01 > span {
+	font-size: inherit;
+	font-weight: inherit;
+	line-height: 1;
+}
+
+/* primary — 화면당 하나가 원칙이다(등록·의뢰·확정) */
+.lims-page .button-blue-full-sty01 {
+	border: 1px solid var(--lims-primary);
+	background-color: var(--lims-primary);
+	color: #fff !important;
+}
+
+.lims-page .button-blue-full-sty01:hover {
+	opacity: 1 !important;
+	border-color: var(--lims-primary-dark);
+	background-color: var(--lims-primary-dark);
+}
+
+.lims-page .button-blue-full-sty01:active {
+	transform: translateY(1px);
+}
+
+/* outline primary — 행 안의 주 조작(분주·상세·개정) */
+.lims-page .button-blue-line-sty01 {
+	border: 1px solid var(--lims-primary);
+	background-color: var(--lims-surface);
+	color: var(--lims-primary) !important;
+}
+
+.lims-page .button-blue-line-sty01:hover {
+	background-color: var(--lims-primary-weak);
+}
+
+.lims-page .button-blue-line-sty01:active {
+	background-color: #dfeafb;
+	transform: translateY(1px);
+}
+
+/* outline gray — 되돌리기 성격(목록·폐기·삭제) */
+.lims-page .button-gray-line-sty01 {
+	border: 1px solid var(--lims-line-strong);
+	background-color: var(--lims-surface);
+	color: var(--lims-ink-2) !important;
+}
+
+.lims-page .button-gray-line-sty01:hover {
+	border-color: var(--lims-ink-4);
+	background-color: var(--lims-surface-2);
+	color: var(--lims-ink) !important;
+}
+
+.lims-page .button-gray-line-sty01:active {
+	background-color: var(--lims-line);
+	transform: translateY(1px);
+}
+
+.lims-page .button-gray-line-sty01 span {
+	font-size: inherit;
+}
+
+/* 키보드 초점 — 지금은 표시가 아예 없어 Tab 으로 어디에 있는지 알 수 없다 */
+.lims-page .button-blue-full-sty01:focus-visible,
+.lims-page .button-blue-line-sty01:focus-visible,
+.lims-page .button-gray-line-sty01:focus-visible,
+.lims-page .button-cnfm-sty01:focus-visible,
+.lims-page .button-cncl-sty01:focus-visible,
+.lims-page .button-remove-sty01:focus-visible {
+	outline: 2px solid var(--lims-primary);
+	outline-offset: 2px;
+	box-shadow: var(--lims-ring);
+}
+
+.lims-page .button-blue-full-sty01.disabled,
+.lims-page .button-blue-full-sty01:disabled,
+.lims-page .button-blue-line-sty01.disabled,
+.lims-page .button-gray-line-sty01.disabled {
+	border-color: var(--lims-line);
+	background-color: var(--lims-line);
+	color: var(--lims-ink-4) !important;
+	pointer-events: none;
+}
+
+/* 모달 바닥 버튼 — 본문 버튼보다 한 단계 크되 규격은 같은 계열로 맞춘다 */
+.lims-page .button-cnfm-sty01,
+.lims-page .button-cncl-sty01,
+.lims-page .button-remove-sty01 {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	min-width: 88px;
+	height: 40px;
+	padding: 0 18px;
+	border-radius: var(--lims-radius);
+	font-size: 14px;
+	font-weight: 500;
+	line-height: 1;
+	letter-spacing: -0.02em;
+	transition: background-color 0.12s ease;
+}
+
+.lims-page .button-cnfm-sty01:hover { background-color: var(--lims-primary-dark); }
+.lims-page .button-cncl-sty01 { background-color: var(--lims-surface-2); border: 1px solid var(--lims-line-strong); color: var(--lims-ink-2); }
+.lims-page .button-cncl-sty01:hover { background-color: var(--lims-line); }
+.lims-page .button-remove-sty01:hover { background-color: #c92a11; }
+
+/* 버튼 묶음 간격 — ma-r10/ma-l10 유틸이 !important 로 10px 을 박아
+   flex gap 과 겹쳐 간격이 제각각이었다. 묶음 안에서는 gap 하나로 통일한다. */
+.lims-page .lims-head-actions > *,
+.lims-page .lims-card-tools > *,
+.lims-page .lims-note-block-tools > *,
+.lims-page .lims-actions > * {
+	margin: 0 !important;
+}
+
+/* 블록 머리말의 버튼은 한 단 작다 — 블록마다 3~4개가 붙어 있어 34px 로 두면
+   머리말이 통째로 버튼 줄이 된다. */
+.lims-page .lims-note-block-tools > .button-blue-full-sty01,
+.lims-page .lims-note-block-tools > .button-blue-line-sty01,
+.lims-page .lims-note-block-tools > .button-gray-line-sty01 {
+	height: 28px;
+	padding: 0 10px;
+	font-size: 12px;
+}
+
+.lims-page td.lims-actions-cell > * {
+	margin: 0 !important;
+	vertical-align: middle;
+}
+
+.lims-page td.lims-actions-cell > * + * {
+	margin-left: 6px !important;
+}
+
+/* ---------------------------------------------------------------------------
+   2) 버튼 아이콘 배정
+
+   마크업을 고칠 수 없으므로 onclick 핸들러 이름으로 뜻을 읽어 아이콘을 건다.
+   ::before 는 기본이 content:none 이라 해당 규칙이 없는 버튼은 아이콘 자리를
+   차지하지 않는다 — 위 (a) 문제를 되살리지 않기 위한 장치다.
+--------------------------------------------------------------------------- */
+.lims-page .button-blue-full-sty01::before,
+.lims-page .button-blue-line-sty01::before,
+.lims-page .button-gray-line-sty01::before,
+.lims-page .button-cnfm-sty01::before,
+.lims-page .button-cncl-sty01::before,
+.lims-page .button-remove-sty01::before {
+	content: none;
+	flex: 0 0 auto;
+	width: 15px;
+	height: 15px;
+	background-color: currentColor;
+	-webkit-mask-position: center;
+	mask-position: center;
+	-webkit-mask-size: contain;
+	mask-size: contain;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+}
+
+/* 추가·등록·생성 */
+.lims-page [onclick^="openModalSampleCreate"]::before,
+.lims-page [onclick^="openModalAliquotCreate"]::before,
+.lims-page [onclick^="openModalReagentCreate"]::before,
+.lims-page [onclick^="openModalContainerCreate"]::before,
+.lims-page [onclick^="openModalTestRequestCreate"]::before,
+.lims-page [onclick^="openModalInstrumentCreate"]::before,
+.lims-page [onclick^="openModalMethodCreate"]::before,
+.lims-page [onclick^="openModalSpecCreate"]::before,
+.lims-page [onclick^="openModalCompoundRegister"]::before,
+.lims-page [onclick^="openModalLocation('create'"]::before,
+.lims-page [onclick^="openModalItemAdd"]::before,
+.lims-page [onclick^="addItemRow"]::before {
+	content: '';
+	-webkit-mask-image: url(../img/lucide/plus.svg);
+	mask-image: url(../img/lucide/plus.svg);
+}
+
+/* 검색·조회 */
+.lims-page [onclick^="openStructureSearch"]::before,
+.lims-page [onclick^="applyStructureToOpener"]::before,
+.lims-page [onclick^="scanBarcode"]::before,
+.lims-page [onclick^="openModalOos"]::before {
+	content: '';
+	-webkit-mask-image: url(../img/lucide/search.svg);
+	mask-image: url(../img/lucide/search.svg);
+}
+
+/* 수정·개정·정정·처리 — 값을 바꾸는 조작 */
+.lims-page [onclick^="openModalSampleModify"]::before,
+.lims-page [onclick^="openModalInstrumentEdit"]::before,
+.lims-page [onclick^="openModalMethodRevise"]::before,
+.lims-page [onclick^="openModalSpecRevise"]::before,
+.lims-page [onclick^="openModalLocation('modify'"]::before,
+.lims-page [onclick^="openModalResultEntry"]::before,
+.lims-page .button-blue-line-sty01[onclick^="openModalStockAction"]::before {
+	content: '';
+	-webkit-mask-image: url(../img/lucide/pencil.svg);
+	mask-image: url(../img/lucide/pencil.svg);
+}
+
+/* 상세·보기 — 다른 레코드로 넘어간다 */
+.lims-page [onclick^="goSampleDetail"]::before,
+.lims-page [onclick^="goTestRequestDetails"]::before,
+.lims-page [onclick^="goMethodDetail"]::before,
+.lims-page [onclick^="selectReagent"]::before,
+.lims-page [onclick^="selectMethodVer"]::before {
+	content: '';
+	-webkit-mask-image: url(../img/lucide/chevron-right.svg);
+	mask-image: url(../img/lucide/chevron-right.svg);
+	width: 16px;
+	height: 16px;
+	order: 2;
+	margin-left: -2px;
+}
+
+/* 삭제 — 되돌릴 수 없는 조작만 휴지통을 준다 */
+.lims-page [onclick^="openModalSampleDelete"]::before,
+.lims-page [onclick^="openModalLocationDelete"]::before,
+.lims-page [onclick^="removeItemRow"]::before {
+	content: '';
+	-webkit-mask-image: url(../img/lucide/trash-2.svg);
+	mask-image: url(../img/lucide/trash-2.svg);
+}
+
+/*
+  삭제는 되돌릴 수 없는 유일한 조작이다. 그런데 화면에 따라 outline primary
+  (보관위치)와 outline gray(시료)로 제각각 붙어 있어, 파란 "삭제" 가 "수정"·
+  "하위 추가" 와 똑같이 보인다. 클래스와 무관하게 위험색으로 통일한다.
+  (마크업을 못 고치므로 색으로만 구분한다 — 위치는 그대로 둔다)
+*/
+.lims-page [onclick^="openModalSampleDelete"],
+.lims-page [onclick^="openModalLocationDelete"],
+.lims-page [onclick^="removeItemRow"] {
+	border-color: rgba(238, 81, 57, 0.45) !important;
+	color: var(--lims-danger) !important;
+}
+
+.lims-page [onclick^="openModalSampleDelete"]:hover,
+.lims-page [onclick^="openModalLocationDelete"]:hover,
+.lims-page [onclick^="removeItemRow"]:hover {
+	border-color: var(--lims-danger) !important;
+	background-color: #fdecea !important;
+	color: var(--lims-danger) !important;
+}
+
+/* 폐기·소진·취소·해제 — 레코드는 남고 상태만 닫힌다 */
+.lims-page [onclick^="openModalSampleDispose"]::before,
+.lims-page [onclick^="openModalAliquotDeplete"]::before,
+.lims-page [onclick^="openModalInstrumentRetire"]::before,
+.lims-page [onclick^="cancelTestItem"]::before,
+.lims-page [onclick^="cancelTestRequest"]::before,
+.lims-page [onclick^="unassignTestItem"]::before,
+.lims-page .button-gray-line-sty01[onclick^="openModalMethodStatus"]::before,
+.lims-page .button-gray-line-sty01[onclick^="openModalSpecStatus"]::before,
+.lims-page .button-gray-line-sty01[onclick^="openModalStockAction"]::before {
+	content: '';
+	-webkit-mask-image: url(../img/lucide/ban.svg);
+	mask-image: url(../img/lucide/ban.svg);
+}
+
+/* 완료·확정·전환 */
+.lims-page [onclick^="openModalCompleteItem"]::before,
+.lims-page [onclick^="confirmCompleteTestItem"]::before,
+.lims-page .button-blue-line-sty01[onclick^="openModalMethodStatus"]::before,
+.lims-page .button-blue-line-sty01[onclick^="openModalSpecStatus"]::before {
+	content: '';
+	-webkit-mask-image: url(../img/lucide/check.svg);
+	mask-image: url(../img/lucide/check.svg);
+}
+
+/* 목록으로 돌아가기 */
+.lims-page [onclick^="goSampleList"]::before,
+.lims-page [onclick^="goMethodList"]::before,
+.lims-page [onclick^="goTestRequestList"]::before,
+.lims-page [onclick^="clearStructureSearch"]::before {
+	content: '';
+	-webkit-mask-image: url(../img/lucide/list.svg);
+	mask-image: url(../img/lucide/list.svg);
+}
+
+/* 착수 / 배정 / 이동 / 이력 — 그 밖의 뜻이 뚜렷한 조작 */
+.lims-page [onclick^="startTestItem"]::before {
+	content: '';
+	-webkit-mask-image: url(../img/lucide/play.svg);
+	mask-image: url(../img/lucide/play.svg);
+}
+
+.lims-page [onclick^="openModalAssign"]::before {
+	content: '';
+	-webkit-mask-image: url(../img/lucide/user-plus.svg);
+	mask-image: url(../img/lucide/user-plus.svg);
+}
+
+.lims-page [onclick^="openModalAliquotMove"]::before {
+	content: '';
+	-webkit-mask-image: url(../img/lucide/arrow-right-left.svg);
+	mask-image: url(../img/lucide/arrow-right-left.svg);
+}
+
+.lims-page [onclick^="openModalCalHistory"]::before {
+	content: '';
+	-webkit-mask-image: url(../img/lucide/history.svg);
+	mask-image: url(../img/lucide/history.svg);
+}
+
+/* 사용(재고 차감)은 primary 로 뜨는 유일한 재고 조작이다 — 체크로 구분 */
+.lims-page .button-blue-full-sty01[onclick^="openModalStockAction"]::before {
+	content: '';
+	-webkit-mask-image: url(../img/lucide/check.svg);
+	mask-image: url(../img/lucide/check.svg);
+}
+
+/* ---------------------------------------------------------------------------
+   3) 페이지 머리말
    제목만 있고 설명·경로·주요 액션이 화면 여기저기 흩어져 있던 것을 한 블록으로 모은다.
 --------------------------------------------------------------------------- */
 .lims-page .lims-head {
@@ -121,7 +530,7 @@
 }
 
 /* ---------------------------------------------------------------------------
-   2) 요약 지표(KPI)
+   4) 요약 지표(KPI)
    기존에는 물성 패널(.lims-prop-bar)을 빌려 써서 숫자와 라벨이 한 줄에 뭉쳐 있었다.
    LIMS 첫 화면에서 가장 먼저 읽어야 하는 값이므로 타일로 세우고, 누르면 그 조건으로
    목록이 걸리게 한다(누를 수 있는 타일은 커서와 테두리로 알린다).
@@ -176,8 +585,22 @@
 	color: var(--lims-ink-3);
 }
 
+/* 구노 기본 요약 카드(.lims-summary-row)를 쓰는 화면도 같은 규격으로 맞춘다 */
+.lims-page .lims-summary-row .lims-summary-card {
+	padding: 14px 16px;
+	border-color: var(--lims-line);
+	border-radius: 10px;
+}
+
+.lims-page .lims-summary-row .lims-summary-value {
+	font-size: 26px;
+	font-weight: 700;
+	color: var(--lims-ink);
+	font-variant-numeric: tabular-nums;
+}
+
 /* ---------------------------------------------------------------------------
-   3) 카드 — 탭 / 툴바 / 표 / 페이징을 한 상자에 넣는다.
+   5) 카드 — 탭 / 툴바 / 표 / 페이징을 한 상자에 넣는다.
    지금은 넷이 각각 떠 있어 어떤 필터가 어떤 표에 걸리는지 화면상 알 수 없다.
 --------------------------------------------------------------------------- */
 .lims-page .lims-card {
@@ -197,7 +620,7 @@
 	align-items: center;
 	flex-wrap: wrap;
 	gap: 10px 16px;
-	padding: 12px 16px;
+	padding: 14px 16px;
 	border-bottom: 1px solid var(--lims-line);
 	background: var(--lims-surface);
 }
@@ -238,6 +661,9 @@
 	padding: 16px;
 }
 
+.lims-page .lims-card-body > :first-child { margin-top: 0; }
+.lims-page .lims-card-body > :last-child { margin-bottom: 0; }
+
 .lims-page .lims-card-foot {
 	padding: 12px 16px;
 	border-top: 1px solid var(--lims-line);
@@ -249,20 +675,167 @@
 }
 
 /* ---------------------------------------------------------------------------
-   4) 표 — 이 레이어의 핵심
-   구노 기본 표는 셀 padding 14px 21px, 행 높이 66px 이다. 시험 데이터는 한 행에
-   식별자·이름·버전·상태·판정·담당·일자가 함께 오므로 이 밀도로는 한 화면에
-   6행밖에 담기지 않는다. 여백을 줄이고 위계를 글자 크기로 만든다.
+   6) 입력 · 셀렉트 · 날짜 — 버튼과 같은 높이/라운드/초점 링
+
+   구노 기본은 높이 40px, 글자 15px, focus 는 box-shadow 로 파란 번짐만 준다.
+   필터 한 줄에 입력 2 + 셀렉트 3 + 버튼 1 이 서는 LIMS 화면에서는 그 높이가
+   툴바를 표만큼 두껍게 만든다. 34px 로 낮추고 초점은 테두리+링으로 바꾼다.
+--------------------------------------------------------------------------- */
+.lims-page .input-write-sty02-line,
+.lims-page .select-sty02,
+.lims-page .form-control,
+.lims-page .input-write-date2,
+.lims-page .form_date input {
+	height: var(--lims-control-h);
+	padding: 0 12px;
+	border: 1px solid var(--lims-line-strong);
+	border-radius: var(--lims-radius);
+	background-color: var(--lims-surface);
+	font-size: 13px;
+	line-height: calc(var(--lims-control-h) - 2px);
+	color: var(--lims-ink);
+	letter-spacing: -0.02em;
+	transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.lims-page .select-sty02 {
+	padding-right: 28px;
+	background-position: right 6px center;
+}
+
+.lims-page .input-write-sty02-line::placeholder {
+	font-size: 13px;
+	color: var(--lims-ink-4);
+}
+
+.lims-page .input-write-sty02-line:focus,
+.lims-page .select-sty02:focus,
+.lims-page .form-control:focus,
+.lims-page .input-write-date2:focus {
+	border-color: var(--lims-primary);
+	box-shadow: var(--lims-ring);
+	outline: 0;
+}
+
+.lims-page .form_date {
+	display: inline-flex;
+	align-items: center;
+	height: var(--lims-control-h);
+	border: 1px solid var(--lims-line-strong);
+	border-radius: var(--lims-radius);
+}
+
+.lims-page .form_date .input-write-date2 {
+	height: calc(var(--lims-control-h) - 2px);
+	border: 0;
+	box-shadow: none;
+}
+
+/* 체크박스 — 브라우저 기본 회색 대신 브랜드색으로 켜진 상태를 알린다 */
+.lims-page input[type="checkbox"],
+.lims-page input[type="radio"] {
+	accent-color: var(--lims-primary);
+	width: 15px;
+	height: 15px;
+	cursor: pointer;
+}
+
+/*
+  바코드 스캔 줄만 예외다. 실험대에서 한 손으로 쓰는 화면이라 입력칸이 56px
+  이고, 그 옆의 조회 버튼이 34px 이면 한 줄로 읽히지 않는다. 이 상자 안에서만
+  버튼을 입력 높이에 맞춘다.
+*/
+.lims-page .lims-scan-box .button-blue-full-sty01,
+.lims-page .lims-scan-box .button-gray-line-sty01 {
+	height: 48px;
+	padding: 0 22px;
+	font-size: 15px;
+}
+
+.lims-page .lims-scan-box .button-blue-full-sty01::before,
+.lims-page .lims-scan-box .button-gray-line-sty01::before {
+	width: 18px;
+	height: 18px;
+}
+
+/* 필터 줄 — 카드 위에 놓인 도구 줄이다. 별도 상자로 보이지 않게 여백만 준다. */
+.lims-page .target-info-tab.lims-filter {
+	margin-top: 14px !important;
+	margin-bottom: 10px;
+}
+
+.lims-page .lims-filter .search-box {
+	gap: 8px;
+}
+
+/* ma-r10 유틸(!important 10px)이 gap 과 겹쳐 간격이 18px 로 벌어졌다 */
+.lims-page .lims-filter .search-box > .ma-r10,
+.lims-page .lims-filter .search-box > .ma-l10,
+.lims-page .lims-filter .search-box .select-sty02 {
+	margin-right: 0 !important;
+	margin-left: 0 !important;
+}
+
+/*
+  필터 끝의 돋보기는 지금 링크 안에 Font Awesome 글리프가 들어간 형태라
+  높이도 정렬도 옆 입력과 맞지 않는다. 같은 규격의 아이콘 버튼으로 세운다.
+*/
+.lims-page .lims-filter .search-box .select-wrap > a.c-pointer {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--lims-control-h);
+	height: var(--lims-control-h);
+	border: 1px solid var(--lims-line-strong);
+	border-radius: var(--lims-radius);
+	background: var(--lims-surface);
+	color: var(--lims-ink-2);
+	transition: border-color 0.12s ease, background-color 0.12s ease, color 0.12s ease;
+}
+
+.lims-page .lims-filter .search-box .select-wrap > a.c-pointer:hover {
+	border-color: var(--lims-primary);
+	background: var(--lims-primary-weak);
+	color: var(--lims-primary);
+}
+
+.lims-page .lims-filter .search-box .select-wrap > a.c-pointer > i {
+	display: none;
+}
+
+.lims-page .lims-filter .search-box .select-wrap > a.c-pointer::before {
+	content: '';
+	width: 16px;
+	height: 16px;
+	background-color: currentColor;
+	-webkit-mask: url(../img/lucide/search.svg) center / contain no-repeat;
+	mask: url(../img/lucide/search.svg) center / contain no-repeat;
+}
+
+/* ---------------------------------------------------------------------------
+   7) 표 — 이 레이어의 핵심
+
+   구노 기본 표는 셀 padding 14px 21px, 행 높이 66px, 머리행 배경 #eceff1 에
+   글자 14px/700 이다. 시험 데이터는 한 행에 식별자·이름·버전·상태·판정·담당·
+   일자가 함께 오므로 이 밀도로는 한 화면에 6행밖에 담기지 않고, 머리행이
+   본문보다 무거워 눈이 데이터가 아니라 제목에 먼저 걸린다.
+
+   머리행은 가볍게(12px/600, 회색), 본문은 또렷하게(13px, 잉크색) 뒤집는다.
 --------------------------------------------------------------------------- */
 .lims-page .core-table .core-table-body .table > thead > tr > th,
 .lims-page .lims-table > thead > tr > th {
-	padding: 11px 16px !important;
+	padding: 10px 16px !important;
+	border: 0 !important;
 	border-bottom: 1px solid var(--lims-line-strong) !important;
+	border-radius: 0 !important;
 	background: var(--lims-surface-2) !important;
 	font-size: 12px;
 	font-weight: 600;
-	color: var(--lims-ink-2);
+	line-height: 1.5;
+	color: var(--lims-ink-3);
+	letter-spacing: -0.01em;
 	white-space: nowrap;
+	vertical-align: middle;
 }
 
 .lims-page .core-table .core-table-body .table > tbody > tr > td,
@@ -275,13 +848,44 @@
 	vertical-align: middle;
 }
 
+/* 첫 열은 20px 을 !important 로 박아둔 기본 규칙이 있어 맞춰 눌러준다 */
+.lims-page .table-sty01 tr td:nth-child(1) {
+	padding-left: 16px !important;
+}
+
 .lims-page .core-table .core-table-body .table > tbody > tr:last-child > td,
 .lims-page .lims-table > tbody > tr:last-child > td {
 	border-bottom: 0 !important;
 }
 
-.lims-page .core-table .core-table-body .table > tbody > tr:hover > td {
-	background: #f5f8ff;
+/* tr 에 걸린 기본 구분선(#f4f4f4)은 td 의 선과 이중으로 그려진다 */
+.lims-page .table-sty01 > :not(caption) > * {
+	border-bottom: 0;
+}
+
+/*
+  행 hover — 구노 기본은 회색(#f1f3f5)이라 "선택 불가" 처럼 보인다.
+  첫/끝 셀에 이미 라운드가 있으므로 옅은 파랑을 얹으면 참조 UI 의
+  "라운드 행" 강조와 같은 결과가 된다.
+*/
+/* 부트스트랩은 hover 틴트를 tr:hover 에 선언된 --bs-table-hover-bg 로 칠한다.
+   구노가 그 자리에 회색(#f1f3f5)을 박아두었으므로 같은 자리에서 덮어써야 한다. */
+.lims-page .core-table .core-table-body .table > tbody > tr:hover {
+	--bs-table-hover-bg: #eff5ff !important;
+	--bs-table-hover-color: var(--lims-ink) !important;
+}
+
+.lims-page .core-table .core-table-body .table > tbody > tr:hover > td,
+.lims-page .lims-table > tbody > tr:hover > td {
+	background: #eff5ff;
+}
+
+/* 선택된 행 — 목록에서 상세를 고른 상태(재고 보기 등)가 표시되지 않았다 */
+.lims-page .core-table .core-table-body .table > tbody > tr.selected > td,
+.lims-page .core-table .core-table-body .table > tbody > tr.active > td,
+.lims-page .lims-table > tbody > tr.selected > td {
+	background: var(--lims-primary-weak);
+	box-shadow: inset 2px 0 0 var(--lims-primary);
 }
 
 /* 표 안의 1차 식별자 — 굵기와 색으로 눈이 먼저 닿게 한다. */
@@ -306,6 +910,12 @@
 	text-underline-offset: 2px;
 }
 
+/* 식별자가 아닌 첫 열(일련번호·이름)도 본문보다 한 단계 올린다 */
+.lims-page .core-table .core-table-body .table > tbody > tr > td:first-child {
+	color: var(--lims-ink);
+	font-weight: 500;
+}
+
 /*
   두 줄 셀 — "SMP-20260712-001 · KM00003710 합성 원료" 처럼 식별자와 이름을
   한 줄에 이어 붙이면 어디까지가 번호인지 읽히지 않는다. 위/아래로 나눈다.
@@ -313,25 +923,42 @@
 .lims-page .lims-cell {
 	display: flex;
 	flex-direction: column;
-	gap: 2px;
+	gap: 3px;
 	min-width: 0;
+	line-height: 1.45;
 }
 
 .lims-page .lims-cell-sub {
 	font-size: 12px;
+	line-height: 1.45;
 	color: var(--lims-ink-3);
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
+/* 두 줄 셀을 <br> + .guidetext-sty01 로 쓰는 화면도 같은 행간으로 맞춘다 */
+.lims-page .core-table .core-table-body .table > tbody > tr > td .guidetext-sty01 {
+	display: inline-block;
+	margin-top: 3px;
+	font-size: 12px;
+	line-height: 1.45;
+	color: var(--lims-ink-3);
+}
+
 /* 숫자 열 — 자릿수가 맞아야 크기 비교가 된다. */
-.lims-page .lims-num {
+.lims-page .lims-num,
+.lims-page .core-table .core-table-body .table > tbody > tr > td.num,
+.lims-page .core-table .core-table-body .table > tbody > tr > td.text-right {
 	text-align: right;
 	font-variant-numeric: tabular-nums;
 	white-space: nowrap;
 }
 
-.lims-page th.lims-num { text-align: right; }
+.lims-page th.lims-num,
+.lims-page .core-table .core-table-body .table > thead > tr > th.num,
+.lims-page .core-table .core-table-body .table > thead > tr > th.text-right {
+	text-align: right;
+}
 
 /* 조작 열 — 버튼 폭이 행마다 달라 오른쪽 끝이 들쭉날쭉하던 것을 정렬한다. */
 .lims-page .lims-actions {
@@ -344,14 +971,31 @@
 
 .lims-page td.lims-actions-cell {
 	text-align: right;
+	white-space: nowrap;
 }
 
-/* 빈 상태 — 화면마다 문구·정렬이 달랐다. */
+/* 빈 상태 — 문구만 있어 "로딩 중인지 결과가 없는지" 구분되지 않았다.
+   아이콘을 얹어 한눈에 '없음'으로 읽히게 한다. */
 .lims-page .emptymessage > td {
-	padding: 40px 16px !important;
+	padding: 48px 16px !important;
+	border-bottom: 0 !important;
 	color: var(--lims-ink-3);
 	font-size: 13px;
+	line-height: 1.6;
 	text-align: center;
+	white-space: normal;
+}
+
+.lims-page .emptymessage > td::before {
+	content: '';
+	display: block;
+	width: 36px;
+	height: 36px;
+	margin: 0 auto 10px;
+	background-color: var(--lims-ink-3);
+	opacity: 0.4;
+	-webkit-mask: url(../img/lucide/inbox.svg) center / contain no-repeat;
+	mask: url(../img/lucide/inbox.svg) center / contain no-repeat;
 }
 
 /*
@@ -385,19 +1029,13 @@
 
 .lims-page .core-table .paging-box {
 	margin: 0;
-	padding: 12px 16px;
+	padding: 10px 16px;
 	border-top: 1px solid var(--lims-line);
 	background: var(--lims-surface-2);
 }
 
 .lims-page .core-table .paging-box:empty {
 	display: none;
-}
-
-/* 필터는 카드 위에 놓인 도구 줄이다. 별도 상자로 보이지 않게 여백만 준다. */
-.lims-page .target-info-tab.lims-filter {
-	margin-top: 14px !important;
-	margin-bottom: 10px;
 }
 
 /* 카드 안에 다시 카드를 그리지 않는다. */
@@ -407,7 +1045,54 @@
 }
 
 /* ---------------------------------------------------------------------------
-   5) 정의형 상세(라벨 : 값)
+   8) 페이징
+   기본값은 10px 글자에 각진 회색 테두리라 표 아래에서 잔 부스러기처럼 보인다.
+   버튼과 같은 라운드/높이 계열로 맞춘다.
+--------------------------------------------------------------------------- */
+.lims-page .paging-box .pagination {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	margin: 0;
+}
+
+.lims-page .paging-box .pagination > li {
+	font-size: 13px;
+}
+
+.lims-page .paging-box .pagination > li > a,
+.lims-page .paging-box .pagination > li > span {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 30px;
+	height: 30px;
+	padding: 0 8px;
+	border: 1px solid transparent;
+	border-radius: 6px;
+	background: transparent;
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--lims-ink-2);
+	font-variant-numeric: tabular-nums;
+	transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.lims-page .paging-box .pagination > li > a:hover {
+	background: var(--lims-line);
+	color: var(--lims-ink);
+}
+
+.lims-page .paging-box .pagination > .active > a,
+.lims-page .paging-box .pagination > .active > span,
+.lims-page .paging-box .pagination > .active > span:hover {
+	border-color: var(--lims-primary) !important;
+	background: var(--lims-primary) !important;
+	color: #fff !important;
+}
+
+/* ---------------------------------------------------------------------------
+   9) 정의형 상세(라벨 : 값)
    상세 화면의 기본 정보를 표로 그리면 라벨과 값의 경계가 흐리다.
 --------------------------------------------------------------------------- */
 .lims-page .lims-def {
@@ -439,40 +1124,43 @@
 }
 
 .lims-page .lims-def-value.is-empty {
-	color: #adb5bd;
+	color: var(--lims-ink-4);
+}
+
+/* 긴 값(제목·설명·입력칸)은 한 줄을 다 쓴다. 자동 배치된 좁은 칸에 넣으면 잘린다. */
+.lims-page .lims-def-row.is-wide {
+	grid-column: 1 / -1;
 }
 
 /* ---------------------------------------------------------------------------
-   6) 배지 — lims.css 가 이미 4종(normal/soon/muted/expired)을 갖고 있다.
-   밀도가 올라간 표에 맞춰 크기만 낮춘다.
+   10) 상태 배지
+
+   lims.css 가 5종(normal/soon/muted/expired/done)의 배경·글자색을 갖고 있다.
+   그대로는 밀도가 올라간 표에서 너무 크고, 배경만 있어 흰 카드 위에서 경계가
+   흐릿하다. 크기를 낮추고 같은 계열의 옅은 테두리를 둘러 또렷하게 만든다.
 --------------------------------------------------------------------------- */
 .lims-page .lims-state {
-	padding: 2px 7px;
+	display: inline-flex;
+	align-items: center;
+	min-height: 20px;
+	padding: 1px 8px;
+	border: 1px solid transparent;
+	border-radius: 6px;
 	font-size: 11px;
 	font-weight: 600;
-	border-radius: 4px;
+	line-height: 1.6;
+	letter-spacing: -0.01em;
+	white-space: nowrap;
 }
+
+.lims-page .lims-state.normal { border-color: rgba(23, 97, 222, 0.22); }
+.lims-page .lims-state.soon { border-color: rgba(161, 115, 10, 0.22); }
+.lims-page .lims-state.expired { border-color: rgba(238, 81, 57, 0.24); }
+.lims-page .lims-state.done { border-color: rgba(30, 126, 70, 0.22); }
+.lims-page .lims-state.muted { border-color: var(--lims-line-strong); }
 
 /* ---------------------------------------------------------------------------
-   7) 툴바(검색 필터) — 카드 머리에 붙는다.
---------------------------------------------------------------------------- */
-.lims-page .lims-card-head .select-sty02,
-.lims-page .lims-card-head .input-write-sty02-line,
-.lims-page .lims-card-head .form-control {
-	height: 34px;
-	font-size: 13px;
-}
-
-.lims-page .lims-card-head .button-blue-full-sty01,
-.lims-page .lims-card-head .button-blue-line-sty01,
-.lims-page .lims-card-head .button-gray-line-sty01 {
-	height: 34px;
-	font-size: 13px;
-	line-height: 26px;
-}
-
-/* ---------------------------------------------------------------------------
-   8) 탭 — 컨텍스트 전환. 액션 버튼과 같은 줄에 섞이지 않게 아래 테두리를 공유한다.
+   11) 탭 — 컨텍스트 전환. 액션 버튼과 같은 줄에 섞이지 않게 아래 테두리를 공유한다.
 --------------------------------------------------------------------------- */
 .lims-page .lims-tabs {
 	display: flex;
@@ -504,7 +1192,7 @@
 }
 
 /* ---------------------------------------------------------------------------
-   9) 안내 문구 — 화면마다 크기가 달랐다. 한 값으로 모은다.
+   12) 안내 문구 — 화면마다 크기가 달랐다. 한 값으로 모은다.
 --------------------------------------------------------------------------- */
 .lims-page .guidetext-sty01,
 .lims-page .lims-note {
@@ -531,8 +1219,377 @@
 	background: #fdf3f2;
 }
 
+/* 물성 패널 — 붙여넣기 직후 분자식·분자량이 뜨는 자리. 이 PoC 의 주인공이라
+   카드 테두리를 한 톤 세우고 값의 크기를 키운다. */
+.lims-page .lims-prop-bar {
+	border-color: var(--lims-line-strong);
+	border-radius: 10px;
+}
+
+.lims-page .lims-prop-bar .prop-label {
+	font-size: 13px;
+	color: var(--lims-ink-3);
+}
+
+.lims-page .lims-prop-bar .prop-value {
+	font-size: 19px;
+}
+
 /* ---------------------------------------------------------------------------
-   10) 좁은 화면
+   13) 연구노트 작성 — 이 PoC 의 메인 화면
+
+   요점 하나에 화면 전체가 걸려 있다: 구조가 들어오는 순간 그 블록 안에서
+   분자식·분자량이 채워진다. 그 순간이 눈에 띄지 않으면 화면이 제 일을 못한 것이다.
+   그래서 계산 중(.is-calculating)과 갱신 직후(.is-fresh)를 다르게 칠하고,
+   붙여넣는 자리를 점선으로 열어 둔다.
+--------------------------------------------------------------------------- */
+.lims-page .lims-note-layout {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 320px;
+	gap: 16px;
+	align-items: start;
+}
+
+.lims-page .lims-note-main,
+.lims-page .lims-note-side {
+	min-width: 0;
+}
+
+/* 사용 시약 패널은 본문을 따라 스크롤되지 않고 눈높이에 남는다.
+   (헤더 높이만큼 띄운다 — 그 아래로 들어가면 제목이 가린다.) */
+.lims-page .lims-note-side > .lims-card {
+	position: sticky;
+	top: 16px;
+}
+
+/* --- 블록 --- */
+.lims-page .lims-note-blocks {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.lims-page .lims-note-block {
+	border: 1px solid var(--lims-line);
+	border-radius: 10px;
+	background: var(--lims-surface);
+	overflow: hidden;
+}
+
+.lims-page .lims-note-block.is-struct {
+	border-color: #cfe0fa;
+}
+
+.lims-page .lims-note-block-head {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 12px;
+	border-bottom: 1px solid var(--lims-line);
+	background: var(--lims-surface-2);
+}
+
+.lims-page .lims-note-block-ord {
+	flex: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 22px;
+	height: 22px;
+	padding: 0 6px;
+	border-radius: 11px;
+	background: var(--lims-line-strong);
+	color: var(--lims-ink-2);
+	font-size: 11px;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+}
+
+.lims-page .lims-note-block-kind {
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--lims-ink-2);
+}
+
+.lims-page .lims-note-block-kind.is-struct {
+	color: var(--lims-primary);
+}
+
+/* 블록 조작 버튼은 목록 버튼보다 한 단 작다 — 블록마다 3~4개가 붙어 있어
+   같은 크기로 두면 머리말이 버튼 줄이 된다. */
+.lims-page .lims-note-block-tools {
+	display: flex;
+	gap: 6px;
+	margin-left: auto;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+}
+
+.lims-page .lims-note-block-body {
+	padding: 12px;
+}
+
+.lims-page .lims-note-text {
+	display: block;
+	width: 100%;
+	min-height: 120px;
+	padding: 10px 12px;
+	border: 1px solid var(--lims-line-strong);
+	border-radius: var(--lims-radius);
+	font-size: 13px;
+	line-height: 1.7;
+	color: var(--lims-ink);
+	resize: vertical;
+}
+
+.lims-page .lims-note-text:focus {
+	outline: none;
+	border-color: var(--lims-primary);
+	box-shadow: var(--lims-ring);
+}
+
+/* --- 구조 블록 --- */
+.lims-page .lims-note-struct {
+	display: grid;
+	grid-template-columns: 260px minmax(0, 1fr);
+	gap: 14px;
+	align-items: start;
+}
+
+.lims-page .lims-note-struct-canvas {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 200px;
+	padding: 8px;
+	border: 1px solid var(--lims-line-strong);
+	border-radius: 10px;
+	background: var(--lims-surface);
+}
+
+.lims-page .lims-note-struct-canvas.is-empty {
+	border-style: dashed;
+	background: var(--lims-surface-2);
+	color: var(--lims-ink-4);
+	font-size: 12px;
+	text-align: center;
+}
+
+.lims-page .lims-note-struct-canvas svg {
+	max-width: 100%;
+	height: auto;
+}
+
+.lims-page .lims-note-struct-side {
+	min-width: 0;
+}
+
+/* 붙여넣는 자리. "여기에 넣으라"는 말은 테두리로 하는 편이 문구보다 빠르다. */
+.lims-page .lims-note-paste {
+	min-height: 52px;
+	padding: 12px 14px;
+	border: 1px dashed var(--lims-primary);
+	border-radius: var(--lims-radius);
+	background: var(--lims-primary-weak);
+	font-size: 12px;
+	line-height: 1.6;
+	color: var(--lims-ink-2);
+	cursor: text;
+}
+
+.lims-page .lims-note-paste:empty::before {
+	content: attr(data-placeholder);
+	color: #5b7fbd;
+}
+
+.lims-page .lims-note-paste:focus {
+	outline: none;
+	border-style: solid;
+	box-shadow: var(--lims-ring);
+}
+
+/* 계산 결과. 이 세 값이 이 화면의 결론이다. */
+.lims-page .lims-note-calc {
+	margin-top: 10px;
+	border-radius: 10px;
+	transition: box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.lims-page .lims-note-calc .lims-prop-bar {
+	margin: 0;
+}
+
+/* 계산 중 — 값이 비어 보이는 것과 "아직 안 왔다"를 구분한다. */
+.lims-page .lims-note-calc.is-calculating {
+	background: var(--lims-surface-2);
+}
+
+.lims-page .lims-note-calc.is-calculating .lims-prop-bar .prop-value {
+	color: var(--lims-ink-4);
+}
+
+/* 갱신 직후 — 값이 방금 바뀌었다는 사실 자체를 보여준다. */
+.lims-page .lims-note-calc.is-fresh {
+	background: var(--lims-primary-weak);
+	box-shadow: var(--lims-ring);
+}
+
+.lims-page .lims-note-calc.is-fresh .lims-prop-bar .prop-value {
+	color: var(--lims-primary-dark);
+}
+
+.lims-page .lims-note-struct-status {
+	margin-top: 8px;
+	font-size: 12px;
+	line-height: 1.6;
+	color: var(--lims-ink-3);
+}
+
+.lims-page .lims-note-struct-status.is-ok {
+	color: #1a7f4b;
+}
+
+.lims-page .lims-note-struct-status.is-danger {
+	color: var(--lims-danger);
+}
+
+.lims-page .lims-note-editor-guide {
+	margin-top: 6px;
+}
+
+/* --- 표 블록 --- */
+.lims-page .lims-note-eq-summary {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 10px;
+	border: 1px solid var(--lims-line-strong);
+	border-radius: 14px;
+	background: var(--lims-surface-2);
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--lims-ink-2);
+}
+
+/* 표 안의 입력칸은 셀 폭을 넘지 않아야 한다 — 넘치면 표 전체가 가로로 늘어난다.
+   반응 시약 표는 열이 9개인데 본문 폭은 사이드 패널(320px)을 뺀 나머지다.
+   조작 요소를 기본 규격(34px·280px 셀렉트)으로 두면 mmol·당량 열이 화면 밖으로
+   밀려나 "계산 결과가 안 보인다"가 된다 — 이 표에서만 좁힌다. */
+.lims-page .lims-note-eq-input {
+	width: 76px;
+	min-width: 76px;
+	height: 28px;
+	padding: 0 8px;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+
+.lims-page .lims-note-block .lims-stoich-role-sel {
+	width: 88px;
+	min-width: 88px;
+	height: 28px;
+	padding: 0 22px 0 8px;
+	font-size: 12px;
+}
+
+.lims-page .lims-note-block .lims-stoich-unit-sel {
+	width: 68px;
+	min-width: 68px;
+	height: 28px;
+	margin-left: 4px;
+	padding: 0 20px 0 8px;
+	font-size: 12px;
+	vertical-align: middle;
+}
+
+.lims-page .lims-note-eq-input {
+	vertical-align: middle;
+}
+
+.lims-page .lims-note-block .lims-actions-cell .button-gray-line-sty01 {
+	height: 28px;
+	padding: 0 10px;
+	font-size: 12px;
+}
+
+/* 표 밀도 — 셀 여백을 한 단 줄여 아홉 열이 한 화면에 들어오게 한다. */
+.lims-page .lims-note-block .core-table .table-sty01 > :not(caption) > * > * {
+	padding-left: 8px;
+	padding-right: 8px;
+}
+
+/* --- 사용 시약 패널 --- */
+.lims-page .lims-note-usage {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	max-height: 420px;
+	overflow-y: auto;
+}
+
+.lims-page .lims-note-usage-item {
+	padding: 9px 11px;
+	border: 1px solid var(--lims-line);
+	border-radius: var(--lims-radius);
+	background: var(--lims-surface-2);
+}
+
+.lims-page .lims-note-usage-main {
+	display: flex;
+	align-items: baseline;
+	gap: 6px;
+}
+
+.lims-page .lims-note-usage-nm {
+	flex: 1 1 auto;
+	min-width: 0;
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--lims-ink);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.lims-page .lims-note-usage-amt {
+	flex: none;
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--lims-primary-dark);
+	font-variant-numeric: tabular-nums;
+}
+
+.lims-page .lims-note-usage-sub {
+	margin-top: 3px;
+	font-size: 11px;
+	line-height: 1.5;
+	color: var(--lims-ink-3);
+	word-break: break-all;
+}
+
+.lims-page .lims-note-empty {
+	padding: 18px 12px;
+	border: 1px dashed var(--lims-line-strong);
+	border-radius: var(--lims-radius);
+	background: var(--lims-surface-2);
+	font-size: 12px;
+	color: var(--lims-ink-3);
+	text-align: center;
+}
+
+/* 시약 선택 모달의 결과 행 */
+.lims-page .lims-note-reagent,
+.modal .lims-note-reagent {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 12px;
+	border: 1px solid var(--lims-line);
+	border-radius: var(--lims-radius);
+}
+
+/* ---------------------------------------------------------------------------
+   14) 좁은 화면
    표는 구노 규약대로 가로 스크롤을 유지하되, 머리말·툴바·KPI 는 접힌다.
 --------------------------------------------------------------------------- */
 @media (max-width: 1100px) {
@@ -547,6 +1604,26 @@
 
 	.lims-page .lims-def {
 		grid-template-columns: 1fr;
+	}
+
+	/* 사용 시약 패널을 본문 아래로 내린다. 320px 을 억지로 남기면 본문 표가 눌린다. */
+	.lims-page .lims-note-layout {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.lims-page .lims-note-side > .lims-card {
+		position: static;
+	}
+
+	.lims-page .lims-note-usage {
+		max-height: none;
+	}
+}
+
+@media (max-width: 900px) {
+	/* 구조 그림과 계산 패널을 위아래로 — 260px 을 유지하면 물성 값이 두 줄로 접힌다. */
+	.lims-page .lims-note-struct {
+		grid-template-columns: minmax(0, 1fr);
 	}
 }
 

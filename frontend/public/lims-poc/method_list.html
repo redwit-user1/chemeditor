@@ -2486,7 +2486,7 @@
     <script type="text/javascript">
       /*<![CDATA[*/
 
-      /* 분석법 상태 배지 — lims.css 의 .lims-state 스케일만 쓴다. */
+      /* 시험법 상태 배지 — lims.css 의 .lims-state 스케일만 쓴다. */
       const METHOD_STATUS = {
         DRAFT:      { nm: '초안',   cls: 'muted' },
         ACTIVE:     { nm: '유효',   cls: 'normal' },
@@ -2523,7 +2523,7 @@
       }
 
       /* ---------------------------------------------------------------
-         분석법 목록 — 코드별 최신 버전 1건
+         시험법 목록 — 코드별 최신 버전 1건
       --------------------------------------------------------------- */
       function getMethodList(pageNo) {
         const targetSelector = '.method-info-list';
@@ -2564,14 +2564,14 @@
               $target.parents(targetSelector).find('.paging-box')
                 .html(S2Util.pagination(res.methodListInfo, 'getMethodList'));
             } else {
-              $target.html('<tr class="text-nowrap emptymessage"><td class="text-center" colspan="9">등록된 분석법이 없습니다.</td></tr>');
+              $target.html('<tr class="text-nowrap emptymessage"><td class="text-center" colspan="9">등록된 시험법이 없습니다.</td></tr>');
             }
           }
         );
       }
 
       /* ---------------------------------------------------------------
-         분석법 등록 모달 (560) — 항상 버전 1 의 새 행이다.
+         시험법 등록 모달 (560) — 항상 버전 1 의 새 행이다.
       --------------------------------------------------------------- */
       function openModalMethodCreate() {
         $('#modal-lims-method')
@@ -2580,27 +2580,27 @@
           .find('.modal-content')
           .html(`
             <div class="modal-header cursor-move">
-              <p class="modal-title">분석법 등록</p>
+              <p class="modal-title">시험법 등록</p>
               <span class="modal-sub">버전 1로 등록됩니다. 이후 변경은 개정(새 버전)으로만 가능합니다.</span>
             </div>
             <div class="modal-body">
               <form method="post" role="form" id="limsMethodForm">
                 <div class="flex-sty05 ma-b20">
-                  <label for="newMethodCd" class="modal-cont-label">분석법 코드</label>
+                  <label for="newMethodCd" class="modal-cont-label">시험법 코드</label>
                   <input type="text" id="newMethodCd" name="methodCd" maxlength="50"
-                         class="input-write-sty02-line" title="분석법 코드" required="required" />
+                         class="input-write-sty02-line" title="시험법 코드" required="required" />
                   <div class="flex-sty04"><div class="guidetext-sty01">버전이 올라가도 바뀌지 않는 식별자입니다. 예) AM-HPLC-001</div></div>
                 </div>
                 <div class="flex-sty05 ma-b20">
-                  <label for="newMethodNm" class="modal-cont-label">분석법 명</label>
+                  <label for="newMethodNm" class="modal-cont-label">시험법 명</label>
                   <input type="text" id="newMethodNm" name="methodNm" maxlength="200"
-                         class="input-write-sty02-line" title="분석법 명" required="required" />
+                         class="input-write-sty02-line" title="시험법 명" required="required" />
                   <div class="flex-sty04"><div class="guidetext-sty01">시험 항목 지정 화면에 표시되는 이름입니다.</div></div>
                 </div>
                 <div class="flex-sty05 ma-b20">
-                  <label for="newMethodTpCcd" class="modal-cont-label">분석법 유형</label>
+                  <label for="newMethodTpCcd" class="modal-cont-label">시험법 유형</label>
                   <select id="newMethodTpCcd" name="methodTpCcd" class="btn btn-xs select-xs select-sty02 wp-100"
-                          title="분석법 유형" required="required">
+                          title="시험법 유형" required="required">
                     <option value="HPLC">HPLC</option>
                     <option value="LCMS">LC-MS</option>
                     <option value="NMR">NMR</option>
@@ -2632,9 +2632,9 @@
                   <div class="flex-sty04"><div class="guidetext-sty01">비워두면 즉시 시행으로 취급합니다.</div></div>
                 </div>
                 <div class="flex-sty05 ma-b20">
-                  <label for="newContent" class="modal-cont-label">분석법 본문</label>
+                  <label for="newContent" class="modal-cont-label">시험법 본문</label>
                   <textarea id="newContent" name="content" class="form-textarea form-textarea-line wp-100 h-110"
-                            title="분석법 본문"></textarea>
+                            title="시험법 본문"></textarea>
                   <div class="flex-sty04"><div class="guidetext-sty01">조작 절차 요약을 적습니다. SOP 원본 파일은 상세 화면에서 연결합니다. (선택)</div></div>
                 </div>
                 <div class="flex-sty05">
@@ -2679,7 +2679,7 @@
                 return;
               }
               $('#modal-lims-method').modal('hide');
-              S2Util.toasts('분석법이 등록되었습니다. (버전 1)', { class: 'Toast-bottom-web' });
+              S2Util.toasts('시험법이 등록되었습니다. (버전 1)', { class: 'Toast-bottom-web' });
               getMethodList();
             }
           );
@@ -2687,7 +2687,7 @@
       }
 
       /* ---------------------------------------------------------------
-         분석법 개정 모달 (840x560)
+         시험법 개정 모달 (840x560)
 
          결정 Q7 — 진행 중인 시험은 착수 시점 버전을 유지한다.
          개정자에게 영향 목록을 보여주되 강제 승계는 하지 않는다. 이 모달은
@@ -2742,7 +2742,7 @@
           .find('.modal-content')
           .html(`
             <div class="modal-header cursor-move">
-              <p class="modal-title">분석법 개정</p>
+              <p class="modal-title">시험법 개정</p>
               <span class="modal-sub" title="${methodCd} · ${methodNm}">${methodCd} · ${methodNm} (현재 v${base.verNo})</span>
             </div>
             <div class="modal-body">
@@ -2764,9 +2764,9 @@
               </div>
               <form method="post" role="form" id="limsMethodReviseForm">
                 <div class="flex-sty05 ma-b20">
-                  <label for="revMethodNm" class="modal-cont-label">분석법 명</label>
+                  <label for="revMethodNm" class="modal-cont-label">시험법 명</label>
                   <input type="text" id="revMethodNm" name="methodNm" maxlength="200"
-                         class="input-write-sty02-line" title="분석법 명" required="required" />
+                         class="input-write-sty02-line" title="시험법 명" required="required" />
                   <div class="flex-sty04"><div class="guidetext-sty01">코드는 바뀌지 않습니다. 버전만 올라갑니다.</div></div>
                 </div>
                 <div class="flex-sty05 ma-b20">
@@ -2778,9 +2778,9 @@
                   <div class="flex-sty04"><div class="guidetext-sty01">비워두면 즉시 시행입니다.</div></div>
                 </div>
                 <div class="flex-sty05 ma-b20">
-                  <label for="revContent" class="modal-cont-label">분석법 본문</label>
+                  <label for="revContent" class="modal-cont-label">시험법 본문</label>
                   <textarea id="revContent" name="content" class="form-textarea form-textarea-line wp-100 h-110"
-                            title="분석법 본문"></textarea>
+                            title="시험법 본문"></textarea>
                   <div class="flex-sty04"><div class="guidetext-sty01">이전 버전 본문을 불러왔습니다. 바뀐 절차를 반영하세요. 이전 버전은 삭제되지 않고 개정됨 상태로 보존됩니다.</div></div>
                 </div>
                 <div class="flex-sty05">
@@ -2834,7 +2834,7 @@
         });
       }
 
-      /* 버전 이력·규격 편집은 상세 화면에서 한다. 상태 전이(유효 전환·폐기)도 버전 단위라 거기에 있다. */
+      /* 버전 이력·판정기준 편집은 상세 화면에서 한다. 상태 전이(유효 전환·폐기)도 버전 단위라 거기에 있다. */
       function goMethodDetail(methodCd) {
         window.location.href = '/lims/method/methodDetail?methodCd=' + encodeURIComponent(methodCd);
       }
@@ -5473,6 +5473,24 @@
             
               
                 
+                  <a class="menuCd LIMS_NOTE"
+                     href="note_write.html">연구노트 작성</a>
+                
+                  <a class="menuCd LIMS_COMPOUND"
+                     href="compound_list.html">화합물 라이브러리</a>
+                
+                  <a class="menuCd LIMS_CHEM"
+                     href="chem_editor.html">구조 입력기</a>
+                
+                  <a class="menuCd LIMS_REAGENT"
+                     href="reagent_list.html">시약/재고 관리</a>
+                
+                  <a class="menuCd LIMS_SCAN"
+                     href="scan.html">바코드 스캔</a>
+                
+                  <a class="menuCd LIMS_LOCATION"
+                     href="location_list.html">보관위치 관리</a>
+                
                   <a class="menuCd MAIN_DASHBOARD"
                      href="#">대시보드 홈</a>
                 
@@ -5485,49 +5503,6 @@
                   <a class="menuCd MAIN_COMPLETED_PROJECT"
                      href="#">완료 프로젝트</a>
                 
-                  <a class="menuCd LIMS_REAGENT"
-                     href="reagent_list.html">시약/재고 관리</a>
-                
-                  <a class="menuCd LIMS_LOCATION"
-                     href="location_list.html">보관위치 관리</a>
-                
-                  <a class="menuCd LIMS_CHEM"
-                     href="chem_editor.html">구조 편집기</a>
-                
-                  <a class="menuCd LIMS_COMPOUND"
-                     href="compound_list.html">화합물 검색</a>
-                
-                  <a class="menuCd LIMS_SCAN"
-                     href="scan.html">바코드 조회</a>
-                
-                  <a class="menuCd LIMS_SAMPLE"
-                     href="sample_list.html">시료 관리</a>
-                
-                  <a class="menuCd LIMS_TEST"
-                     href="test_list.html">시험 의뢰</a>
-                
-                  <a class="menuCd LIMS_OOS"
-                     href="oos_list.html">규격 이탈</a>
-                
-                  <a class="menuCd LIMS_METHOD active"
-                     href="method_list.html">분석법 관리</a>
-                
-                  <a class="menuCd LIMS_SPEC"
-                     href="method_list.html">규격 관리</a>
-                
-                  <a class="menuCd LIMS_INSTRUMENT"
-                     href="instrument_list.html">장비 관리</a>
-                
-              
-            
-              
-            
-              
-            
-              
-            
-              
-            
               
             
               
@@ -5583,7 +5558,7 @@
                     <a href="#"
                        class="projectList"
                        onclick="gfn_openProjectDetail(&#39;/eln/project/projectDetails&#39;, &#39;303&#39;)"
-                       data-project-mno="303"><span title="분석법 검증 (KM-3719)">분석법 검증 (KM-3719)</span></a>
+                       data-project-mno="303"><span title="시험법 검증 (KM-3719)">시험법 검증 (KM-3719)</span></a>
                   </li>
                 
                   <li>
@@ -5989,10 +5964,10 @@
           <nav class="lims-crumb">
             <a href="index.html">LIMS</a>
             <span class="sep">/</span>
-            <span>분석법 관리</span>
+            <span>시험법</span>
           </nav>
-          <h2 class="lims-title">분석법 관리</h2>
-          <p class="lims-head-desc">시험에 쓰는 분석법과 규격을 버전으로 관리합니다. 개정하면 진행 중인 시험 건수를 먼저 알려줍니다.</p>
+          <h2 class="lims-title">시험법</h2>
+          <p class="lims-head-desc">측정 방법(시험법)과 적합 기준(판정기준)을 버전으로 관리합니다. 개정하면 진행 중인 시험 건수를 먼저 알려줍니다.</p>
         </div>
       </header>
 
@@ -6034,7 +6009,7 @@
               </a>
             </div>
             <button class="button-blue-full-sty01 ma-l10"
-                    onclick="openModalMethodCreate();"><span>분석법 등록</span></button>
+                    onclick="openModalMethodCreate();"><span>시험법 등록</span></button>
           </div>
         </div>
 
@@ -6055,8 +6030,8 @@
                            id="tableMethodList">
                       <thead>
                         <tr class="text-nowrap">
-                          <th class="text-left">분석법 코드</th>
-                          <th class="text-left">분석법 명</th>
+                          <th class="text-left">시험법 코드</th>
+                          <th class="text-left">시험법 명</th>
                           <th class="text-left">유형</th>
                           <th class="text-left">요구 장비</th>
                           <th class="text-left">버전</th>
@@ -6107,7 +6082,7 @@
           <td class="text-left">{{=effectDeDisp}}</td>
           <td class="lims-num">{{=inProgressDisp}}</td>
           <td class="lims-actions-cell">
-            <button class="button-blue-line-sty01" onclick="goMethodDetail('{{=methodCd}}');"><span>버전·규격</span></button>
+            <button class="button-blue-line-sty01" onclick="goMethodDetail('{{=methodCd}}');"><span>버전·판정기준</span></button>
             <button class="button-blue-line-sty01" onclick="openModalMethodRevise('{{=methodMno}}', '{{=methodCd}}', '{{=methodNm}}');"><span>개정</span></button>
           </td>
         </tr>

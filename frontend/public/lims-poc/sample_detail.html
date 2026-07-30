@@ -2699,7 +2699,7 @@
       }
 
       /*
-        시험 이력에서 원 의뢰·원 시험으로 건너간다.
+        시험 이력에서 원 요청·원 시험으로 건너간다.
         시료 화면에서 "이 값이 왜 이렇게 나왔나"를 확인하려면 결국 그 시험 화면으로
         가야 한다. 번호를 눈으로 읽고 메뉴를 되짚어 들어가게 두지 않는다.
       */
@@ -2728,11 +2728,11 @@
       /*
         시험 이력의 상태·판정을 배지로 그린다.
         코드값(IN_PROGRESS, ASSIGNED …)을 그대로 찍으면 이 표만 다른 화면과 달라진다.
-        라벨과 색 규칙은 시험 의뢰 화면(test_request_list / test_request_detail)과 같다.
+        라벨과 색 규칙은 시험 요청 화면(test_request_list / test_request_detail)과 같다.
       */
       const TEST_ITEM_STATUS_NM = {
         WAITING: '대기', ASSIGNED: '배정', IN_PROGRESS: '시험중',
-        OOS_HOLD: '규격이탈', DONE: '완료', CANCELED: '취소'
+        OOS_HOLD: '기준이탈', DONE: '완료', CANCELED: '취소'
       };
       const TEST_JUDGE_NM = { PASS: '적합', FAIL: '부적합', NA: '판정불가', INVALID: '무효' };
 
@@ -3029,7 +3029,7 @@
           $modal.find('#newChildSampleNm').prop('required', isDerived);
           $modal.find('#passageGroup').toggleClass('d-none', tp !== 'PASSAGE');
           $modal.find('#aliquotTpGuide').html(isDerived
-            ? '분자가 달라졌으므로 <b>새 시료번호가 발번</b>됩니다. 같은 시료번호 아래 서로 다른 물질이 섞이면 규격 판정이 성립하지 않습니다.'
+            ? '분자가 달라졌으므로 <b>새 시료번호가 발번</b>됩니다. 같은 시료번호 아래 서로 다른 물질이 섞이면 판정이 성립하지 않습니다.'
             : '소분·희석·분취처럼 <b>같은 물질을 나누는 것만 분주</b>입니다. 시료번호가 그대로 유지됩니다.');
         };
         $modal.find('#newAliquotTpCcd').off('change').on('change', applyType);
@@ -3173,7 +3173,7 @@
                          class="input-write-sty02-line" title="폐기 사유" required="required" />
                   <div class="flex-sty04">
                     <div class="guidetext-sty01">
-                      폐기는 종착 상태입니다. 폐기된 시료로는 새 시험을 의뢰할 수 없고 되돌릴 수 없습니다.
+                      폐기는 종착 상태입니다. 폐기된 시료로는 새 시험을 요청할 수 없고 되돌릴 수 없습니다.
                       남아 있는 분주도 함께 폐기 처리되며, 사유는 이력에 영구 보존됩니다.
                     </div>
                   </div>
@@ -5966,6 +5966,24 @@
             
               
                 
+                  <a class="menuCd LIMS_NOTE"
+                     href="note_write.html">연구노트 작성</a>
+                
+                  <a class="menuCd LIMS_COMPOUND"
+                     href="compound_list.html">화합물 라이브러리</a>
+                
+                  <a class="menuCd LIMS_CHEM"
+                     href="chem_editor.html">구조 입력기</a>
+                
+                  <a class="menuCd LIMS_REAGENT"
+                     href="reagent_list.html">시약/재고 관리</a>
+                
+                  <a class="menuCd LIMS_SCAN"
+                     href="scan.html">바코드 스캔</a>
+                
+                  <a class="menuCd LIMS_LOCATION"
+                     href="location_list.html">보관위치 관리</a>
+                
                   <a class="menuCd MAIN_DASHBOARD"
                      href="#">대시보드 홈</a>
                 
@@ -5978,49 +5996,6 @@
                   <a class="menuCd MAIN_COMPLETED_PROJECT"
                      href="#">완료 프로젝트</a>
                 
-                  <a class="menuCd LIMS_REAGENT"
-                     href="reagent_list.html">시약/재고 관리</a>
-                
-                  <a class="menuCd LIMS_LOCATION"
-                     href="location_list.html">보관위치 관리</a>
-                
-                  <a class="menuCd LIMS_CHEM"
-                     href="chem_editor.html">구조 편집기</a>
-                
-                  <a class="menuCd LIMS_COMPOUND"
-                     href="compound_list.html">화합물 검색</a>
-                
-                  <a class="menuCd LIMS_SCAN"
-                     href="scan.html">바코드 조회</a>
-                
-                  <a class="menuCd LIMS_SAMPLE"
-                     href="sample_list.html">시료 관리</a>
-                
-                  <a class="menuCd LIMS_TEST"
-                     href="test_list.html">시험 의뢰</a>
-                
-                  <a class="menuCd LIMS_OOS"
-                     href="oos_list.html">규격 이탈</a>
-                
-                  <a class="menuCd LIMS_METHOD"
-                     href="method_list.html">분석법 관리</a>
-                
-                  <a class="menuCd LIMS_SPEC"
-                     href="method_list.html">규격 관리</a>
-                
-                  <a class="menuCd LIMS_INSTRUMENT"
-                     href="instrument_list.html">장비 관리</a>
-                
-              
-            
-              
-            
-              
-            
-              
-            
-              
-            
               
             
               
@@ -6076,7 +6051,7 @@
                     <a href="#"
                        class="projectList"
                        onclick="gfn_openProjectDetail(&#39;/eln/project/projectDetails&#39;, &#39;303&#39;)"
-                       data-project-mno="303"><span title="분석법 검증 (KM-3719)">분석법 검증 (KM-3719)</span></a>
+                       data-project-mno="303"><span title="시험법 검증 (KM-3719)">시험법 검증 (KM-3719)</span></a>
                   </li>
                 
                   <li>
@@ -6677,7 +6652,7 @@
                     <table class="table table-sty01" id="tableTestHistory">
                       <thead>
                         <tr class="text-nowrap">
-                          <th class="text-left">의뢰번호</th>
+                          <th class="text-left">요청번호</th>
                           <th class="text-left">시험 항목</th>
                           <th class="text-left">상태</th>
                           <th class="text-left">판정</th>

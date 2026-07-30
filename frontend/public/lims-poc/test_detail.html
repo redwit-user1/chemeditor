@@ -2501,7 +2501,7 @@
       }
 
       /* ---------------------------------------------------------------
-         의뢰 + 항목 조회 (한 번의 호출로 둘 다 받는다)
+         요청 + 항목 조회 (한 번의 호출로 둘 다 받는다)
       --------------------------------------------------------------- */
       function getTestRequestInfo() {
         ajaxPost('/api/lims/test/testRequestInfo', { testReqstMno: gTestReqstMno },
@@ -2578,7 +2578,7 @@
 
         /*
           결정 Q6 — 접수 승인 단계가 없다. 접수자/접수일시는 "첫 담당자 배정"에서 채워지므로,
-          비어 있다는 것은 아직 아무도 이 의뢰를 맡지 않았다는 뜻이다. 그 사실을 문장으로 적는다.
+          비어 있다는 것은 아직 아무도 이 요청을 맡지 않았다는 뜻이다. 그 사실을 문장으로 적는다.
         */
         if (info.receiptDtStr) {
           $('#receiptDisp').html((info.receiptUserNm || '-') + ' · ' + info.receiptDtStr);
@@ -2587,7 +2587,7 @@
             + ' <span class="guidetext-sty01">담당자를 배정하면 접수됩니다.</span>');
         }
 
-        /* 취소는 의뢰자 본인만 할 수 있고, 수행이 시작된 뒤에는 서버가 거절한다. */
+        /* 취소는 요청자 본인만 할 수 있고, 수행이 시작된 뒤에는 서버가 거절한다. */
         const cancelable = (info.testReqstStatusCcd === 'RECEIVED')
           && String(info.reqstUserMno) === String(gLoginUserMno);
         $('#buttonCancelReqst').toggleClass('d-none', !cancelable);
@@ -2659,7 +2659,7 @@
       }
 
       /* ---------------------------------------------------------------
-         선택지 로딩 — 분석법 / 규격 / 담당자
+         선택지 로딩 — 시험법 / 판정기준 / 담당자
          reqAjax 가 동시 요청을 버리므로 반드시 콜백으로 이어 붙인다.
       --------------------------------------------------------------- */
       function loadOptionsOnce(onDone) {
@@ -2754,21 +2754,21 @@
                             title="담당자" required="required">
                       ${userOptionTags(chargeUserMno)}
                     </select>
-                    <div class="flex-sty04"><div class="guidetext-sty01">담당자 배정이 곧 의뢰 접수입니다. 별도 접수 승인 단계는 없습니다.</div></div>
+                    <div class="flex-sty04"><div class="guidetext-sty01">담당자 배정이 곧 요청 접수입니다. 별도 접수 승인 단계는 없습니다.</div></div>
                   </div>
                   <div class="flex-sty05 ma-b20">
-                    <label for="assignMethodMno" class="modal-cont-label">분석법</label>
-                    <select id="assignMethodMno" class="btn btn-xs select-xs select-sty02 wp-100" title="분석법">
-                      ${optionTags(gMethodOptions, methodMno, '분석법 선택')}
+                    <label for="assignMethodMno" class="modal-cont-label">시험법</label>
+                    <select id="assignMethodMno" class="btn btn-xs select-xs select-sty02 wp-100" title="시험법">
+                      ${optionTags(gMethodOptions, methodMno, '시험법 선택')}
                     </select>
-                    <div class="flex-sty04"><div class="guidetext-sty01">여기서 고르는 것은 분석법의 <b>특정 버전</b>입니다. 착수 후 분석법이 개정돼도 이 항목은 고정된 버전을 유지합니다.</div></div>
+                    <div class="flex-sty04"><div class="guidetext-sty01">여기서 고르는 것은 시험법의 <b>특정 버전</b>입니다. 착수 후 시험법이 개정돼도 이 항목은 고정된 버전을 유지합니다.</div></div>
                   </div>
                   <div class="flex-sty05 ma-b20">
-                    <label for="assignSpecMno" class="modal-cont-label">규격</label>
-                    <select id="assignSpecMno" class="btn btn-xs select-xs select-sty02 wp-100" title="규격">
-                      ${optionTags(gSpecOptions, specMno, '규격 선택')}
+                    <label for="assignSpecMno" class="modal-cont-label">판정기준</label>
+                    <select id="assignSpecMno" class="btn btn-xs select-xs select-sty02 wp-100" title="판정기준">
+                      ${optionTags(gSpecOptions, specMno, '판정기준 선택')}
                     </select>
-                    <div class="flex-sty04"><div class="guidetext-sty01">판정 기준입니다. 규격 역시 버전 행을 직접 가리킵니다. (선택)</div></div>
+                    <div class="flex-sty04"><div class="guidetext-sty01">적합·부적합을 가르는 값입니다. 판정기준 역시 버전 행을 직접 가리킵니다. (선택)</div></div>
                   </div>
                   <div class="flex-sty05">
                     <label for="assignPlanDe" class="modal-cont-label">수행 예정일</label>
@@ -2835,19 +2835,19 @@
                     <label for="newItemNm" class="modal-cont-label">시험 항목명</label>
                     <input type="text" id="newItemNm" maxlength="256"
                            class="input-write-sty02-line" title="시험 항목명" required="required" />
-                    <div class="flex-sty04"><div class="guidetext-sty01">정렬 순번은 의뢰 내 마지막 다음 값으로 자동 부여됩니다.</div></div>
+                    <div class="flex-sty04"><div class="guidetext-sty01">정렬 순번은 요청 내 마지막 다음 값으로 자동 부여됩니다.</div></div>
                   </div>
                   <div class="flex-sty05 ma-b20">
-                    <label for="newItemMethodMno" class="modal-cont-label">분석법</label>
-                    <select id="newItemMethodMno" class="btn btn-xs select-xs select-sty02 wp-100" title="분석법">
-                      ${optionTags(gMethodOptions, '', '분석법 선택')}
+                    <label for="newItemMethodMno" class="modal-cont-label">시험법</label>
+                    <select id="newItemMethodMno" class="btn btn-xs select-xs select-sty02 wp-100" title="시험법">
+                      ${optionTags(gMethodOptions, '', '시험법 선택')}
                     </select>
                     <div class="flex-sty04"><div class="guidetext-sty01">버전 행을 직접 가리킵니다. (선택)</div></div>
                   </div>
                   <div class="flex-sty05 ma-b20">
-                    <label for="newItemSpecMno" class="modal-cont-label">규격</label>
-                    <select id="newItemSpecMno" class="btn btn-xs select-xs select-sty02 wp-100" title="규격">
-                      ${optionTags(gSpecOptions, '', '규격 선택')}
+                    <label for="newItemSpecMno" class="modal-cont-label">판정기준</label>
+                    <select id="newItemSpecMno" class="btn btn-xs select-xs select-sty02 wp-100" title="판정기준">
+                      ${optionTags(gSpecOptions, '', '판정기준 선택')}
                     </select>
                     <div class="flex-sty04"><div class="guidetext-sty01">판정 기준입니다. (선택)</div></div>
                   </div>
@@ -2944,7 +2944,7 @@
 
       function startTestItem(testItemMno, testItemNm) {
         openModalConfirm('시험 착수', testItemNm,
-          '이 시험 항목을 수행중으로 옮깁니다. 의뢰가 접수 상태였다면 시험중으로 함께 이동합니다.',
+          '이 시험 항목을 수행중으로 옮깁니다. 요청이 접수 상태였다면 시험중으로 함께 이동합니다.',
           function () {
             postItemAction('/api/lims/test/startTestItem', testItemMno, '착수했습니다.');
           });
@@ -2956,7 +2956,7 @@
           : '아직 입력된 결과가 없습니다. 결과 없이 완료하면 최종 판정이 비어 있는 상태로 남습니다.';
 
         openModalConfirm('시험 완료 선언', testItemNm,
-          guide + ' 결과 저장과는 별개의 조작이며 되돌릴 수 없습니다. 남은 미완료 항목이 없으면 의뢰도 함께 완료됩니다.',
+          guide + ' 결과 저장과는 별개의 조작이며 되돌릴 수 없습니다. 남은 미완료 항목이 없으면 요청도 함께 완료됩니다.',
           function () {
             postItemAction('/api/lims/test/completeTestItem', testItemMno, '완료 처리했습니다.');
           });
@@ -2964,7 +2964,7 @@
 
       function unassignTestItem(testItemMno, testItemNm) {
         openModalConfirm('배정 해제', testItemNm,
-          '담당자 배정을 해제하고 대기 상태로 되돌립니다. 분석법·규격 선택은 유지되며, 이미 기록된 접수 일시는 되돌리지 않습니다.',
+          '담당자 배정을 해제하고 대기 상태로 되돌립니다. 시험법·판정기준 선택은 유지되며, 이미 기록된 접수 일시는 되돌리지 않습니다.',
           function () {
             postItemAction('/api/lims/test/unassignTestItem', testItemMno, '배정을 해제했습니다.');
           });
@@ -2979,8 +2979,8 @@
       }
 
       function cancelTestRequest() {
-        openModalConfirm('의뢰 취소', gReqstInfo.testReqstNo || '',
-          '의뢰와 남아 있는 미완료 항목을 모두 취소합니다. 이미 수행이 시작된 항목이 있으면 서버가 거절합니다.',
+        openModalConfirm('요청 취소', gReqstInfo.testReqstNo || '',
+          '요청과 남아 있는 미완료 항목을 모두 취소합니다. 이미 수행이 시작된 항목이 있으면 서버가 거절합니다.',
           function () {
             ajaxPost('/api/lims/test/cancelTestRequest', { testReqstMno: gTestReqstMno },
               '데이터요청중입니다.잠시만 기다려주세요.',
@@ -2989,7 +2989,7 @@
                   return;
                 }
                 $('#modal-lims-test-confirm').modal('hide');
-                S2Util.toasts('의뢰를 취소했습니다.', { class: 'Toast-bottom-web' });
+                S2Util.toasts('요청을 취소했습니다.', { class: 'Toast-bottom-web' });
                 getTestRequestInfo();
               });
           });
@@ -5633,6 +5633,24 @@
             
               
                 
+                  <a class="menuCd LIMS_NOTE"
+                     href="note_write.html">연구노트 작성</a>
+                
+                  <a class="menuCd LIMS_COMPOUND"
+                     href="compound_list.html">화합물 라이브러리</a>
+                
+                  <a class="menuCd LIMS_CHEM"
+                     href="chem_editor.html">구조 입력기</a>
+                
+                  <a class="menuCd LIMS_REAGENT"
+                     href="reagent_list.html">시약/재고 관리</a>
+                
+                  <a class="menuCd LIMS_SCAN"
+                     href="scan.html">바코드 스캔</a>
+                
+                  <a class="menuCd LIMS_LOCATION"
+                     href="location_list.html">보관위치 관리</a>
+                
                   <a class="menuCd MAIN_DASHBOARD"
                      href="#">대시보드 홈</a>
                 
@@ -5645,49 +5663,6 @@
                   <a class="menuCd MAIN_COMPLETED_PROJECT"
                      href="#">완료 프로젝트</a>
                 
-                  <a class="menuCd LIMS_REAGENT"
-                     href="reagent_list.html">시약/재고 관리</a>
-                
-                  <a class="menuCd LIMS_LOCATION"
-                     href="location_list.html">보관위치 관리</a>
-                
-                  <a class="menuCd LIMS_CHEM"
-                     href="chem_editor.html">구조 편집기</a>
-                
-                  <a class="menuCd LIMS_COMPOUND"
-                     href="compound_list.html">화합물 검색</a>
-                
-                  <a class="menuCd LIMS_SCAN"
-                     href="scan.html">바코드 조회</a>
-                
-                  <a class="menuCd LIMS_SAMPLE"
-                     href="sample_list.html">시료 관리</a>
-                
-                  <a class="menuCd LIMS_TEST"
-                     href="test_list.html">시험 의뢰</a>
-                
-                  <a class="menuCd LIMS_OOS"
-                     href="oos_list.html">규격 이탈</a>
-                
-                  <a class="menuCd LIMS_METHOD"
-                     href="method_list.html">분석법 관리</a>
-                
-                  <a class="menuCd LIMS_SPEC"
-                     href="method_list.html">규격 관리</a>
-                
-                  <a class="menuCd LIMS_INSTRUMENT"
-                     href="instrument_list.html">장비 관리</a>
-                
-              
-            
-              
-            
-              
-            
-              
-            
-              
-            
               
             
               
@@ -5743,7 +5718,7 @@
                     <a href="#"
                        class="projectList"
                        onclick="gfn_openProjectDetail(&#39;/eln/project/projectDetails&#39;, &#39;303&#39;)"
-                       data-project-mno="303"><span title="분석법 검증 (KM-3719)">분석법 검증 (KM-3719)</span></a>
+                       data-project-mno="303"><span title="시험법 검증 (KM-3719)">시험법 검증 (KM-3719)</span></a>
                   </li>
                 
                   <li>
@@ -6149,19 +6124,19 @@
           <nav class="lims-crumb">
             <a href="index.html">LIMS</a>
             <span class="sep">/</span>
-            <a href="test_list.html">시험 의뢰</a>
+            <a href="test_list.html">시험 요청</a>
             <span class="sep">/</span>
-            <span>의뢰 상세</span>
+            <span>요청 상세</span>
           </nav>
-          <h2 class="lims-title">시험 의뢰 상세</h2>
-          <p class="lims-head-desc">항목마다 분석법·규격 버전을 고정합니다. 착수한 시험은 분석법이 개정돼도 착수 시점 버전을 계속 씁니다.</p>
+          <h2 class="lims-title">시험 요청 상세</h2>
+          <p class="lims-head-desc">항목마다 시험법·판정기준 버전을 고정합니다. 착수한 시험은 시험법이 개정돼도 착수 시점 버전을 계속 씁니다.</p>
         </div>
         <div class="lims-head-actions">
           <button class="button-gray-line-sty01"
           onclick="goTestRequestList();"><span>목록</span></button>
           <button class="button-gray-line-sty01 d-none"
           id="buttonCancelReqst"
-          onclick="cancelTestRequest();"><span>의뢰 취소</span></button>
+          onclick="cancelTestRequest();"><span>요청 취소</span></button>
         </div>
       </header>
 
@@ -6169,7 +6144,7 @@
         
         <div class="lims-prop-bar ma-t20">
           <div class="prop-item">
-            <span class="prop-label">의뢰번호</span>
+            <span class="prop-label">요청번호</span>
             <span class="prop-value" id="reqstNoDisp">-</span>
           </div>
           <div class="prop-item">
@@ -6180,7 +6155,7 @@
             <span id="urgentDisp"></span>
           </div>
           <div class="lims-prop-status">
-            <span class="guidetext-sty01">의뢰 상태는 시험 항목 상태에서 자동으로 파생됩니다. 직접 바꾸지 않습니다.</span>
+            <span class="guidetext-sty01">요청 상태는 시험 항목 상태에서 자동으로 파생됩니다. 직접 바꾸지 않습니다.</span>
           </div>
         </div>
 
@@ -6199,7 +6174,7 @@
                         <td class="text-left" id="purposeDisp">-</td>
                       </tr>
                       <tr>
-                        <th class="text-left">의뢰자</th>
+                        <th class="text-left">요청자</th>
                         <td class="text-left" id="reqstUserDisp">-</td>
                         <th class="text-left">접수</th>
                         <td class="text-left" id="receiptDisp">-</td>
@@ -6211,7 +6186,7 @@
                         <td class="text-left" id="projectDisp">-</td>
                       </tr>
                       <tr>
-                        <th class="text-left">의뢰 일시</th>
+                        <th class="text-left">요청 일시</th>
                         <td class="text-left" id="createDtDisp">-</td>
                         <th class="text-left">완료 일시</th>
                         <td class="text-left" id="completeDtDisp">-</td>
@@ -6259,8 +6234,8 @@
                         <tr class="text-nowrap">
                           <th class="num">순번</th>
                           <th class="text-left">시험 항목</th>
-                          <th class="text-left">분석법 (버전)</th>
-                          <th class="text-left">규격 (버전)</th>
+                          <th class="text-left">시험법 (버전)</th>
+                          <th class="text-left">판정기준 (버전)</th>
                           <th class="text-left">담당자</th>
                           <th class="text-left">예정일</th>
                           <th class="lims-num">결과</th>

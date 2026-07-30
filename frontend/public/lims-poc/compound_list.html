@@ -2486,7 +2486,7 @@
     <script type="text/javascript">
       /*<![CDATA[*/
 
-      /* 구조 편집기 임베드 URL. 비어 있으면 구조 검색으로 진입할 수 없다. */
+      /* 구조 입력기 임베드 URL. 비어 있으면 구조 검색으로 진입할 수 없다. */
       const gChemEmbedUrl = '/lims/chem/chemPopup';
 
       /* 현재 화면에 그려진 카드들. 썸네일 렌더링에 MOL블록이 필요해 목록과 함께 보관한다. */
@@ -2510,7 +2510,7 @@
             사유를 화면에 남긴다.
           */
           $('#btnStructureSearch').prop('disabled', true);
-          $('#structureSearchGuide').text('구조 편집기 주소(lims.chem.embed.url)가 설정되지 않아 구조 검색을 사용할 수 없습니다. 관리자에게 문의하세요.');
+          $('#structureSearchGuide').text('구조 입력기 주소(lims.chem.embed.url)가 설정되지 않아 구조 검색을 사용할 수 없습니다. 관리자에게 문의하세요.');
         }
         getCompoundList();
       }
@@ -2544,8 +2544,8 @@
       }
 
       /* ---------------------------------------------------------------
-         구조 검색 — 구조 편집기 팝업이 되돌려준 구조로 Chem Service 를 조회한다.
-         구조 편집기(embed 계약)는 SMILES 가 아니라 MOL블록(molfile)을 내려주며,
+         구조 검색 — 구조 입력기 팝업이 되돌려준 구조로 Chem Service 를 조회한다.
+         구조 입력기(embed 계약)는 SMILES 가 아니라 MOL블록(molfile)을 내려주며,
          searchByStructure 는 MOL블록/SMILES 를 모두 받는다.
       --------------------------------------------------------------- */
       function openStructureSearch() {
@@ -2560,7 +2560,7 @@
       }
 
       /*
-        구조 편집기 팝업이 호출하는 진입점이다. (opener 측 전역 함수)
+        구조 입력기 팝업이 호출하는 진입점이다. (opener 측 전역 함수)
         structure: MOL블록, formula: 표시용 분자식
       */
       window.limsApplyStructureQuery = function (structure, formula) {
@@ -5564,6 +5564,24 @@
             
               
                 
+                  <a class="menuCd LIMS_NOTE"
+                     href="note_write.html">연구노트 작성</a>
+                
+                  <a class="menuCd LIMS_COMPOUND active"
+                     href="compound_list.html">화합물 라이브러리</a>
+                
+                  <a class="menuCd LIMS_CHEM"
+                     href="chem_editor.html">구조 입력기</a>
+                
+                  <a class="menuCd LIMS_REAGENT"
+                     href="reagent_list.html">시약/재고 관리</a>
+                
+                  <a class="menuCd LIMS_SCAN"
+                     href="scan.html">바코드 스캔</a>
+                
+                  <a class="menuCd LIMS_LOCATION"
+                     href="location_list.html">보관위치 관리</a>
+                
                   <a class="menuCd MAIN_DASHBOARD"
                      href="#">대시보드 홈</a>
                 
@@ -5576,49 +5594,6 @@
                   <a class="menuCd MAIN_COMPLETED_PROJECT"
                      href="#">완료 프로젝트</a>
                 
-                  <a class="menuCd LIMS_REAGENT"
-                     href="reagent_list.html">시약/재고 관리</a>
-                
-                  <a class="menuCd LIMS_LOCATION"
-                     href="location_list.html">보관위치 관리</a>
-                
-                  <a class="menuCd LIMS_CHEM"
-                     href="chem_editor.html">구조 편집기</a>
-                
-                  <a class="menuCd LIMS_COMPOUND active"
-                     href="compound_list.html">화합물 검색</a>
-                
-                  <a class="menuCd LIMS_SCAN"
-                     href="scan.html">바코드 조회</a>
-                
-                  <a class="menuCd LIMS_SAMPLE"
-                     href="sample_list.html">시료 관리</a>
-                
-                  <a class="menuCd LIMS_TEST"
-                     href="test_list.html">시험 의뢰</a>
-                
-                  <a class="menuCd LIMS_OOS"
-                     href="oos_list.html">규격 이탈</a>
-                
-                  <a class="menuCd LIMS_METHOD"
-                     href="method_list.html">분석법 관리</a>
-                
-                  <a class="menuCd LIMS_SPEC"
-                     href="method_list.html">규격 관리</a>
-                
-                  <a class="menuCd LIMS_INSTRUMENT"
-                     href="instrument_list.html">장비 관리</a>
-                
-              
-            
-              
-            
-              
-            
-              
-            
-              
-            
               
             
               
@@ -5674,7 +5649,7 @@
                     <a href="#"
                        class="projectList"
                        onclick="gfn_openProjectDetail(&#39;/eln/project/projectDetails&#39;, &#39;303&#39;)"
-                       data-project-mno="303"><span title="분석법 검증 (KM-3719)">분석법 검증 (KM-3719)</span></a>
+                       data-project-mno="303"><span title="시험법 검증 (KM-3719)">시험법 검증 (KM-3719)</span></a>
                   </li>
                 
                   <li>
@@ -6080,9 +6055,9 @@
           <nav class="lims-crumb">
             <a href="index.html">LIMS</a>
             <span class="sep">/</span>
-            <span>화합물 검색</span>
+            <span>화합물 라이브러리</span>
           </nav>
-          <h2 class="lims-title">화합물 검색</h2>
+          <h2 class="lims-title">화합물 라이브러리</h2>
           <p class="lims-head-desc">구조를 그리거나 붙여넣어 부분구조·유사도로 검색합니다. 분자식·분자량은 RDKit 이 계산합니다.</p>
         </div>
       </header>
@@ -6119,7 +6094,7 @@
 
         <div class="flex-sty04 ma-t10">
           <div class="guidetext-sty01"
-               id="structureSearchGuide">구조 검색을 누르면 구조 편집기가 열립니다. 구조를 그리거나 붙여넣은 뒤 "이 구조로 검색"을 누르면 부분구조가 일치하는 화합물을 찾습니다. 화합물 라이브러리는 등록번호·분자식으로 관리되며 별도의 화합물명은 보관하지 않습니다.</div>
+               id="structureSearchGuide">구조 검색을 누르면 구조 입력기가 열립니다. 구조를 그리거나 붙여넣은 뒤 "이 구조로 검색"을 누르면 부분구조가 일치하는 화합물을 찾습니다. 화합물 라이브러리는 등록번호·분자식으로 관리되며 별도의 화합물명은 보관하지 않습니다.</div>
         </div>
 
         

@@ -31,7 +31,8 @@
     '/lims/location/locationList': 'location_list.html',
     '/lims/compound/compoundList': 'compound_list.html',
     '/lims/container/scan': 'scan.html',
-    '/lims/chem/chemPopup': 'chem_editor.html'
+    '/lims/chem/chemPopup': 'chem_editor.html',
+    '/lims/note/noteWrite': 'note_write.html'
   };
 
   function toStaticUrl(url) {
@@ -109,7 +110,7 @@
       aliquotCnt: 6, activeAliquotCnt: 4, depthNo: 1, parentSampleNo: null },
     { sampleMno: 5004, sampleNo: 'SMP-20260628-003', sampleNm: 'KM00003719 표준품',
       sampleTpCcd: 'COMPOUND', sampleSrcCcd: 'PURCHASE', sampleStatusCcd: 'STORED',
-      projectMno: 303, projectNm: '분석법 검증 (KM-3719)', receiveDt: '2026-06-28',
+      projectMno: 303, projectNm: '시험법 검증 (KM-3719)', receiveDt: '2026-06-28',
       aliquotCnt: 1, activeAliquotCnt: 1, depthNo: 1, parentSampleNo: null },
     { sampleMno: 5005, sampleNo: 'SMP-20260601-009', sampleNm: 'KM00003722 안정성 검체',
       sampleTpCcd: 'COMPOUND', sampleSrcCcd: 'INTERNAL', sampleStatusCcd: 'TESTED',
@@ -157,7 +158,7 @@
     { testItemMno: 8003, testReqstMno: 7002, testReqstNo: 'TR-20260710-01', testItemNm: '잔류용매 (GC)',
       methodNm: 'M-GC-002', methodVerNo: 2, planDe: '20260728', resultCnt: 2,
       sampleMno: 5003, sampleNo: 'SMP-20260705-014', sampleNm: 'HepG2 세포용해물 (P12)',
-      testItemStatusCcd: 'OOS_HOLD', testItemStatusCcdNm: '규격이탈', urgentYn: 'N' }
+      testItemStatusCcd: 'OOS_HOLD', testItemStatusCcdNm: '기준이탈', urgentYn: 'N' }
   ];
 
   var REQUESTS = [
@@ -170,7 +171,7 @@
       testReqstStatusCcd: 'IN_PROGRESS', testReqstStatusCcdNm: '시험중', hopeDe: '20260728',
       reqstUserNm: '박연구', itemCnt: 2, doneItemCnt: 0, waitingItemCnt: 0, oosItemCnt: 1, urgentYn: 'N' },
     { testReqstMno: 7003, testReqstNo: 'TR-20260702-03', sampleMno: 5004, sampleNo: 'SMP-20260628-003',
-      sampleNm: 'KM00003719 표준품', testPurposeCcd: 'VALIDATION', testPurposeCcdNm: '분석법검증',
+      sampleNm: 'KM00003719 표준품', testPurposeCcd: 'VALIDATION', testPurposeCcdNm: '시험법 검증',
       testReqstStatusCcd: 'DONE', testReqstStatusCcdNm: '완료', hopeDe: '20260715',
       reqstUserNm: '김연구', itemCnt: 4, doneItemCnt: 4, waitingItemCnt: 0, oosItemCnt: 0, urgentYn: 'N' },
     { testReqstMno: 7004, testReqstNo: 'TR-20260729-01', sampleMno: 5002, sampleNo: 'SMP-20260712-002',
@@ -229,10 +230,10 @@
       verNo: 4, verCnt: 4, inProgressCnt: 0 }
   ];
 
-  /* 규격 마스터의 판정 유형 컬럼명은 judgeTpCcd 다.
+  /* 판정기준 마스터의 판정 유형 컬럼명은 judgeTpCcd 다.
      결과 행에 박히는 스냅샷 컬럼(specJudgeTpCcd) 과 이름이 다르므로 섞지 않는다. */
-  /* 규격 목록 화면은 코드(specCd)와 시험 항목명(testItemNm)을 함께 읽는다.
-     specNm 만 채우면 규격 코드 칸이 undefined 로 찍힌다. */
+  /* 판정기준 목록 화면은 코드(specCd)와 시험 항목명(testItemNm)을 함께 읽는다.
+     specNm 만 채우면 판정기준 코드 칸이 undefined 로 찍힌다. */
   var SPECS = [
     { specMno: 501, specCd: 'SPEC-3710-PURITY', specNm: 'SPEC-3710-순도',
       testItemNm: 'HPLC 순도', verNo: 2, specStatusCcd: 'ACTIVE',
@@ -281,13 +282,33 @@
       level: 2, barcodePrefix: 'L2-S1', temperature: '25℃', containerCnt: 7 }
   ];
 
+  /*
+    시약 마스터. CAS·MSDS 는 재단이 직접 지목한 항목이다 —
+    "MSDS / CAS 번호 다 외부에 있는데 … 내부망에서 관리할 수 있는 방법을 찾아주었으면".
+    외부 출처(공급사·안전보건공단)에서 받아 내부에 보관한다는 것을 화면에서 보이게 하려고
+    출처와 동기화 시각을 함께 둔다.
+  */
   var REAGENTS = [
     { reagentMno: 201, reagentNm: '아세토니트릴 (HPLC grade)', casNo: '75-05-8', molFormula: 'C2H3N',
-      molWt: 41.05, density: 0.786, ghsCcd: 'GHS02', containerCnt: 4, totalAmountDisp: '3.2 L' },
+      molWt: 41.05, density: 0.786, ghsCcd: 'GHS02', containerCnt: 4, totalAmountDisp: '3.2 L',
+      vendorNm: 'Sigma-Aldrich', msdsYn: 'Y', msdsSrc: '공급사', msdsSyncDtStr: '2026-06-30',
+      storageCondNm: '상온 · 인화성' },
     { reagentMno: 202, reagentNm: '5-메톡시트립타민', casNo: '608-07-1', molFormula: 'C11H14N2O',
-      molWt: 190.24, density: null, ghsCcd: 'GHS07', containerCnt: 2, totalAmountDisp: '4.1 g' },
+      molWt: 190.24, density: null, ghsCcd: 'GHS07', containerCnt: 2, totalAmountDisp: '4.1 g',
+      vendorNm: 'TCI', msdsYn: 'Y', msdsSrc: '안전보건공단', msdsSyncDtStr: '2026-05-18',
+      storageCondNm: '냉장 2~8℃' },
     { reagentMno: 203, reagentNm: '트리에틸아민', casNo: '121-44-8', molFormula: 'C6H15N',
-      molWt: 101.19, density: 0.726, ghsCcd: 'GHS02', containerCnt: 1, totalAmountDisp: '500 mL' }
+      molWt: 101.19, density: 0.726, ghsCcd: 'GHS02', containerCnt: 1, totalAmountDisp: '500 mL',
+      vendorNm: 'Alfa Aesar', msdsYn: 'N', msdsSrc: null, msdsSyncDtStr: null,
+      storageCondNm: '상온 · 인화성' },
+    { reagentMno: 204, reagentNm: '디클로로메탄', casNo: '75-09-2', molFormula: 'CH2Cl2',
+      molWt: 84.93, density: 1.326, ghsCcd: 'GHS08', containerCnt: 3, totalAmountDisp: '2.5 L',
+      vendorNm: 'Merck', msdsYn: 'Y', msdsSrc: '공급사', msdsSyncDtStr: '2026-07-02',
+      storageCondNm: '상온 · 환기' },
+    { reagentMno: 205, reagentNm: '탄산칼륨 (무수)', casNo: '584-08-7', molFormula: 'K2CO3',
+      molWt: 138.21, density: null, ghsCcd: 'GHS07', containerCnt: 2, totalAmountDisp: '1.8 kg',
+      vendorNm: 'Daejung', msdsYn: 'Y', msdsSrc: '공급사', msdsSyncDtStr: '2026-04-11',
+      storageCondNm: '건조 · 밀폐' }
   ];
 
   var CONTAINERS = [
@@ -313,6 +334,69 @@
   (window.LIMS_POC_COMPOUNDS || []).forEach(function (c) {
     DEPICT_BY_MOLBLOCK[c.molblock] = c.svg;
   });
+
+  /* 구조 문자열 → RDKit 계산값·그림. mkcompounds.py 가 미리 돌려 둔 것이다.
+     브라우저에는 RDKit 이 없으므로 여기서 계산할 방법이 없고, 없는 값을 지어내면
+     화면에 틀린 화학이 걸린다. 그래서 아는 구조만 답하고 나머지는 모른다고 말한다. */
+  var PROP_ENTRIES = window.LIMS_POC_PROP_ENTRIES || [];
+  var PROP_KEYS = window.LIMS_POC_PROPS || {};
+
+  function lookupStructure(structure) {
+    if (!structure) return null;
+    var idx = PROP_KEYS[String(structure).trim()];
+    return (idx === undefined || idx === null) ? null : PROP_ENTRIES[idx];
+  }
+
+  /* ---------------------------------------------------------------
+     연구노트 작성 화면 (PoC 메인).
+
+     빈 노트로 열면 화면이 빈 블록 골격만 세운다. 그러면 시연 첫 화면에
+     "구조를 넣으면 계산된다"는 이 PoC 의 요점이 보이지 않는다. 그래서
+     구조 하나와 반응 시약 표가 이미 들어 있는 노트를 연다 —
+     분자식·분자량은 mkcompounds.py 가 RDKit 으로 계산한 값 그대로다.
+  --------------------------------------------------------------- */
+  var NOTE = {
+    noteMno: 9101, noteNm: 'KM00003710 합성 — batch A',
+    projectMno: 301, projectNm: '표적단백질 저해제 발굴',
+    writerNm: '이연구', writeDtStr: '2026-07-12 17:40', statusCcd: 'WRITING'
+  };
+
+  var NOTE_SEED = (window.LIMS_POC_COMPOUNDS || [])[0] || {};
+
+  var NOTE_BLOCKS = [
+    { blockMno: 1, blockOrd: 1, blockTpCcd: 'TEXT',
+      textVal: '인돌 아민(KM00003719)과 4-벤질옥시벤조산을 EDC/HOBt 조건에서 커플링했다.\n'
+        + 'DCM 20 mL, 0 °C 에서 30분 교반 후 상온으로 올려 밤새 반응시켰다.' },
+    { blockMno: 2, blockOrd: 2, blockTpCcd: 'STRUCTURE',
+      molblock: NOTE_SEED.molblock || '',
+      molFormula: NOTE_SEED.molFormula || '',
+      molWt: NOTE_SEED.molWt === undefined ? null : NOTE_SEED.molWt,
+      exactMolWt: NOTE_SEED.exactMolWt === undefined ? null : NOTE_SEED.exactMolWt,
+      caption: '목적물 ' + (NOTE_SEED.regId || '') },
+    { blockMno: 3, blockOrd: 3, blockTpCcd: 'TABLE', caption: '반응 시약',
+      rowList: [
+        { reagentMno: 205, reagentNm: '탄산칼륨 (무수)', casNo: '584-08-7', molFormula: 'K2CO3',
+          molWt: 138.21, density: null, roleCcd: 'REACTANT', amount: 276, unitCcd: 'MG' },
+        { reagentMno: 203, reagentNm: '트리에틸아민', casNo: '121-44-8', molFormula: 'C6H15N',
+          molWt: 101.19, density: 0.726, roleCcd: 'REAGENT', amount: 0.42, unitCcd: 'ML' },
+        { reagentMno: 204, reagentNm: '디클로로메탄', casNo: '75-09-2', molFormula: 'CH2Cl2',
+          molWt: 84.93, density: 1.326, roleCcd: 'SOLVENT', amount: 20, unitCcd: 'ML' }
+      ] }
+  ];
+
+  var nextBlockMno = 4;
+
+  var NOTE_USAGE = [
+    { reagentNm: '디클로로메탄', barcode: 'RGT-000304', deltaAmount: -20, unitCcd: 'mL',
+      txnDtStr: '2026-07-12 10:02', txnUserNm: '이연구', noteNm: NOTE.noteNm,
+      expiryOverrideYn: 'N', reason: null },
+    { reagentNm: '트리에틸아민', barcode: 'RGT-000305', deltaAmount: -0.42, unitCcd: 'mL',
+      txnDtStr: '2026-07-12 10:05', txnUserNm: '이연구', noteNm: NOTE.noteNm,
+      expiryOverrideYn: 'N', reason: null },
+    { reagentNm: '탄산칼륨 (무수)', barcode: 'RGT-000302', deltaAmount: -276, unitCcd: 'mg',
+      txnDtStr: '2026-07-12 10:07', txnUserNm: '이연구', noteNm: NOTE.noteNm,
+      expiryOverrideYn: 'Y', reason: '유효기한 경과 — 책임자 승인 후 사용' }
+  ];
 
   var SAMPLE_NOTES = [
     { noteMno: 9101, noteNm: 'KM00003710 합성 — batch A', projectNm: '표적단백질 저해제 발굴',
@@ -370,7 +454,7 @@
       return { optionList: [
         { projectMno: 301, projectNm: '표적단백질 저해제 발굴' },
         { projectMno: 302, projectNm: '간독성 스크리닝' },
-        { projectMno: 303, projectNm: '분석법 검증 (KM-3719)' },
+        { projectMno: 303, projectNm: '시험법 검증 (KM-3719)' },
         { projectMno: 304, projectNm: '장기 안정성 시험' }
       ] };
     },
@@ -411,7 +495,7 @@
       };
     },
     '/api/lims/test/sampleTestHistory': function () {
-      // 이력 표는 의뢰번호와 완료일시도 보여준다. 항목 데이터에 그 둘을 얹는다.
+      // 이력 표는 요청번호와 완료일시도 보여준다. 항목 데이터에 그 둘을 얹는다.
       return { testHistoryList: TEST_ITEMS.map(function (i) {
         return Object.assign({ testReqstMno: 7001, testReqstNo: 'TR-20260713-02', completeDt: null }, i);
       }) };
@@ -541,7 +625,25 @@
     '/api/lims/compound/searchByStructure': function () { return { compoundList: COMPOUNDS.slice(0, 2) }; },
     '/api/lims/compound/compoundDetail': function () { return { compound: COMPOUNDS[0], noteList: [] }; },
     '/api/lims/chem/depict': function (p) {
-      return { depict: DEPICT_BY_MOLBLOCK[p.structure] || PLACEHOLDER_SVG };
+      var hit = lookupStructure(p.structure);
+      return { depict: DEPICT_BY_MOLBLOCK[p.structure] || (hit && hit.svg) || PLACEHOLDER_SVG };
+    },
+    /*
+      이 PoC 의 메인 기능이 지나는 길이다 — 구조가 들어오면 분자식·분자량이 나온다.
+      실서비스는 여기서 RDKit(FastAPI)을 부른다. 프로토타입은 그 계산을 빌드 때
+      미리 돌려 둔 표에서 찾는다.
+
+      모르는 구조에는 빈 properties 를 돌려준다. 화면은 그걸 "해석 실패"로 적는데,
+      실제로는 데모 데이터에 없을 뿐이라 사실과 다르게 읽힌다. 그래서 토스트로
+      진짜 사유를 함께 말한다.
+    */
+    '/api/lims/chem/properties': function (p) {
+      var hit = lookupStructure(p.structure);
+      if (!hit) {
+        toast('데모 데이터에 없는 구조입니다. 실서버에서는 RDKit 이 그 자리에서 계산합니다.');
+        return { properties: {} };
+      }
+      return { properties: hit.properties };
     },
 
     '/api/lims/project/projectReagentUsage': function () {
@@ -551,10 +653,47 @@
           noteNm: 'HPLC 순도 분석', expiryOverrideYn: 'N', reason: null }
       ] };
     },
+    /* 연구노트 작성 화면의 오른쪽 패널. 노트 ↔ 재고 이력이 이어져 있다는 사실이
+       이 목록으로 보인다(시약을 쓰면 그 기록이 노트에 남는다). */
+    '/api/lims/project/noteReagentUsage': function () {
+      return { usageList: NOTE_USAGE };
+    },
     '/api/lims/project/projectCompoundList': function () { return { compoundList: COMPOUNDS.slice(0, 2) }; },
 
     '/api/lims/stoich/projectStoich': function () { return { stoich: { usageList: [] } }; },
-    '/api/lims/stoich/noteStoich': function () { return { stoich: { usageList: [] } }; }
+    '/api/lims/stoich/noteStoich': function () { return { stoich: { usageList: [] } }; },
+
+    '/api/lims/note/noteDetail': function () {
+      return { note: NOTE, blockList: NOTE_BLOCKS };
+    },
+    /*
+      블록 저장. 화면은 블록 수만큼 이 경로를 순서대로 부르고, 새 블록에는
+      blockMno 가 없어 채번 결과를 되돌려받는다. 여기서 상태를 실제로 갱신해야
+      "저장했다고 나오는데 다시 열면 없다"가 되지 않는다.
+    */
+    '/api/lims/note/saveBlock': function (p) {
+      var ord = Number(p.blockOrd) || (NOTE_BLOCKS.length + 1);
+      var rows = [];
+      if (p.rowsJson) {
+        try { rows = JSON.parse(p.rowsJson) || []; } catch (e) { rows = []; }
+      }
+      var block = {
+        blockMno: Number(p.blockMno) || nextBlockMno++,
+        blockOrd: ord,
+        blockTpCcd: p.blockTpCcd || 'TEXT',
+        textVal: p.textVal || '',
+        molblock: p.molblock || '',
+        molFormula: p.molFormula || '',
+        molWt: p.molWt === '' || p.molWt === undefined ? null : Number(p.molWt),
+        exactMolWt: p.exactMolWt === '' || p.exactMolWt === undefined ? null : Number(p.exactMolWt),
+        caption: p.caption || '',
+        rowList: rows
+      };
+      var at = NOTE_BLOCKS.findIndex(function (b) { return b.blockMno === block.blockMno; });
+      if (at < 0) { NOTE_BLOCKS.push(block); } else { NOTE_BLOCKS[at] = block; }
+      NOTE_BLOCKS.sort(function (a, b) { return a.blockOrd - b.blockOrd; });
+      return { blockMno: block.blockMno, noteMno: NOTE.noteMno };
+    }
   };
 
   /* 사용자 선택 팝업 — 여러 화면이 같은 응답 키를 쓴다. */
@@ -694,7 +833,7 @@
     var hit = findBy([
       { projectMno: 301, projectNm: '표적단백질 저해제 발굴' },
       { projectMno: 302, projectNm: '간독성 스크리닝' },
-      { projectMno: 303, projectNm: '분석법 검증 (KM-3719)' },
+      { projectMno: 303, projectNm: '시험법 검증 (KM-3719)' },
       { projectMno: 304, projectNm: '장기 안정성 시험' }
     ], 'projectMno', mno);
     return hit ? hit.projectNm : null;
@@ -705,7 +844,7 @@
     return hit ? hit.fullPathNm : LOCATIONS[2].fullPathNm;
   }
 
-  /* 규격 판정 — 화면이 보여주는 규칙(경계값 포함, 소수 자리 반올림)과 같게 계산한다. */
+  /* 판정 — 화면이 보여주는 규칙(경계값 포함, 소수 자리 반올림)과 같게 계산한다. */
   function judgeAgainstSpec(rawVal, spec) {
     var v = parseFloat(rawVal);
     if (isNaN(v) || !spec) return 'NA';
@@ -806,9 +945,9 @@
       전역 어휘 스코프의 이름을 직접 본다.
     */
     /*
-      window.open 으로 여는 구조 편집기 팝업.
+      window.open 으로 여는 구조 입력기 팝업.
       프로토타입에는 서버 라우트가 없어 팝업이 빈 창으로 뜬다. 같은 창에서
-      구조 편집기 화면으로 보내 시연 흐름이 끊기지 않게 한다.
+      구조 입력기 화면으로 보내 시연 흐름이 끊기지 않게 한다.
     */
     var origOpen = window.open;
     window.open = function (url) {
@@ -874,7 +1013,7 @@
   }
 
   /* ---------------------------------------------------------------
-     구조 편집기 — 실서비스는 Ketcher 를 iframe 으로 띄운다.
+     구조 입력기 — 실서비스는 Ketcher 를 iframe 으로 띄운다.
      프로토타입에는 그 서버가 없어 빈 프레임만 남았다. 재단이 "메인 기능"으로
      지목한 것이 바로 이 화면(구조를 넣으면 분자식·분자량이 즉시 나온다)이므로,
      빈 채로 두지 않고 RDKit 이 미리 그려 둔 구조와 계산값으로 대신 보여준다.
@@ -939,44 +1078,74 @@
      업무 흐름 안내 — 화면 하나만 보면 순서를 알 수 없다.
      지금 보는 화면이 전체 흐름의 몇 번째인지, 다음이 무엇인지 같이 보여준다.
   --------------------------------------------------------------- */
+  /*
+    업무 흐름 바.
+
+    이전에는 시료→시험요청→판정→기준이탈→시험법→장비 일곱 단계를 늘어놓았다.
+    그런데 2026-07-09 재단 미팅에서 요구된 것은 그 워크플로가 아니다. 결론은 셋이었다.
+      · 분자구조를 붙여넣으면 그 자리에서 분자식·분자량이 계산된다 ("메인기능")
+      · 화합물 라이브러리 연계 및 관리
+      · 시약 관리 데이터 연계 및 관리
+    흐름 바가 요구되지 않은 것을 먼저 보여주면 시연의 초점이 어긋난다.
+    핵심 세 축을 앞세우고, QC 워크플로는 '확장 검토'로 내려 둘을 구분한다.
+  */
   var FLOW = [
-    { file: 'sample_list.html',     label: '① 시료 등록·분주' },
-    { file: 'test_list.html',       label: '② 시험 의뢰' },
-    { file: 'test_detail.html',     label: '③ 접수·담당자 배정' },
-    { file: 'result_entry.html',    label: '④ 결과 입력·규격 판정' },
-    { file: 'oos_list.html',        label: '⑤ 규격 이탈(OOS) 조사' },
-    { file: 'method_list.html',     label: '⑥ 분석법·규격 기준' },
-    { file: 'instrument_list.html', label: '⑦ 장비 교정' }
+    { file: 'note_write.html',    label: '① 연구노트 · 구조 입력' },
+    { file: 'compound_list.html', label: '② 화합물 라이브러리' },
+    { file: 'reagent_list.html',  label: '③ 시약 · 재고' }
   ];
 
+  var FLOW_EXT = [
+    { file: 'test_list.html',    label: '시험 요청' },
+    { file: 'result_entry.html', label: '결과 · 판정' },
+    { file: 'oos_list.html',     label: '기준이탈' }
+  ];
+
+  /* 화면마다 "여기서 무슨 일이 일어나는가"를 한 문장으로. 용어는 docs/lims/glossary.md 기준. */
   var FLOW_NOTE = {
-    'sample_list.html': '시료를 접수하면 시료번호가 SMP-YYYYMMDD-NNN 으로 자동 발번되고, 등록과 동시에 원본 분주 1건이 보관위치에 생성됩니다.',
-    'sample_detail.html': '분주는 물리적 분할, 새 시료는 화학적 변화입니다. 계통(lineage)은 이 구분을 그대로 따라갑니다.',
-    'test_list.html': '왼쪽 탭은 내가 맡은 시험(워크리스트), 오른쪽은 의뢰 목록입니다. 접수 대기 건을 열어 담당자를 배정합니다.',
-    'test_detail.html': '항목마다 분석법·규격 버전을 고정합니다. 착수한 시험은 분석법이 개정돼도 착수 시점 버전을 계속 씁니다.',
-    'result_entry.html': '값을 저장하면 그 시점 규격으로 즉시 판정하고, 판정에 쓴 규격값을 결과에 함께 박아둡니다(스냅샷). 결과는 append-only 이며 정정은 새 버전으로 쌓입니다.',
-    'oos_list.html': '부적합이 나오면 OOS 가 자동 생성됩니다. 조사자 배정 → 원인 규명 → 재시험 또는 종결 순으로 진행합니다.',
-    'method_list.html': '분석법과 규격은 버전으로 관리합니다. 개정 시 진행 중인 시험 건수를 먼저 알려줍니다.',
-    'instrument_list.html': '교정 만료 장비로는 결과를 입력할 수 없습니다. 강행하려면 QA 승인이 필요합니다.',
-    'reagent_list.html': '시약 재고는 용기(container) 단위로 관리하고, 입출고는 append-only 트랜잭션으로 기록합니다.',
-    'location_list.html': '보관위치는 계층 구조입니다. 바코드 접두사와 온도 조건을 위치에 매답니다.',
-    'compound_list.html': '구조를 그리거나 붙여넣어 부분구조·유사도로 검색합니다. 분자식·분자량은 RDKit 이 계산합니다.',
-    'scan.html': '바코드를 찍어 용기를 조회하고 사용량을 기록합니다. 기한 경과 용기는 사유 없이는 사용할 수 없습니다.',
-    'method_detail.html': '개정 이력과 규격 목록입니다. 폐지된 버전도 지우지 않고 남깁니다 — 과거 판정을 재현해야 하기 때문입니다.'
+    'note_write.html': '이 PoC 의 메인 기능입니다. 구조를 그리거나 ChemDraw 에서 복사해 붙여넣으면 그 자리에서 분자식·분자량·Exact Mass 가 계산됩니다.',
+    'compound_list.html': '등록된 화합물 저장소입니다. 등록번호·분자식으로 찾거나, 구조를 그려 부분구조·유사도로 찾습니다.',
+    'chem_editor.html': '구조를 그리거나 붙여넣는 도구입니다. 확정하면 연구노트나 화합물 라이브러리로 넘어갑니다.',
+    'reagent_list.html': '시약은 품목, 용기는 실물 한 병입니다. 재고는 입고·사용·폐기 이력의 합계이며 이력은 지워지지 않습니다.',
+    'scan.html': '바코드를 찍어 용기를 조회하고 사용량을 기록합니다. 기한이 지난 용기는 사유 없이 사용할 수 없습니다.',
+    'location_list.html': '보관위치 계층입니다. 바코드 접두사와 온도 조건을 위치에 매답니다.',
+    'sample_list.html': '시험 대상 검체입니다. 시약(실험에 쓰는 물질)과 반대 개념입니다.',
+    'sample_detail.html': '분주는 물리적 분할이라 같은 시료로 남고, 화학적으로 달라지면 새 시료가 됩니다.',
+    'test_list.html': '시료에 대한 시험 요청입니다. 접수 대기 건을 열어 담당자를 배정하면 접수됩니다.',
+    'test_detail.html': '항목마다 시험법·판정기준 버전을 고정합니다. 착수한 시험은 시험법이 개정돼도 착수 시점 버전을 계속 씁니다.',
+    'result_entry.html': '값을 저장하면 그 시점 판정기준으로 즉시 판정하고, 판정에 쓴 기준값을 결과에 함께 남깁니다. 결과는 지울 수 없고 정정은 새 버전으로 쌓입니다.',
+    'oos_list.html': '판정이 부적합·판정불가일 때 자동으로 열리는 조사 건입니다. 사람이 직접 등록하지 않습니다.',
+    'method_list.html': '시험법은 "어떻게 측정하는가", 판정기준은 "얼마면 적합인가" 입니다. 둘 다 버전으로 관리합니다.',
+    'method_detail.html': '개정 이력과 판정기준 목록입니다. 폐지된 버전도 지우지 않습니다 — 과거 판정을 재현해야 하기 때문입니다.',
+    'instrument_list.html': '교정이 만료된 장비로는 결과를 입력할 수 없습니다.'
   };
 
+  function stepHtml(step, here) {
+    return step.file === here
+      ? '<span class="lims-poc-step on">' + step.label + '</span>'
+      : '<a class="lims-poc-step" href="' + step.file + '">' + step.label + '</a>';
+  }
+
   function installFlowBar() {
-    var here = (window.location.pathname.split('/').pop() || 'sample_list.html');
+    var here = (window.location.pathname.split('/').pop() || 'note_write.html');
     var host = document.querySelector('.content-wrapper #main') || document.querySelector('.content-wrapper');
     if (!host) return;
 
-    var html = '<div class="lims-poc-label lims-poc-flow-label">업무 흐름</div>';
+    var html = '<div class="lims-poc-flow-label">핵심 기능</div>';
     FLOW.forEach(function (step, i) {
       if (i) html += '<span class="lims-poc-arrow">▶</span>';
-      html += step.file === here
-        ? '<span class="lims-poc-step on">' + step.label + '</span>'
-        : '<a class="lims-poc-step" href="' + step.file + '">' + step.label + '</a>';
+      html += stepHtml(step, here);
     });
+
+    // 확장 검토 묶음은 한 단 낮춰 둔다 — 요구된 것과 덧붙인 것이 같은 줄에 있으면 구분이 안 된다.
+    html += '<div class="lims-poc-flow-ext">';
+    html += '<span class="lims-poc-flow-label">확장 검토</span>';
+    FLOW_EXT.forEach(function (step, i) {
+      if (i) html += '<span class="lims-poc-arrow">▶</span>';
+      html += stepHtml(step, here);
+    });
+    html += '</div>';
+
     if (FLOW_NOTE[here]) {
       html += '<div class="lims-poc-note">' + FLOW_NOTE[here] + '</div>';
     }

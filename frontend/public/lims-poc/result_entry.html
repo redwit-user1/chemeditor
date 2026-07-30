@@ -2506,7 +2506,7 @@
       }
 
       /* ---------------------------------------------------------------
-         화면 데이터 — 시험 항목 · 규격 · 현재값 결과를 한 요청으로 받는다.
+         화면 데이터 — 시험 항목 · 판정기준 · 현재값 결과를 한 요청으로 받는다.
          reqAjax 는 요청 하나가 떠 있으면 다음을 조용히 버리므로(에러도 콜백도 없다)
          장비 목록은 이 응답 뒤에 이어서 태운다.
       --------------------------------------------------------------- */
@@ -2554,7 +2554,7 @@
       }
 
       /* ---------------------------------------------------------------
-         헤더 · 규격 요약 · 이탈 배너
+         헤더 · 판정기준 요약 · 이탈 배너
       --------------------------------------------------------------- */
       function renderHeader() {
         if (!gTestItem) {
@@ -2563,7 +2563,7 @@
         }
         $('#testItemNm').text(gTestItem.testItemNm || '-');
         $('#testItemSub').text(
-          `의뢰 ${gTestItem.testReqstNo || '-'} · 담당 ${gTestItem.chargeUserNm || '미배정'}`
+          `요청 ${gTestItem.testReqstNo || '-'} · 담당 ${gTestItem.chargeUserNm || '미배정'}`
         );
         $('#testItemStatus').html(itemStatusBadge(gTestItem.testItemStatusCcd));
 
@@ -2586,9 +2586,9 @@
       }
 
       /**
-       * 규격 표기를 만든다.
-       * 경계 포함 여부(*_INCLUDE_YN)는 규격 마스터에만 있고 결과 행 스냅샷에는 없으므로,
-       * 헤더의 현재 규격에서만 이상/초과·이하/미만을 구분해 표기한다.
+       * 판정기준 표기를 만든다.
+       * 경계 포함 여부(*_INCLUDE_YN)는 판정기준 마스터에만 있고 결과 행 스냅샷에는 없으므로,
+       * 헤더의 현재 판정기준에서만 이상/초과·이하/미만을 구분해 표기한다.
        */
       function specText(tp, lower, lowerInc, upper, upperInc, tolerance, expect) {
         const num = function (v) {
@@ -2609,15 +2609,15 @@
         if (tp === 'QUALITATIVE') {
           return `${num(expect)} 일치`;
         }
-        return '규격 없음';
+        return '판정기준 없음';
       }
 
       function renderSpecBar() {
         if (!gSpec) {
           $('#specSummary').html(`
             <div class="prop-item">
-              <span class="prop-label">규격</span>
-              <span class="prop-value empty">연결된 규격이 없습니다 — 값은 기록되지만 판정은 판정불가(NA)가 됩니다</span>
+              <span class="prop-label">판정기준</span>
+              <span class="prop-value empty">연결된 판정기준이 없습니다 — 값은 기록되지만 판정은 판정불가(NA)가 됩니다</span>
             </div>`);
           return;
         }
@@ -2628,7 +2628,7 @@
           : `소수 ${gSpec.decimalPt}자리 반올림 후 비교`;
         $('#specSummary').html(`
           <div class="prop-item">
-            <span class="prop-label">규격</span>
+            <span class="prop-label">판정기준</span>
             <span class="prop-value">${escapeHtml(txt)}</span>
           </div>
           <div class="prop-item">
@@ -2655,12 +2655,12 @@
         let lines = '';
         deviated.forEach(function (r) {
           lines += `<div class="guidetext-sty01">${r.resultSeqNo}회차 ${escapeHtml(JUDGE_LABEL[r.judgeCcd] || r.judgeCcd)}`
-            + ` — ${escapeHtml(r.judgeRsn || '규격을 벗어났습니다.')}`
+            + ` — ${escapeHtml(r.judgeRsn || '판정기준을 벗어났습니다.')}`
             + (r.oosNo ? ` (조사 ${escapeHtml(r.oosNo)})` : '') + '</div>';
         });
         $('#deviationBanner').removeClass('d-none').html(`
           <div class="prop-item">
-            <span class="lims-state expired">규격 이탈</span>
+            <span class="lims-state expired">기준이탈</span>
           </div>
           <div class="prop-item">
             <div>
@@ -2671,7 +2671,7 @@
       }
 
       /* ---------------------------------------------------------------
-         결과 표 — 시험 항목 / 회차 / 규격 / 단위 / 측정값 / 판정 / 저장 / 입력 / 액션
+         결과 표 — 시험 항목 / 회차 / 판정기준 / 단위 / 측정값 / 판정 / 저장 / 입력 / 액션
          "미입력" 행은 DB 에 행이 없는 상태를 뜻한다(기획서 2.6.4).
       --------------------------------------------------------------- */
       function renderResultTable() {
@@ -2706,7 +2706,7 @@
             specDisp: escapeHtml(gSpec
               ? specText(gSpec.judgeTpCcd, gSpec.lowerVal, gSpec.lowerIncludeYn,
                   gSpec.upperVal, gSpec.upperIncludeYn, gSpec.toleranceVal, gSpec.expectVal)
-              : '규격 없음'),
+              : '판정기준 없음'),
             unitDisp: escapeHtml(gSpec && gSpec.unitCcd ? gSpec.unitCcd : '-'),
             resultValDisp: '<span class="guidetext-sty01">-</span>',
             judgeDisp: '<span class="lims-state muted">-</span>',
@@ -2806,7 +2806,7 @@
                            class="input-write-sty02-line ma-r10" title="측정값" required="required" />
                     <span class="guidetext-sty01">${escapeHtml(unitCcd || '무차원')}</span>
                   </div>
-                  <div class="flex-sty04"><div class="guidetext-sty01">입력한 원문이 그대로 보존됩니다. 판정은 규격 자릿수로 반올림한 값으로 합니다. 정성 결과는 '불검출' 처럼 문자로 입력하세요.</div></div>
+                  <div class="flex-sty04"><div class="guidetext-sty01">입력한 원문이 그대로 보존됩니다. 판정은 판정기준 자릿수로 반올림한 값으로 합니다. 정성 결과는 '불검출' 처럼 문자로 입력하세요.</div></div>
                 </div>
                 <div class="flex-sty05 ma-b20">
                   <label for="newUnitCcd" class="modal-cont-label">단위</label>
@@ -2820,7 +2820,7 @@
                     <option value="UM">uM</option>
                     <option value="NONE">무차원</option>
                   </select>
-                  <div class="flex-sty04"><div class="guidetext-sty01">규격 단위와 반드시 같아야 합니다. 시스템은 단위를 환산하지 않으며, 다르면 입력이 차단됩니다.</div></div>
+                  <div class="flex-sty04"><div class="guidetext-sty01">판정기준 단위와 반드시 같아야 합니다. 시스템은 단위를 환산하지 않으며, 다르면 입력이 차단됩니다.</div></div>
                 </div>
                 <div class="flex-sty05 ma-b20">
                   <label for="newMeasureDt" class="modal-cont-label">측정 일시</label>
@@ -2942,7 +2942,7 @@
               const label = JUDGE_LABEL[res.judgeCcd] || res.judgeCcd;
               S2Util.toasts(
                 `${res.resultSeqNo}회차 v${res.resultVerNo} 확정 · 판정 ${label}`
-                  + (res.judgeCcd === 'PASS' ? '' : ' — 규격 이탈 조사가 열렸습니다.'),
+                  + (res.judgeCcd === 'PASS' ? '' : ' — 기준이탈 조사가 열렸습니다.'),
                 { class: 'Toast-bottom-web' }
               );
               getResultInfo();
@@ -3062,8 +3062,8 @@
           .off('click')
           .on('click', function () {
             /*
-              완료 선언은 시험 의뢰 도메인이 소유한 상태 전이다. 결과 도메인에 같은 전이를
-              또 만들지 않고 그 엔드포인트를 호출한다 — 그쪽은 완료 후 의뢰 상태 롤업까지 한다.
+              완료 선언은 시험 요청 도메인이 소유한 상태 전이다. 결과 도메인에 같은 전이를
+              또 만들지 않고 그 엔드포인트를 호출한다 — 그쪽은 완료 후 요청 상태 롤업까지 한다.
             */
             ajaxPost('/api/lims/test/completeTestItem', { testItemMno: gTestItemMno },
               '데이터요청중입니다.잠시만 기다려주세요.', function (res) {
@@ -5723,6 +5723,24 @@
             
               
                 
+                  <a class="menuCd LIMS_NOTE"
+                     href="note_write.html">연구노트 작성</a>
+                
+                  <a class="menuCd LIMS_COMPOUND"
+                     href="compound_list.html">화합물 라이브러리</a>
+                
+                  <a class="menuCd LIMS_CHEM"
+                     href="chem_editor.html">구조 입력기</a>
+                
+                  <a class="menuCd LIMS_REAGENT"
+                     href="reagent_list.html">시약/재고 관리</a>
+                
+                  <a class="menuCd LIMS_SCAN"
+                     href="scan.html">바코드 스캔</a>
+                
+                  <a class="menuCd LIMS_LOCATION"
+                     href="location_list.html">보관위치 관리</a>
+                
                   <a class="menuCd MAIN_DASHBOARD"
                      href="#">대시보드 홈</a>
                 
@@ -5735,49 +5753,6 @@
                   <a class="menuCd MAIN_COMPLETED_PROJECT"
                      href="#">완료 프로젝트</a>
                 
-                  <a class="menuCd LIMS_REAGENT"
-                     href="reagent_list.html">시약/재고 관리</a>
-                
-                  <a class="menuCd LIMS_LOCATION"
-                     href="location_list.html">보관위치 관리</a>
-                
-                  <a class="menuCd LIMS_CHEM"
-                     href="chem_editor.html">구조 편집기</a>
-                
-                  <a class="menuCd LIMS_COMPOUND"
-                     href="compound_list.html">화합물 검색</a>
-                
-                  <a class="menuCd LIMS_SCAN"
-                     href="scan.html">바코드 조회</a>
-                
-                  <a class="menuCd LIMS_SAMPLE"
-                     href="sample_list.html">시료 관리</a>
-                
-                  <a class="menuCd LIMS_TEST"
-                     href="test_list.html">시험 의뢰</a>
-                
-                  <a class="menuCd LIMS_OOS"
-                     href="oos_list.html">규격 이탈</a>
-                
-                  <a class="menuCd LIMS_METHOD"
-                     href="method_list.html">분석법 관리</a>
-                
-                  <a class="menuCd LIMS_SPEC"
-                     href="method_list.html">규격 관리</a>
-                
-                  <a class="menuCd LIMS_INSTRUMENT"
-                     href="instrument_list.html">장비 관리</a>
-                
-              
-            
-              
-            
-              
-            
-              
-            
-              
-            
               
             
               
@@ -5833,7 +5808,7 @@
                     <a href="#"
                        class="projectList"
                        onclick="gfn_openProjectDetail(&#39;/eln/project/projectDetails&#39;, &#39;303&#39;)"
-                       data-project-mno="303"><span title="분석법 검증 (KM-3719)">분석법 검증 (KM-3719)</span></a>
+                       data-project-mno="303"><span title="시험법 검증 (KM-3719)">시험법 검증 (KM-3719)</span></a>
                   </li>
                 
                   <li>
@@ -6239,12 +6214,12 @@
           <nav class="lims-crumb">
             <a href="index.html">LIMS</a>
             <span class="sep">/</span>
-            <a href="test_list.html">시험 의뢰</a>
+            <a href="test_list.html">시험 요청</a>
             <span class="sep">/</span>
             <span>결과 입력</span>
           </nav>
-          <h2 class="lims-title">결과 입력 · 규격 판정</h2>
-          <p class="lims-head-desc">값을 저장하면 그 시점 규격으로 즉시 판정하고, 판정에 쓴 규격값을 결과에 함께 남깁니다. 결과는 지울 수 없고 정정은 새 버전으로 쌓입니다.</p>
+          <h2 class="lims-title">결과 입력 · 판정</h2>
+          <p class="lims-head-desc">값을 저장하면 그 시점 판정기준으로 즉시 판정하고, 판정에 쓴 판정기준값을 결과에 함께 남깁니다. 결과는 지울 수 없고 정정은 새 버전으로 쌓입니다.</p>
         </div>
         <div class="lims-head-actions">
           <button class="button-blue-full-sty01 charge-only"
@@ -6290,7 +6265,7 @@
                         <tr class="text-nowrap">
                           <th class="text-left">시험 항목</th>
                           <th class="lims-num">회차</th>
-                          <th class="text-left">규격</th>
+                          <th class="text-left">판정기준</th>
                           <th class="text-left">단위</th>
                           <th class="lims-num">측정값</th>
                           <th class="text-left">판정</th>
