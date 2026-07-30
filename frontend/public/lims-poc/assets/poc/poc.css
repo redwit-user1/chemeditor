@@ -65,8 +65,9 @@
   color: #fff;
   font-weight: 600;
 }
+/* 단계 구분 화살표. 1.41:1 이면 흐름 자체가 안 읽힌다. */
 .lims-poc-flow .lims-poc-arrow {
-  color: #d0d5dd;
+  color: #667085;
   font-size: 11px;
 }
 
