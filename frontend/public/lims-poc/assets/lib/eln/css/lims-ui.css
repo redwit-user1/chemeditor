@@ -1600,9 +1600,147 @@
 --------------------------------------------------------------------------- */
 .lims-page .lims-note-layout {
 	display: grid;
-	grid-template-columns: minmax(0, 1fr) 320px;
+	/* 정보 패널이 왼쪽, 본문이 오른쪽 — 구노 ELN 의 기존 연구노트 화면과 같은 배치다. */
+	grid-template-columns: 280px minmax(0, 1fr);
 	gap: var(--lims-gap-3);
 	align-items: start;
+}
+
+/* --- 상단 바 — 되돌아가기 · 제목 · 저장 --- */
+.lims-page .lims-note-bar {
+	display: flex;
+	align-items: center;
+	gap: var(--lims-gap-3);
+	padding: 0 0 var(--lims-gap-3);
+	margin-bottom: var(--lims-gap-3);
+	border-bottom: 1px solid var(--lims-line);
+}
+
+.lims-page .lims-note-bar-left {
+	display: flex;
+	align-items: center;
+	gap: var(--lims-gap-2);
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.lims-page .lims-note-bar-right {
+	display: flex;
+	align-items: center;
+	gap: var(--lims-gap-2);
+	flex: none;
+}
+
+.lims-page .lims-note-back {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--lims-gap-1);
+	height: var(--lims-control-h);
+	padding: 0 var(--lims-gap-3) 0 var(--lims-gap-2);
+	border: 1px solid var(--lims-line-strong);
+	border-radius: var(--lims-radius);
+	background: var(--lims-surface);
+	font-size: var(--lims-fs-body);
+	color: var(--lims-ink-2);
+	white-space: nowrap;
+}
+
+.lims-page .lims-note-back::before {
+	content: '';
+	width: 14px;
+	height: 14px;
+	background-color: currentColor;
+	-webkit-mask: url(../img/lucide/chevron-right.svg) center / contain no-repeat;
+	mask: url(../img/lucide/chevron-right.svg) center / contain no-repeat;
+	transform: rotate(180deg);
+}
+
+.lims-page .lims-note-back:hover {
+	border-color: var(--lims-ink-4);
+	background: var(--lims-surface-2);
+}
+
+/* 제목은 상자가 아니라 제목처럼 보이되, 누르면 바로 고쳐진다. */
+.lims-page .lims-note-title-input {
+	flex: 1 1 auto;
+	min-width: 0;
+	height: var(--lims-control-h);
+	padding: 0 var(--lims-gap-2);
+	border: 1px solid transparent;
+	border-radius: var(--lims-radius);
+	background: transparent;
+	font-size: var(--lims-fs-lead);
+	font-weight: 700;
+	color: var(--lims-ink);
+	letter-spacing: -0.02em;
+}
+
+.lims-page .lims-note-title-input:hover { border-color: var(--lims-line); }
+
+.lims-page .lims-note-title-input:focus {
+	outline: none;
+	border-color: var(--lims-primary);
+	background: var(--lims-surface);
+	box-shadow: var(--lims-ring);
+}
+
+.lims-page .lims-note-kind {
+	flex: none;
+	padding: 2px var(--lims-gap-2);
+	border-radius: 4px;
+	background: var(--lims-primary-weak);
+	color: var(--lims-primary-dark);
+	font-size: var(--lims-fs-micro);
+	font-weight: 600;
+}
+
+/* --- 좌측 정보 패널 --- */
+.lims-page .lims-note-meta {
+	display: flex;
+	flex-direction: column;
+	gap: var(--lims-gap-2);
+}
+
+.lims-page .lims-note-meta-row {
+	display: flex;
+	align-items: center;
+	gap: var(--lims-gap-2);
+	min-height: 24px;
+}
+
+.lims-page .lims-note-meta-label {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--lims-gap-1);
+	flex: 0 0 88px;
+	font-size: var(--lims-fs-caption);
+	color: var(--lims-ink-3);
+}
+
+.lims-page .lims-note-meta-label::before {
+	content: '';
+	width: 13px;
+	height: 13px;
+	flex: none;
+	background-color: currentColor;
+	-webkit-mask: var(--lims-ico) center / contain no-repeat;
+	mask: var(--lims-ico) center / contain no-repeat;
+}
+
+.lims-page .lims-note-meta-label.i-lock { --lims-ico: url(../img/lucide/eye.svg); }
+.lims-page .lims-note-meta-label.i-user { --lims-ico: url(../img/lucide/user-plus.svg); }
+.lims-page .lims-note-meta-label.i-date { --lims-ico: url(../img/lucide/history.svg); }
+.lims-page .lims-note-meta-label.i-pen { --lims-ico: url(../img/lucide/pencil.svg); }
+.lims-page .lims-note-meta-label.i-note { --lims-ico: url(../img/lucide/list.svg); }
+.lims-page .lims-note-meta-label.i-folder { --lims-ico: url(../img/lucide/inbox.svg); }
+.lims-page .lims-note-meta-label.i-hash { --lims-ico: url(../img/lucide/external-link.svg); }
+
+.lims-page .lims-note-meta-value {
+	flex: 1 1 auto;
+	min-width: 0;
+	font-size: var(--lims-fs-body);
+	color: var(--lims-ink);
+	word-break: break-word;
 }
 
 .lims-page .lims-note-main,

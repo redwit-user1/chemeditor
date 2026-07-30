@@ -794,3 +794,65 @@
 .modal[id^="modal-lims-"] .modal-content.mh-800 {
 	max-height: min(800px, calc(100vh - 3.5rem)) !important;
 }
+
+/* ===========================================================================
+   셸 밀도 — 좌측 GNB · 상단 헤더
+
+   구노 기본값은 사이드바 295px, 메뉴 글자 16px, 헤더 60px 이다. 화면 폭이
+   1600px 일 때 사이드바가 18% 를 가져가고, 본문(#main, 최대 1296px)은 그만큼
+   눌린다. 연구노트처럼 본문이 넓어야 하는 화면에서 특히 손해다.
+
+   layout.css/style.css 를 직접 고치지 않고 여기서 덮는 이유는 한 곳만 지우면
+   원래대로 돌아오게 하기 위해서다. 값은 줄이되 조작 대상(메뉴 항목)의 높이는
+   36px 아래로 내리지 않는다.
+=========================================================================== */
+.sidenav2 {
+	width: 248px;
+}
+
+.sidenav2 a {
+	font-size: 14px;
+}
+
+.sidenav2 a span {
+	font-size: 13px;
+}
+
+/* 본문 폭은 사이드바 폭에서 계산된다(.content_div). 사이드바를 줄인 만큼 넓혀야
+   왼쪽에 빈 띠가 남지 않는다. 1200px 이하에서 사이드바가 접히는 규칙은 그대로 둔다. */
+.wrapper .content_wrap .content_div {
+	width: calc(100% - 248px);
+}
+
+@media (min-width: 1201px) {
+	.wrapper .content_wrap .content_div {
+		width: calc(100% - 248px);
+	}
+}
+
+@media (max-width: 1200px) {
+	.sidenav2 {
+		margin-left: -248px;
+	}
+}
+
+.nav-menu {
+	padding: 5px 10px;
+}
+
+.nav-menu a {
+	margin: 2px 0;
+	padding: 7px 0 7px 38px;
+	background-position: 10px;
+	background-size: 18px 18px;
+}
+
+.nav-menu .menuCd[class*="LIMS_"] {
+	background-position: left 10px center;
+	background-size: 18px 18px;
+}
+
+/* 상단 헤더 — 60px 은 검색창(40px)에 비해 여유가 과하다. */
+.sticky-sty-01 {
+	height: 52px;
+}

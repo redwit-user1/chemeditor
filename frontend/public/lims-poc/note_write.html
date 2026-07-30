@@ -2545,6 +2545,8 @@
       let gEditorBlockId = null;
       /* 본문 에디터(NewEditor) 인스턴스. blockId → handle. */
       const gTextEditors = {};
+      /* 구조 입력기 팝업이 돌려줄 자리. 'editor' 면 본문, 그 외에는 구조 블록. */
+      let gChemTarget = null;
       /* 시약 선택 모달이 행을 넣을 대상 블록 */
       let gPickTargetId = null;
       /* 시약 선택 모달의 마지막 검색 결과. 버튼에는 키만 싣고 원본은 여기서 꺼낸다. */
@@ -2669,6 +2671,12 @@
             $('#noteWriteDt').text(note.writeDtStr || todayStr())
               .toggleClass('is-empty', false);
             $('#noteMnoDisp').text(gNoteMno ? gNoteMno : '(임시)');
+            /* 상태 라벨은 공통코드 어휘를 그대로 쓴다 — 화면마다 다른 말을 쓰지 않는다. */
+            const STATUS_NM = {
+              DRAFT: '임시저장', WRITING: '작성중', INSPECTION: '점검중',
+              REJECT: '반려', COMPLETE: '작성완료'
+            };
+            $('#noteStatusNm').text(STATUS_NM[note.statusCcd] || '작성중');
 
             gBlocks = asList(res ? res.blockList : null).map(toBlock);
             if (!gBlocks.length) {
@@ -2829,6 +2837,7 @@
         }
 
         try {
+          bindEditorChemButton(host);
           gTextEditors[b.blockId] = window.RedwitEditorAI.mount(host, {
             initialContent: b.textVal || '',
             /* 백엔드 없음 → AI 요소·AI 호출 전부 비활성 */
@@ -2981,6 +2990,12 @@
           S2Util.toasts('전달된 구조가 없습니다.', { class: 'Toast-bottom-web' });
           return;
         }
+        /* 본문 에디터에서 부른 경우 — 구조 블록이 아니라 커서 자리에 넣는다. */
+        if (gChemTarget === 'editor') {
+          gChemTarget = null;
+          insertStructureIntoBody(structure);
+          return;
+        }
         /* 팝업이 떠 있는 사이 블록이 지워졌을 수 있다. 없으면 첫 구조 블록으로 되돌린다. */
         const targetId = blockOf(gStructTargetId) ? gStructTargetId : firstStructBlockId();
         if (!targetId) {
@@ -2989,6 +3004,92 @@
         }
         applyStructure(targetId, structure);
       };
+
+      /* ---------------------------------------------------------------
+         본문 에디터의 화학 구조식 버튼 → KMEDIhub ELN 구조 입력기
+
+         NewEditor 는 자체 Ketcher 모달을 갖고 있다. 그런데 이 화면에서는 그
+         모달이 GNB·헤더 위로 잘못 걸쳐 떠서 쓸 수 없었고, 무엇보다 이 PoC 의
+         구조 입력기는 chemeditor 다 — 같은 제품 안에 구조 편집기가 둘이면
+         어느 쪽이 정본인지 알 수 없게 된다.
+
+         그래서 툴바 버튼을 캡처 단계에서 가로채 우리 팝업을 띄운다. 팝업이
+         돌려주는 계약(opener.limsApplyStructureQuery)은 구조 블록과 같다.
+      --------------------------------------------------------------- */
+      function bindEditorChemButton(host) {
+        if (!host || host.dataset.limsChemBound === 'Y') {
+          return;
+        }
+        host.dataset.limsChemBound = 'Y';
+        host.addEventListener('click', function (ev) {
+          const btn = ev.target.closest
+            ? ev.target.closest('button[title*="Ketcher"], button[aria-label*="Ketcher"]')
+            : null;
+          if (!btn || !host.contains(btn)) {
+            return;
+          }
+          ev.preventDefault();
+          ev.stopImmediatePropagation();
+          openChemPopup('editor');
+        }, true);
+      }
+
+      /* 구조 입력기 팝업. where 는 돌려받은 구조를 어디에 넣을지다. */
+      function openChemPopup(where) {
+        if (!gChemEmbedUrl) {
+          S2Util.toasts('구조 입력기 주소가 설정되지 않았습니다. 관리자에게 문의하세요.',
+            { class: 'Toast-bottom-web' });
+          return;
+        }
+        gChemTarget = where;
+        window.open(
+          coreCommon.getUrl('/lims/chem/chemPopup?searchYn=Y'),
+          'limsChemEditor',
+          'width=1180,height=880,scrollbars=yes,resizable=yes'
+        );
+      }
+
+      /*
+        구조를 본문에 넣는다. 그림은 서버(RDKit)에 그려 달라고 한다 — 편집기가
+        준 그림을 쓰면 노트에 남는 그림과 계산값의 출처가 갈린다.
+        img 에 molfile 을 함께 실어 두면 NewEditor 의 chemImage 노드로 잡혀
+        나중에 더블클릭 재편집이 된다(SDK 규약: img[data-molfile]).
+      */
+      function insertStructureIntoBody(structure) {
+        const handle = firstTextEditor();
+        if (!handle) {
+          S2Util.toasts('본문 에디터가 없습니다.', { class: 'Toast-bottom-web' });
+          return;
+        }
+        ajaxPost(
+          '/api/lims/chem/depict',
+          { structure: structure, w: 300, h: 240 },
+          null,
+          function (res) {
+            if (!res || !res.depict) {
+              S2Util.toasts('구조 그림을 받지 못했습니다.', { class: 'Toast-bottom-web' });
+              return;
+            }
+            const src = 'data:image/svg+xml;base64,'
+              + btoa(unescape(encodeURIComponent(res.depict)));
+            const img = '<img src="' + src + '" data-molfile="' + esc(structure)
+              + '" alt="화학 구조식" />';
+            handle.setHTML(handle.getHTML() + '<p>' + img + '</p>');
+            handle.focus();
+            S2Util.toasts('구조를 본문에 넣었습니다.', { class: 'Toast-bottom-web' });
+          },
+          function () {
+            S2Util.toasts('구조 그림을 받지 못했습니다.', { class: 'Toast-bottom-web' });
+          }
+        );
+      }
+
+      function firstTextEditor() {
+        for (const key in gTextEditors) {
+          return gTextEditors[key];
+        }
+        return null;
+      }
 
       function firstStructBlockId() {
         for (let i = 0; i < gBlocks.length; i++) {
@@ -3716,6 +3817,15 @@
 
       function goScan() {
         coreCommon.href('/lims/container/scan');
+      }
+
+      /* 노트는 프로젝트 안에 있다. 되돌아가는 곳도 그 프로젝트다. */
+      function goBackToProject() {
+        if (gProjectMno) {
+          coreCommon.href('/eln/project/projectDetailsNote?schProjectMno=' + gProjectMno);
+          return;
+        }
+        coreCommon.href('/eln/note/myResearchNotes');
       }
 
       /* ===============================================================
@@ -6911,22 +7021,25 @@
           <!-- body 영역  -->
           <div class="content-wrapper">
     <div id="main" class="lims-page">
-      <header class="lims-head">
-        <div class="lims-head-main">
-          <nav class="lims-crumb">
-            <a href="index.html">LIMS</a>
-            <span class="sep">/</span>
-            <span>연구노트</span>
-            <span class="sep">/</span>
-            <span>작성</span>
-          </nav>
-          <h2 class="lims-title">연구노트 작성</h2>
+      
+      <header class="lims-note-bar">
+        <div class="lims-note-bar-left">
+          <button type="button"
+                  class="lims-note-back"
+                  onclick="goBackToProject();"><span>이전페이지</span></button>
+          <input type="text"
+                 id="limsNoteNm"
+                 maxlength="200"
+                 placeholder="제목없음"
+                 class="lims-note-title-input"
+                 title="연구노트 제목" />
+          <span class="lims-note-kind">에디터</span>
         </div>
-        <div class="lims-head-actions">
+        <div class="lims-note-bar-right">
           <button class="button-gray-line-sty01"
                   onclick="saveNote('N');"><span>임시저장</span></button>
           <button class="button-blue-full-sty01"
-                  onclick="saveNote('Y');"><span>제출</span></button>
+                  onclick="saveNote('Y');"><span>저장</span></button>
         </div>
       </header>
 
@@ -6943,53 +7056,72 @@
       </div>
 
       
-      <div class="lims-note-layout ma-t20">
-        <div class="lims-note-main">
+      
+      <div class="lims-note-layout">
+        <aside class="lims-note-side">
 
           
           <div class="lims-card">
             <div class="lims-card-head">
-              <p class="lims-card-title">노트 정보</p>
-              <div class="lims-card-tools">
-                <span class="guidetext-sty01">노트번호 <b id="noteMnoDisp">(임시)</b></span>
-              </div>
+              <p class="lims-card-title">연구노트 정보</p>
             </div>
             <div class="lims-card-body">
-              <div class="lims-def">
-                
-                
-                <div class="lims-def-row is-wide">
-                  <label for="limsNoteNm"
-                         class="lims-def-label">노트 제목</label>
-                  <div class="lims-def-value">
-                    <input type="text"
-                           id="limsNoteNm"
-                           maxlength="200"
-                           placeholder="예) KM00003710 합성 — batch A"
-                           class="input-write-sty02-line wp-100"
-                           title="노트 제목" />
-                  </div>
+              <div class="lims-note-meta">
+                <div class="lims-note-meta-row">
+                  <span class="lims-note-meta-label i-lock">보안등급</span>
+                  <span class="lims-note-meta-value">
+                    <span class="lims-state normal" id="noteSecurityNm">1등급</span>
+                  </span>
                 </div>
-                <div class="lims-def-row">
-                  <span class="lims-def-label">프로젝트</span>
-                  <span class="lims-def-value is-empty"
-                        id="noteProjectNm">-</span>
+                <div class="lims-note-meta-row">
+                  <span class="lims-note-meta-label i-user">작성자</span>
+                  <span class="lims-note-meta-value" id="noteWriterNm">-</span>
                 </div>
-                <div class="lims-def-row">
-                  <span class="lims-def-label">작성자</span>
-                  <span class="lims-def-value is-empty"
-                        id="noteWriterNm">-</span>
+                <div class="lims-note-meta-row">
+                  <span class="lims-note-meta-label i-date">생성일자</span>
+                  <span class="lims-note-meta-value" id="noteWriteDt">-</span>
                 </div>
-                <div class="lims-def-row">
-                  <span class="lims-def-label">작성일</span>
-                  <span class="lims-def-value is-empty"
-                        id="noteWriteDt">-</span>
+                <div class="lims-note-meta-row">
+                  <span class="lims-note-meta-label i-pen">작성방식</span>
+                  <span class="lims-note-meta-value">에디터</span>
+                </div>
+                <div class="lims-note-meta-row">
+                  <span class="lims-note-meta-label i-note">연구노트상태</span>
+                  <span class="lims-note-meta-value" id="noteStatusNm">작성중</span>
+                </div>
+                <div class="lims-note-meta-row">
+                  <span class="lims-note-meta-label i-folder">프로젝트</span>
+                  <span class="lims-note-meta-value" id="noteProjectNm">-</span>
+                </div>
+                <div class="lims-note-meta-row">
+                  <span class="lims-note-meta-label i-hash">노트번호</span>
+                  <span class="lims-note-meta-value" id="noteMnoDisp">(임시)</span>
                 </div>
               </div>
             </div>
           </div>
 
           
+          <div class="lims-card">
+            <div class="lims-card-head">
+              <p class="lims-card-title">사용 시약<span class="lims-card-count"
+                      id="noteUsageCnt">0</span></p>
+              <div class="lims-card-tools">
+                <button class="button-gray-line-sty01"
+                        onclick="goScan();"><span>바코드 스캔</span></button>
+              </div>
+            </div>
+            <div class="lims-card-body">
+              <div class="lims-note-usage"
+                   id="noteUsageList">
+                <div class="lims-note-empty">불러오는 중입니다.</div>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        
+        <div class="lims-note-main">
           <div class="lims-card">
             <div class="lims-card-head">
               <p class="lims-card-title">본문</p>
@@ -7008,26 +7140,6 @@
             </div>
           </div>
         </div>
-
-        
-        <aside class="lims-note-side">
-          <div class="lims-card">
-            <div class="lims-card-head">
-              <p class="lims-card-title">사용 시약<span class="lims-card-count"
-                      id="noteUsageCnt">0</span></p>
-              <div class="lims-card-tools">
-                <button class="button-gray-line-sty01"
-                        onclick="goScan();"><span>바코드 스캔</span></button>
-              </div>
-            </div>
-            <div class="lims-card-body">
-              <div class="lims-note-usage"
-                   id="noteUsageList">
-                <div class="lims-note-empty">불러오는 중입니다.</div>
-              </div>
-            </div>
-          </div>
-        </aside>
       </div>
 
       

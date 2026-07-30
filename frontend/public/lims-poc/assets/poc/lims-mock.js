@@ -1189,14 +1189,12 @@
       };
     }
 
-    // 시연 중임을 화면에 명시한다. 데이터가 진짜라고 오해할 여지를 남기지 않는다.
-    var banner = document.createElement('div');
-    banner.className = 'lims-poc-banner';
-    banner.innerHTML = '<b>PoC 프로토타입</b>' +
-      '<span>Goono ELN 실제 화면·CSS 그대로입니다. 데이터는 고정 예시이고 서버·DB 는 연결돼 있지 않습니다.</span>';
-    document.body.insertBefore(banner, document.body.firstChild);
-
-    installFlowBar();
+    /*
+      PoC 배너와 업무 흐름 바를 붙이던 자리다. 둘 다 뗐다 —
+      화면 맨 위 두 줄을 차지하면서 정작 화면이 무엇인지는 아래에서 다시 말한다.
+      시연에서 설명할 것은 말로 하고, 화면은 화면만 보여준다.
+      (흐름 바 코드는 남겨 두었다. 필요하면 installFlowBar() 한 줄만 되살리면 된다.)
+    */
     installChemEditorStub();
     installInlineEditorSwap();
     installOutOfScopeNotice();
