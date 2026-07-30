@@ -36,6 +36,9 @@
     return input && input.value ? Number(input.value) : null;
   }
 
+  /* 새 창으로 여는 화면 — 노트 전용 레이아웃(GNB·헤더 없음)을 쓰는 것들이다. */
+  var NEW_WINDOW_PAGES = ['note_write.html'];
+
   function toStaticUrl(url) {
     if (!url) return null;
     var path = String(url).split('?')[0];
@@ -1185,7 +1188,18 @@
     if (typeof S2Util !== 'undefined' && S2Util) {
       S2Util.goPage = function (url) {
         var target = toStaticUrl(url);
-        window.location.href = target || '#';
+        if (!target) { window.location.href = '#'; return; }
+        /*
+          연구노트 작성·상세는 새 창으로 연다. 그 화면에는 GNB·헤더가 없고
+          (노트 전용 레이아웃) 본문에 집중하는 자리이므로, 목록 화면을 덮어쓰지
+          않고 따로 띄우는 것이 구노의 기존 동작이다.
+        */
+        if (NEW_WINDOW_PAGES.indexOf(target) >= 0) {
+          window.open(target, 'goonoNote_' + Date.now(),
+            'width=1440,height=960,scrollbars=yes,resizable=yes');
+          return;
+        }
+        window.location.href = target;
       };
     }
 

@@ -71,14 +71,19 @@
 	  여백 스케일 — 4px 배수 하나로만 잰다.
 	  단계를 7개로 묶는 이유는 "적당히 줄이기" 를 못 하게 하기 위해서다.
 	  줄일지 말지는 정할 수 있어도 얼마나 줄일지는 정할 수 없게 만든다.
+
+	  값을 직접 적지 않고 --lims-unit 에서 곱해 낸다. 밀도를 바꿔야 할 때
+	  단위 하나만 건드리면 여백·조작 요소 높이가 함께 따라온다. 전에는 스케일을
+	  만들어 놓고도 값이 상수라, 하나를 줄이면 나머지가 따라오지 않아 다시 어긋났다.
 	*/
-	--lims-gap-1: 4px;
-	--lims-gap-2: 8px;
-	--lims-gap-3: 12px;
-	--lims-gap-4: 16px;
-	--lims-gap-5: 20px;
-	--lims-gap-6: 24px;
-	--lims-gap-8: 32px;
+	--lims-unit: 4px;
+	--lims-gap-1: var(--lims-unit);
+	--lims-gap-2: calc(var(--lims-unit) * 2);
+	--lims-gap-3: calc(var(--lims-unit) * 3);
+	--lims-gap-4: calc(var(--lims-unit) * 4);
+	--lims-gap-5: calc(var(--lims-unit) * 5);
+	--lims-gap-6: calc(var(--lims-unit) * 6);
+	--lims-gap-8: calc(var(--lims-unit) * 8);
 
 	/*
 	  타이포 스케일 — 크기가 아니라 역할로 부른다.
@@ -93,14 +98,17 @@
 	    lead    18 — 모달 제목, 물성 값
 	    title   20 — 페이지 제목
 	    metric  24 — KPI 숫자, 바코드 입력
+
+	  크기도 기준 하나(--lims-fs-body)에서 더하고 뺀다. 본문을 1px 키우면
+	  라벨·제목·KPI 가 같은 간격을 유지한 채 함께 커진다.
 	*/
-	--lims-fs-micro: 11px;
-	--lims-fs-caption: 12px;
 	--lims-fs-body: 13px;
-	--lims-fs-strong: 14px;
-	--lims-fs-lead: 18px;
-	--lims-fs-title: 20px;
-	--lims-fs-metric: 24px;
+	--lims-fs-micro: calc(var(--lims-fs-body) - 2px);
+	--lims-fs-caption: calc(var(--lims-fs-body) - 1px);
+	--lims-fs-strong: calc(var(--lims-fs-body) + 1px);
+	--lims-fs-lead: calc(var(--lims-fs-body) + 5px);
+	--lims-fs-title: calc(var(--lims-fs-body) + 7px);
+	--lims-fs-metric: calc(var(--lims-fs-body) + 11px);
 
 	/*
 	  굵기는 셋뿐이다. 600 을 뺀 이유가 있다 — Noto Sans / Noto Sans KR 은
@@ -130,9 +138,9 @@
 
 	/* 조작 요소 공통 규격 — 버튼/입력/셀렉트가 한 줄에 서면 높이가 같아야 한다.
 	   32px 은 4px 배수이면서 클릭 대상 최소치(28px)를 넘긴다. */
-	--lims-control-h: 32px;
-	--lims-control-h-sm: 28px;
-	--lims-radius: 8px;
+	--lims-control-h: calc(var(--lims-unit) * 8);
+	--lims-control-h-sm: calc(var(--lims-unit) * 7);
+	--lims-radius: calc(var(--lims-unit) * 2);
 	--lims-ring: 0 0 0 3px rgba(23, 97, 222, 0.18);
 
 	font-size: var(--lims-fs-body);
@@ -1598,12 +1606,9 @@
    그래서 계산 중(.is-calculating)과 갱신 직후(.is-fresh)를 다르게 칠하고,
    붙여넣는 자리를 점선으로 열어 둔다.
 --------------------------------------------------------------------------- */
-.lims-page .lims-note-layout {
-	display: grid;
-	/* 정보 패널이 왼쪽, 본문이 오른쪽 — 구노 ELN 의 기존 연구노트 화면과 같은 배치다. */
-	grid-template-columns: 280px minmax(0, 1fr);
-	gap: var(--lims-gap-3);
-	align-items: start;
+/* 본문 한 칸. 정보 패널은 노트 레이아웃(#main-body-left)이 왼쪽에 고정으로 그린다. */
+.lims-page .lims-note-body {
+	display: block;
 }
 
 /* --- 상단 바 — 되돌아가기 · 제목 · 저장 --- */

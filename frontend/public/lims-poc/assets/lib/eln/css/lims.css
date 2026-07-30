@@ -796,63 +796,98 @@
 }
 
 /* ===========================================================================
-   셸 밀도 — 좌측 GNB · 상단 헤더
+   셸 치수 — 좌측 GNB · 상단 헤더
 
-   구노 기본값은 사이드바 295px, 메뉴 글자 16px, 헤더 60px 이다. 화면 폭이
-   1600px 일 때 사이드바가 18% 를 가져가고, 본문(#main, 최대 1296px)은 그만큼
-   눌린다. 연구노트처럼 본문이 넓어야 하는 화면에서 특히 손해다.
+   값을 한 곳에서만 정한다. 사이드바 폭을 바꾸면 본문 오프셋·접힘 마진·헤더 위치가
+   전부 따라온다. 전에는 295px 이 layout.css 안 네 군데에 흩어져 있어서 하나를
+   바꾸면 왼쪽에 빈 띠가 남거나 본문이 사이드바 밑으로 들어갔다.
 
-   layout.css/style.css 를 직접 고치지 않고 여기서 덮는 이유는 한 곳만 지우면
-   원래대로 돌아오게 하기 위해서다. 값은 줄이되 조작 대상(메뉴 항목)의 높이는
-   36px 아래로 내리지 않는다.
+   조작 대상(메뉴 항목)은 --shell-nav-h 로 따로 잡아 밀도를 줄여도 클릭 영역이
+   같이 줄지 않게 한다.
 =========================================================================== */
+:root {
+	--shell-w: 248px;
+	--shell-header-h: 52px;
+	--shell-unit: 4px;
+	--shell-nav-h: calc(var(--shell-unit) * 9);      /* 36px — 클릭 대상 최소치 위 */
+	--shell-nav-fs: 14px;
+	--shell-nav-icon: 18px;
+	--shell-collapse-at: 1200px;
+}
+
 .sidenav2 {
-	width: 248px;
+	width: var(--shell-w);
 }
 
 .sidenav2 a {
-	font-size: 14px;
+	font-size: var(--shell-nav-fs);
 }
 
 .sidenav2 a span {
-	font-size: 13px;
+	font-size: calc(var(--shell-nav-fs) - 1px);
 }
 
-/* 본문 폭은 사이드바 폭에서 계산된다(.content_div). 사이드바를 줄인 만큼 넓혀야
-   왼쪽에 빈 띠가 남지 않는다. 1200px 이하에서 사이드바가 접히는 규칙은 그대로 둔다. */
+/* 본문 폭은 사이드바 폭에서 계산된다. 한 곳만 보고 따라가게 둔다. */
 .wrapper .content_wrap .content_div {
-	width: calc(100% - 248px);
+	width: calc(100% - var(--shell-w));
 }
 
 @media (min-width: 1201px) {
 	.wrapper .content_wrap .content_div {
-		width: calc(100% - 248px);
+		width: calc(100% - var(--shell-w));
 	}
 }
 
+/* 사이드바가 접히면 본문이 그 자리를 가져간다. 이 규칙을 빼면 사이드바는
+   사라졌는데 왼쪽에 그 폭만큼 빈 띠가 남는다(base layout 의 100% 규칙을
+   우리 계산식이 덮어써 버리기 때문이다). */
 @media (max-width: 1200px) {
 	.sidenav2 {
-		margin-left: -248px;
+		margin-left: calc(-1 * var(--shell-w));
+	}
+
+	.wrapper .content_wrap .content_div {
+		width: 100%;
 	}
 }
 
 .nav-menu {
-	padding: 5px 10px;
+	padding: var(--shell-unit) calc(var(--shell-unit) * 2.5);
 }
 
 .nav-menu a {
+	display: flex;
+	align-items: center;
+	min-height: var(--shell-nav-h);
 	margin: 2px 0;
-	padding: 7px 0 7px 38px;
-	background-position: 10px;
-	background-size: 18px 18px;
+	padding: 0 0 0 calc(var(--shell-unit) * 9.5);
+	background-position: calc(var(--shell-unit) * 2.5);
+	background-size: var(--shell-nav-icon) var(--shell-nav-icon);
 }
 
 .nav-menu .menuCd[class*="LIMS_"] {
-	background-position: left 10px center;
-	background-size: 18px 18px;
+	background-position: left calc(var(--shell-unit) * 2.5) center;
+	background-size: var(--shell-nav-icon) var(--shell-nav-icon);
 }
 
-/* 상단 헤더 — 60px 은 검색창(40px)에 비해 여유가 과하다. */
+/* 상단 헤더 */
 .sticky-sty-01 {
-	height: 52px;
+	height: var(--shell-header-h);
+}
+
+/*
+   좁은 화면 — 밀도 단위 자체를 줄인다. 개별 규칙을 매체 질의마다 다시 쓰지 않고
+   뿌리 값만 내리면 여백·높이·글자가 함께 따라 내려온다.
+*/
+@media (max-width: 1440px) {
+	:root {
+		--shell-w: 224px;
+		--shell-nav-fs: 13px;
+	}
+}
+
+@media (max-width: 1200px) {
+	:root {
+		--shell-header-h: 48px;
+	}
 }
