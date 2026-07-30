@@ -93,3007 +93,255 @@
       href="assets/lib/eln/css/lims-ui.css"
     />
 
-    
+     
 
-    
     
     
     <script type="text/javascript">
-      /*<![CDATA[*/
+            /*<![CDATA[*/
 
-      const templateModalNoteInspectionWritingInspectorUnselected = `
-        <div class="user-add">
-          <a href="#" role="button" class="c-pointer user-add-btn">
-            <i class="fa far fa-m fa-plus small"></i>
-          </a>
-        </div>
-      `;
-
-      const templateModalNoteInspectionWritingOrzt = `
-        <li class="ma-b10">
-          <div class="team_name" data-bs-toggle="collapse" data-bs-target="#collapseTeam_{{=orztCd}}" aria-expanded="true" aria-controls="collapseTeam">{{=orztNm}}(<span id="collapseTeam_{{=orztCd}}_cnt">0</span>)</div>
-          <ul id="collapseTeam_{{=orztCd}}" class="collapse team_member show pa-5">
-          </ul>
-        </li>
-      `;
-
-      const templateModalNoteInspectionWritingOrztUser = `
-        <li class="flex-sty02 po-r user" data-user-mno="{{=userMno}}">
-          <input type="checkbox" id="note_inspection_user_{{=userMno}}" class="basic form-check-input check user-checkbox"/>
-          <label for="note_inspection_user_{{=userMno}}" class="ma-b0 flex-sty02"><div class="name">{{=userNm}}</div> <div if="isEmail" class="d-flex fw-400"> (<div class="email">{{=email}}</div>)</div></label>
-          <div class="ma-r0 authGrpTxt role {{=authGrpCd}}">{{=authGrpNm}}</div>
-        </li>
-      `;
-
-      const templateModalNoteInspectionUser = `
-        <div class="inspector_box flex-sty02 c-pointer ma-b10">
-          <div class="inspector_info" data-bs-toggle="collapse" data-bs-target="#collapseCnfmCmmt{{=no}}" aria-expanded="false" aria-controls="collapseCnfmCmmt{{=no}}">
-            <div class="flex-sty04">
-              <div><span>${'점검자'}</span> <span>{{=no}}</span></div>
-              <div>
-                <div class="sel-user-info flex-sty02">
-                  <div class="sel-user"><span class="sel-user-name">{{=inspctnUserNm}}</span><span if="isEmail" class="sel-user-email">({{=email}})</span></div>
-                  <div class="confirm-status confirm ma-l10 {{=inspctnStatusCcd}}">{{=inspctnStatusCcdNm}}</div>
-                  <a if="isDesc" href="#" class="drop_down collapse_icon1"></a>
-                </div>
-              </div>
-            </div>
-            <div if="isDesc" class="collapse cnfmCmmt" id="collapseCnfmCmmt{{=no}}">{{=desc}}</div>
-          </div>
-        </div>
-      `;
-
-      const templateModalNoteShareManager = `
-        <div class="inspector_box flex-sty02 c-pointer ma-b10">
-          <div class="inspector_info" data-bs-toggle="collapse" data-bs-target="#collapseCnfmCmmt{{=no}}" aria-expanded="false" aria-controls="collapseCnfmCmmt{{=no}}">
-            <div class="flex-sty04">
-              <div><span>${'점검자'}</span> <span>{{=no}}</span></div>
-              <div>
-                <div class="sel-user-info flex-sty02">
-                  <div class="sel-user"><span class="sel-user-name">{{=shareManagerNm}}</span><span if="isEmail" class="sel-user-email">({{=email}})</span></div>
-                  <div class="confirm-status confirm ma-l10 {{=shareStatusCcd}}">{{=shareStatusCcdNm}}</div>
-                  <a if="isDesc" href="#" class="drop_down collapse_icon1"></a>
-                </div>
-              </div>
-            </div>
-            <div if="isDesc" class="collapse cnfmCmmt" id="collapseCnfmCmmt{{=no}}">{{=desc}}</div>
-          </div>
-        </div>
-      `;
-
-      const templateModalNoteDownloadManager = `
-        <div class="inspector_box flex-sty02 c-pointer ma-b10">
-          <div class="inspector_info" data-bs-toggle="collapse" data-bs-target="#collapseCnfmCmmt{{=no}}" aria-expanded="false" aria-controls="collapseCnfmCmmt{{=no}}">
-            <div class="flex-sty04">
-              <div><span>${'점검자'}</span> <span>{{=no}}</span></div>
-              <div>
-                <div class="sel-user-info flex-sty02">
-                  <div class="sel-user"><span class="sel-user-name">{{=downloadManagerNm}}</span><span if="isEmail" class="sel-user-email">({{=email}})</span></div>
-                  <div class="confirm-status confirm ma-l10 {{=downloadStatusCcd}}">{{=downloadStatusCcdNm}}</div>
-                  <a if="isDesc" href="#" class="drop_down collapse_icon1"></a>
-                </div>
-              </div>
-            </div>
-            <div if="isDesc" class="collapse cnfmCmmt" id="collapseCnfmCmmt{{=no}}">{{=desc}}</div>
-          </div>
-        </div>
-      `;
-
-      // 점검 요청 철회
-      function elnCom_clickModalNoteInspectionCancel(noteMno, inspctnReqstMno) {
-        coreDialog.confirm(
-          '연구노트 점검 요청이 취소됩니다.',
-          function (result) {
-            if (result) {
-              ajaxPost(
-                '/api/eln/note/inspctn/inspctnReqstCancel',
-                {
-                  noteMno: noteMno ? noteMno : '',
-                  inspctnReqstMno: inspctnReqstMno
-                    ? inspctnReqstMno
-                    : ''
-                },
-                '데이터요청중입니다.잠시만 기다려주세요.',
-                function (res) {
-                  coreDialog.alert('정상 처리되었습니다.', function () {
-                    location.reload();
-                  });
-                }
-              );
+            function initPage() {
+                initBoxViewEvent();
+                // 최근 열어본 연구노트
+                getLastViewNoteList(true);
             }
-          },
-          {
-            title: '점검 요청 철회',
-            subTitle: '점검 요청을 철회하시겠습니까?',
-            ok: '철회',
-            okClass: 'button-remove-sty01'
-          }
-        );
-      }
 
-      // 연구노트 점검 요청 모달
-      function elnCom_openModalRequestInspection(projectMno) {
-        S2Util.fetch('/api/eln/project/note-inspctn-info', { projectMno: projectMno }, function (result) {
-          const gnrlUserInfo = result.gnrlUserInfo;
-
-          const params = {
-            modalTitle: '연구노트 점검 요청',
-            subTitle: '',
-            owner: '',
-            cnclTxt: '닫기',
-            cnfmTxt: '확인'
-          };
-
-          if (gnrlUserInfo && gnrlUserInfo.gnrlUserMno) {
-            params['gnrlUserMno'] = gnrlUserInfo.gnrlUserMno;
-            params['gnrlUserNm'] = gnrlUserInfo.userNm;
-            params['gnrlEmail'] = gnrlUserInfo.email;
-          }
-
-          $('#modal-note-inspection-WRITING')
-            .draggable({ handle: '.modal-header' })
-            .modal('show')
-            .off('click', 'button.button-cnfm.inspection') // 기존 이벤트 제거
-            .on('click', 'button.button-cnfm.inspection', function (e) {
-              e.preventDefault();
-              const noteMno = '';
-
-              $.ajax({
-                url: '/api/eln/note/inspctn/checkExistFileId',
-                type: 'POST',
-                data: { noteMno: noteMno },
-                success: function (response) {
-                  if (response.success) {
-                    ajaxPost(
-                      '/api/eln/note/inspctn/createInspctnReqst',
-                      {
-                        noteNm: '',
-                        noteMno: noteMno,
-                        inspctnUserMnoList: inspctnUserMnoArr,
-                        inspctnReqstSeCcd: inspctnReqstSeCcd,
-                        desc: requestDesc
-                      },
-                      '데이터요청중입니다.잠시만 기다려주세요.',
-                      function () {
-                        coreDialog.alert('정상 처리되었습니다.', function () {
-                          location.reload();
-                        });
-                      }
-                    );
-                  } else {
-                    S2Util.toasts(response.message);
-                  }
-                },
-                error: function (xhr) {
-                  const res = xhr.responseJSON;
-                  const msg = res && res.message ? res.message : window.i18n['i18n.pkg.msg.701'];
-                  coreDialog.alert(msg);
-                }
-              });
-            })
-            .on('click', '.user-add-btn', function () {
-              if ($(window).width() <= 900) {
-                const element = document.getElementById('nav-THIRD_PARTY_INSPCTN-tab');
-                if (element) {
-                  element.scrollIntoView({
-                    behavior: 'smooth'
-                  });
-                }
-              }
-
-              // 점검자 추가
-              $('#modal-note-inspection-WRITING #collapseUserGroup').collapse('show');
-              if (!$('#modal-note-inspection-WRITING .user_list_wrap > li').length) {
-                // 연구원 검색 결과가 없다면 연구원 검색 상자도 같이 연다.
-                $('#modal-note-inspection-WRITING #collapseSearchUser').collapse('show');
-              }
-            })
-            .on('click', '.search-user-box-show-btn', function () {
-              // 연구원 검색 상자 열기
-              $('#modal-note-inspection-WRITING #collapseSearchUser').collapse('show');
-            })
-            .on('click', '.search-user-box-close-btn', function () {
-              // 연구원 검색 상자 닫기
-              $('#modal-note-inspection-WRITING #collapseSearchUser.collapse').collapse('hide');
-              if (!$('#modal-note-inspection-WRITING .user_list_wrap > li').length) {
-                // 연구원 검색 결과가 없다면 사용자 목록도 같이 닫는다.
-                $('#modal-note-inspection-WRITING #collapseUserGroup.collapse').collapse('hide');
-              }
-            })
-            .on('keydown', function (e) {
-              //ESC로 검색창 닫기
-              if (e.key === 'Escape') {
-                $('#modal-note-inspection-WRITING #collapseUserGroup.collapse').collapse('hide');
-              }
-            })
-            .on('click', '.ce-org-close', function () {
-              // 사용자 목록 닫기
-              $('#modal-note-inspection-WRITING #collapseUserGroup.collapse').collapse('hide');
-            })
-            .on('click', '.sel-user-cncl', function () {
-              // 점검자 제외하기
-              const $target = $(this).parents('.inspector_div:first');
-              const targetUserMno = $target.find('.sel-user-info:first').data('userMno');
-
-              $target.html(templateModalNoteInspectionWritingInspectorUnselected);
-              $('#modal-note-inspection-WRITING .user_list_wrap #note_inspection_user_' + targetUserMno).prop(
-                'checked',
-                false
-              );
-            })
-            .on('click', 'button.button-cnfm.inspection', function () {
-              // 점검 신청 확인
-              const inspctnUserMnoArr = [];
-              const inspctnReqstSeCcd = $('#modal-note-inspection-WRITING .tab-pane.active').data('inspctnReqstSeCcd');
-
-              // 제3자 점검
-              if (inspctnReqstSeCcd === 'THIRD_PARTY_INSPCTN') {
-                $('#modal-note-inspection-WRITING .inspector_list .inspector_div .sel-user-info').each(function () {
-                  inspctnUserMnoArr.push($(this).data('userMno'));
-                });
-
-                if (!inspctnUserMnoArr.length) {
-                  coreDialog.alert('점검자를 선택해주세요.');
-                  return;
+            function getLastViewNoteList(isFirst) {
+                let notePageUnit = 4;
+                if ($('.content-wrapper').hasClass('small')) {
+                    notePageUnit = 3;
+                } else if ($('.content-wrapper').hasClass('extra-small')) {
+                    notePageUnit = 2;
                 }
 
-                const requestDesc = $('#modal-note-inspection-WRITING #requestDesc').val();
-                if (!requestDesc) {
-                  $('#modal-note-inspection-WRITING')
-                    .find('#collapseSearchUser.collapse, #collapseUserGroup.collapse')
-                    .collapse('hide');
-                  coreDialog.alert('요청 코멘트를 입력해주세요.', function () {
-                    $('#modal-note-inspection-WRITING #requestDesc').focus();
-                  });
-                  return;
-                }
-
-                coreDialog.confirm('점검 요청 하시겠습니까?', function (result) {
-                  if (result) {
-                    ajaxPost(
-                      '/api/eln/note/inspctn/createInspctnReqst',
-                      {
-                        noteNm: '',
-                        noteMno: '',
-                        inspctnUserMnoList: inspctnUserMnoArr,
-                        inspctnReqstSeCcd: inspctnReqstSeCcd,
-                        desc: requestDesc
-                      },
-                      '데이터요청중입니다.잠시만 기다려주세요.',
-                      function () {
-                        coreDialog.alert('정상 처리되었습니다.', function () {
-                          location.reload();
-                        });
-                      }
-                    );
-                  }
-                });
-              } else {
-                // 자가점검
-                const selfInspctnRsnCcd = $('#modal-note-inspection-WRITING [name=selfInspctnRsnCcd]').val();
-                let selfInspctnRsn = $('#modal-note-inspection-WRITING [name=selfInspctnRsn]').val();
-                const selectedText = $(
-                  '#modal-note-inspection-WRITING [name=selfInspctnRsnCcd] > option:selected'
-                ).text();
-
-                if (selfInspctnRsnCcd === 'S99' && !selfInspctnRsn) {
-                  coreDialog.alert('자가 점검 사유를 입력해주세요.', function () {
-                    $('#modal-note-inspection-WRITING [name=selfInspctnRsnCcd]').focus();
-                  });
-                  return;
-                } else if (selfInspctnRsnCcd !== 'S99') {
-                  selfInspctnRsn = selectedText;
-                }
-
-                coreDialog.confirm('자가 점검 승인하시겠습니까?', function (result) {
-                  if (result) {
-                    ajaxPost(
-                      '/api/eln/note/inspctn/createSelfInspctnReqst',
-                      {
-                        noteNm: '',
-                        noteMno: '',
-                        inspctnReqstSeCcd: inspctnReqstSeCcd,
-                        selfInspctnRsnCcd: selfInspctnRsnCcd,
-                        selfInspctnRsn: selfInspctnRsn
-                      },
-                      '데이터요청중입니다.잠시만 기다려주세요.',
-                      function () {
-                        coreDialog.alert('정상 처리되었습니다.', function () {
-                          location.reload();
-                        });
-                      }
-                    );
-                  }
-                });
-              }
-            })
-            .find('.modal-content')
-            .html(
-              S2Util.s2Template(
-                `
-                  <div class="modal-header cursor-move">
-                    <p class="modal-title">${params.modalTitle}</p>
-                    <span class="modal-sub img">${params.subTitle}</span>
-                  </div>
-                  <div class="modal-body inspection reqst">
-                    <div if="isSelfInspctnAllowYn" class="tab-board-sty05">
-                      <nav class="board-top">
-                        <div class="nav nav-tabs tabs-box" id="nav-tab" role="tablist">
-                          <button id="nav-${'THIRD_PARTY_INSPCTN'}-tab" class="nav-link tab active" data-bs-toggle="tab" data-bs-target="#nav-${'THIRD_PARTY_INSPCTN'}">
-                            <span text="#{i18n.pkg.msg.458}">제3자 점검</span>
-                          </button>
-                          <button id="nav-${'SELF_INSPCTN'}-tab" class="nav-link tab" data-bs-toggle="tab" data-bs-target="#nav-${'SELF_INSPCTN'}">
-                            <span text="#{i18n.pkg.msg.459}">자가 점검</span>
-                          </button>
-                        </div>
-                      </nav>
-                    </div>
-                      <div class="tab-content" id="nav-tabContent">
-                        <div class="tab-body-sty01 tab-pane fade show active" id="nav-${'THIRD_PARTY_INSPCTN'}" role="tabpanel" aria-labelledby="nav-${'THIRD_PARTY_INSPCTN'}-tab" data-inspctn-reqst-se-ccd=${'THIRD_PARTY_INSPCTN'}>
-                          <div class="wrap-left po-r">
-                            <div class="ma-b20">
-                              <label for="" class="modal-cont-label">${'요청자'}</label>
-                              <input type="text" id="requester" name="requester" class="input-write-sty02-line" disabled value="${params.owner}">
-                            </div>
-                            <div>
-                              <label for="" class="modal-cont-label">${'요청 코멘트'}</label>
-                              <textarea id="requestDesc" name="desc" rows="3" class="form-textarea form-textarea-line wp-100 desc" placeholder="${'내용을 입력해주세요.'}" maxlength="200"
-                                      onKeyDown="coreCommon.inputLimitText('#requestDesc','.requestDesc-count',200);"
-                                      onKeyUp="coreCommon.inputLimitText('#requestDesc','.requestDesc-count', 200);"></textarea>
-
-                              <div class="flex-sty04 ma-b30">
-                                <div></div>
-                                <div>
-                                    <code class="requestDesc-count">0</code><span class="guidetext-sty02"> / 200</span>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div class="collapse" id="collapseUserGroup">
-                              <div class="col_header flex-sty04">
-                                <div class=""><span>${'전체 조직도'}</span> (<span class="allUserCnt">0</span>)</div>
-                                <div class="flex-sty02">
-                                  <a href="#" class="ma-r5 search-user-box-show-btn">
-                                    <i class="fa far fa-m fa-search none"></i>
-                                  </a>
-                                  <a href="#" class="fa-close ce-org-close"></a>
-                                </div>
-
-                                <div class="collapse" id="collapseSearchUser">
-                                  <div class="flex-sty04">
-                                    <span if="isInspectorsAdminSelect">${'관리자 검색'}</span>
-                                    <span else="isInspectorsAdminSelect">${'연구원 검색'}</span>
-                                    <a href="#" class="fa-close search-user-box-close-btn"></a>
-                                  </div>
-                                  <div class="ma-t5 flex-sty02">
-                                    <input type="text" id="schMember" sch-enter="elnCom_openModalRequestInspection_searchUser" maxlength="255" placeholder="${'이름, 이메일로 검색해주세요.'}" class="input-write-sty02-line">
-                                    <a href="#" onclick="elnCom_openModalRequestInspection_searchUser();" style="cursor: pointer;">
-                                      <i class="fa far fa-m fa-search small"></i>
-                                    </a>
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="col_body">
-                                <ul class="user_list_wrap">
-                                </ul>
-                                <div class="no-data d-none">
-                                  <div class="no-data-back"></div>
-                                  <span>${'데이터가 없습니다.'}</span>
-                                </div>
-                              </div>
-                            </div>
-                        </div>
-                        <div class="wrap-right">
-                          <div class="flex-sty04 ma-b20">
-                            <label class="modal-cont-label">${'점검자'}</label>
-                            <div class="alert-msg">${'최대 3명의 점검자를 지정할 수 있습니다.'}</div>
-                          </div>
-                          <div class="inspector_list" id="sortable">
-                              <div if="isInspectorsGnrlAuto" class="inspector_box flex-sty02 c-pointer ma-b10">
-                                <img src="assets/lib/eln/img/drag_indicator.png" alt="dragImg" id="1" class="ma-r10" style="width: 25px; height: 25px;">
-                                <div class="inspector_info flex-sty04 writing">
-                                  <div><span>${'점검자'}</span> <span class="inspector_sn">1</span></div>
-                                  <div class="inspector_div fix">
-                                    <div class="sel-user-info flex-sty02" data-user-mno="${params.gnrlUserMno}">
-                                      <div class="sel-user"><span class="sel-user-name">${params.gnrlUserNm}</span><span if="isGnrlEmail" class="sel-user-email">(${params.gnrlEmail})</span></div>
-                                      <div class="confirm-status ma-l10">${'미승인'}</div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <div else="isInspectorsGnrlAuto" class="inspector_box flex-sty02 c-pointer ma-b10">
-                                <img src="assets/lib/eln/img/drag_indicator.png" alt="dragImg" id="2" class="ma-r10" style="width: 25px; height: 25px;">
-                                <div class="inspector_info flex-sty04 writing">
-                                  <div><span>${'점검자'}</span> <span class="inspector_sn">1</span></div>
-                                  <div class="inspector_div">
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="inspector_box flex-sty02 c-pointer ma-b10">
-                                <img src="assets/lib/eln/img/drag_indicator.png" alt="dragImg" id="" class="ma-r10" style="width: 25px; height: 25px;">
-                                <div class="inspector_info flex-sty04 writing">
-                                  <div><span>${'점검자'}</span> <span class="inspector_sn">2</span></div>
-                                  <div class="inspector_div">
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="inspector_box flex-sty02 c-pointer ma-b10">
-                                <img src="assets/lib/eln/img/drag_indicator.png" alt="dragImg" id="" class="ma-r10" style="width: 25px; height: 25px;">
-                                <div class="inspector_info flex-sty04 writing">
-                                  <div><span>${'점검자'}</span> <span class="inspector_sn">3</span></div>
-                                  <div class="inspector_div">
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                          <div if="isSelfInspctnAllowYn" class="tab-body-sty01 tab-pane fade" id="nav-${'SELF_INSPCTN'}" role="tabpanel" aria-labelledby="nav-${'SELF_INSPCTN'}-tab" data-inspctn-reqst-se-ccd=${'SELF_INSPCTN'}>
-                            <div class="wrap-left">
-                              <div class="ma-b20">
-                                <label for="" class="modal-cont-label">${'요청자'}</label>
-                                <input type="text" id="requester" name="requester" class="input-write-sty02-line" disabled value="${params.owner}">
-                              </div>
-                            </div>
-                            <div class="wrap-right">
-                              <div class="flex-sty04 ma-b20">
-                                <div></div>
-                                <div class="alert-msg">${'자가 점검 사유를 선택해주세요.'}</div>
-                              </div>
-                              <div class="">
-                                <select class="btn btn-xs select-xs select-sty02 w-250 ma-r0" name="selfInspctnRsnCcd" onclick="changeSelfInspctnRsnCcd(this);">
-                                  <option value="${'S01'}">${'제3자 점검 미필요'}</option>
-                                  <option value="${'S02'}">${'개인 연구노트'}</option>
-                                  <option value="${'S99'}">${'기타'}</option>
-                                </select>
-                                <div class="selfInspctnRsnEtc d-none ma-t10">
-                                  <textarea id="selfInspctnRsn" name="selfInspctnRsn" rows="3" class="form-textarea form-textarea-line wp-100 h-150" placeholder="${'내용을 입력해주세요.'}" maxlength="200"
-                                      onKeyDown="coreCommon.inputLimitText('#selfInspctnRsn','.selfInspctnRsn-count',200);"
-                                      onKeyUp="coreCommon.inputLimitText('#selfInspctnRsn','.selfInspctnRsn-count', 200);"></textarea>
-                                    <div class="flex-sty04 ma-b30">
-                                  <div></div>
-                                  <div>
-                                    <code class="selfInspctnRsn-count">0</code><span class="guidetext-sty02"> / 200</span>
-                                  </div>
-                                </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                      </div>
-                  </div>
-                  <div class="modal-footer">
-                    <div class="button-wrap02">
-                      <button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">${'닫기'}</button>
-                      <button type="button" class="button-cnfm-sty01 button-cnfm inspection">${'확인'}</button>
-                    </div>
-                  </div>
-                `,
-                {
-                  isSelfInspctnAllowYn: '' === 'Y',
-                  isInspectorsGnrlAuto:
-                    result.noteInspectioninspectorsSe ===
-                      'gnrlAutoSelect' && params.gnrlUserMno,
-                  isInspectorsAdminSelect:
-                    result.noteInspectioninspectorsSe === 'adminSelect',
-                  isGnrlEmail: !!params.gnrlEmail
-                }
-              )
-            )
-            .end()
-            .find('.inspector_div:not(.fix)')
-            .html(templateModalNoteInspectionWritingInspectorUnselected)
-            .end()
-            .find('#sortable')
-            .disableSelection()
-            .sortable({
-              // 점검자 드래그
-              stop: function () {
-                $('#modal-note-inspection-WRITING .inspector_list .inspector_box .inspector_sn').each(function (idx) {
-                  $(this).text(idx + 1);
-                });
-              }
-            });
-        });
-      }
-
-      function changeSelfInspctnRsnCcd(target) {
-        const selfInspctnRsnCcd = $(target).val();
-        if (selfInspctnRsnCcd == 'S99') {
-          $('#modal-note-inspection-WRITING .selfInspctnRsnEtc').removeClass('d-none');
-        } else {
-          $('#modal-note-inspection-WRITING .selfInspctnRsnEtc').addClass('d-none');
-          $('#modal-note-inspection-WRITING [name=selfInspctnRsn]').val('');
-        }
-      }
-
-      // 점검을 요청할 사용자 목록 조회
-      function elnCom_openModalRequestInspection_searchUser() {
-        const searchKeyword = $('#modal-note-inspection-WRITING #schMember').val();
-        if (!searchKeyword) {
-          coreDialog.alert('검색어를 입력해주세요.');
-          return;
-        }
-
-        ajaxPost(
-          '/api/system/user/inspectionUserList',
-          {
-            searchKeyword: searchKeyword
-          },
-          '데이터요청중입니다.잠시만 기다려주세요.',
-          function (res) {
-            $('#modal-note-inspection-WRITING #collapseSearchUser.collapse').collapse('hide');
-            if (res.userList && Object.keys(res.userList).length) {
-              $('#modal-note-inspection-WRITING')
-                .find('.allUserCnt')
-                .text(S2Util.comma(Object.keys(res.userList).length))
-                .end()
-                .find('.no-data')
-                .addClass('d-none')
-                .end()
-                .find('.user_list_wrap')
-                .empty()
-                .removeClass('d-none');
-
-              let prevOrzt = {};
-              let orztUserArr = [];
-
-              for (const idx in res.userList) {
-                const user = res.userList[idx];
-                if (prevOrzt.orztCd != user.orztCd) {
-                  user['isEmail'] = user.email ? true : false;
-
-                  if (orztUserArr.length > 0) {
-                    $('#modal-note-inspection-WRITING .user_list_wrap')
-                      .append(S2Util.s2Template(templateModalNoteInspectionWritingOrzt, prevOrzt))
-                      .find('#collapseTeam_' + prevOrzt.orztCd)
-                      .html(S2Util.s2Template(templateModalNoteInspectionWritingOrztUser, orztUserArr))
-                      .end()
-                      .find('#collapseTeam_' + prevOrzt.orztCd + '_cnt')
-                      .text(orztUserArr.length);
-                  }
-                  orztUserArr = [];
-                }
-                orztUserArr.push(user);
-                prevOrzt = user;
-              }
-
-              if (orztUserArr.length > 0) {
-                $('#modal-note-inspection-WRITING .user_list_wrap')
-                  .append(S2Util.s2Template(templateModalNoteInspectionWritingOrzt, prevOrzt))
-                  .find('#collapseTeam_' + prevOrzt.orztCd)
-                  .html(S2Util.s2Template(templateModalNoteInspectionWritingOrztUser, orztUserArr))
-                  .end()
-                  .find('#collapseTeam_' + prevOrzt.orztCd + '_cnt')
-                  .text(orztUserArr.length)
-                  .end()
-                  .find('.user-checkbox')
-                  .change(function () {
-                    const $target = $(this).parents('li.user:first');
-
-                    if ($(this).is(':checked')) {
-                      if ($('#modal-note-inspection-WRITING .inspector_div .user-add:first').length) {
-                        $('#modal-note-inspection-WRITING .inspector_div .user-add:first')
-                          .parents('.inspector_div:first')
-                          .html(
-                            S2Util.s2Template(
-                              `
-                                <div class="sel-user-info flex-sty02" data-user-mno="${$target.data('userMno')}">
-                                  <div class="sel-user"><span class="sel-user-name">${$target.find('.name').text()}</span><span if="isEmail" class="sel-user-email">(${$target.find('.email').text()})</span></div>
-                                  <div class="confirm-status ma-l10">${'미승인'}</div>
-                                  <a href="#" class="sel-user-cncl"></a>
-                                </div>
-                              `,
-                              { isEmail: $target.find('.email').text() ? true : false }
-                            )
-                          );
-                      } else {
-                        coreDialog.alert('더이상 추가할 수 없습니다.');
-                        $(this).prop('checked', false);
-                      }
-                    } else {
-                      const $selectedUser = $(
-                        '#modal-note-inspection-WRITING .inspector_div .sel-user-info[data-user-mno=' +
-                          $target.data('userMno') +
-                          ']'
-                      );
-                      if ($selectedUser.length) {
-                        $selectedUser
-                          .parents('.inspector_div:first')
-                          .html(templateModalNoteInspectionWritingInspectorUnselected);
-                      }
-                    }
-                  });
-              }
-            } else {
-              $('#modal-note-inspection-WRITING')
-                .find('.allUserCnt')
-                .text(0)
-                .end()
-                .find('.no-data')
-                .removeClass('d-none')
-                .end()
-                .find('.user_list_wrap')
-                .empty()
-                .addClass('d-none');
-            }
-          }
-        );
-      }
-
-      // 연구노트 점검중/점검완료 모달
-      function elnCom_openModalInspection(noteMno, noteNm) {
-        ajaxPost(
-          '/api/eln/note/inspctn/inspctnReqstInfo',
-          {
-            schNoteMno: noteMno ? noteMno : ''
-          },
-          '데이터요청중입니다.잠시만 기다려주세요.',
-          function (res) {
-            const params = {
-              modalTitle: '연구노트 점검 요청',
-              subTitle: noteNm ? noteNm : ''
-            };
-
-            $.extend(params, res.elnNoteInspctnReqst);
-
-            $('#modal-note-inspection-INSPECTION')
-              .draggable({ handle: '.modal-header' })
-              .modal('show')
-              .find('.modal-content')
-              .html(
-                S2Util.s2Template(
-                  `
-                    <div class="modal-header cursor-move">
-                      <p class="modal-title">${params.modalTitle}</p>
-                      <span class="modal-sub img">${params.subTitle}</span>
-                    </div>
-                    <div class="modal-body inspection">
-                      <div class="wrap-left">
-                        <div class="ma-b20">
-                          <label for="" class="modal-cont-label">${'요청자'}</label>
-                          <input type="text" id="requester" class="input-write-sty02-line" disabled value="${params.createUserNm}">
-                        </div>
-                        <div>
-                          <label for="" class="modal-cont-label">${'요청 코멘트'}</label>
-                          <pre class="desc read ma-t10">${params.inspctnReqstSeCcd === 'SELF_INSPCTN' ? params.selfInspctnRsn : params.desc}</pre>
-                        </div>
-                      </div>
-                      <div class="wrap-right">
-                        <div class="flex-sty04 ma-b20">
-                          <label class="modal-cont-label">${'점검자'}</label>
-                        </div>
-                        <div class="inspector_list">
-                        </div>
-                      </div>
-                    </div>
-                    <div class="modal-footer">
-                      <div class="button-wrap03">
-                        <div>
-                          <button if="isInspection" type="button" class="button-blue-line-sty01 none ma-l0" onclick="elnCom_clickModalNoteInspectionCancel('${params.noteMno}', '${params.inspctnReqstMno}');">${'점검 요청 철회'}</button>
-                        </div>
-                        <div>
-                          <button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">${'닫기'}</button>
-                        </div>
-                      </div>
-                    </div>
-                  `,
-                  {
-                    isInspection:
-                      res.elnNoteInspctnReqst.inspctnStatusCcd === 'UNCONFIRM'
-                  }
-                )
-              );
-
-            for (const idx in res.elnNoteInspctnList) {
-              const elnNoteInspctn = res.elnNoteInspctnList[idx];
-              elnNoteInspctn['no'] = Number(idx) + 1;
-              elnNoteInspctn['isDesc'] = elnNoteInspctn.desc ? true : false;
-              elnNoteInspctn['isEmail'] = elnNoteInspctn.email ? true : false;
-              $('#modal-note-inspection-INSPECTION .modal-content .inspector_list').append(
-                S2Util.s2Template(templateModalNoteInspectionUser, elnNoteInspctn)
-              );
-            }
-
-            // 점검자 코멘트
-            $('.inspector_info [id^=collapseCnfmCmmt].collapse')
-              .on('show.bs.collapse', function () {
-                $(
-                  `#modal-note-inspection-INSPECTION .modal-content .inspector_list [data-bs-target="#${$(this).attr('id')}"] .collapse_icon1`
-                )
-                  .removeClass('drop_down')
-                  .addClass('drop_up');
-              })
-              .on('hide.bs.collapse', function () {
-                $(
-                  `#modal-note-inspection-INSPECTION .modal-content .inspector_list [data-bs-target="#${$(this).attr('id')}"] .collapse_icon1`
-                )
-                  .removeClass('drop_up')
-                  .addClass('drop_down');
-              });
-          }
-        );
-      }
-
-      // 연구노트 점검관리 모달
-      const templateModalNoteinspectionManagement = `
-        <div class="modal-header cursor-move">
-          <p class="modal-title">${'연구노트 점검'}</p>
-          <span class="modal-sub img">{{=subTitle}}</span>
-        </div>
-        <div class="modal-body inspection">
-          <div class="wrap-left">
-            <div class="ma-b20">
-              <label for="" class="modal-cont-label">${'점검자'}</label>
-              <input type="text" id="requester" class="input-write-sty02-line" disabled value="${'김연구'}">
-            </div>
-            <div class="ma-b20">
-              <label for="" class="modal-cont-label">${'점검 관리'}</label>
-              <div class="radio-box-sty02 ma-t15">
-                <input type="radio" name="inspctnStatusCcd" id="inspctnStatusCcd_${'APPROVAL'}" autocomplete="off" class="c-pointer" value="${'APPROVAL'}">
-                <label for="inspctnStatusCcd_${'APPROVAL'}" class="c-pointer">${'승인'}</label>
-                <input type="radio" name="inspctnStatusCcd" id="inspctnStatusCcd_${'REJECT'}" autocomplete="off" class="c-pointer" value="${'REJECT'}">
-                <label for="inspctnStatusCcd_${'REJECT'}" class="c-pointer">${'반려'}</label>
-              </div>
-            </div>
-            <div>
-              <label for="" class="modal-cont-label">${'점검 코멘트'}</label>
-              <textarea id="inspctnDesc" name="desc" rows="3" class="form-textarea form-textarea-line wp-100 h-150" placeholder="${'내용을 입력해주세요.'}" maxlength="3000"></textarea>
-            </div>
-          </div>
-          <div class="wrap-right scroll">
-            <div class="ma-b20">
-              <label for="" class="modal-cont-label">${'요청자'}</label>
-              <input type="text" id="requester" class="input-write-sty02-line" disabled value="{{=createUserNm}}">
-            </div>
-            <div>
-              <label for="" class="modal-cont-label">${'요청 코멘트'}</label>
-              <pre class="desc read ma-t10 h-70">{{=desc}}</pre>
-            </div>
-            <div class="flex-sty04 ma-b20">
-              <label class="modal-cont-label">${'점검자'}</label>
-            </div>
-            <div class="inspector_list">
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <div class="button-wrap02">
-            <button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">${'닫기'}</button>
-            <button type="button" class="button-cnfm-sty01 button-cnfm" onclick="clickModalNoteInspctnApproval();">${'확인'}</button>
-          </div>
-        </div>
-      `;
-
-      function elnCom_openModalInspectionManagement(pNoteMno, pInspctnReqstMno, pNoteNm) {
-        const noteMno = pNoteMno ? pNoteMno : '';
-        const inspctnReqstMno = pInspctnReqstMno
-          ? pInspctnReqstMno
-          : '';
-        const noteNm = pNoteNm ? pNoteNm : '';
-
-        ajaxPost(
-          '/api/eln/note/inspctn/inspctnInfo',
-          {
-            schNoteMno: noteMno
-          },
-          '데이터요청중입니다.잠시만 기다려주세요.',
-          function (res) {
-            const params = {
-              subTitle: noteNm
-            };
-
-            Object.assign(params, res.elnNoteInspctn);
-            const modalNoteInspectionManagement = document.querySelector('#modal-note-inspection-management');
-            $(modalNoteInspectionManagement)
-              .data({ noteMno: noteMno, inspctnReqstMno: inspctnReqstMno })
-              .draggable({ handle: '.modal-header' })
-              .modal('show');
-
-            modalNoteInspectionManagement.querySelector('.modal-content').innerHTML = S2Util.s2Template(
-              templateModalNoteinspectionManagement,
-              params
-            );
-
-            for (const idx in res.elnNoteInspctnList) {
-              const elnNoteInspctn = res.elnNoteInspctnList[idx];
-              elnNoteInspctn['no'] = Number(idx) + 1;
-              elnNoteInspctn['isDesc'] = elnNoteInspctn.desc ? true : false;
-              elnNoteInspctn['isEmail'] = elnNoteInspctn.email ? true : false;
-              $('#modal-note-inspection-management .modal-content .inspector_list').append(
-                S2Util.s2Template(templateModalNoteInspectionUser, elnNoteInspctn)
-              );
-            }
-
-            // 점검 결과(승인/반려)
-            $('#modal-note-inspection-management [name=inspctnStatusCcd]').on('click', function () {
-              if ($(this).val() === 'APPROVAL') {
-                $('#modal-note-inspection-management #inspctnDesc').prop({ disabled: true, required: false });
-              } else {
-                $('#modal-note-inspection-management #inspctnDesc').prop({ disabled: false, required: true });
-              }
-            });
-
-            // 점검자 코멘트
-            $('#modal-note-inspection-management .inspector_info [id^=collapseCnfmCmmt].collapse')
-              .on('show.bs.collapse', function () {
-                $(
-                  '#modal-note-inspection-management .modal-content .inspector_list [data-bs-target="#' +
-                    $(this).attr('id') +
-                    '"] .collapse_icon1'
-                )
-                  .removeClass('drop_down')
-                  .addClass('drop_up');
-              })
-              .on('hide.bs.collapse', function () {
-                $(
-                  '#modal-note-inspection-management .modal-content .inspector_list [data-bs-target="#' +
-                    $(this).attr('id') +
-                    '"] .collapse_icon1'
-                )
-                  .removeClass('drop_up')
-                  .addClass('drop_down');
-              });
-          }
-        );
-      }
-
-      // 연구노트 점검 승인/반려 처리
-      function clickModalNoteInspctnApproval() {
-        const inspctnStatusCcd = $('#modal-note-inspection-management [name=inspctnStatusCcd]:checked').val();
-        if (!inspctnStatusCcd) {
-          coreDialog.alert('점검요청 승인 결과를 선택해주세요.');
-          return;
-        }
-
-        if (
-          inspctnStatusCcd === 'REJECT' &&
-          !$('#modal-note-inspection-management #inspctnDesc').val()
-        ) {
-          coreDialog.alert('점검 코멘트' + '은(는) 필수 사항입니다.');
-          return;
-        }
-
-        const msg =
-          inspctnStatusCcd === 'APPROVAL'
-            ? '연구노트 점검요청을 [승인] 하시겠습니까?'
-            : '연구노트 점검요청을 [반려] 하시겠습니까?';
-        coreDialog.confirm(msg, function (result) {
-          if (result) {
-            ajaxPost(
-              '/api/eln/note/inspctn/inspctnApproval',
-              {
-                noteMno: $('#modal-note-inspection-management').data('noteMno'),
-                inspctnReqstMno: $('#modal-note-inspection-management').data('inspctnReqstMno'),
-                inspctnStatusCcd: inspctnStatusCcd,
-                desc: $('#modal-note-inspection-management #inspctnDesc').val()
-              },
-              '데이터요청중입니다.잠시만 기다려주세요.',
-              function (res) {
-                coreDialog.alert('정상 처리되었습니다.', function () {
-                  location.reload(true);
-                });
-              }
-            );
-          }
-        });
-      }
-
-      // 연구노트 공유 관리 모달
-      function elnCom_openModalNoteConfirmShare(noteMno, shareReqstMno) {
-        ajaxPost(
-          '/api/eln/note/share/shareInfo',
-          {
-            schNoteMno: noteMno,
-            schShareReqstMno: shareReqstMno
-          },
-          '데이터요청중입니다.잠시만 기다려주세요.',
-          function (res) {
-            const params = {
-              subTitle: res.elnNoteShare.noteNm,
-              isEmail: res.elnNoteShare.createUserEmail ? true : false
-            };
-
-            $.extend(params, res.elnNoteShare);
-
-            $('#modal-note-confirm-share')
-              .data({ noteMno: noteMno, shareReqstMno: shareReqstMno })
-              .draggable({ handle: '.modal-header' })
-              .modal('show')
-              .find('.modal-content')
-              .html(S2Util.s2Template('template_modal_note_confirm_share', params));
-          }
-        );
-      }
-
-      // 연구노트 공유 관리 모달
-      function elnCom_openModalNoteConfirmShareConfirm(noteMno, shareReqstMno) {
-        ajaxPost(
-          '/api/eln/note/share/shareInfo',
-          {
-            schNoteMno: noteMno,
-            schShareReqstMno: shareReqstMno
-          },
-          '데이터요청중입니다.잠시만 기다려주세요.',
-          function (res) {
-            const params = {
-              subTitle: res.elnNoteShare.noteNm,
-              isEmail: res.elnNoteShare.createUserEmail ? true : false
-            };
-
-            $.extend(params, res.elnNoteShare);
-
-            $('#modal-note-confirm-share-confirm')
-              .data({ noteMno: noteMno, shareReqstMno: shareReqstMno })
-              .draggable({ handle: '.modal-header' })
-              .modal('show')
-              .find('.modal-content')
-              .html(S2Util.s2Template('template_modal_note_confirm_share_confirm', params));
-
-            // 점검 결과(승인/반려)
-            $('#modal-note-confirm-share-confirm [name=shareStatusCcd]').on('click', function () {
-              if ($(this).val() === 'APPROVAL') {
-                $('#modal-note-confirm-share-confirm .rejectResn').addClass('d-none');
-                $('#modal-note-confirm-share-confirm .rejectResn #shareDesc').prop({ disabled: true, required: false });
-              } else {
-                $('#modal-note-confirm-share-confirm .rejectResn').removeClass('d-none');
-                $('#modal-note-confirm-share-confirm .rejectResn #shareDesc').prop({ disabled: false, required: true });
-              }
-            });
-          }
-        );
-      }
-
-      // 연구노트 공유 점검중/완료 모달
-      function elnCom_openModalShare(noteMno, shareReqstMno) {
-        ajaxPost(
-          '/api/eln/note/share/shareReqstInfo',
-          {
-            schNoteMno: noteMno ? noteMno : '',
-            schShareReqstMno: shareReqstMno
-          },
-          '데이터요청중입니다.잠시만 기다려주세요.',
-          function (res) {
-            const params = {
-              modalTitle: '연구노트 공유 요청',
-              subTitle: res.elnNoteShareReqst.noteNm
-            };
-
-            $.extend(params, res.elnNoteShareReqst);
-
-            $('#modal-note-share-INSPECTION')
-              .draggable({ handle: '.modal-header' })
-              .modal('show')
-              .find('.modal-content')
-              .html(
-                S2Util.s2Template(
-                  `
-                    <div class="modal-header cursor-move">
-                      <p class="modal-title">${params.modalTitle}</p>
-                      <span class="modal-sub img">${params.subTitle}</span>
-                    </div>
-                    <div class="modal-body inspection">
-                      <div class="wrap-left">
-                        <div class="ma-b20">
-                          <label for="" class="modal-cont-label">${'요청자'}</label>
-                          <input type="text" id="requester" class="input-write-sty02-line" disabled value="${params.createUserNm}">
-                        </div>
-                        <div class="ma-b20">
-                          <label for="" class="modal-cont-label">${'공유 유효 기간'}</label>
-                          <input type="text" id="shareReqstPeriodDays" class="input-write-sty02-line" disabled value="${params.shareReqstPeriodDays}일">
-                        </div>
-                        <div>
-                          <label for="" class="modal-cont-label">${'요청 코멘트'}</label>
-                          <pre class="desc read ma-t10 h-130">${params.desc}</pre>
-                        </div>
-                      </div>
-                      <div class="wrap-right">
-                        <div class="flex-sty04 ma-b20">
-                          <label class="modal-cont-label">${'점검자'}</label>
-                        </div>
-                        <div class="inspector_list">
-                        </div>
-                      </div>
-                    </div>
-                    <div class="modal-footer">
-                      <div class="button-wrap03">
-                        <div>
-                          <button if="isShareVer2" type="button" class="button-blue-line-sty01 none ma-l0" onclick="elnCom_clickModalNoteShareCancel('${params.noteMno}', '${params.shareReqstMno}');">${'공유 요청 철회'}</button>
-                        </div>
-                        <div>
-                          <button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">${'닫기'}</button>
-                        </div>
-                      </div>
-                    </div>
-                  `,
-                  {
-                    isShareVer2:
-                      res.elnNoteShareReqst.shareStatusCcd === 'UNCONFIRM' &&
-                      res.noteShareApprovalManager === 'ownerAdmin'
-                        ? true
-                        : false
-                  }
-                )
-              );
-
-            for (const idx in res.elnNoteShareList) {
-              const elnNoteShare = res.elnNoteShareList[idx];
-              elnNoteShare['no'] = Number(idx) + 1;
-              elnNoteShare['isDesc'] = elnNoteShare.desc ? true : false;
-              elnNoteShare['isEmail'] = elnNoteShare.email ? true : false;
-              $('#modal-note-share-INSPECTION .modal-content .inspector_list').append(
-                S2Util.s2Template(templateModalNoteShareManager, elnNoteShare)
-              );
-            }
-
-            // 점검자 코멘트
-            $('.inspector_info [id^=collapseCnfmCmmt].collapse')
-              .on('show.bs.collapse', function () {
-                $(
-                  '#modal-note-share-INSPECTION .modal-content .inspector_list [data-bs-target="#' +
-                    $(this).attr('id') +
-                    '"] .collapse_icon1'
-                )
-                  .removeClass('drop_down')
-                  .addClass('drop_up');
-              })
-              .on('hide.bs.collapse', function () {
-                $(
-                  '#modal-note-share-INSPECTION .modal-content .inspector_list [data-bs-target="#' +
-                    $(this).attr('id') +
-                    '"] .collapse_icon1'
-                )
-                  .removeClass('drop_up')
-                  .addClass('drop_down');
-              });
-          }
-        );
-      }
-
-      // 연구노트 공유 승인/반려 처리
-      function clickModalNoteShareApproval() {
-        const shareStatusCcd = $('#modal-note-confirm-share [name=shareStatusCcd]:checked').val();
-        if (!shareStatusCcd) {
-          coreDialog.alert('공유요청 승인 결과를 선택해주세요.');
-          return;
-        }
-
-        ajaxPost(
-          '/api/eln/note/share/shareApproval',
-          {
-            noteMno: $('#modal-note-confirm-share').data('noteMno'),
-            shareReqstMno: $('#modal-note-confirm-share').data('shareReqstMno'),
-            shareStatusCcd: shareStatusCcd
-          },
-          '데이터요청중입니다.잠시만 기다려주세요.',
-          function () {
-            location.reload(true);
-          }
-        );
-      }
-
-      // 연구노트 공유 승인/반려 처리clickModalNoteDownloadConfirmApproval
-      function clickModalNoteShareConfirmApproval() {
-        const shareStatusCcd = $('#modal-note-confirm-share-confirm [name=shareStatusCcd]:checked').val();
-        if (!shareStatusCcd) {
-          coreDialog.alert('공유요청 승인 결과를 선택해주세요.');
-          return;
-        }
-        if (
-          shareStatusCcd === 'REJECT' &&
-          !$('#modal-note-confirm-share-confirm #shareDesc').val()
-        ) {
-          coreDialog.alert('반려 사유' + '은(는) 필수 사항입니다.');
-          return;
-        }
-
-        ajaxPost(
-          '/api/eln/note/share/shareConfirmApproval',
-          {
-            noteMno: $('#modal-note-confirm-share-confirm').data('noteMno'),
-            shareReqstMno: $('#modal-note-confirm-share-confirm').data('shareReqstMno'),
-            shareStatusCcd: shareStatusCcd,
-            desc: $('#modal-note-confirm-share-confirm #shareDesc').val()
-          },
-          '데이터요청중입니다.잠시만 기다려주세요.',
-          function () {
-            location.reload(true);
-          }
-        );
-      }
-
-      // 공유 요청 철회
-      function elnCom_clickModalNoteShareCancel(noteMno, shareReqstMno) {
-        coreDialog.confirm(
-          '연구노트 공유 요청이 취소됩니다.',
-          function (result) {
-            if (result) {
-              ajaxPost(
-                '/api/eln/note/share/share-request-cancel',
-                {
-                  noteMno: noteMno ? noteMno : '',
-                  shareReqstMno: shareReqstMno
-                },
-                '데이터요청중입니다.잠시만 기다려주세요.',
-                function (res) {
-                  coreDialog.alert('정상 처리되었습니다.', function () {
-                    location.reload();
-                  });
-                }
-              );
-            }
-          },
-          {
-            title: '공유 요청 철회',
-            subTitle: '공유 요청을 철회하시겠습니까?',
-            ok: '철회',
-            okClass: 'button-remove-sty01'
-          }
-        );
-      }
-
-      // 연구노트 다운로드 요청 모달
-      function eln_openModalNoteDownloadRequest(noteMnoArr, fileSeCcd, fileId, fileDtlMno) {
-        if (!noteMnoArr || !Array.isArray(noteMnoArr) || noteMnoArr.length === 0) {
-          coreDialog.alert('선택한 연구노트가 없습니다.');
-          return;
-        }
-
-        const noteMnoArrStr = noteMnoArr.join(',');
-        const params = {
-          modalTitle: '연구노트 다운로드 요청',
-          userNm: '김연구'
-        };
-
-        $('#modal-note-request-download-confirm')
-          .draggable({ handle: '.modal-header' })
-          .modal('show')
-          .on('click', '.user-add-btn', function () {
-            if ($(window).width() <= 900) {
-              const element = document.getElementById('model-body-top');
-              if (element) {
-                element.scrollIntoView({
-                  behavior: 'smooth'
-                });
-              }
-            }
-
-            // 점검자 추가
-            $('#modal-note-request-download-confirm #collapseUserGroup').collapse('show');
-            if (!$('#modal-note-request-download-confirm .user_list_wrap > li').length) {
-              // 연구원 검색 결과가 없다면 연구원 검색 상자도 같이 연다.
-              $('#modal-note-request-download-confirm #collapseSearchUser').collapse('show');
-
-              eln_openModalDownloadRequestPic_searchUser(noteMnoArrStr);
-            }
-          })
-          .on('click', '.search-user-box-show-btn', function () {
-            // 연구원 검색 상자 열기
-            $('#modal-note-request-download-confirm #collapseSearchUser').collapse('show');
-          })
-          .on('click', '.search-user-box-close-btn', function () {
-            // 연구원 검색 상자 닫기
-            $('#modal-note-request-download-confirm #collapseSearchUser.collapse').collapse('hide');
-            if (!$('#modal-note-request-download-confirm .user_list_wrap > li').length) {
-              // 연구원 검색 결과가 없다면 사용자 목록도 같이 닫는다.
-              $('#modal-note-request-download-confirm #collapseUserGroup.collapse').collapse('hide');
-            }
-          })
-          .on('click', '.ce-org-close', function () {
-            // 사용자 목록 닫기
-            $('#modal-note-request-download-confirm #collapseUserGroup.collapse').collapse('hide');
-          })
-          .on('click', '.sel-user-cncl', function () {
-            // 점검자 제외하기
-            const $target = $(this).parents('.inspector_div:first');
-            const targetUserMno = $target.find('.sel-user-info:first').data('userMno');
-
-            $target.html(templateModalNoteInspectionWritingInspectorUnselected);
-            $('#modal-note-request-download-confirm .user_list_wrap #note_inspection_user_' + targetUserMno).prop(
-              'checked',
-              false
-            );
-          })
-          .on('click', 'button.button-cnfm', function () {
-            const downloadUserMnoArr = [];
-            $('#modal-note-request-download-confirm .inspector_list .inspector_div .sel-user-info').each(function () {
-              downloadUserMnoArr.push($(this).data('userMno'));
-            });
-
-            if (!downloadUserMnoArr.length) {
-              coreDialog.alert('점검자를 선택해주세요.');
-              return;
-            }
-
-            coreDialog.confirm('연구노트 다운로드 요청하시겠습니까?', function (result) {
-              if (result) {
-                ajaxPost(
-                  '/api/eln/note/download/download-request',
-                  {
-                    noteMnoArr: noteMnoArr,
-                    fileSeCcd: fileSeCcd,
-                    fileId: fileId,
-                    fileDtlMno: fileDtlMno,
-                    downloadReqstPeriodDays: $('#modal-note-request-download-confirm #downloadReqstPeriodDays').val(),
-                    desc: $('#modal-note-request-download-confirm #downloadReqstDesc').val(),
-                    downloadUserMnoList: downloadUserMnoArr
-                  },
-                  '데이터요청중입니다.잠시만 기다려주세요.',
-                  function () {
-                    location.reload();
-                    //note_prevPage();
-                  }
-                );
-              }
-            });
-          })
-          .find('.modal-content')
-          .html(
-            S2Util.s2Template(
-              `
-                <div class="modal-header cursor-move">
-                  <p class="modal-title">${params.modalTitle}</p>
-                </div>
-                <div class="modal-body inspection download">
-                  <div class="wrap-left po-r">
-                    <div class="ma-b20">
-                      <label for="" class="modal-cont-label">${'요청자'}</label>
-                      <input type="text" id="requester" name="requester" class="input-write-sty02-line" disabled value="${params.userNm}">
-                    </div>
-                    <div class="ma-b20">
-                      <label for="" class="modal-cont-label">${'다운로드 유효 기간'}</label>
-                      <select id="downloadReqstPeriodDays" class="btn btn-xs select-xs select-sty02 wp-100">
-                        <option value="7">7일</option>
-                        <option value="14">14일</option>
-                        <option value="30">30일</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label for="" class="modal-cont-label">${'요청 코멘트'}</label>
-                      <textarea id="downloadReqstDesc" name="desc" rows="3" class="form-textarea form-textarea-line wp-100 h-130" placeholder="${'내용을 입력해주세요.'}" maxlength="200"
-                              onKeyDown="coreCommon.inputLimitText('#downloadReqstDesc','.downloadReqstDesc-count',200);"
-                              onKeyUp="coreCommon.inputLimitText('#downloadReqstDesc','.downloadReqstDesc-count', 200);"></textarea>
-
-                      <div class="flex-sty04 ma-b30">
-                        <div></div>
-                        <div>
-                          <code class="downloadReqstDesc-count">0</code><span class="guidetext-sty02"> / 200</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="collapse" id="collapseUserGroup">
-                      <div class="col_header flex-sty04">
-                        <div class=""><span>${'전체 조직도'}</span> (<span class="allUserCnt">0</span>)</div>
-                        <div class="flex-sty02">
-                          <a href="#" class="ma-r5 search-user-box-show-btn">
-                            <i class="fa far fa-m fa-search none"></i>
-                          </a>
-                          <a href="#" class="fa-close ce-org-close"></a>
-                        </div>
-
-                        <div class="collapse" id="collapseSearchUser">
-                          <div class="flex-sty04">
-                            <span>${'연구원 검색'}</span>
-                            <a href="#" class="fa-close search-user-box-close-btn"></a>
-                          </div>
-                          <div class="ma-t5 flex-sty02">
-                            <input type="text" id="schMember" sch-enter="eln_openModalDownloadRequestPic_searchUser:${noteMnoArrStr}" maxlength="255" placeholder="${'이름, 이메일로 검색해주세요.'}" class="input-write-sty02-line">
-                              <a href="#" onclick="eln_openModalDownloadRequestPic_searchUser('${noteMnoArrStr}');" style="cursor: pointer;">
-                              <i class="fa far fa-m fa-search small"></i>
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col_body">
-                        <ul class="user_list_wrap">
-                        </ul>
-                        <div class="no-data d-none">
-                          <div class="no-data-back"></div>
-                          <span>${'데이터가 없습니다.'}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="wrap-right">
-                    <div class="flex-sty04 ma-b20">
-                      <label class="modal-cont-label">${'점검자'}</label>
-                    </div>
-                    <div class="inspector_list" id="sortable">
-                      <div class="inspector_box flex-sty02 c-pointer ma-b10">
-                        <div class="inspector_info flex-sty04 writing">
-                          <div><span>${'점검자'}</span> <span class="inspector_sn">1</span></div>
-                          <div class="inspector_div">
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="modal-footer">
-                  <div class="button-wrap02">
-                    <button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">${'닫기'}</button>
-                    <button type="button" class="button-cnfm-sty01 button-cnfm inspection">${'확인'}</button>
-                  </div>
-                </div>
-              `,
-              { isEmail: !!params.ownerEmail }
-            )
-          )
-          .find('.inspector_div')
-          .html(templateModalNoteInspectionWritingInspectorUnselected);
-      }
-
-      // 다운로드 요청할 전담자 목록 조회
-      function eln_openModalDownloadRequestPic_searchUser(noteMnoArrStr) {
-        const noteMnoArr = noteMnoArrStr ? noteMnoArrStr.split(',').map(Number) : [];
-        if (noteMnoArr.length === 0) {
-          coreDialog.alert('선택한 연구노트가 없습니다.');
-          return;
-        }
-
-        const searchKeyword = $('#modal-note-request-download-confirm #schMember').val();
-        // if (!searchKeyword) {
-        //     coreDialog.alert('검색어를 입력해주세요.');
-        //     return;
-        // }
-
-        ajaxGet(
-          '/api/system/user/user-manager-List',
-          {
-            schNoteMnoArr: noteMnoArr,
-            searchKeyword: searchKeyword
-          },
-          '데이터요청중입니다.잠시만 기다려주세요.',
-          function (res) {
-            $('#modal-note-request-download-confirm #collapseSearchUser.collapse').collapse('hide');
-            if (res.userList && Object.keys(res.userList).length) {
-              $('#modal-note-request-download-confirm')
-                .find('.allUserCnt')
-                .text(S2Util.comma(Object.keys(res.userList).length))
-                .end()
-                .find('.no-data')
-                .addClass('d-none')
-                .end()
-                .find('.user_list_wrap')
-                .empty()
-                .removeClass('d-none');
-
-              let prevOrzt = {};
-              let orztUserArr = [];
-
-              for (const idx in res.userList) {
-                const user = res.userList[idx];
-                if (prevOrzt.orztCd !== user.orztCd) {
-                  user['isEmail'] = user.email ? true : false;
-
-                  if (orztUserArr.length > 0) {
-                    $('#modal-note-request-download-confirm .user_list_wrap')
-                      .append(S2Util.s2Template(templateModalNoteInspectionWritingOrzt, prevOrzt))
-                      .find('#collapseTeam_' + prevOrzt.orztCd)
-                      .html(S2Util.s2Template(templateModalNoteInspectionWritingOrztUser, orztUserArr))
-                      .end()
-                      .find('#collapseTeam_' + prevOrzt.orztCd + '_cnt')
-                      .text(orztUserArr.length);
-                  }
-                  orztUserArr = [];
-                }
-                orztUserArr.push(user);
-                prevOrzt = user;
-              }
-
-              if (orztUserArr.length > 0) {
-                $('#modal-note-request-download-confirm .user_list_wrap')
-                  .append(S2Util.s2Template(templateModalNoteInspectionWritingOrzt, prevOrzt))
-                  .find('#collapseTeam_' + prevOrzt.orztCd)
-                  .html(S2Util.s2Template(templateModalNoteInspectionWritingOrztUser, orztUserArr))
-                  .end()
-                  .find('#collapseTeam_' + prevOrzt.orztCd + '_cnt')
-                  .text(orztUserArr.length)
-                  .end()
-                  .find('.user-checkbox')
-                  .change(function () {
-                    const $target = $(this).parents('li.user:first');
-
-                    if ($(this).is(':checked')) {
-                      if ($('#modal-note-request-download-confirm .inspector_div .user-add:first').length) {
-                        $('#modal-note-request-download-confirm .inspector_div .user-add:first')
-                          .parents('.inspector_div:first')
-                          .html(
-                            S2Util.s2Template(
-                              `
-                                <div class="sel-user-info flex-sty02" data-user-mno="${$target.data('userMno')}">
-                                  <div class="sel-user"><span class="sel-user-name">${$target.find('.name').text()}</span><span if="isEmail" class="sel-user-email">(${$target.find('.email').text()})</span></div>
-                                  <div class="confirm-status ma-l10">${'미승인'}</div>
-                                  <a href="#" class="sel-user-cncl"></a>
-                                </div>
-                              `,
-                              { isEmail: $target.find('.email').text() ? true : false }
-                            )
-                          );
-                      } else {
-                        coreDialog.alert('더이상 추가할 수 없습니다.');
-                        $(this).prop('checked', false);
-                      }
-                    } else {
-                      const $selectedUser = $(
-                        '#modal-note-request-download-confirm .inspector_div .sel-user-info[data-user-mno=' +
-                          $target.data('userMno') +
-                          ']'
-                      );
-                      if ($selectedUser.length) {
-                        $selectedUser
-                          .parents('.inspector_div:first')
-                          .html(templateModalNoteInspectionWritingInspectorUnselected);
-                      }
-                    }
-                  });
-              }
-            } else {
-              $('#modal-note-request-download-confirm')
-                .find('.allUserCnt')
-                .text(0)
-                .end()
-                .find('.no-data')
-                .removeClass('d-none')
-                .end()
-                .find('.user_list_wrap')
-                .empty()
-                .addClass('d-none');
-            }
-          }
-        );
-      }
-
-      // 연구노트 다운로드 관리 모달
-      function elnCom_openModalDownloadManagement(downloadReqstMno) {
-        ajaxPost(
-          '/api/eln/note/download/download-info',
-          {
-            schDownloadReqstMno: downloadReqstMno
-          },
-          '데이터요청중입니다.잠시만 기다려주세요.',
-          function (res) {
-            const noteNmDisplay = res.elnNoteDownloadReqstNoteInfo.noteNmDisplay;
-            const params = {
-              isEmail: res.elnNoteDownload.createUserEmail ? true : false
-            };
-
-            $.extend(params, res.elnNoteDownload);
-            params['noteNmDisplay'] = noteNmDisplay;
-
-            $('#modal-note-confirm-download-confirm')
-              .data({ downloadReqstMno: downloadReqstMno })
-              .draggable({ handle: '.modal-header' })
-              .modal('show')
-              .find('.modal-content')
-              .html(S2Util.s2Template('template_modal_note_confirm_download_confirm', params));
-
-            // 점검 결과(승인/반려)
-            $('#modal-note-confirm-download-confirm [name=downloadStatusCcd]').on('click', function () {
-              if ($(this).val() === 'APPROVAL') {
-                $('#modal-note-confirm-download-confirm .rejectResn').addClass('d-none');
-                $('#modal-note-confirm-download-confirm .rejectResn #downloadDesc').prop({
-                  disabled: true,
-                  required: false
-                });
-              } else {
-                $('#modal-note-confirm-download-confirm .rejectResn').removeClass('d-none');
-                $('#modal-note-confirm-download-confirm .rejectResn #downloadDesc').prop({
-                  disabled: false,
-                  required: true
-                });
-              }
-            });
-          }
-        );
-      }
-
-      // 연구노트 다운로드 점검중/완료 모달
-      function elnCom_openModalDownload(downloadReqstMno) {
-        ajaxPost(
-          '/api/eln/note/download/download-reqst-info',
-          {
-            schDownloadReqstMno: downloadReqstMno
-          },
-          '데이터요청중입니다.잠시만 기다려주세요.',
-          function (res) {
-            const params = {
-              modalTitle: '연구노트 다운로드 요청'
-            };
-
-            $.extend(params, res.elnNoteDownloadReqst);
-
-            const noteInfo = {};
-            $.extend(noteInfo, res.elnNoteDownloadReqstNoteInfo);
-
-            $('#modal-note-download-INSPECTION')
-              .draggable({ handle: '.modal-header' })
-              .modal('show')
-              .find('.modal-content')
-              .html(
-                S2Util.s2Template(
-                  `
-                    <div class="modal-header cursor-move">
-                      <p class="modal-title">${params.modalTitle}</p>
-                    </div>
-                    <div class="modal-body inspection">
-                      <div class="wrap-left">
-                        <div class="ma-b20">
-                          <label for="" class="modal-cont-label">${'요청자'}</label>
-                          <input type="text" id="requester" class="input-write-sty02-line" disabled value="${params.createUserNm}">
-                        </div>
-                        <div class="ma-b20">
-                          <label for="" class="modal-cont-label">${'다운로드 유효 기간'}</label>
-                          <input type="text" id="downloadReqstPeriodDays" class="input-write-sty02-line" disabled value="${params.downloadReqstPeriodDays}일">
-                        </div>
-                        <div>
-                          <label for="" class="modal-cont-label">${'요청 코멘트'}</label>
-                          <pre class="desc read ma-t10 h-130">${params.desc}</pre>
-                        </div>
-                      </div>
-                      <div class="wrap-right">
-                          <div class="ma-b20">
-                            <label class="modal-cont-label">${'연구노트'}</label>
-                            <pre class="desc read ma-t10 h-80">${noteInfo.noteNmDisplay}</pre>
-                          </div>
-                          <div class="flex-sty04">
-                            <label class="modal-cont-label">${'점검자'}</label>
-                          </div>
-                          <div class="inspector_list">
-                          </div>
-                      </div>
-                    </div>
-                    <div class="modal-footer">
-                      <div class="button-wrap03">
-                        <div>
-                          <button if="isDownloadVer2" type="button" class="button-blue-line-sty01 none ma-l0" onclick="elnCom_clickModalNoteDownloadCancel('${params.noteMnoStr}', '${params.downloadReqstMno}');">${'다운로드 요청 철회'}</button>
-                        </div>
-                        <div>
-                          <button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">${'닫기'}</button>
-                        </div>
-                      </div>
-                    </div>
-                  `,
-                  {
-                    isDownloadVer2:
-                      res.elnNoteDownloadReqst.downloadStatusCcd === 'UNCONFIRM' &&
-                      res.noteDownloadApprovalYn !== 'N'
-                        ? true
-                        : false
-                  }
-                )
-              );
-
-            for (const idx in res.elnNoteDownloadList) {
-              const elnNoteDownload = res.elnNoteDownloadList[idx];
-              elnNoteDownload['no'] = Number(idx) + 1;
-              elnNoteDownload['isDesc'] = elnNoteDownload.desc ? true : false;
-              elnNoteDownload['isEmail'] = elnNoteDownload.email ? true : false;
-              $('#modal-note-download-INSPECTION .modal-content .inspector_list').append(
-                S2Util.s2Template(templateModalNoteDownloadManager, elnNoteDownload)
-              );
-            }
-
-            // 점검자 코멘트
-            $('.inspector_info [id^=collapseCnfmCmmt].collapse')
-              .on('show.bs.collapse', function () {
-                $(
-                  '#modal-note-download-INSPECTION .modal-content .inspector_list [data-bs-target="#' +
-                    $(this).attr('id') +
-                    '"] .collapse_icon1'
-                )
-                  .removeClass('drop_down')
-                  .addClass('drop_up');
-              })
-              .on('hide.bs.collapse', function () {
-                $(
-                  '#modal-note-download-INSPECTION .modal-content .inspector_list [data-bs-target="#' +
-                    $(this).attr('id') +
-                    '"] .collapse_icon1'
-                )
-                  .removeClass('drop_up')
-                  .addClass('drop_down');
-              });
-          }
-        );
-      }
-
-      // 연구노트 공유 승인/반려 처리
-      function clickModalNoteDownloadConfirmApproval() {
-        const downloadStatusCcd = $('#modal-note-confirm-download-confirm [name=downloadStatusCcd]:checked').val();
-        if (!downloadStatusCcd) {
-          coreDialog.alert('다운로드요청 승인 결과를 선택해주세요.');
-          return;
-        }
-        if (
-          downloadStatusCcd === 'REJECT' &&
-          !$('#modal-note-confirm-download-confirm #downloadDesc').val()
-        ) {
-          coreDialog.alert('반려 사유' + '은(는) 필수 사항입니다.');
-          return;
-        }
-
-        ajaxPost(
-          '/api/eln/note/download/download-confirm-approval',
-          {
-            downloadReqstMno: $('#modal-note-confirm-download-confirm').data('downloadReqstMno'),
-            downloadStatusCcd: downloadStatusCcd,
-            desc: $('#modal-note-confirm-download-confirm #downloadDesc').val()
-          },
-          '데이터요청중입니다.잠시만 기다려주세요.',
-          function () {
-            location.reload(true);
-          }
-        );
-      }
-
-      // 다운로드 요청 철회
-      function elnCom_clickModalNoteDownloadCancel(noteMnoStr, downloadReqstMno) {
-        coreDialog.confirm(
-          '연구노트 다운로드 요청이 취소됩니다.',
-          function (result) {
-            if (result) {
-              ajaxPost(
-                '/api/eln/note/download/download-request-cancel',
-                {
-                  noteMnoStr: noteMnoStr,
-                  downloadReqstMno: downloadReqstMno
-                },
-                '데이터요청중입니다.잠시만 기다려주세요.',
-                function (res) {
-                  coreDialog.alert('정상 처리되었습니다.', function () {
-                    location.reload();
-                  });
-                }
-              );
-            }
-          },
-          {
-            title: '다운로드 요청 철회',
-            subTitle: '다운로드 요청을 철회하시겠습니까?',
-            ok: '철회',
-            okClass: 'button-remove-sty01'
-          }
-        );
-      }
-
-      // 다운로드 실행
-      function elnCom_downloadProjectNotePdf(projectMno, downloadReqstMno, fileSeCcd) {
-        if (fileSeCcd === '10') {
-          S2Util.fetch(
-            '/api/eln/note/download/download-org-file',
-            {
-              method: 'POST',
-              responseType: 'blob',
-              downloadReqstMno: downloadReqstMno
-            },
-            function () {
-              S2Util.fetch(
-                '/api/eln/note/download/download-complete-yn',
-                {
-                  method: 'POST',
-                  downloadReqstMno: downloadReqstMno
-                },
-                function (re) {
-                  S2Util.toasts('다운로드 성공하였습니다.', {
-                    class: 'Toast-bottom-web start-50 translate-middle-x'
-                  });
-
-                  location.reload();
-                }
-              );
-            }
-          );
-        } else {
-          ajaxPost(
-            '/api/eln/note/download/download-reqst-simple',
-            {
-              downloadReqstMno: downloadReqstMno
-            },
-            '데이터요청중입니다.잠시만 기다려주세요.',
-            function (res) {
-              const noteMnoStr = res.elnNoteDownloadReqst.noteMnoStr;
-              const noteMnoStrArr = noteMnoStr.split(',');
-              const noteMnoArr = [];
-
-              for (const i in noteMnoStrArr) {
-                noteMnoArr.push(noteMnoStrArr[i]);
-              }
-
-              const pdfUrl =
-                fileSeCcd === '70'
-                  ? '/api/eln/com/pdf/synap/downloadApprovalNotePdf'
-                  : '/api/eln/com/pdf/note/downloadApprovalTimestamp';
-
-              S2Util.fetch(
-                pdfUrl,
-                {
-                  method: 'POST',
-                  responseType: 'blob',
-                  projectMno: projectMno,
-                  noteMnoArr: noteMnoArr,
-                  downloadReqstMno: downloadReqstMno
-                },
-                function () {
-                  S2Util.fetch(
-                    '/api/eln/note/download/download-complete-yn',
+                gfn_noteCardList(
                     {
-                      method: 'POST',
-                      downloadReqstMno: downloadReqstMno
+                        targetId: 'last-view',
+                        url: '/api/eln/note/myNoteList',
+                        pageUnit: notePageUnit,
+                        orderBy: 'VIEW_DT DESC'
                     },
-                    function () {
-                      S2Util.toasts('다운로드 성공하였습니다.', {
-                        class: 'Toast-bottom-web start-50 translate-middle-x'
-                      });
+                    $('.note-card-board.last-view'),
+                    function (res) {
+                        $('#noteCnt').text(S2Util.comma(res.noteListInfo.totalRecordCount));
 
-                      location.reload();
-                    }
-                  );
-                }
-              );
-            }
-          );
-        }
-      }
-
-      // (성과)세부목표 검토중/완료 모달
-      function elnCom_openModalPerformance(perfReqstMno, goalDetailMno, perfStatusCcd) {
-        ajaxPost(
-          '/api/eln/note/performance/performance-reqst-info',
-          {
-            schPerfReqstMno: perfReqstMno,
-            goalDetailMno: goalDetailMno,
-            perfStatusCcd: perfStatusCcd || 'APPROVAL'
-          },
-          '데이터요청중입니다.잠시만 기다려주세요.',
-          function (res) {
-            const params = {
-              modalTitle: '진도 요청 내역',
-              subTitle: res.perfReqst.goalDetailName || window.i18n['i18n.pkg.msg.665'],
-              userNm: res.perfReqst.requesterName || '김연구',
-              userMno: '1024',
-              reviewerNm: res.perfReqst.reviewerName || window.i18n['i18n.pkg.msg.719'],
-              reviewerMno: res.perfReqst.reviewerMno || '',
-              reqstAchievementRate: (res.perfReqst.requestAchievementRate || 0) + '%',
-              desc:
-                (perfStatusCcd !== 'UNCONFIRM' ? res.perfReqst.applyDescription : res.perfReqst.requestDescription) ||
-                window.i18n['i18n.pkg.msg.720'], // 조건부 desc 설정
-              goalDetailMno: goalDetailMno,
-              perfReqstMno: perfReqstMno,
-              currentFiles: [],
-              perfStatusCcd: perfStatusCcd || 'APPROVAL'
-            };
-
-            const prevParams = {
-              prevRequesterNm: res.perfReqst.prevRequesterName || '',
-              prevReviewerNm: res.perfReqst.prevReviewerName || '',
-              prevAchievementRate: (res.perfReqst.prevAchievementRate || 0) + '%',
-              prevDesc: res.perfReqst.prevDescription || '',
-              prevFiles: []
-            };
-
-            // 현재 파일 목록 파싱
-            if (res.perfReqst.currentFileList) {
-              try {
-                params.currentFiles = JSON.parse(res.perfReqst.currentFileList) || [];
-              } catch (e) {
-                console.error(window.i18n['i18n.pkg.msg.721'], e);
-                params.currentFiles = [];
-              }
-            }
-
-            // 이전 파일 목록 파싱
-            if (res.perfReqst.prevFileList) {
-              try {
-                prevParams.prevFiles = JSON.parse(res.perfReqst.prevFileList) || [];
-              } catch (e) {
-                console.error(window.i18n['i18n.pkg.msg.722'], e);
-                prevParams.prevFiles = [];
-              }
-            }
-
-            // 중복 제거 (fileId + fileDtlMno 기준)
-            const uniquePrevFiles = [];
-            const seenPrevFiles = new Set();
-            prevParams.prevFiles.forEach((file) => {
-              const fileKey = `${file.fileId}_${file.fileDtlMno}`;
-              if (!seenPrevFiles.has(fileKey)) {
-                seenPrevFiles.add(fileKey);
-                uniquePrevFiles.push(file);
-              }
-            });
-            prevParams.prevFiles = uniquePrevFiles;
-
-            const uniqueCurrentFiles = [];
-            const seenCurrentFiles = new Set();
-            params.currentFiles.forEach((file) => {
-              const fileKey = `${file.fileId}_${file.fileDtlMno}`;
-              if (!seenCurrentFiles.has(fileKey)) {
-                seenCurrentFiles.add(fileKey);
-                uniqueCurrentFiles.push(file);
-              }
-            });
-            params.currentFiles = uniqueCurrentFiles;
-
-            const renderedHtml = S2Util.s2Template(
-              `
-                <div class="modal-header cursor-move">
-                  <p class="modal-title">${S2Util.cast(params.modalTitle)}</p>
-                  <span class="modal-sub img">${S2Util.cast(params.subTitle)}</span>
-                </div>
-                <div class="modal-body divide-sty02">
-                  <div class="wrap-left po-r">
-                    <div class="wrap-title ma-b20">${'이전 진행 내용'}</div>
-                    <div class="ma-b20">
-                      <div class="flex-sty04 ma-b10">
-                        <div class="divide-div">
-                          <label for="prevRequester" class="modal-cont-label">${'요청자'}</label>
-                          <input type="text" id="prevRequester" name="prevRequester" class="input-write-sty02-line" disabled value="${S2Util.cast(prevParams.prevRequesterNm)}">
-                        </div>
-                        <div class="divide-div">
-                          <label for="prevReviewer" class="modal-cont-label">${'점검자'}</label>
-                          <input type="text" id="prevReviewer" name="prevReviewer" class="input-write-sty02-line" disabled value="${S2Util.cast(prevParams.prevReviewerNm)}">
-                        </div>
-                      </div>
-                      <div class="divide-div">
-                        <label for="prevAchievementRate" class="modal-cont-label">${'달성률'}</label>
-                        <input type="text" id="prevAchievementRate" name="prevAchievementRate" class="input-write-sty02-line" disabled value="${S2Util.cast(prevParams.prevAchievementRate)}">
-                      </div>
-                    </div>
-                    <div>
-                      <label for="prevDesc" class="modal-cont-label">${'진행 내용 요약'}</label>
-                      <pre class="desc read ma-t10 h-130">${S2Util.cast(prevParams.prevDesc)}</pre>
-                    </div>
-                    <div class="ma-b20">
-                      <label for="prevFileList" class="modal-cont-label">${'첨부파일'}</label>
-                      <ul class="ma-t10 mt-2 file-list upload-file-list" id="prevFileList"></ul>
-                    </div>
-                  </div>
-                  <div class="wrap-right">
-                    <div class="wrap-title ma-b20 flex-sty04">
-                      <span>${'변경 내용'}</span>
-                      <span class="alert-msg">${'점검자의 승인 후, 변경사항이 반영됩니다.'}</span>
-                    </div>
-                    <div class="ma-b20">
-                      <div class="flex-sty04 ma-b10">
-                        <div class="divide-div">
-                          <label for="requester" class="modal-cont-label">${'요청자'}</label>
-                          <input type="text" id="requester" name="requester" class="input-write-sty02-line" disabled value="${S2Util.cast(params.userNm)}">
-                        </div>
-                        <div class="divide-div">
-                          <label for="reviewer" class="modal-cont-label">${'점검자'}</label>
-                          <input type="text" id="reviewer" name="reviewer" class="input-write-sty02-line" disabled value="${S2Util.cast(params.reviewerNm)}">
-                        </div>
-                      </div>
-                      <div class="divide-div">
-                        <label for="reqstAchievementRate" class="modal-cont-label">${'달성률'}</label>
-                        <input type="text" id="reqstAchievementRate" name="reqstAchievementRate" class="input-write-sty02-line" disabled value="${S2Util.cast(params.reqstAchievementRate)}">
-                      </div>
-                    </div>
-                    <div>
-                      <label for="desc" class="modal-cont-label">${params.perfStatusCcd !== 'UNCONFIRM' ? '점검 코멘트' : '진행 내용 요약'}</label>
-                      <pre class="desc read ma-t10 h-130">${S2Util.cast(params.desc)}</pre>
-                    </div>
-                    <div class="ma-b20">
-                      <label for="currentFileList" class="modal-cont-label">${'첨부파일'}</label>
-                      <ul class="ma-t10 mt-2 file-list upload-file-list" id="currentFileList"></ul>
-                    </div>
-                  </div>
-                  <div class="approval-box d-none">
-                    <div class="ma-b10">
-                      <label for="perfStatusCcd" class="modal-cont-label">${'점검 관리'}</label>
-                      <div class="radio-box-sty02 ma-t15">
-                        <input type="radio" name="perfStatusCcd" id="perfStatusCcd_APPROVAL" autocomplete="off" disabled class="c-pointer" value="APPROVAL">
-                        <label for="perfStatusCcd_APPROVAL" class="c-pointer">${'승인'}</label>
-                        <input type="radio" name="perfStatusCcd" id="perfStatusCcd_REJECT" autocomplete="off" disabled class="c-pointer" value="REJECT">
-                        <label for="perfStatusCcd_REJECT" class="c-pointer">${'반려'}</label>
-                      </div>
-                    </div>
-                    <div class="ma-b10">
-                      <label for="inspctnDesc" class="modal-cont-label">${'점검 코멘트'}</label>
-                      <pre class="inspctnDesc read ma-t10 h-70 desc">${S2Util.cast('')}</pre>
-                    </div>
-                  </div>
-                </div>
-                <div class="modal-footer">
-                  <div class="button-wrap02">
-                    <button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">${'닫기'}</button>
-                  </div>
-                </div>
-              `,
-              {}
-            );
-
-            $('#modal-performance-detail-goals')
-              .modal('hide')
-              .find('.modal-content')
-              .html(renderedHtml)
-              .end()
-              .draggable({ handle: '.modal-header' })
-              .modal('show')
-              .on('shown.bs.modal', function () {
-                $(window).trigger('resize');
-              });
-
-            // 이전 파일 목록 표시
-            const prevFileListElement = $('#prevFileList');
-            if (prevParams.prevFiles.length > 0) {
-              prevFileListElement.empty();
-              prevParams.prevFiles.forEach((file) => {
-                const li = $(`
-                  <li class="add-file flex-sty04 c-pointer"
-                      data-file-mno="${S2Util.cast(file.fileMno || '')}"
-                      data-file-id="${S2Util.cast(file.fileId || '')}"
-                      data-file-dtl-mno="${S2Util.cast(file.fileDtlMno || '')}">
-                    <span class="editor_type ${S2Util.cast(file.fileExt || '')} me-2"></span>
-                    <a href="#" class="file-name">${S2Util.cast(file.fileNm || window.i18n['i18n.pkg.msg.723'])}</a>
-                    <button class="ce-down-file file-down ma-r5"></button>
-                  </li>
-                `);
-
-                li.find('button').on('click', function (e) {
-                  e.preventDefault();
-                  const $li = $(this).closest('li');
-                  const fileId = $li.attr('data-file-id');
-                  const fileDtlMno = $li.attr('data-file-dtl-mno');
-
-                  if (fileId && fileDtlMno) {
-                    const form = $('<form>', {
-                      method: 'POST',
-                      action: '/api/eln/note/downloadFile',
-                      style: 'display: none;'
-                    }).append(
-                      $('<input>', { type: 'hidden', name: 'fileId', value: fileId }),
-                      $('<input>', { type: 'hidden', name: 'fileDtlMno', value: fileDtlMno })
-                    );
-                    $('body').append(form);
-                    form.submit();
-                    form.remove();
-                  } else {
-                    alert(window.i18n['i18n.pkg.msg.724']);
-                  }
-                });
-
-                prevFileListElement.append(li);
-              });
-            } else {
-              //     prevFileListElement.html(`
-              //     <li class="no-file">
-              //         <i class="bi bi-file-earmark-excel"></i>
-              //         첨부된 파일이 없습니다.
-              //     </li>
-              // `);
-            }
-
-            // 현재 파일 목록 표시
-            const currentFileListElement = $('#currentFileList');
-            if (params.currentFiles.length > 0) {
-              currentFileListElement.empty();
-              params.currentFiles.forEach((file) => {
-                const li = $(`
-                  <li class="add-file flex-sty04 c-pointer"
-                      data-file-mno="${S2Util.cast(file.fileMno || '')}"
-                      data-file-id="${S2Util.cast(file.fileId || '')}"
-                      data-file-dtl-mno="${S2Util.cast(file.fileDtlMno || '')}">
-                    <span class="editor_type ${S2Util.cast(file.fileExt || '')} me-2"></span>
-                    <a href="#" class="file-name">${S2Util.cast(file.fileNm || window.i18n['i18n.pkg.msg.723'])}</a>
-                    <button class="ce-down-file file-down ma-r5"></button>
-                  </li>
-                `);
-
-                li.find('button').on('click', function (e) {
-                  e.preventDefault();
-                  const $li = $(this).closest('li');
-                  const fileId = $li.data('file-id');
-                  const fileDtlMno = $li.data('file-dtl-mno');
-
-                  if (fileId && fileDtlMno) {
-                    const form = $('<form>', {
-                      method: 'POST',
-                      action: '/api/eln/note/downloadFile',
-                      style: 'display: none;'
-                    }).append(
-                      $('<input>', { type: 'hidden', name: 'fileId', value: fileId }),
-                      $('<input>', { type: 'hidden', name: 'fileDtlMno', value: fileDtlMno })
-                    );
-                    $('body').append(form);
-                    form.submit();
-                    form.remove();
-                  } else {
-                    alert(window.i18n['i18n.pkg.msg.724']);
-                  }
-                });
-
-                currentFileListElement.append(li);
-              });
-            } else {
-              // currentFileListElement.html(`
-              //   <li class="no-file">
-              //     <i class="bi bi-file-earmark-excel"></i>
-              //     첨부된 파일이 없습니다.
-              //   </li>
-              // `);
-            }
-          }
-        );
-      }
-
-      // (성과)세부 목표 승인 관리 모달
-      function elnCom_openModalPerformanceManagement(perfReqstMno, goalDetailMno, perfStatusCcd) {
-        ajaxPost(
-          '/api/eln/note/performance/performance-response-info',
-          {
-            schPerfReqstMno: perfReqstMno,
-            goalDetailMno: goalDetailMno,
-            perfStatusCcd: perfStatusCcd || 'APPROVAL'
-          },
-          '데이터요청중입니다.잠시만 기다려주세요.',
-          function (res) {
-            const params = {
-              modalTitle: window.i18n['i18n.pkg.msg.854'],
-              subTitle: res.perfReqst.goalDetailName || window.i18n['i18n.pkg.msg.665'],
-              userNm: res.perfReqst.requesterNm || '김연구',
-              userMno: '1024',
-              reviewerNm: res.perfReqst.reviewerName || window.i18n['i18n.pkg.msg.719'],
-              reviewerMno: res.perfReqst.reviewerMno || '',
-              reqstAchievementRate: (res.perfReqst.requestAchievementRate || 0) + '%',
-              desc: res.perfReqst.requestDescription || window.i18n['i18n.pkg.msg.720'],
-              goalDetailMno: goalDetailMno,
-              perfReqstMno: perfReqstMno,
-              currentFiles: []
-            };
-
-            const prevParams = {
-              prevRequesterNm: res.perfReqst.prevRequesterName || '',
-              prevReviewerNm: res.perfReqst.prevReviewerName || '',
-              prevAchievementRate: (res.perfReqst.prevAchievementRate || 0) + '%',
-              prevDesc: res.perfReqst.prevDescription || '',
-              prevFiles: []
-            };
-
-            // 현재 파일 목록 파싱
-            if (res.perfReqst.currentFileList) {
-              try {
-                params.currentFiles = JSON.parse(res.perfReqst.currentFileList) || [];
-              } catch (e) {
-                console.error(window.i18n['i18n.pkg.msg.721'], e);
-                params.currentFiles = [];
-              }
-            }
-
-            // 이전 파일 목록 파싱
-            if (res.perfReqst.prevFileList) {
-              try {
-                prevParams.prevFiles = JSON.parse(res.perfReqst.prevFileList) || [];
-              } catch (e) {
-                console.error(window.i18n['i18n.pkg.msg.722'], e);
-                prevParams.prevFiles = [];
-              }
-            }
-
-            // 중복 제거 (fileId + fileDtlMno 기준)
-            const uniquePrevFiles = [];
-            const seenPrevFiles = new Set();
-            prevParams.prevFiles.forEach((file) => {
-              const fileKey = `${file.fileId}_${file.fileDtlMno}`;
-              if (!seenPrevFiles.has(fileKey)) {
-                seenPrevFiles.add(fileKey);
-                uniquePrevFiles.push(file);
-              }
-            });
-            prevParams.prevFiles = uniquePrevFiles;
-
-            const uniqueCurrentFiles = [];
-            const seenCurrentFiles = new Set();
-            params.currentFiles.forEach((file) => {
-              const fileKey = `${file.fileId}_${file.fileDtlMno}`;
-              if (!seenCurrentFiles.has(fileKey)) {
-                seenCurrentFiles.add(fileKey);
-                uniqueCurrentFiles.push(file);
-              }
-            });
-            params.currentFiles = uniqueCurrentFiles;
-
-            const renderedHtml = S2Util.s2Template(
-              `
-                <div class="modal-header cursor-move">
-                  <p class="modal-title">${'세부 목표 승인'}</p>
-                  <span class="modal-sub img">${S2Util.cast(params.subTitle)}</span>
-                </div>
-                <div class="modal-body divide-sty03">
-                  <div class="flex-sty02" style="display: flex; align-items: stretch;" >
-                    <div class="wrap-left po-r">
-                      <div class="wrap-title ma-b20">${'이전 진행 내용'}</div>
-                      <div class="ma-b20">
-                        <div class="flex-sty04 ma-b10">
-                          <div class="divide-div">
-                            <label for="prevRequester" class="modal-cont-label">${'요청자'}</label>
-                            <input type="text" id="prevRequester" name="prevRequester" class="input-write-sty02-line" disabled value="${S2Util.cast(prevParams.prevRequesterNm)}">
-                          </div>
-                          <div class="divide-div">
-                            <label for="prevReviewer" class="modal-cont-label">${'점검자'}</label>
-                            <input type="text" id="prevReviewer" name="prevReviewer" class="input-write-sty02-line" disabled value="${S2Util.cast(prevParams.prevReviewerNm)}">
-                          </div>
-                        </div>
-                        <div class="divide-div">
-                          <label for="prevAchievementRate" class="modal-cont-label">${'달성률'}</label>
-                          <input type="text" id="prevAchievementRate" name="prevAchievementRate" class="input-write-sty02-line" disabled value="${S2Util.cast(prevParams.prevAchievementRate)}">
-                        </div>
-                        <div>
-                          <label for="prevDesc" class="modal-cont-label">${'진행 내용 요약'}</label>
-                          <pre class="desc read ma-t10 h-130">${S2Util.cast(prevParams.prevDesc)}</pre>
-                        </div>
-                        <div class="ma-b20">
-                          <label for="prevFileList" class="modal-cont-label">${'첨부파일'}</label>
-                          <ul class="ma-t10 mt-2 file-list upload-file-list" id="prevFileList"></ul>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="wrap-right" style="height: 610px;">
-                      <div class="wrap-title ma-b20 flex-sty04">
-                        <span>${'변경 내용'}</span>
-                        <span class="alert-msg">${'점검자의 승인 후, 변경사항이 반영됩니다.'}</span>
-                      </div>
-                      <div class="ma-b20">
-                        <div class="flex-sty04 ma-b10">
-                          <div class="divide-div">
-                            <label for="requester" class="modal-cont-label">${'요청자'}</label>
-                            <input type="text" id="requester" name="requester" class="input-write-sty02-line" disabled value="${S2Util.cast(params.userNm)}">
-                          </div>
-                          <div class="divide-div">
-                            <label for="reviewer" class="modal-cont-label">${'점검자'}</label>
-                            <input type="text" id="reviewer" name="reviewer" class="input-write-sty02-line" disabled value="${S2Util.cast(params.reviewerNm)}">
-                          </div>
-                        </div>
-                        <div class="divide-div">
-                          <label for="reqstAchievementRate" class="modal-cont-label">${'달성률'}</label>
-                          <input type="text" id="reqstAchievementRate" name="reqstAchievementRate" class="input-write-sty02-line" disabled value="${S2Util.cast(params.reqstAchievementRate)}">
-                        </div>
-                        <div>
-                          <label for="desc" class="modal-cont-label">${'진행 내용 요약'}</label>
-                          <pre class="desc read ma-t10 h-130">${S2Util.cast(params.desc)}</pre>
-                        </div>
-                        <div class="ma-b20">
-                          <label for="currentFileList" class="modal-cont-label">${'첨부파일'}</label>
-                          <ul class="ma-t10 mt-2 file-list upload-file-list" id="currentFileList"></ul>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="approval-box">
-                    <div class="ma-b10">
-                      <label for="" class="modal-cont-label">${'점검 관리'}</label>
-                      <div class="radio-box-sty02 ma-t15">
-                        <input type="radio" name="perfStatusCcd" id="perfStatusCcd_APPROVAL" autocomplete="off" class="c-pointer" value="APPROVAL">
-                        <label for="perfStatusCcd_APPROVAL" class="c-pointer">${'승인'}</label>
-                        <input type="radio" name="perfStatusCcd" id="perfStatusCcd_REJECT" autocomplete="off" class="c-pointer" value="REJECT">
-                        <label for="perfStatusCcd_REJECT" class="c-pointer">${'반려'}</label>
-                      </div>
-                    </div>
-                    <div class="ma-b10">
-                      <label for="desc" class="modal-cont-label">${'점검 코멘트'}</label>
-                      <textarea id="desc" name="desc" rows="3" class="form-textarea form-textarea-line wp-100 h-70" placeholder="${'내용을 입력해주세요.'}" maxlength="3000"></textarea>
-                    </div>
-                  </div>
-                </div>
-                <div class="modal-footer">
-                  <div class="button-wrap02">
-                    <button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">${'닫기'}</button>
-                    <button type="button" class="button-cnfm-sty01 button-cnfm">${'검토'}</button>
-                  </div>
-                </div>
-              `,
-              {}
-            );
-
-            $('#modal-performance-detail-goals')
-              .modal('hide')
-              .find('.modal-content')
-              .html(renderedHtml)
-              .end()
-              .draggable({ handle: '.modal-header' })
-              .modal('show')
-              .on('shown.bs.modal', function () {
-                $(window).trigger('resize');
-
-                // "검토" 버튼 클릭 이벤트
-                $('.button-cnfm').on('click', function () {
-                  const status = $('input[name="perfStatusCcd"]:checked').val();
-                  const description = $('#desc').val();
-
-                  // 모달 내부에 토스트를 표시하는 함수
-                  function showToastInModal(message) {
-                    const toast = $(`
-                      <div class="toast Toast-bottom-web start-50 translate-middle-x show" role="alert" aria-live="assertive" aria-atomic="true" style="position: absolute; bottom: 20px; z-index: 11000;">
-                        <div class="toast-body">${message}</div>
-                      </div>
-                    `);
-                    $('#modal-performance-detail-goals .modal-content').append(toast);
-                    setTimeout(() => toast.fadeOut('slow', () => toast.remove()), 3000); // 3초 후 제거
-                  }
-
-                  // 유효성 검사
-                  if (!status) {
-                    showToastInModal(window.i18n['i18n.pkg.msg.725']);
-                    return;
-                  }
-                  if (status === 'REJECT' && !description.trim()) {
-                    showToastInModal(window.i18n['i18n.pkg.msg.726']);
-                    return;
-                  }
-
-                  // JSON 데이터 준비
-                  const requestData = {
-                    perfReqstMno: perfReqstMno,
-                    goalDetailMno: goalDetailMno,
-                    perfStatusCcd: status,
-                    desc: description,
-                    requestAchievementRate: parseInt(params.reqstAchievementRate.replace('%', ''))
-                  };
-                  // 서버로 데이터 전송
-                  $.ajax({
-                    url: '/api/perf/goal/performance/updatePerformanceStatus',
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify(requestData),
-                    success: function (response) {
-                      if (response.result && response.result.success) {
-                        S2Util.toasts(window.i18n['i18n.pkg.msg.727'], {
-                          class: 'Toast-bottom-web'
-                        });
-                        $('#modal-performance-detail-goals').modal('hide');
-                        setTimeout(function () {
-                          window.location.reload();
-                        }, 500);
-
-                        return;
-                      } else {
-                        const message = response.result ? response.result.message : window.i18n['i18n.pkg.msg.715'];
-                        if (message.includes(window.i18n['i18n.pkg.msg.728'])) {
-                          coreDialog.alert(message);
-                          window.location.href = '/login';
-                        } else {
-                          coreDialog.alert(window.i18n['i18n.pkg.msg.729'] + message);
+                        if (isFirst) {
+                            // 최초 화면 열릴때는 연구노트 초안도 같이 조회한다.
+                            getNoteCardList('DRAFT');
                         }
-                      }
-                    },
-                    error: function (xhr, status, error) {
-                      coreDialog.alert(
-                        window.i18n['i18n.pkg.msg.730'] + (xhr.statusText || window.i18n['i18n.pkg.msg.715'])
-                      );
                     }
-                  });
-                });
-              });
-
-            // 이전 파일 목록 표시
-            const prevFileListElement = $('#prevFileList');
-            if (prevParams.prevFiles.length > 0) {
-              prevFileListElement.empty();
-              prevParams.prevFiles.forEach((file) => {
-                const li = $(`
-                  <li class="add-file flex-sty04 c-pointer"
-                    data-file-mno="${S2Util.cast(file.fileMno || '')}"
-                    data-file-id="${S2Util.cast(file.fileId || '')}"
-                    data-file-dtl-mno="${S2Util.cast(file.fileDtlMno || '')}">
-                    <span class="editor_type ${S2Util.cast(file.fileExt || '')} me-2"></span>
-                    <a href="#" class="file-name">${S2Util.cast(file.fileNm || window.i18n['i18n.pkg.msg.723'])}</a>
-                    <button class="ce-down-file file-down ma-r5"></button>
-                  </li>
-                `);
-
-                li.find('button').on('click', function (e) {
-                  e.preventDefault();
-                  const $li = $(this).closest('li');
-                  const fileId = $li.attr('data-file-id');
-                  const fileDtlMno = $li.attr('data-file-dtl-mno');
-
-                  if (fileId && fileDtlMno) {
-                    const form = $('<form>', {
-                      method: 'POST',
-                      action: '/api/eln/note/downloadFile',
-                      style: 'display: none;'
-                    }).append(
-                      $('<input>', { type: 'hidden', name: 'fileId', value: fileId }),
-                      $('<input>', { type: 'hidden', name: 'fileDtlMno', value: fileDtlMno })
-                    );
-                    $('body').append(form);
-                    form.submit();
-                    form.remove();
-                  } else {
-                    coreDialog.alert(window.i18n['i18n.pkg.msg.724']);
-                  }
-                });
-
-                prevFileListElement.append(li);
-              });
-            } else {
-              // prevFileListElement.html(`
-              //         <li class="no-file">
-              //             <i class="bi bi-file-earmark-excel"></i>
-              //             첨부된 파일이 없습니다.
-              //         </li>
-              //     `);
+                );
             }
 
-            // 현재 파일 목록 표시
-            const currentFileListElement = $('#currentFileList');
-            if (params.currentFiles.length > 0) {
-              currentFileListElement.empty();
-              params.currentFiles.forEach((file) => {
-                const li = $(`
-                  <li class="add-file flex-sty04 c-pointer"
-                      data-file-mno="${S2Util.cast(file.fileMno || '')}"
-                      data-file-id="${S2Util.cast(file.fileId || '')}"
-                      data-file-dtl-mno="${S2Util.cast(file.fileDtlMno || '')}">
-                    <span class="editor_type ${S2Util.cast(file.fileExt || '')} me-2"></span>
-                    <a href="#" class="file-name">${S2Util.cast(file.fileNm || window.i18n['i18n.pkg.msg.723'])}</a>
-                    <button class="ce-down-file file-down ma-r5"></button>
-                  </li>
-                `);
-
-                li.find('button').on('click', function (e) {
-                  e.preventDefault();
-                  const $li = $(this).closest('li');
-                  const fileId = $li.data('file-id');
-                  const fileDtlMno = $li.data('file-dtl-mno');
-
-                  if (fileId && fileDtlMno) {
-                    const form = $('<form>', {
-                      method: 'POST',
-                      action: '/api/eln/note/downloadFile',
-                      style: 'display: none;'
-                    }).append(
-                      $('<input>', { type: 'hidden', name: 'fileId', value: fileId }),
-                      $('<input>', { type: 'hidden', name: 'fileDtlMno', value: fileDtlMno })
-                    );
-                    $('body').append(form);
-                    form.submit();
-                    form.remove();
-                  } else {
-                    coreDialog.alert(window.i18n['i18n.pkg.msg.724']);
-                  }
-                });
-
-                currentFileListElement.append(li);
-              });
-            } else {
-              // currentFileListElement.html(`
-              //         <li class="no-file">
-              //             <i class="bi bi-file-earmark-excel"></i>
-              //             첨부된 파일이 없습니다.
-              //         </li>
-              //     `);
-            }
-
-            // 점검 결과(승인/반려) 처리
-            $('#modal-performance-detail-goals [name=perfStatusCcd]').on('click', function () {
-              if ($(this).val() === 'APPROVAL') {
-                $('#modal-performance-detail-goals .rejectResn').addClass('d-none');
-                $('#modal-performance-detail-goals .rejectResn #desc').prop({ disabled: true, required: false });
-              } else {
-                $('#modal-performance-detail-goals .rejectResn').removeClass('d-none');
-                $('#modal-performance-detail-goals .rejectResn #desc').prop({ disabled: false, required: true });
-              }
-            });
-          }
-        );
-      }
-
-      /*]]*/
-    </script>
-  
-    <script type="text/javascript">
-      /*<![CDATA[*/
-
-      let gSelectedInstrumentMno = null;
-      let gSelectedInstrumentNm = '';
-
-      /* 결정 Q13 초기안 — 기관 보유 장비 확인 전까지의 잠정 목록이다. */
-      const INSTRUMENT_TP = {
-        HPLC: 'HPLC', LCMS: 'LC-MS', NMR: 'NMR', BALANCE: '저울', ETC: '기타'
-      };
-
-      const INSTRUMENT_STATUS = {
-        NORMAL:  { nm: '정상',         cls: 'normal' },
-        CAL_DUE: { nm: '교정기한경과', cls: 'expired' },
-        REPAIR:  { nm: '수리중',       cls: 'soon' },
-        RETIRED: { nm: '폐기',         cls: 'muted' }
-      };
-
-      const CAL_TP = { CALIBRATION: '교정', PM: '예방점검', QUALIFICATION: '적격성평가' };
-      const CAL_RESULT = { PASS: '적합', CONDITIONAL: '조건부적합', FAIL: '부적합' };
-
-      function initPage() {
-        getInstrumentList();
-      }
-
-      function deDisp(de) {
-        if (!de || de.length !== 8) {
-          return '-';
-        }
-        return `${de.substring(0, 4)}-${de.substring(4, 6)}-${de.substring(6, 8)}`;
-      }
-
-      /**
-       * 교정 기한 배지. 만료는 위험(expired), 30일 이내는 주의(soon).
-       * 교정 기록이 없는 장비는 '정상'이 아니라 '교정 기록 없음'으로 적는다 —
-       * 기록이 없는 것과 유효한 것은 다른 사실이고, 전자를 정상으로 칠하면 차단 근거가 흐려진다.
-       */
-      function calBadge(calState, nextCalDe) {
-        const de = deDisp(nextCalDe);
-        switch (calState) {
-          case 'EXPIRED':
-            return `${de} <span class="lims-state expired">교정 만료</span>`;
-          case 'SOON':
-            return `${de} <span class="lims-state soon">30일 이내</span>`;
-          case 'NORMAL':
-            return `${de} <span class="lims-state normal">유효</span>`;
-          default:
-            return '<span class="lims-state muted">교정 기록 없음</span>';
-        }
-      }
-
-      function statusBadge(statusCcd) {
-        const meta = INSTRUMENT_STATUS[statusCcd];
-        if (!meta) {
-          return `<span class="lims-state muted">${statusCcd || '-'}</span>`;
-        }
-        return `<span class="lims-state ${meta.cls}">${meta.nm}</span>`;
-      }
-
-      /* ---------------------------------------------------------------
-         장비 목록 — 교정 임박·만료가 위로 오도록 서버가 정렬해 내려준다.
-      --------------------------------------------------------------- */
-      function getInstrumentList(pageNo) {
-        const targetSelector = '.instrument-info-list';
-
-        ajaxPost(
-          '/api/lims/instrument/instrumentList',
-          {
-            searchKeyword: $('#searchKeyword').val().trim(),
-            schInstrumentTpCcd: $('#schInstrumentTpCcd').val(),
-            schInstrumentStatusCcd: $('#schInstrumentStatusCcd').val(),
-            schCalState: $('#schCalState').val(),
-            pageNo: pageNo ? pageNo : 1,
-            pageUnit: 10
-          },
-          '데이터요청중입니다.잠시만 기다려주세요.',
-          function (res) {
-            const $target = $(targetSelector + ' tbody').empty();
-
-            /* nullToEmpty 가 배열을 숫자키 객체로 바꾸므로 Object.keys(...).length 로 판정한다. */
-            if (res.instrumentListInfo && S2Util.isJSON(res.instrumentListInfo.dataList)
-                && Object.keys(res.instrumentListInfo.dataList).length) {
-              for (const idx in res.instrumentListInfo.dataList) {
-                const i = res.instrumentListInfo.dataList[idx];
-                i.instrumentTpDisp = INSTRUMENT_TP[i.instrumentTpCcd] || i.instrumentTpCcd || '-';
-                i.modelNmDisp = i.modelNm || '-';
-                i.locationNmDisp = i.locationNm || '-';
-                i.lastCalDeDisp = deDisp(i.lastCalDe);
-                i.calDisp = calBadge(i.calState, i.nextCalDe);
-                i.statusDisp = statusBadge(i.instrumentStatusCcd);
-                i.retireDisp = i.instrumentStatusCcd === 'RETIRED'
-                  ? ''
-                  : `<button class="button-gray-line-sty01" onclick="openModalInstrumentRetire('${i.instrumentMno}', '${i.instrumentCd}');"><span>폐기</span></button>`;
-                $target.append(S2Util.s2Template('template_instrument_list', i));
-              }
-              $target.parents(targetSelector).find('.paging-box')
-                .html(S2Util.pagination(res.instrumentListInfo, 'getInstrumentList'));
-            } else {
-              $target.html('<tr class="text-nowrap emptymessage"><td class="text-center" colspan="9">등록된 장비가 없습니다.</td></tr>');
-            }
-          }
-        );
-      }
-
-      /* ---------------------------------------------------------------
-         공통 폼 조각 — 등록/수정이 같은 입력을 쓴다.
-         교정 기한 입력칸이 없는 것은 누락이 아니다. 그 값은 교정 이력 등록으로만 생긴다.
-      --------------------------------------------------------------- */
-      function instrumentFormHtml(prefix) {
-        return `
-          <div class="flex-sty05 ma-b20">
-            <label for="${prefix}InstrumentNm" class="modal-cont-label">장비 명</label>
-            <input type="text" id="${prefix}InstrumentNm" name="instrumentNm" maxlength="200"
-                   class="input-write-sty02-line" title="장비 명" required="required" />
-            <div class="flex-sty04"><div class="guidetext-sty01">결과 입력 화면의 장비 선택 목록에 표시됩니다.</div></div>
-          </div>
-          <div class="flex-sty05 ma-b20">
-            <label for="${prefix}InstrumentTpCcd" class="modal-cont-label">장비 유형</label>
-            <select id="${prefix}InstrumentTpCcd" name="instrumentTpCcd" class="btn btn-xs select-xs select-sty02 wp-100"
-                    title="장비 유형" required="required">
-              <option value="HPLC">HPLC</option>
-              <option value="LCMS">LC-MS</option>
-              <option value="NMR">NMR</option>
-              <option value="BALANCE">저울</option>
-              <option value="ETC">기타</option>
-            </select>
-            <div class="flex-sty04"><div class="guidetext-sty01">공통코드 LIMS_INSTRUMENT_TP_CCD 입니다. 기관 보유 장비 확인 전 잠정 목록입니다. (결정 Q13)</div></div>
-          </div>
-          <div class="flex-sty05 ma-b20">
-            <label for="${prefix}ModelNm" class="modal-cont-label">모델 명</label>
-            <input type="text" id="${prefix}ModelNm" name="modelNm" maxlength="200"
-                   class="input-write-sty02-line" title="모델 명" />
-            <div class="flex-sty04"><div class="guidetext-sty01">예) Agilent 1260 Infinity II (선택)</div></div>
-          </div>
-          <div class="flex-sty05 ma-b20">
-            <label for="${prefix}MakerNm" class="modal-cont-label">제조사</label>
-            <input type="text" id="${prefix}MakerNm" name="makerNm" maxlength="200"
-                   class="input-write-sty02-line" title="제조사" />
-            <div class="flex-sty04"><div class="guidetext-sty01">교정 의뢰 시 참조합니다. (선택)</div></div>
-          </div>
-          <div class="flex-sty05 ma-b20">
-            <label for="${prefix}SerialNo" class="modal-cont-label">제조 번호</label>
-            <input type="text" id="${prefix}SerialNo" name="serialNo" maxlength="100"
-                   class="input-write-sty02-line" title="제조 번호" />
-            <div class="flex-sty04"><div class="guidetext-sty01">성적서와 대조할 때 쓰는 시리얼 번호입니다. (선택)</div></div>
-          </div>
-          <div class="flex-sty05 ma-b20">
-            <label for="${prefix}LocationMno" class="modal-cont-label">설치 위치</label>
-            <select id="${prefix}LocationMno" name="locationMno" class="btn btn-xs select-xs select-sty02 wp-100"
-                    title="설치 위치"></select>
-            <div class="flex-sty04"><div class="guidetext-sty01">시료·시약과 같은 위치 마스터를 씁니다. (선택)</div></div>
-          </div>
-          <div class="flex-sty05 ma-b20">
-            <label for="${prefix}ManagerMno" class="modal-cont-label">관리자</label>
-            <select id="${prefix}ManagerMno" name="managerMno" class="btn btn-xs select-xs select-sty02 wp-100"
-                    title="관리자"></select>
-            <div class="flex-sty04"><div class="guidetext-sty01">교정 기한을 관리하는 담당자입니다. (선택)</div></div>
-          </div>
-          <div class="flex-sty05 ma-b20">
-            <label for="${prefix}IntroDe" class="modal-cont-label">도입 일자</label>
-            <div class="input-group form_date">
-              <input type="text" id="${prefix}IntroDe" name="introDe" readonly="readonly"
-                     class="form-control input-xs input-write-date2" title="도입 일자" />
-            </div>
-            <div class="flex-sty04"><div class="guidetext-sty01">자산 관리용 참고 값입니다. (선택)</div></div>
-          </div>
-          <div class="flex-sty05 ma-b20">
-            <label for="${prefix}CalCycleMonth" class="modal-cont-label">교정 주기 (개월)</label>
-            <input type="number" id="${prefix}CalCycleMonth" name="calCycleMonth" step="1" min="0"
-                   class="input-write-sty02-line" title="교정 주기" />
-            <div class="flex-sty04"><div class="guidetext-sty01">교정 이력 등록 시 차기 교정 기한을 이 주기로 계산합니다. 비워두면 계산하지 않고, 등록 화면에서 기한을 직접 입력해야 합니다.</div></div>
-          </div>
-          <div class="flex-sty05">
-            <label for="${prefix}Desc" class="modal-cont-label">설명</label>
-            <textarea id="${prefix}Desc" name="desc" class="form-textarea form-textarea-line wp-100 h-70"
-                      title="설명"></textarea>
-            <div class="flex-sty04"><div class="guidetext-sty01">사용 제한, 부속 장치 등 특기 사항을 적습니다. (선택)</div></div>
-          </div>`;
-      }
-
-      function collectInstrumentForm(prefix) {
-        return {
-          instrumentNm: $('#' + prefix + 'InstrumentNm').val().trim(),
-          instrumentTpCcd: $('#' + prefix + 'InstrumentTpCcd').val(),
-          modelNm: $('#' + prefix + 'ModelNm').val().trim(),
-          makerNm: $('#' + prefix + 'MakerNm').val().trim(),
-          serialNo: $('#' + prefix + 'SerialNo').val().trim(),
-          locationMno: $('#' + prefix + 'LocationMno').val(),
-          managerMno: $('#' + prefix + 'ManagerMno').val(),
-          introDe: $('#' + prefix + 'IntroDe').val(),
-          calCycleMonth: $('#' + prefix + 'CalCycleMonth').val(),
-          desc: $('#' + prefix + 'Desc').val()
-        };
-      }
-
-      /* ---------------------------------------------------------------
-         장비 등록 모달 (560)
-      --------------------------------------------------------------- */
-      function openModalInstrumentCreate() {
-        $('#modal-lims-instrument')
-          .draggable({ handle: '.modal-header' })
-          .modal('show')
-          .find('.modal-content')
-          .html(`
-            <div class="modal-header cursor-move">
-              <p class="modal-title">장비 등록</p>
-              <span class="modal-sub">교정 기한은 교정 이력을 등록해야 생깁니다.</span>
-            </div>
-            <div class="modal-body">
-              <form method="post" role="form" id="limsInstrumentForm">
-                <div class="flex-sty05 ma-b20">
-                  <label for="newInstrumentCd" class="modal-cont-label">관리번호</label>
-                  <input type="text" id="newInstrumentCd" name="instrumentCd" maxlength="50"
-                         class="input-write-sty02-line" title="관리번호" required="required" />
-                  <div class="flex-sty04"><div class="guidetext-sty01">기관 자산번호입니다. 중복 등록은 차단됩니다.</div></div>
-                </div>
-                ${instrumentFormHtml('new')}
-              </form>
-            </div>
-            <div class="modal-footer">
-              <div class="button-wrap02">
-                <button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">닫기</button>
-                <button type="button" class="button-cnfm-sty01 button-cnfm">확인</button>
-              </div>
-            </div>
-          `);
-
-        $('#modal-lims-instrument .form_date').coreDateRangePicker({ beginInputId: 'newIntroDe' });
-        /*
-          두 목록을 연달아 호출하면 안 된다. reqAjax 는 요청 하나가 떠 있는 동안 다음 요청을
-          조용히 버린다(에러도 콜백도 없다). 첫 응답 뒤에 두 번째를 태운다.
-        */
-        loadLocationOptions('#newLocationMno', function () {
-          loadUserOptions('#newManagerMno');
-        });
-
-        $('#modal-lims-instrument').find('button.button-cnfm').off('click').on('click', function () {
-          if (!S2Util.s2validate('#limsInstrumentForm')) {
-            return;
-          }
-          const values = collectInstrumentForm('new');
-          values.instrumentCd = $('#newInstrumentCd').val().trim();
-
-          ajaxPost('/api/lims/instrument/createInstrument', values, '데이터요청중입니다.잠시만 기다려주세요.', function (res) {
-            if (res.s2ResultCode !== 1) {
-              return;
-            }
-            $('#modal-lims-instrument').modal('hide');
-            S2Util.toasts('장비가 등록되었습니다. 교정 이력을 등록하면 차기 교정 기한이 생깁니다.', { class: 'Toast-bottom-web' });
-            getInstrumentList();
-          });
-        });
-      }
-
-      /* ---------------------------------------------------------------
-         장비 수정 모달 (560)
-         설명(`DESC`)은 목록에 싣지 않으므로 단건 조회로 읽는다. 그 뒤에 셀렉트를 채운다(체이닝).
-      --------------------------------------------------------------- */
-      function openModalInstrumentEdit(instrumentMno) {
-        ajaxPost('/api/lims/instrument/instrumentDetail', { instrumentMno: instrumentMno },
-          '데이터요청중입니다.잠시만 기다려주세요.', function (res) {
-            if (res.s2ResultCode !== 1 || !res.instrument) {
-              return;
-            }
-            const base = res.instrument;
-
-            $('#modal-lims-instrument-edit')
-              .draggable({ handle: '.modal-header' })
-              .modal('show')
-              .find('.modal-content')
-              .html(`
-                <div class="modal-header cursor-move">
-                  <p class="modal-title">장비 수정</p>
-                  <span class="modal-sub" title="${base.instrumentCd}">${base.instrumentCd}</span>
-                </div>
-                <div class="modal-body">
-                  <form method="post" role="form" id="limsInstrumentEditForm">
-                    ${instrumentFormHtml('edit')}
-                    <div class="flex-sty04 ma-t10">
-                      <div class="guidetext-sty01">
-                        차기 교정 기한은 이 화면에서 바꿀 수 없습니다. 교정 이력 등록으로만 갱신됩니다 —
-                        이력 없이 기한을 늘릴 수 있으면 결과 입력 차단이 근거 없이 풀립니다.
-                      </div>
-                    </div>
-                  </form>
-                </div>
-                <div class="modal-footer">
-                  <div class="button-wrap02">
-                    <button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">닫기</button>
-                    <button type="button" class="button-cnfm-sty01 button-cnfm">확인</button>
-                  </div>
-                </div>
-              `);
-
-            $('#editInstrumentNm').val(base.instrumentNm || '');
-            $('#editInstrumentTpCcd').val(base.instrumentTpCcd);
-            $('#editModelNm').val(base.modelNm || '');
-            $('#editMakerNm').val(base.makerNm || '');
-            $('#editSerialNo').val(base.serialNo || '');
-            $('#editCalCycleMonth').val(base.calCycleMonth != null ? base.calCycleMonth : '');
-            $('#editDesc').val(base.desc || '');
-            $('#editIntroDe').val(deDisp(base.introDe) === '-' ? '' : deDisp(base.introDe));
-            $('#modal-lims-instrument-edit .form_date').coreDateRangePicker({ beginInputId: 'editIntroDe' });
-
-            loadLocationOptions('#editLocationMno', function () {
-              $('#editLocationMno').val(base.locationMno || '');
-              loadUserOptions('#editManagerMno', function () {
-                $('#editManagerMno').val(base.managerMno || '');
-              });
-            });
-
-            $('#modal-lims-instrument-edit').find('button.button-cnfm').off('click').on('click', function () {
-              if (!S2Util.s2validate('#limsInstrumentEditForm')) {
-                return;
-              }
-              const values = collectInstrumentForm('edit');
-              values.instrumentMno = base.instrumentMno;
-
-              ajaxPost('/api/lims/instrument/modifyInstrument', values, '데이터요청중입니다.잠시만 기다려주세요.', function (r) {
-                if (r.s2ResultCode !== 1) {
-                  return;
+            // 탭을 클릭했을 때
+            function getNoteCardList(writeStatusCcd) {
+                var $target = $('.tab-write-status-' + writeStatusCcd);
+                if ($target.find('.note-card-board ul li').length == 0) {
+                    // 최초 탭을 클릭했을 때만 조회
+                    moreNoteCardList(writeStatusCcd);
                 }
-                $('#modal-lims-instrument-edit').modal('hide');
-                S2Util.toasts('수정되었습니다.', { class: 'Toast-bottom-web' });
-                getInstrumentList();
-              });
-            });
-          });
-      }
+            }
 
-      /* ---------------------------------------------------------------
-         장비 폐기 모달 (560) — 행은 남는다.
-      --------------------------------------------------------------- */
-      function openModalInstrumentRetire(instrumentMno, instrumentCd) {
-        $('#modal-lims-instrument-retire')
-          .draggable({ handle: '.modal-header' })
-          .modal('show')
-          .find('.modal-content')
-          .html(`
-            <div class="modal-header cursor-move">
-              <p class="modal-title">장비 폐기</p>
-              <span class="modal-sub" title="${instrumentCd}">${instrumentCd}</span>
-            </div>
-            <div class="modal-body">
-              <div class="flex-sty05">
-                <label class="modal-cont-label">확인</label>
-                <div class="guidetext-sty01">
-                  이 장비를 폐기 상태로 전환합니다. 대장에서 행이 지워지지 않습니다 —
-                  과거 시험 결과가 이 장비와 그 시점의 교정 이력을 근거로 삼기 때문입니다.
-                  폐기 후에는 결과 입력의 장비 선택 목록에서 빠집니다.
-                </div>
-                <div class="flex-sty04"><div class="guidetext-sty01">교정 이력도 함께 보존됩니다.</div></div>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <div class="button-wrap02">
-                <button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">닫기</button>
-                <button type="button" class="button-cnfm-sty01 button-cnfm">확인</button>
-              </div>
-            </div>
-          `)
-          .find('button.button-cnfm')
-          .off('click')
-          .on('click', function () {
-            ajaxPost('/api/lims/instrument/retireInstrument', { instrumentMno: instrumentMno },
-              '데이터요청중입니다.잠시만 기다려주세요.', function (res) {
-                if (res.s2ResultCode !== 1) {
-                  return;
+            // 더보기를 클릭했을 때
+            function moreNoteCardList(writeStatusCcd) {
+                gfn_noteCardList(
+                    {
+                        targetId: 'write-status' + writeStatusCcd,
+                        schWriteStatusCcd: writeStatusCcd,
+                        url: '/api/eln/note/myNoteList',
+                        pageUnit: $('.content-wrapper').hasClass('small') ? 3 : 4,
+                        orderBy: 'MODIFY_DT DESC'
+                    },
+                    $('.tab-write-status-' + writeStatusCcd),
+                    function (res) {
+                        $('#noteCnt_' + writeStatusCcd).text(S2Util.comma(res.noteListInfo.totalRecordCount));
+                    }
+                );
+            }
+
+            // 목록 보기를 클릭했을 때
+            function getNoteList(writeStatusCcd, pageNo) {
+                const targetSelector = '.tab-write-status-' + writeStatusCcd;
+
+                ajaxPost(
+                    '/api/eln/note/myNoteList',
+                    {
+                        schWriteStatusCcd: writeStatusCcd,
+                        schDetailInfoYn: 'Y',
+                        pageNo: pageNo ? pageNo : 1,
+                        pageUnit: 10,
+                        orderBy: S2Util.getThOrderBy(targetSelector, 'MODIFY_DT DESC')
+                    },
+                    '데이터요청중입니다.잠시만 기다려주세요.',
+                    function (res) {
+                        var $target = $(targetSelector + ' tbody').empty();
+
+                        if (res.noteListInfo) {
+                            if (S2Util.isJSON(res.noteListInfo.dataList) && Object.keys(res.noteListInfo.dataList).length) {
+                                for (var idx in res.noteListInfo.dataList) {
+                                    var note = res.noteListInfo.dataList[idx];
+                                    var dateStr = '';
+
+                                    note['idx'] = idx;
+
+                                    switch (note.writeStatusCcd) {
+                                        case 'COMPLETE':
+                                            dateStr = note.modifyDtStr;
+                                            break;
+                                        default:
+                                            dateStr = note.modifyDtStr;
+                                            break;
+                                    }
+                                    note.elnProjectProcessUseYn = res.elnProjectProcessUseYn;
+                                    note['dateStr'] = dateStr;
+                                    note['processNm'] = note.processNm ? note.processNm : '정보없음';
+
+                                    let model = '';
+                                    switch (writeStatusCcd) {
+                                        case 'DRAFT':
+                                        case 'WRITING':
+                                        case 'INSPECTION':
+                                            model = `
+                                                <tr>
+                                                    <td class="flex-sty04 mw-500">
+                                                        <div class="editor_type ${note.editorTpCcd}"></div>
+                                                         ${note.elnProjectProcessUseYn === 'Y' ? `<div class="txt-step" title="${note.processNm}">${note.processNm}</div>` : ''}
+                                                        <div class="txt_ellipsis c-pointer note-list-title" title="${note.noteNm}" onclick="gfn_openNoteDetail('/eln/note/noteDetails', ${note.noteMno}); return false;">${note.noteNm ? note.noteNm : '제목없음'}</div>
+                                                    </td>
+                                                    <td class="mw-350">
+                                                        <div if="isProject" class="flex-sty04">
+                                                            <div class="icon-status">${note.projectPrgrstCcdNm}</div>
+                                                            <div class="txt_ellipsis" title="${note.projectNm}">${note.projectNm}</div>
+                                                        </div>
+                                                        <div else="isProject" class="txt_ellipsis txt_underline">${'정보없음'}</div>
+                                                    </td>
+                                                    <td><div class="txt_ellipsis">${note.ownerNm ? note.ownerNm : '작성자 없음'}</div></td>
+                                                    <td class="">${note.dateStr}</td>
+                                                    <td class="text-right">
+                                                        <div class="icon-option-wrap btn-group dropdown dropend">
+                                                            <a href="#" class="icon-option" id="dropdownOptionBtn_col${note.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
+                                                            <div id="dropdown_option" class="dropdown-menu" aria-labelledby="dropdownOptionBtn_col${note.idx}">
+                                                                <div class="option_title">${'연구노트 옵션'}</div>
+                                                                <div class="option_list">
+                                                                    <!--
+                                                                        <a href="#" onclick="gfn_downloadNotePdf(${note.noteMno}); return false;" class="dropdown-item">${'연구노트 다운로드'}</a>
+                                                                    -->
+                                                                    <a href="#" onclick="gfn_openModalDeleteNote(${note.noteMno}, '${note.noteNm}'); return false;" class="dropdown-item">${'연구노트 삭제'}</a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            `;
+                                            break;
+                                        case 'COMPLETE':
+                                            model = `
+                                                <tr>
+                                                    <td class="flex-sty04 mw-500">
+                                                        <div class="editor_type ${note.editorTpCcd}"></div>
+                                                        ${note.elnProjectProcessUseYn === 'Y' ? `<div class="txt-step" title="${note.processNm}">${note.processNm}</div>` : ''}
+                                                        <div class="txt_ellipsis c-pointer note-list-title" title="${note.noteNm}" onclick="gfn_openNoteDetail('/eln/note/noteDetails', ${note.noteMno}); return false;">${note.noteNm ? note.noteNm : '제목없음'}</div>
+                                                    </td>
+                                                    <td class="mw-350">
+                                                        <div if="isProject" class="flex-sty04">
+                                                            <div class="icon-status">${note.projectPrgrstCcdNm}</div>
+                                                            <div class="txt_ellipsis" title="${note.projectNm}">${note.projectNm}</div>
+                                                        </div>
+                                                        <div else="isProject" class="txt_ellipsis txt_underline">${'정보없음'}</div>
+                                                    </td>
+                                                    <td><div class="txt_ellipsis">${note.ownerNm ? note.ownerNm : '작성자 없음'}</div></td>
+                                                    <td class="">${note.dateStr}</td>
+                                                    <td class="">${note.noteInspectorStr ? note.noteInspectorStr : ''}</td>
+                                                    <td class="text-right">
+                                                        <div class="icon-option-wrap btn-group dropdown dropend">
+                                                            <a href="#" class="icon-option" id="dropdownOptionBtn_col${note.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
+                                                            <div id="dropdown_option" class="dropdown-menu" aria-labelledby="dropdownOptionBtn_col${note.idx}">
+                                                                <div class="option_title">${'연구노트 옵션'}</div>
+                                                                <div class="option_list">
+                                                                    <!--
+                                                                        <a href="#" onclick="gfn_downloadNotePdf(${note.noteMno}); return false;" class="dropdown-item">${'연구노트 다운로드'}</a>
+                                                                     -->
+                                                                    <a href="#" onclick="gfn_openModalDeleteNote(${note.noteMno}, '${note.noteNm}'); return false;" class="dropdown-item">${'연구노트 삭제'}</a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            `;
+                                            break;
+                                        case 'SHARED_NOTE':
+                                            note['sharedPeriod'] = note.shareReqstPeriodDays === 0 ? '무제한' : `${S2Util.dateFormat(note.shareBeginDe, '.')} - ${S2Util.dateFormat(note.shareEndDe, '.')}`;
+
+                                            model = `
+                                                <tr>
+                                                    <td class="flex-sty04 mw-500">
+                                                        <div class="editor_type ${note.editorTpCcd}"></div>
+                                                        ${note.elnProjectProcessUseYn === 'Y' ? `<div class="txt-step" title="${note.processNm}">${note.processNm}</div>` : ''}
+                                                        <div class="txt_ellipsis c-pointer note-list-title" title="${note.noteNm}" onclick="gfn_openNoteDetail('/eln/note/noteDetails', ${note.noteMno}); return false;">${note.noteNm ? note.noteNm : '제목없음'}</div>
+                                                    </td>
+                                                    <td class="mw-350">
+                                                        <div if="isProject" class="flex-sty04">
+                                                            <div class="icon-status">${note.projectPrgrstCcdNm}</div>
+                                                            <div class="txt_ellipsis" title="${note.projectNm}">${note.projectNm}</div>
+                                                        </div>
+                                                        <div else="isProject" class="txt_ellipsis txt_underline">${'정보없음'}</div>
+                                                    </td>
+                                                    <td><div class="txt_ellipsis">${note.ownerNm ? note.ownerNm : '작성자 없음'}</div></td>
+                                                    <td class="">${note.sharedPeriod}</td>
+                                                    <td class="">${note.shareProcessUserNm}</td>
+                                                    <td class="text-right">
+                                                        <div class="icon-option-wrap btn-group dropdown dropend">
+                                                            <a href="#" class="icon-option" id="dropdownOptionBtn_col${note.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
+                                                            <div id="dropdown_option" class="dropdown-menu" aria-labelledby="dropdownOptionBtn_col${note.idx}">
+                                                                <div class="option_title">${'연구노트 옵션'}</div>
+                                                                <div class="option_list">
+                                                                    <a href="#" class="dropdown-item">${'연구노트 다운로드'}</a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            `;
+                                            break;
+                                    }
+
+                                    if (model) {
+                                        $target.append(S2Util.s2Template(model, {isProject: note.projectMno ? true : false}));
+                                    }
+                                }
+                                $target.parents('[class^=tab-write-status]:first').find('.paging-box').html(S2Util.pagination(res.noteListInfo, 'getNoteList', writeStatusCcd));
+                            } else {
+                                $target.html('<tr class="text-nowrap emptymessage"><td class="text-center" colspan="6">' + window.i18n['i18n.pkg.msg.821'] + '</td></tr>');
+                            }
+                        }
+                    }
+                );
+            }
+
+            // thead의 정렬을 변경할때
+            function changeSort(target) {
+                var writeStatusCcd = $(target).parents('[id^=tableNoteList_]:first').attr('id').replace('tableNoteList_', '');
+                getNoteList(writeStatusCcd);
+            }
+
+            function initBoxViewEvent() {
+                if ($(window).width() <= 900) {
+                    $('#nav-my-note-draft-tab .txt').text('초안');
+                    $('#nav-my-note-progress-tab .txt').text('작성중');
+                    $('#nav-my-note-inspect-tab .txt').text('점검중');
+                    $('#nav-my-note-completed-tab .txt').text('완료');
+                    $('#nav-my-note-shared-tab .txt').text('공유');
+                } else {
+                    $('#nav-my-note-draft-tab .txt').text('연구노트 초안');
+                    $('#nav-my-note-progress-tab .txt').text('작성중 연구노트');
+                    $('#nav-my-note-inspect-tab .txt').text('점검중 연구노트');
+                    $('#nav-my-note-completed-tab .txt').text('완료 연구노트');
+                    $('#nav-my-note-shared-tab .txt').text('공유 연구노트');
                 }
-                $('#modal-lims-instrument-retire').modal('hide');
-                S2Util.toasts('폐기 처리되었습니다.', { class: 'Toast-bottom-web' });
-                getInstrumentList();
-              });
-          });
-      }
-
-      /* ---------------------------------------------------------------
-         교정·점검 이력 모달 (840x560) — 이력 열람 + 신규 등록
-         이력 행에 삭제 버튼이 없다. 의도적이다.
-      --------------------------------------------------------------- */
-      function openModalCalHistory(instrumentMno, instrumentCd, instrumentNm) {
-        gSelectedInstrumentMno = instrumentMno;
-        gSelectedInstrumentNm = instrumentNm;
-
-        $('#modal-lims-cal')
-          .draggable({ handle: '.modal-header' })
-          .modal('show')
-          .find('.modal-content')
-          .html(`
-            <div class="modal-header cursor-move">
-              <p class="modal-title">교정·점검 이력</p>
-              <span class="modal-sub" title="${instrumentCd} · ${instrumentNm}">${instrumentCd} · ${instrumentNm}</span>
-            </div>
-            <div class="modal-body">
-              <div class="core-table ma-b20">
-                <div class="table-responsive core-table-div">
-                  <table class="table table-sty01">
-                    <thead>
-                      <tr class="text-nowrap">
-                        <th class="text-left">교정일</th>
-                        <th class="text-left">유형</th>
-                        <th class="lims-num">결과</th>
-                        <th class="text-left">차기 기한</th>
-                        <th class="text-left">기관</th>
-                        <th class="text-left">성적서</th>
-                        <th class="text-left">확인자</th>
-                      </tr>
-                    </thead>
-                    <tbody class="cal-hist-body"></tbody>
-                  </table>
-                </div>
-              </div>
-              <div class="flex-sty04 ma-b20">
-                <div class="guidetext-sty01">
-                  이력은 추가만 가능하며 수정·삭제되지 않습니다. 지우면 "이 장비가 언제부터 유효했는가"를 잃고
-                  그 기간에 낸 결과의 근거가 사라집니다.
-                </div>
-              </div>
-              <form method="post" role="form" id="limsCalForm">
-                <div class="flex-sty05 ma-b20">
-                  <label for="calDe" class="modal-cont-label">교정 수행 일자</label>
-                  <div class="input-group form_date">
-                    <input type="text" id="calDe" name="calDe" readonly="readonly"
-                           class="form-control input-xs input-write-date2" title="교정 수행 일자" required="required" />
-                  </div>
-                  <div class="flex-sty04"><div class="guidetext-sty01">성적서에 적힌 실제 수행일입니다.</div></div>
-                </div>
-                <div class="flex-sty05 ma-b20">
-                  <label for="calTpCcd" class="modal-cont-label">교정 유형</label>
-                  <select id="calTpCcd" name="calTpCcd" class="btn btn-xs select-xs select-sty02 wp-100" title="교정 유형">
-                    <option value="CALIBRATION">교정</option>
-                    <option value="PM">예방점검</option>
-                    <option value="QUALIFICATION">적격성평가</option>
-                  </select>
-                  <div class="flex-sty04"><div class="guidetext-sty01">공통코드 LIMS_CAL_TP_CCD 입니다.</div></div>
-                </div>
-                <div class="flex-sty05 ma-b20">
-                  <label for="calResultCcd" class="modal-cont-label">교정 결과</label>
-                  <select id="calResultCcd" name="calResultCcd" class="btn btn-xs select-xs select-sty02 wp-100" title="교정 결과">
-                    <option value="PASS">적합</option>
-                    <option value="CONDITIONAL">조건부적합</option>
-                    <option value="FAIL">부적합</option>
-                  </select>
-                  <div class="flex-sty04"><div class="guidetext-sty01" id="calResultGuide">적합·조건부적합이면 차기 교정 기한이 갱신됩니다.</div></div>
-                </div>
-                <div class="flex-sty05 ma-b20">
-                  <label for="calNextCalDe" class="modal-cont-label">차기 교정 기한</label>
-                  <div class="input-group form_date">
-                    <input type="text" id="calNextCalDe" name="nextCalDe" readonly="readonly"
-                           class="form-control input-xs input-write-date2" title="차기 교정 기한" />
-                  </div>
-                  <div class="flex-sty04"><div class="guidetext-sty01">비워두면 장비의 교정 주기로 계산합니다. 주기도 없으면 기한이 생기지 않습니다 — 시스템이 기한을 추측하지 않습니다.</div></div>
-                </div>
-                <div class="flex-sty05 ma-b20">
-                  <label for="calAgencyNm" class="modal-cont-label">교정 기관</label>
-                  <input type="text" id="calAgencyNm" name="agencyNm" maxlength="200"
-                         class="input-write-sty02-line" title="교정 기관" />
-                  <div class="flex-sty04"><div class="guidetext-sty01">외부 교정이면 기관명을 적습니다. (선택)</div></div>
-                </div>
-                <div class="flex-sty05 ma-b20">
-                  <label for="calCertNo" class="modal-cont-label">성적서 번호</label>
-                  <input type="text" id="calCertNo" name="certNo" maxlength="100"
-                         class="input-write-sty02-line" title="성적서 번호" />
-                  <div class="flex-sty04"><div class="guidetext-sty01">감사 시 원본 성적서를 찾는 키입니다. (선택)</div></div>
-                </div>
-                <div class="flex-sty05">
-                  <label for="calDesc" class="modal-cont-label">설명</label>
-                  <textarea id="calDesc" name="desc" class="form-textarea form-textarea-line wp-100 h-70"
-                            title="설명"></textarea>
-                  <div class="flex-sty04"><div class="guidetext-sty01">조건부적합이면 제한 조건을 반드시 적습니다. (선택)</div></div>
-                </div>
-              </form>
-            </div>
-            <div class="modal-footer">
-              <div class="button-wrap02">
-                <button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">닫기</button>
-                <button type="button" class="button-cnfm-sty01 button-cnfm">교정 등록</button>
-              </div>
-            </div>
-          `);
-
-        $('#modal-lims-cal .form_date').coreDateRangePicker({ beginInputId: 'calDe' });
-
-        $('#calResultCcd').off('change').on('change', function () {
-          $('#calResultGuide').text($(this).val() === 'FAIL'
-            ? '부적합이면 차기 교정 기한을 연장하지 않습니다. 장비는 수리중 상태가 되고 결과 입력 차단은 그대로 유지됩니다.'
-            : '적합·조건부적합이면 차기 교정 기한이 갱신됩니다.');
-        });
-
-        loadCalList();
-
-        $('#modal-lims-cal').find('button.button-cnfm').off('click').on('click', function () {
-          if (!S2Util.s2validate('#limsCalForm')) {
-            return;
-          }
-          ajaxPost(
-            '/api/lims/instrument/createCal',
-            {
-              instrumentMno: gSelectedInstrumentMno,
-              calDe: $('#calDe').val(),
-              calTpCcd: $('#calTpCcd').val(),
-              calResultCcd: $('#calResultCcd').val(),
-              nextCalDe: $('#calNextCalDe').val(),
-              agencyNm: $('#calAgencyNm').val().trim(),
-              certNo: $('#calCertNo').val().trim(),
-              desc: $('#calDesc').val()
-            },
-            '데이터요청중입니다.잠시만 기다려주세요.',
-            function (res) {
-              if (res.s2ResultCode !== 1) {
-                return;
-              }
-              S2Util.toasts(
-                res.nextCalDe
-                  ? `교정이 등록되었습니다. 차기 기한 ${deDisp(res.nextCalDe)}`
-                  : '교정이 등록되었습니다. 차기 기한은 설정되지 않았습니다 — 교정 주기 또는 기한을 입력하세요.',
-                { class: 'Toast-bottom-web' }
-              );
-              $('#limsCalForm')[0].reset();
-              /* 이력 갱신 후 대장을 이어서 갱신한다 — 동시 요청은 조용히 버려진다. */
-              loadCalList(function () {
-                getInstrumentList();
-              });
             }
-          );
-        });
-      }
 
-      /**
-       * 교정 이력을 다시 그린다. onDone 은 성공/실패와 무관하게 정확히 한 번 호출된다 —
-       * 호출측이 다음 ajax 를 안전하게 이어붙이기 위한 것이다.
-       */
-      function loadCalList(onDone) {
-        const done = typeof onDone === 'function' ? onDone : function () {};
-        ajaxPost('/api/lims/instrument/calList', { instrumentMno: gSelectedInstrumentMno }, null,
-          function (res) {
-            const $body = $('.cal-hist-body').empty();
-            if (res.calList && Object.keys(res.calList).length) {
-              for (const idx in res.calList) {
-                const c = res.calList[idx];
-                const resultCls = c.calResultCcd === 'FAIL'
-                  ? 'expired' : (c.calResultCcd === 'CONDITIONAL' ? 'soon' : 'normal');
-                $body.append(`
-                  <tr>
-                    <td class="text-left"><b>${deDisp(c.calDe)}</b></td>
-                    <td class="text-left">${CAL_TP[c.calTpCcd] || c.calTpCcd || '-'}</td>
-                    <td class="text-left"><span class="lims-state ${resultCls}">${CAL_RESULT[c.calResultCcd] || c.calResultCcd}</span></td>
-                    <td class="text-left">${deDisp(c.nextCalDe)}</td>
-                    <td class="text-left">${c.agencyNm || '-'}</td>
-                    <td class="text-left">${c.certNo || '-'}</td>
-                    <td class="text-left">${c.performUserNm || '-'}</td>
-                  </tr>`);
-              }
-            } else {
-              $body.html('<tr class="emptymessage"><td class="text-center" colspan="7">교정 이력이 없습니다.</td></tr>');
-            }
-            done();
-          },
-          done,
-          done
-        );
-      }
-
-      /**
-       * 위치 목록을 채운다. onDone 은 성공/실패와 무관하게 정확히 한 번 호출된다.
-       */
-      function loadLocationOptions(selector, onDone) {
-        const done = typeof onDone === 'function' ? onDone : function () {};
-        ajaxPost('/api/lims/location/locationList', {}, null,
-          function (res) {
-            const $sel = $(selector).empty();
-            $sel.append('<option value="">지정 안 함</option>');
-            if (res.locationList) {
-              for (const idx in res.locationList) {
-                const loc = res.locationList[idx];
-                $sel.append($('<option></option>').attr('value', loc.locationMno).text(loc.fullPathNm));
-              }
-            }
-            done();
-          },
-          done,
-          done
-        );
-      }
-
-      /**
-       * 관리자 후보를 채운다. 기존 사용자 API(/api/system/user/researcherList)를 재사용한다.
-       */
-      function loadUserOptions(selector, onDone) {
-        const done = typeof onDone === 'function' ? onDone : function () {};
-        ajaxPost('/api/system/user/researcherList', { schPageYn: 'N', orderBy: 'USER_NM ASC' }, null,
-          function (res) {
-            const $sel = $(selector).empty();
-            $sel.append('<option value="">지정 안 함</option>');
-            if (res.userListInfo && S2Util.isJSON(res.userListInfo.dataList)
-                && Object.keys(res.userListInfo.dataList).length) {
-              for (const idx in res.userListInfo.dataList) {
-                const user = res.userListInfo.dataList[idx];
-                const orztNm = user.orztNm ? ` (${user.orztNm})` : '';
-                $sel.append($('<option></option>').attr('value', user.userMno).text(`${user.userNm}${orztNm}`));
-              }
-            }
-            done();
-          },
-          done,
-          done
-        );
-      }
-
-      /*]]*/
-    </script>
+            /*]]*/
+        </script>
   
     <script type="text/javascript">
       /*<![CDATA[*/
@@ -6201,158 +3449,689 @@
 
           <!-- body 영역  -->
           <div class="content-wrapper">
-    <div id="main" class="lims-page">
-      <header class="lims-head">
-        <div class="lims-head-main">
-          <nav class="lims-crumb">
-            <a href="index.html">LIMS</a>
-            <span class="sep">/</span>
-            <span>장비 관리</span>
-          </nav>
-          <h2 class="lims-title">장비 관리</h2>
-        </div>
-      </header>
+    <div id="main">
+      <div class="flex-sty01">
+        <p class="main-title-sty01">내 연구노트</p>
+      </div>
 
-      <div class="ma-tm20">
-        <div class="target-info-tab lims-filter flex-sty04 ma-t30">
-          <div class="tabs-box"></div>
-          <div class="flex-sty02 search-box">
-            <select id="schCalState"
-                    class="btn btn-xs select-xs select-sty02 w-150 ma-r10"
-                    onchange="getInstrumentList();">
-              <option value="">전체 교정상태</option>
-              <option value="EXPIRED">교정 만료</option>
-              <option value="SOON">30일 이내 임박</option>
-              <option value="NONE">교정 기록 없음</option>
-            </select>
-            <select id="schInstrumentTpCcd"
-                    class="btn btn-xs select-xs select-sty02 w-150 ma-r10"
-                    onchange="getInstrumentList();">
-              <option value="">전체 유형</option>
-              <option value="HPLC">HPLC</option>
-              <option value="LCMS">LC-MS</option>
-              <option value="NMR">NMR</option>
-              <option value="BALANCE">저울</option>
-              <option value="ETC">기타</option>
-            </select>
-            <select id="schInstrumentStatusCcd"
-                    class="btn btn-xs select-xs select-sty02 w-150 ma-r10"
-                    onchange="getInstrumentList();">
-              <option value="">전체 상태</option>
-              <option value="NORMAL">정상</option>
-              <option value="CAL_DUE">교정기한경과</option>
-              <option value="REPAIR">수리중</option>
-              <option value="RETIRED">폐기</option>
-            </select>
-            <div class="select-wrap">
-              <input type="text"
-                     id="searchKeyword"
-                     maxlength="255"
-                     sch-enter="getInstrumentList"
-                     placeholder="검색어를 입력해주세요."
-                     class="input-write-sty02-line w-250" />
-              <a href="#"
-                 class="c-pointer"
-                 onclick="getInstrumentList(); return false;">
-                <i class="fa far fa-m fa-search small"></i>
-              </a>
+      <div class="po-r ma-t20">
+        <div>
+          <div class="sub-title-sty01">
+            <span>최근 열어본 연구노트</span>
+            <span class="title_cnt">(<span id="noteCnt">0</span>)</span>
+          </div>
+
+          <div class="main-wrap2 note-card-board last-view">
+            <div class="note-card">
+              <div class="no-data box d-none">
+                <div class="no-data-back"></div>
+                <span>작성중인 연구노트가 없습니다.</span>
+              </div>
+              <ul class="d-none"></ul>
             </div>
-            <button class="button-blue-full-sty01 ma-l10"
-                    onclick="openModalInstrumentCreate();"><span>장비 등록</span></button>
+            <div class="flex-sty01">
+              <div class="more_list_data note d-none"
+                   onclick="getLastViewNoteList();"><span class="remainCnt">1</span> <span>개 더보기</span></div>
+            </div>
           </div>
         </div>
-
-        <div class="flex-sty04 ma-t10">
-          <div class="guidetext-sty01">
-            차기 교정 기한이 지난 장비로는 결과를 입력할 수 없습니다. 목록은 기한이 임박한 순으로 정렬됩니다.
-            교정 기한은 교정 이력 등록으로만 갱신되며, 대장 수정 화면에서는 바꿀 수 없습니다.
+        <div class="po-r ma-t20">
+          <div class="tab-board-sty02">
+            <nav class="board-top">
+              <div class="nav nav-tabs tabs-box"
+                   id="nav-tab"
+                   role="tablist">
+                <button onclick="getNoteCardList(&quot;DRAFT&quot;);"
+                        class="nav-link tab active"
+                        id="nav-my-note-draft-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#nav-my-note-draft"
+                        type="button"
+                        role="tab"
+                        aria-controls="nav-my-note-draft"
+                        aria-selected="false">
+                  <span class="txt">연구노트 초안</span>
+                  <span class="title_cnt">(<span id="noteCnt_DRAFT">1</span>)</span>
+                </button>
+                <button onclick="getNoteCardList(&quot;WRITING&quot;);"
+                        class="nav-link tab"
+                        id="nav-my-note-progress-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#nav-my-note-progress"
+                        type="button"
+                        role="tab"
+                        aria-controls="nav-my-note-progress"
+                        aria-selected="true">
+                  <span class="txt">작성중 연구노트</span>
+                  <span class="title_cnt">(<span id="noteCnt_WRITING">2</span>)</span>
+                </button>
+                <button onclick="getNoteCardList(&quot;INSPECTION&quot;);"
+                        class="nav-link tab"
+                        id="nav-my-note-inspect-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#nav-my-note-inspect"
+                        type="button"
+                        role="tab"
+                        aria-controls="nav-my-note-inspect"
+                        aria-selected="false">
+                  <span class="txt">점검중 연구노트</span>
+                  <span class="title_cnt">(<span id="noteCnt_INSPECTION">1</span>)</span>
+                </button>
+                <button onclick="getNoteCardList(&quot;COMPLETE&quot;);"
+                        class="nav-link tab"
+                        id="nav-my-note-completed-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#nav-my-note-completed"
+                        type="button"
+                        role="tab"
+                        aria-controls="nav-my-note-completed"
+                        aria-selected="false">
+                  <span class="txt">완료 연구노트</span>
+                  <span class="title_cnt">(<span id="noteCnt_COMPLETE">5</span>)</span>
+                </button>
+                <button onclick="getNoteCardList(&quot;SHARED_NOTE&quot;);"
+                        class="nav-link tab"
+                        id="nav-my-note-shared-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#nav-my-note-shared"
+                        type="button"
+                        role="tab"
+                        aria-controls="nav-my-note-shared"
+                        aria-selected="false">
+                  <span class="txt">공유 연구노트</span>
+                  <span class="title_cnt">(<span id="noteCnt_SHARED_NOTE">3</span>)</span>
+                </button>
+              </div>
+            </nav>
           </div>
-        </div>
-
-        <div class="instrument-info-list ma-t20">
-          <div class="core-table">
-            <div class="box">
-              <div class="box-body">
-                <div class="core-table-body">
-                  <div class="table-responsive pa-b30 core-table-div">
-                    <table class="table table-hover table-sty01"
-                           id="tableInstrumentList">
-                      <thead>
-                        <tr class="text-nowrap">
-                          <th class="text-left">관리번호</th>
-                          <th class="text-left">장비 명</th>
-                          <th class="text-left">유형</th>
-                          <th class="text-left">모델</th>
-                          <th class="text-left">설치 위치</th>
-                          <th class="text-left">최근 교정</th>
-                          <th class="text-left">차기 교정 기한</th>
-                          <th class="text-left">상태</th>
-                          <th class="text-right">관리</th>
-                        </tr>
-                      </thead>
-                      <tbody></tbody>
-                    </table>
-                    <div class="paging-box text-center"></div>
+          <div class="tab-content my-research-notes"
+               id="nav-tabContent">
+            <!-- 연구노트 초안 -->
+            <div class="tab-write-status-DRAFT tab-pane fade show active"
+                 id="nav-my-note-draft"
+                 role="tabpanel"
+                 aria-labelledby="nav-my-note-draft-tab"
+                 tabindex="0">
+              <div class="button-wrap-po-a"
+                   style="top: 0">
+                <nav class="list-block-btn-box ma-l10">
+                  <div class="nav nav-tabs tabs-box"
+                       id="nav-tab"
+                       role="tablist">
+                    <button class="list-btn-box btn"
+                            onclick="getNoteList(&quot;DRAFT&quot;);"
+                            id="list-box-draft"
+                            data-bs-toggle="tab"
+                            data-bs-target="#nav-list-box-draft"
+                            type="button"
+                            role="tab"
+                            aria-controls="nav-list-box-draft"
+                            aria-selected="true"></button>
+                    <button class="block-btn-box btn active"
+                            id="block-box-draft"
+                            data-bs-toggle="tab"
+                            data-bs-target="#nav-block-box-draft"
+                            type="button"
+                            role="tab"
+                            aria-controls="nav-block-box-draft"
+                            aria-selected="false"></button>
+                  </div>
+                </nav>
+              </div>
+              <div class="tab-content">
+                <!-- 연구노트 리스트 -->
+                <div class="tab-pane fade"
+                     id="nav-list-box-draft"
+                     role="tabpanel"
+                     aria-labelledby="list-box-draft"
+                     tabindex="0">
+                  <div class="core-table">
+                    <div class="note-list-con box-table">
+                      <div class="box">
+                        <div class="box-header"></div>
+                        <div class="box-body">
+                          <div class="core-table-body">
+                            <div class="table-responsive pa-b30 core-table-div">
+                              <table class="table table-hover table-sty01"
+                                     id="tableNoteList_DRAFT">
+                                <colgroup>
+                                  <col width="500px;" />
+                                  <col width="200px;" />
+                                  <col />
+                                  <col />
+                                  <col />
+                                </colgroup>
+                                <thead>
+                                  <tr class="text-nowrap">
+                                    <th class="text-left c-pointer">
+                                      <span sort-fn-nm="changeSort"
+                                            sort-nm="NOTE_NM">
+                                        연구노트
+                                      </span>
+                                    </th>
+                                    <th class="text-left c-pointer">
+                                      <span sort-fn-nm="changeSort"
+                                            sort-nm="PROJECT_NM">
+                                        프로젝트
+                                      </span>
+                                    </th>
+                                    <th class="text-left c-pointer">
+                                      <span sort-fn-nm="changeSort"
+                                            sort-nm="MODIFY_USER_NM">
+                                        작성자
+                                      </span>
+                                    </th>
+                                    <th class="text-left c-pointer">
+                                      <span sort-fn-nm="changeSort"
+                                            sort-nm="MODIFY_DT">
+                                        최근작성일
+                                      </span>
+                                    </th>
+                                    <th class="text-left c-pointer"></th>
+                                  </tr>
+                                </thead>
+                                <tbody></tbody>
+                              </table>
+                              <div class="paging-box"></div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="box-footer"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- 연구노트 카드 -->
+                <div class="tab-pane fade show active"
+                     id="nav-block-box-draft"
+                     role="tabpanel"
+                     aria-labelledby="block-box-draft">
+                  <div class="main-wrap2 note-card-board">
+                    <div class="note-card">
+                      <div class="no-data box d-none">
+                        <div class="no-data-back"></div>
+                        <span>작성중인 연구노트가 없습니다.</span>
+                      </div>
+                      <ul class="d-none"></ul>
+                    </div>
+                    <div class="flex-sty01">
+                      <div class="more_list_data d-none note_DRAFT"
+                           onclick="moreNoteCardList(&quot;DRAFT&quot;);"><span class="remainCnt">1</span> <span>개 더보기</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- 작성중 연구노트 -->
+            <div class="tab-write-status-WRITING tab-pane fade"
+                 id="nav-my-note-progress"
+                 role="tabpanel"
+                 aria-labelledby="nav-my-note-progress-tab">
+              <div class="button-wrap-po-a"
+                   style="top: 0">
+                <nav class="list-block-btn-box ma-l10">
+                  <div class="nav nav-tabs tabs-box"
+                       id="nav-tab"
+                       role="tablist">
+                    <button class="list-btn-box btn"
+                            onclick="getNoteList(&quot;WRITING&quot;);"
+                            id="list-box-progress"
+                            data-bs-toggle="tab"
+                            data-bs-target="#nav-list-box-progress"
+                            type="button"
+                            role="tab"
+                            aria-controls="nav-list-box-progress"
+                            aria-selected="true"></button>
+                    <button class="block-btn-box btn active"
+                            id="block-box-progress"
+                            data-bs-toggle="tab"
+                            data-bs-target="#nav-block-box-progress"
+                            type="button"
+                            role="tab"
+                            aria-controls="nav-block-box-progress"
+                            aria-selected="false"></button>
+                  </div>
+                </nav>
+              </div>
+              <div class="tab-content">
+                <!-- 연구노트 리스트 -->
+                <div class="tab-pane fade"
+                     id="nav-list-box-progress"
+                     role="tabpanel"
+                     aria-labelledby="list-box-progress"
+                     tabindex="0">
+                  <div class="core-table">
+                    <div class="note-list-con box-table">
+                      <div class="box">
+                        <div class="box-header"></div>
+                        <div class="box-body">
+                          <div class="core-table-body">
+                            <div class="table-responsive pa-b30 core-table-div">
+                              <table class="table table-hover table-sty01"
+                                     id="tableNoteList_WRITING">
+                                <colgroup>
+                                  <col width="500px;" />
+                                  <col width="350px;" />
+                                  <col />
+                                  <col />
+                                  <col />
+                                </colgroup>
+                                <thead>
+                                  <tr class="text-nowrap">
+                                    <th class="text-left c-pointer">
+                                      <span sort-fn-nm="changeSort"
+                                            sort-nm="NOTE_NM">
+                                        연구노트
+                                      </span>
+                                    </th>
+                                    <th class="text-left c-pointer">
+                                      <span sort-fn-nm="changeSort"
+                                            sort-nm="PROJECT_NM">
+                                        프로젝트
+                                      </span>
+                                    </th>
+                                    <th class="text-left c-pointer">
+                                      <span sort-fn-nm="changeSort"
+                                            sort-nm="MODIFY_USER_NM">
+                                        작성자
+                                      </span>
+                                    </th>
+                                    <th class="text-left c-pointer">
+                                      <span sort-fn-nm="changeSort"
+                                            sort-nm="MODIFY_DT">
+                                        최근작성일
+                                      </span>
+                                    </th>
+                                    <th class="text-left c-pointer"></th>
+                                  </tr>
+                                </thead>
+                                <tbody></tbody>
+                              </table>
+                              <div class="paging-box"></div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="box-footer"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- 연구노트 카드 -->
+                <div class="tab-pane fade show active"
+                     id="nav-block-box-progress"
+                     role="tabpanel"
+                     aria-labelledby="block-box-progress">
+                  <div class="main-wrap2 note-card-board">
+                    <div class="note-card">
+                      <div class="no-data box d-none">
+                        <div class="no-data-back"></div>
+                        <span>작성중인 연구노트가 없습니다.</span>
+                      </div>
+                      <ul class="note-list d-none"></ul>
+                    </div>
+                    <div class="flex-sty01">
+                      <div class="more_list_data d-none note_WRITING"
+                           onclick="moreNoteCardList(&quot;WRITING&quot;);"><span class="remainCnt">1</span> <span>개 더보기</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- 점검중 연구노트 -->
+            <div class="tab-write-status-INSPECTION tab-pane fade"
+                 id="nav-my-note-inspect"
+                 role="tabpanel"
+                 aria-labelledby="nav-my-note-inspect-tab">
+              <div class="button-wrap-po-a"
+                   style="top: 0">
+                <nav class="list-block-btn-box ma-l10">
+                  <div class="nav nav-tabs tabs-box"
+                       id="nav-tab"
+                       role="tablist">
+                    <button class="list-btn-box btn"
+                            onclick="getNoteList(&quot;INSPECTION&quot;);"
+                            id="list-box-inspect"
+                            data-bs-toggle="tab"
+                            data-bs-target="#nav-list-box-inspect"
+                            type="button"
+                            role="tab"
+                            aria-controls="nav-list-box-inspect"
+                            aria-selected="true"></button>
+                    <button class="block-btn-box btn active"
+                            id="block-box-inspect"
+                            data-bs-toggle="tab"
+                            data-bs-target="#nav-block-box-inspect"
+                            type="button"
+                            role="tab"
+                            aria-controls="nav-block-box-inspect"
+                            aria-selected="false"></button>
+                  </div>
+                </nav>
+              </div>
+              <div class="tab-content">
+                <!-- 연구노트 리스트 -->
+                <div class="tab-pane fade"
+                     id="nav-list-box-inspect"
+                     role="tabpanel"
+                     aria-labelledby="list-box-inspect"
+                     tabindex="0">
+                  <div class="core-table">
+                    <div class="note-list-con box-table">
+                      <div class="box">
+                        <div class="box-header"></div>
+                        <div class="box-body">
+                          <div class="core-table-body">
+                            <div class="table-responsive pa-b30 core-table-div">
+                              <table class="table table-hover table-sty01"
+                                     id="tableNoteList_INSPECTION">
+                                <colgroup>
+                                  <col width="500px;" />
+                                  <col width="350px;" />
+                                  <col />
+                                  <col />
+                                  <col />
+                                </colgroup>
+                                <thead>
+                                  <tr class="text-nowrap">
+                                    <th class="text-left c-pointer">
+                                      <span sort-fn-nm="changeSort"
+                                            sort-nm="NOTE_NM">
+                                        연구노트
+                                      </span>
+                                    </th>
+                                    <th class="text-left c-pointer">
+                                      <span sort-fn-nm="changeSort"
+                                            sort-nm="PROJECT_NM">
+                                        프로젝트
+                                      </span>
+                                    </th>
+                                    <th class="text-left c-pointer">
+                                      <span sort-fn-nm="changeSort"
+                                            sort-nm="MODIFY_USER_NM">
+                                        작성자
+                                      </span>
+                                    </th>
+                                    <th class="text-left c-pointer">
+                                      <span sort-fn-nm="changeSort"
+                                            sort-nm="MODIFY_DT">
+                                        최근작성일
+                                      </span>
+                                    </th>
+                                    <th class="text-left c-pointer"></th>
+                                  </tr>
+                                </thead>
+                                <tbody></tbody>
+                              </table>
+                              <div class="paging-box"></div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="box-footer"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- 연구노트 카드 -->
+                <div class="tab-pane fade show active"
+                     id="nav-block-box-inspect"
+                     role="tabpanel"
+                     aria-labelledby="block-box-inspect">
+                  <div class="main-wrap2 note-card-board">
+                    <div class="note-card">
+                      <div class="no-data box d-none">
+                        <div class="no-data-back"></div>
+                        <span>작성중인 연구노트가 없습니다.</span>
+                      </div>
+                      <ul class="d-none"></ul>
+                    </div>
+                    <div class="flex-sty01">
+                      <div class="more_list_data d-none note_INSPECTION"
+                           onclick="moreNoteCardList(&quot;INSPECTION&quot;);"><span class="remainCnt">1</span> <span>개 더보기</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- 완료 연구노트 -->
+            <div class="tab-write-status-COMPLETE tab-pane fade"
+                 id="nav-my-note-completed"
+                 role="tabpanel"
+                 aria-labelledby="nav-my-note-completed-tab">
+              <div class="button-wrap-po-a"
+                   style="top: 0">
+                <nav class="list-block-btn-box ma-l10">
+                  <div class="nav nav-tabs tabs-box"
+                       id="nav-tab"
+                       role="tablist">
+                    <button class="list-btn-box btn"
+                            onclick="getNoteList(&quot;COMPLETE&quot;);"
+                            id="list-box-completed"
+                            data-bs-toggle="tab"
+                            data-bs-target="#nav-list-box-completed"
+                            type="button"
+                            role="tab"
+                            aria-controls="nav-list-box-completed"
+                            aria-selected="true"></button>
+                    <button class="block-btn-box btn active"
+                            id="block-box-completed"
+                            data-bs-toggle="tab"
+                            data-bs-target="#nav-block-box-completed"
+                            type="button"
+                            role="tab"
+                            aria-controls="nav-block-box-completed"
+                            aria-selected="false"></button>
+                  </div>
+                </nav>
+              </div>
+              <div class="tab-content">
+                <!-- 연구노트 리스트 -->
+                <div class="tab-pane fade"
+                     id="nav-list-box-completed"
+                     role="tabpanel"
+                     aria-labelledby="list-box-completed"
+                     tabindex="0">
+                  <div class="core-table">
+                    <div class="note-list-con box-table">
+                      <div class="box">
+                        <div class="box-header"></div>
+                        <div class="box-body">
+                          <div class="core-table-body">
+                            <div class="table-responsive pa-b30 core-table-div">
+                              <table class="table table-hover table-sty01"
+                                     id="tableNoteList_COMPLETE">
+                                <colgroup>
+                                  <col width="500px;" />
+                                  <col width="350px;" />
+                                  <col />
+                                  <col />
+                                  <col />
+                                  <col />
+                                </colgroup>
+                                <thead>
+                                  <tr class="text-nowrap">
+                                    <th class="text-left c-pointer">
+                                      <span sort-fn-nm="changeSort"
+                                            sort-nm="NOTE_NM">
+                                        연구노트
+                                      </span>
+                                    </th>
+                                    <th class="text-left c-pointer">
+                                      <span sort-fn-nm="changeSort"
+                                            sort-nm="PROJECT_NM">
+                                        프로젝트
+                                      </span>
+                                    </th>
+                                    <th class="text-left c-pointer">
+                                      <span sort-fn-nm="changeSort"
+                                            sort-nm="MODIFY_USER_NM">
+                                        작성자
+                                      </span>
+                                    </th>
+                                    <th class="text-left c-pointer">
+                                      <span sort-fn-nm="changeSort">
+                                        완료일자
+                                      </span>
+                                    </th>
+                                    <th class="text-left c-pointer">
+                                      승인자
+                                    </th>
+                                    <th class="text-left c-pointer"></th>
+                                  </tr>
+                                </thead>
+                                <tbody></tbody>
+                              </table>
+                              <div class="paging-box"></div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="box-footer"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- 연구노트 카드 -->
+                <div class="tab-pane fade show active"
+                     id="nav-block-box-completed"
+                     role="tabpanel"
+                     aria-labelledby="block-box-completed">
+                  <div class="main-wrap2 note-card-board">
+                    <div class="note-card">
+                      <div class="no-data box d-none">
+                        <div class="no-data-back"></div>
+                        <span>작성중인 연구노트가 없습니다.</span>
+                      </div>
+                      <ul class="d-none"></ul>
+                    </div>
+                    <div class="flex-sty01">
+                      <div class="more_list_data d-none note_COMPLETE"
+                           onclick="moreNoteCardList(&quot;COMPLETE&quot;);"><span class="remainCnt">1</span> <span>개 더보기</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- 공유 연구노트 -->
+            <div class="tab-write-status-SHARED_NOTE tab-pane fade"
+                 id="nav-my-note-shared"
+                 role="tabpanel"
+                 aria-labelledby="nav-my-note-shared-tab">
+              <div class="button-wrap-po-a"
+                   style="top: 0">
+                <nav class="list-block-btn-box ma-l10">
+                  <div class="nav nav-tabs tabs-box"
+                       id="nav-tab"
+                       role="tablist">
+                    <button class="list-btn-box btn"
+                            onclick="getNoteList(&quot;SHARED_NOTE&quot;);"
+                            id="list-box-shared"
+                            data-bs-toggle="tab"
+                            data-bs-target="#nav-list-box-shared"
+                            type="button"
+                            role="tab"
+                            aria-controls="nav-list-box-shared"
+                            aria-selected="true"></button>
+                    <button class="block-btn-box btn active"
+                            id="block-box-shared"
+                            data-bs-toggle="tab"
+                            data-bs-target="#nav-block-box-shared"
+                            type="button"
+                            role="tab"
+                            aria-controls="nav-block-box-shared"
+                            aria-selected="false"></button>
+                  </div>
+                </nav>
+              </div>
+              <div class="tab-content">
+                <!-- 연구노트 리스트 -->
+                <div class="tab-pane fade"
+                     id="nav-list-box-shared"
+                     role="tabpanel"
+                     aria-labelledby="list-box-shared"
+                     tabindex="0">
+                  <div class="core-table">
+                    <div class="note-list-con box-table">
+                      <div class="box">
+                        <div class="box-header"></div>
+                        <div class="box-body">
+                          <div class="core-table-body">
+                            <div class="table-responsive pa-b30 core-table-div">
+                              <table class="table table-hover table-sty01"
+                                     id="tableNoteList_SHARED_NOTE">
+                                <colgroup>
+                                  <col width="500px;" />
+                                  <col width="350px;" />
+                                  <col />
+                                  <col />
+                                  <col />
+                                  <col />
+                                </colgroup>
+                                <thead>
+                                  <tr class="text-nowrap">
+                                    <th class="text-left c-pointer">
+                                      <span sort-fn-nm="changeSort"
+                                            sort-nm="NOTE_NM">
+                                        연구노트
+                                      </span>
+                                    </th>
+                                    <th class="text-left c-pointer">
+                                      <span sort-fn-nm="changeSort"
+                                            sort-nm="PROJECT_NM">
+                                        프로젝트
+                                      </span>
+                                    </th>
+                                    <th class="text-left c-pointer">
+                                      <span sort-fn-nm="changeSort"
+                                            sort-nm="MODIFY_DT">
+                                        작성자
+                                      </span>
+                                    </th>
+                                    <th class="text-left c-pointer">
+                                      <span sort-fn-nm="changeSort">
+                                        열람기간
+                                      </span>
+                                    </th>
+                                    <th class="text-left c-pointer">
+                                      승인자
+                                    </th>
+                                    <th class="text-left c-pointer"></th>
+                                  </tr>
+                                </thead>
+                                <tbody></tbody>
+                              </table>
+                              <div class="paging-box"></div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="box-footer"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- 연구노트 카드 -->
+                <div class="tab-pane fade show active"
+                     id="nav-block-box-shared"
+                     role="tabpanel"
+                     aria-labelledby="block-box-shared">
+                  <div class="main-wrap2 note-card-board">
+                    <div class="note-card">
+                      <div class="no-data box d-none">
+                        <div class="no-data-back"></div>
+                        <span>작성중인 연구노트가 없습니다.</span>
+                      </div>
+                      <ul class="d-none"></ul>
+                    </div>
+                    <div class="flex-sty01">
+                      <div class="more_list_data d-none note_SHARED_NOTE"
+                           onclick="moreNoteCardList(&quot;SHARED_NOTE&quot;);"><span class="remainCnt">1</span> <span>개 더보기</span></div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+          <div class="ma-t10">&nbsp;</div>
         </div>
       </div>
-
-      
-      <div id="modal-lims-instrument"
-           class="modal fade"
-           data-bs-backdrop="static"
-           data-bs-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-pop modal-wrap-sty02 modal-content mh-800"></div>
-        </div>
-      </div>
-      <div id="modal-lims-instrument-edit"
-           class="modal fade"
-           data-bs-backdrop="static"
-           data-bs-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-pop modal-wrap-sty02 modal-content mh-800"></div>
-        </div>
-      </div>
-      <div id="modal-lims-instrument-retire"
-           class="modal fade"
-           data-bs-backdrop="static"
-           data-bs-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-pop modal-wrap-sty02 modal-content mh-800"></div>
-        </div>
-      </div>
-      <div id="modal-lims-cal"
-           class="modal fade"
-           data-bs-backdrop="static"
-           data-bs-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-          <div class="modal-pop modal-wrap-sty01 modal-content"></div>
-        </div>
-      </div>
-
-      <script id="template_instrument_list"
-              type="text/template">
-        <tr>
-          <td class="text-left"><b>{{=instrumentCd}}</b></td>
-          <td class="text-left">{{=instrumentNm}}</td>
-          <td class="text-left">{{=instrumentTpDisp}}</td>
-          <td class="text-left">{{=modelNmDisp}}</td>
-          <td class="text-left">{{=locationNmDisp}}</td>
-          <td class="text-left">{{=lastCalDeDisp}}</td>
-          <td class="text-left">{{=calDisp}}</td>
-          <td class="text-left">{{=statusDisp}}</td>
-          <td class="lims-actions-cell">
-            <button class="button-blue-line-sty01" onclick="openModalCalHistory('{{=instrumentMno}}', '{{=instrumentCd}}', '{{=instrumentNm}}');"><span>교정 이력</span></button>
-            <button class="button-blue-line-sty01" onclick="openModalInstrumentEdit('{{=instrumentMno}}');"><span>수정</span></button>
-            {{=retireDisp}}
-          </td>
-        </tr>
-      </script>
     </div>
   </div>
         </div>

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html
   lang="ko"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -2486,610 +2486,206 @@
     <script type="text/javascript">
       /*<![CDATA[*/
 
-      let gSelectedInstrumentMno = null;
-      let gSelectedInstrumentNm = '';
-
-      /* 결정 Q13 초기안 — 기관 보유 장비 확인 전까지의 잠정 목록이다. */
-      const INSTRUMENT_TP = {
-        HPLC: 'HPLC', LCMS: 'LC-MS', NMR: 'NMR', BALANCE: '저울', ETC: '기타'
-      };
-
-      const INSTRUMENT_STATUS = {
-        NORMAL:  { nm: '정상',         cls: 'normal' },
-        CAL_DUE: { nm: '교정기한경과', cls: 'expired' },
-        REPAIR:  { nm: '수리중',       cls: 'soon' },
-        RETIRED: { nm: '폐기',         cls: 'muted' }
-      };
-
-      const CAL_TP = { CALIBRATION: '교정', PM: '예방점검', QUALIFICATION: '적격성평가' };
-      const CAL_RESULT = { PASS: '적합', CONDITIONAL: '조건부적합', FAIL: '부적합' };
-
       function initPage() {
-        getInstrumentList();
+        noteMngReceivedList($('.tab-item.active').data('tabSe'));
       }
 
-      function deDisp(de) {
-        if (!de || de.length !== 8) {
-          return '-';
-        }
-        return `${de.substring(0, 4)}-${de.substring(4, 6)}-${de.substring(6, 8)}`;
+      function selectTabSe(tabSe) {
+        $('.tab-item').removeClass('active');
+        $('.tab-item.' + tabSe).addClass('active');
+
+        noteMngReceivedList(tabSe);
       }
 
-      /**
-       * 교정 기한 배지. 만료는 위험(expired), 30일 이내는 주의(soon).
-       * 교정 기록이 없는 장비는 '정상'이 아니라 '교정 기록 없음'으로 적는다 —
-       * 기록이 없는 것과 유효한 것은 다른 사실이고, 전자를 정상으로 칠하면 차단 근거가 흐려진다.
-       */
-      function calBadge(calState, nextCalDe) {
-        const de = deDisp(nextCalDe);
-        switch (calState) {
-          case 'EXPIRED':
-            return `${de} <span class="lims-state expired">교정 만료</span>`;
-          case 'SOON':
-            return `${de} <span class="lims-state soon">30일 이내</span>`;
-          case 'NORMAL':
-            return `${de} <span class="lims-state normal">유효</span>`;
-          default:
-            return '<span class="lims-state muted">교정 기록 없음</span>';
-        }
-      }
-
-      function statusBadge(statusCcd) {
-        const meta = INSTRUMENT_STATUS[statusCcd];
-        if (!meta) {
-          return `<span class="lims-state muted">${statusCcd || '-'}</span>`;
-        }
-        return `<span class="lims-state ${meta.cls}">${meta.nm}</span>`;
-      }
-
-      /* ---------------------------------------------------------------
-         장비 목록 — 교정 임박·만료가 위로 오도록 서버가 정렬해 내려준다.
-      --------------------------------------------------------------- */
-      function getInstrumentList(pageNo) {
-        const targetSelector = '.instrument-info-list';
-
+      function noteMngReceivedList(tabSe, pageNo) {
         ajaxPost(
-          '/api/lims/instrument/instrumentList',
+          '/api/eln/note/noteMngReqstReceivedList',
           {
-            searchKeyword: $('#searchKeyword').val().trim(),
-            schInstrumentTpCcd: $('#schInstrumentTpCcd').val(),
-            schInstrumentStatusCcd: $('#schInstrumentStatusCcd').val(),
-            schCalState: $('#schCalState').val(),
+            schNoteReqstStatus: tabSe,
             pageNo: pageNo ? pageNo : 1,
-            pageUnit: 10
+            pageUnit: 5,
+            orderBy: S2Util.getThOrderBy('.note-info-list', 'CREATE_DT DESC')
           },
           '데이터요청중입니다.잠시만 기다려주세요.',
           function (res) {
-            const $target = $(targetSelector + ' tbody').empty();
+            if (res.noteReceivedListInfo) {
+              if (
+                S2Util.isJSON(res.noteReceivedListInfo.dataList) &&
+                Object.keys(res.noteReceivedListInfo.dataList).length
+              ) {
+                $('.note-info-list')
+                  .find('.no-data')
+                  .addClass('d-none')
+                  .end()
+                  .find('.not_mng_box')
+                  .removeClass('d-none')
+                  .empty();
 
-            /* nullToEmpty 가 배열을 숫자키 객체로 바꾸므로 Object.keys(...).length 로 판정한다. */
-            if (res.instrumentListInfo && S2Util.isJSON(res.instrumentListInfo.dataList)
-                && Object.keys(res.instrumentListInfo.dataList).length) {
-              for (const idx in res.instrumentListInfo.dataList) {
-                const i = res.instrumentListInfo.dataList[idx];
-                i.instrumentTpDisp = INSTRUMENT_TP[i.instrumentTpCcd] || i.instrumentTpCcd || '-';
-                i.modelNmDisp = i.modelNm || '-';
-                i.locationNmDisp = i.locationNm || '-';
-                i.lastCalDeDisp = deDisp(i.lastCalDe);
-                i.calDisp = calBadge(i.calState, i.nextCalDe);
-                i.statusDisp = statusBadge(i.instrumentStatusCcd);
-                i.retireDisp = i.instrumentStatusCcd === 'RETIRED'
-                  ? ''
-                  : `<button class="button-gray-line-sty01" onclick="openModalInstrumentRetire('${i.instrumentMno}', '${i.instrumentCd}');"><span>폐기</span></button>`;
-                $target.append(S2Util.s2Template('template_instrument_list', i));
+                for (const idx in res.noteReceivedListInfo.dataList) {
+                  const note = res.noteReceivedListInfo.dataList[idx];
+                  if (note.inspctnStatusCcd) {
+                    note['writeStatusNm'] = '점검'; // 점검
+                  } else if (note.shareStatusCcd) {
+                    note['writeStatusNm'] = '공유'; // 공유
+                  } else if (note.downloadStatusCcd) {
+                    note['writeStatusNm'] = '다운'; // 다운
+                  } else if (note.perfStatusCcd) {
+                    note['writeStatusNm'] = '진도'; // 성과
+                  }
+
+                  let inspctnStatus = '';
+                  if (note.inspctnStatusCcd && note.inspctnUserList) {
+                    for (const i in note.inspctnUserList) {
+                      const status = note.inspctnUserList[i];
+                      inspctnStatus += `<div class="progress ${status.inspctnStatusCcd}"></div>`;
+                    }
+                  }
+
+                  note['inspctnStatus'] = inspctnStatus;
+
+                  let shareStatus = '';
+                  if (note.shareStatusCcd && note.shareManagerList) {
+                    for (const i in note.shareManagerList) {
+                      const status = note.shareManagerList[i];
+                      shareStatus += `<div class="progress ${status.shareStatusCcd}"></div>`;
+                    }
+                  }
+
+                  note['shareStatus'] = shareStatus;
+
+                  let downloadStatus = '';
+                  if (note.downloadStatusCcd && note.downloadManagerList) {
+                    for (const i in note.downloadManagerList) {
+                      const status = note.downloadManagerList[i];
+                      downloadStatus += `<div class="progress ${status.downloadStatusCcd}"></div>`;
+                    }
+                  }
+                  note['downloadStatus'] = downloadStatus;
+
+                  let perfStatus = '';
+                  if (note.perfStatusCcd && note.perfManagerList) {
+                    for (const i in note.perfManagerList) {
+                      const status = note.perfManagerList[i];
+                      perfStatus += `<div class="progress ${status.perfStatusCcd}"></div>`;
+                    }
+                  }
+                  note['perfStatus'] = perfStatus;
+
+                  $('.note-info-list')
+                    .find('.not_mng_box')
+                    .append(
+                      S2Util.s2Template(
+                        `
+                          <div class="note-info-box ma-b10 flex-sty04">
+                            <div class="note-wrap">
+                              <div class="flex-sty02">
+                                <div class="status ma-r15">${note.writeStatusNm}</div>
+                                <div class="note flex-sty02">
+                                  <div class="editor_type ${note.editorTpCcd}"></div>
+                                  <div>
+                                    <div if="isNoteNm" class="note-title"><a href="#" onclick="gfn_openNoteDetail('/eln/note/noteDetails', ${note.noteMno}); return false;">${note.noteNm}</a></div>
+                                    <div else="isNoteNm" class="note-title"><a href="#" onclick="gfn_openNoteDetail('/eln/note/noteDetails', ${note.noteMno}); return false;">${'제목없음'}</a></div>
+                                    <div class="note-info flex-sty02"><div class="project-name" if="isProject">${note.projectNm}</div><span if="isProject">&nbsp; &middot; &nbsp;</span><div>${note.ownerNm ? note.ownerNm : '작성자 없음'}</div></div>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="flex-sty02 w-500 list-right">
+                                <div class="txt-div">
+                                  <div class="txt-title">${'요청일자'}</div>
+                                  <div class="txt-cont ma-t5">${note.createDe}</div>
+                                </div>
+                                <div class="txt-div">
+                                  <div class="txt-title">${'요청자'}</div>
+                                  <div class="txt-cont ma-t5">${note.createUserNm}</div>
+                                </div>
+                                <div if="isShareVer1" class="txt-div">
+                                  <div class="txt-title">${'열람기간'}</div>
+                                  <div class="txt-cont ma-t5">${note.shareReqstPeriodDays}일</div>
+                                </div>
+                                <div if="isShareVer2" class="txt-div">
+                                  <div class="txt-title">${'점검단계'}</div>
+                                  <div class="txt-cont ma-t5 flex-sty02 share-list">${note.shareStatus}</div>
+                                </div>
+                                <div if="isDownload" class="txt-div">
+                                  <div class="txt-title">${'점검단계'}</div>
+                                  <div class="txt-cont ma-t5 flex-sty02">${note.downloadStatus}</div>
+                                </div>
+                                <div if="isInspctn" class="txt-div">
+                                  <div class="txt-title">${'점검단계'}</div>
+                                  <div class="txt-cont ma-t5 flex-sty02 inspctn-list">${note.inspctnStatus}</div>
+                                </div>
+                                <div if="isPerformance" class="txt-div">
+                                  <div class="txt-title">${'점검단계'}</div>
+                                  <div class="txt-cont ma-t5 flex-sty02">${note.perfStatus}</div>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="txt-div w-100 pa-r10">
+                              <a if="isInspctn" href="#" onclick="elnCom_openModalInspectionManagement(${note.noteMno}, ${note.inspctnReqstMno}, '${note.noteNm}');" type="button" class="button-blue-line-sty02">${'점검'}</a>
+                              <a if="isShareVer1" href="#" onclick="elnCom_openModalNoteConfirmShare(${note.noteMno}, ${note.shareReqstMno});" type="button" class="button-blue-line-sty02">${'공유'}</a>
+                              <a if="isShareVer2" href="#" onclick="elnCom_openModalNoteConfirmShareConfirm(${note.noteMno}, ${note.shareReqstMno});" type="button" class="button-blue-line-sty02">${'공유'}</a>
+                              <a if="isDownload" href="#" onclick="elnCom_openModalDownloadManagement('${note.downloadReqstMno}');" type="button" class="button-blue-line-sty02">${'다운'}</a>
+                              <a if="isPerformance" href="#" onclick="elnCom_openModalPerformanceManagement('${note.perfReqstMno}','${note.goalDetailMno}','${note.perfStatusCcd}');" type="button" class="button-blue-line-sty02">${'진도'}</a>
+                            </div>
+                          </div>
+                        `,
+                        {
+                          isProject: note.projectNm ? true : false,
+                          isNoteNm: note.noteNm ? true : false,
+                          isInspctn: note.inspctnStatusCcd ? true : false,
+                          isShare: note.shareStatusCcd ? true : false,
+                          isShareVer1:
+                            note.shareStatusCcd && 'N' === 'owner' ? true : false,
+                          isShareVer2:
+                            note.shareStatusCcd && 'N' === 'ownerAdmin' ? true : false,
+                          isDownload: note.downloadStatusCcd ? true : false,
+                          isPerformance: note.perfStatusCcd ? true : false
+                        }
+                      )
+                    );
+                  $('.note-info-list')
+                    .find('.paging-box')
+                    .html(S2Util.pagination(res.noteReceivedListInfo, 'noteMngReceivedList', tabSe));
+                }
+              } else {
+                $('.note-info-list')
+                  .find('.no-data')
+                  .removeClass('d-none')
+                  .end()
+                  .find('.not_mng_box')
+                  .addClass('d-none')
+                  .empty()
+                  .end()
+                  .find('.paging-box')
+                  .html('');
               }
-              $target.parents(targetSelector).find('.paging-box')
-                .html(S2Util.pagination(res.instrumentListInfo, 'getInstrumentList'));
-            } else {
-              $target.html('<tr class="text-nowrap emptymessage"><td class="text-center" colspan="9">등록된 장비가 없습니다.</td></tr>');
             }
           }
         );
       }
 
-      /* ---------------------------------------------------------------
-         공통 폼 조각 — 등록/수정이 같은 입력을 쓴다.
-         교정 기한 입력칸이 없는 것은 누락이 아니다. 그 값은 교정 이력 등록으로만 생긴다.
-      --------------------------------------------------------------- */
-      function instrumentFormHtml(prefix) {
-        return `
-          <div class="flex-sty05 ma-b20">
-            <label for="${prefix}InstrumentNm" class="modal-cont-label">장비 명</label>
-            <input type="text" id="${prefix}InstrumentNm" name="instrumentNm" maxlength="200"
-                   class="input-write-sty02-line" title="장비 명" required="required" />
-            <div class="flex-sty04"><div class="guidetext-sty01">결과 입력 화면의 장비 선택 목록에 표시됩니다.</div></div>
-          </div>
-          <div class="flex-sty05 ma-b20">
-            <label for="${prefix}InstrumentTpCcd" class="modal-cont-label">장비 유형</label>
-            <select id="${prefix}InstrumentTpCcd" name="instrumentTpCcd" class="btn btn-xs select-xs select-sty02 wp-100"
-                    title="장비 유형" required="required">
-              <option value="HPLC">HPLC</option>
-              <option value="LCMS">LC-MS</option>
-              <option value="NMR">NMR</option>
-              <option value="BALANCE">저울</option>
-              <option value="ETC">기타</option>
-            </select>
-            <div class="flex-sty04"><div class="guidetext-sty01">공통코드 LIMS_INSTRUMENT_TP_CCD 입니다. 기관 보유 장비 확인 전 잠정 목록입니다. (결정 Q13)</div></div>
-          </div>
-          <div class="flex-sty05 ma-b20">
-            <label for="${prefix}ModelNm" class="modal-cont-label">모델 명</label>
-            <input type="text" id="${prefix}ModelNm" name="modelNm" maxlength="200"
-                   class="input-write-sty02-line" title="모델 명" />
-            <div class="flex-sty04"><div class="guidetext-sty01">예) Agilent 1260 Infinity II (선택)</div></div>
-          </div>
-          <div class="flex-sty05 ma-b20">
-            <label for="${prefix}MakerNm" class="modal-cont-label">제조사</label>
-            <input type="text" id="${prefix}MakerNm" name="makerNm" maxlength="200"
-                   class="input-write-sty02-line" title="제조사" />
-            <div class="flex-sty04"><div class="guidetext-sty01">교정 의뢰 시 참조합니다. (선택)</div></div>
-          </div>
-          <div class="flex-sty05 ma-b20">
-            <label for="${prefix}SerialNo" class="modal-cont-label">제조 번호</label>
-            <input type="text" id="${prefix}SerialNo" name="serialNo" maxlength="100"
-                   class="input-write-sty02-line" title="제조 번호" />
-            <div class="flex-sty04"><div class="guidetext-sty01">성적서와 대조할 때 쓰는 시리얼 번호입니다. (선택)</div></div>
-          </div>
-          <div class="flex-sty05 ma-b20">
-            <label for="${prefix}LocationMno" class="modal-cont-label">설치 위치</label>
-            <select id="${prefix}LocationMno" name="locationMno" class="btn btn-xs select-xs select-sty02 wp-100"
-                    title="설치 위치"></select>
-            <div class="flex-sty04"><div class="guidetext-sty01">시료·시약과 같은 위치 마스터를 씁니다. (선택)</div></div>
-          </div>
-          <div class="flex-sty05 ma-b20">
-            <label for="${prefix}ManagerMno" class="modal-cont-label">관리자</label>
-            <select id="${prefix}ManagerMno" name="managerMno" class="btn btn-xs select-xs select-sty02 wp-100"
-                    title="관리자"></select>
-            <div class="flex-sty04"><div class="guidetext-sty01">교정 기한을 관리하는 담당자입니다. (선택)</div></div>
-          </div>
-          <div class="flex-sty05 ma-b20">
-            <label for="${prefix}IntroDe" class="modal-cont-label">도입 일자</label>
-            <div class="input-group form_date">
-              <input type="text" id="${prefix}IntroDe" name="introDe" readonly="readonly"
-                     class="form-control input-xs input-write-date2" title="도입 일자" />
-            </div>
-            <div class="flex-sty04"><div class="guidetext-sty01">자산 관리용 참고 값입니다. (선택)</div></div>
-          </div>
-          <div class="flex-sty05 ma-b20">
-            <label for="${prefix}CalCycleMonth" class="modal-cont-label">교정 주기 (개월)</label>
-            <input type="number" id="${prefix}CalCycleMonth" name="calCycleMonth" step="1" min="0"
-                   class="input-write-sty02-line" title="교정 주기" />
-            <div class="flex-sty04"><div class="guidetext-sty01">교정 이력 등록 시 차기 교정 기한을 이 주기로 계산합니다. 비워두면 계산하지 않고, 등록 화면에서 기한을 직접 입력해야 합니다.</div></div>
-          </div>
-          <div class="flex-sty05">
-            <label for="${prefix}Desc" class="modal-cont-label">설명</label>
-            <textarea id="${prefix}Desc" name="desc" class="form-textarea form-textarea-line wp-100 h-70"
-                      title="설명"></textarea>
-            <div class="flex-sty04"><div class="guidetext-sty01">사용 제한, 부속 장치 등 특기 사항을 적습니다. (선택)</div></div>
-          </div>`;
-      }
-
-      function collectInstrumentForm(prefix) {
-        return {
-          instrumentNm: $('#' + prefix + 'InstrumentNm').val().trim(),
-          instrumentTpCcd: $('#' + prefix + 'InstrumentTpCcd').val(),
-          modelNm: $('#' + prefix + 'ModelNm').val().trim(),
-          makerNm: $('#' + prefix + 'MakerNm').val().trim(),
-          serialNo: $('#' + prefix + 'SerialNo').val().trim(),
-          locationMno: $('#' + prefix + 'LocationMno').val(),
-          managerMno: $('#' + prefix + 'ManagerMno').val(),
-          introDe: $('#' + prefix + 'IntroDe').val(),
-          calCycleMonth: $('#' + prefix + 'CalCycleMonth').val(),
-          desc: $('#' + prefix + 'Desc').val()
+      function noteMngExcelDownload() {
+        const param = {
+          pageSe: 'received',
+          schNoteReqstStatus: $('.tab-item.active').data('tabSe'),
+          schPageYn: 'N',
+          orderBy: S2Util.getThOrderBy('.note-info-list', 'CREATE_DT DESC')
         };
-      }
 
-      /* ---------------------------------------------------------------
-         장비 등록 모달 (560)
-      --------------------------------------------------------------- */
-      function openModalInstrumentCreate() {
-        $('#modal-lims-instrument')
-          .draggable({ handle: '.modal-header' })
-          .modal('show')
-          .find('.modal-content')
-          .html(`
-            <div class="modal-header cursor-move">
-              <p class="modal-title">장비 등록</p>
-              <span class="modal-sub">교정 기한은 교정 이력을 등록해야 생깁니다.</span>
-            </div>
-            <div class="modal-body">
-              <form method="post" role="form" id="limsInstrumentForm">
-                <div class="flex-sty05 ma-b20">
-                  <label for="newInstrumentCd" class="modal-cont-label">관리번호</label>
-                  <input type="text" id="newInstrumentCd" name="instrumentCd" maxlength="50"
-                         class="input-write-sty02-line" title="관리번호" required="required" />
-                  <div class="flex-sty04"><div class="guidetext-sty01">기관 자산번호입니다. 중복 등록은 차단됩니다.</div></div>
-                </div>
-                ${instrumentFormHtml('new')}
-              </form>
-            </div>
-            <div class="modal-footer">
-              <div class="button-wrap02">
-                <button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">닫기</button>
-                <button type="button" class="button-cnfm-sty01 button-cnfm">확인</button>
-              </div>
-            </div>
-          `);
+        const fileName = '노트 관리 현황_' + '받은 요청_' + coreCommon.getNowDateTime();
+        const postData = {
+          method: 'POST',
+          responseType: 'blob',
+          fileName: fileName,
+          msg: '다운로드중입니다.잠시만 기다려주세요.',
+          msgOk: '다운로드 성공',
+          msgFail: '다운로드 실패'
+        };
+        $.extend(postData, param);
 
-        $('#modal-lims-instrument .form_date').coreDateRangePicker({ beginInputId: 'newIntroDe' });
-        /*
-          두 목록을 연달아 호출하면 안 된다. reqAjax 는 요청 하나가 떠 있는 동안 다음 요청을
-          조용히 버린다(에러도 콜백도 없다). 첫 응답 뒤에 두 번째를 태운다.
-        */
-        loadLocationOptions('#newLocationMno', function () {
-          loadUserOptions('#newManagerMno');
+        S2Util.fetch('/api/eln/note/download-excel', postData, function () {
+          S2Util.toasts(`[${fileName}] 다운로드 성공`);
         });
-
-        $('#modal-lims-instrument').find('button.button-cnfm').off('click').on('click', function () {
-          if (!S2Util.s2validate('#limsInstrumentForm')) {
-            return;
-          }
-          const values = collectInstrumentForm('new');
-          values.instrumentCd = $('#newInstrumentCd').val().trim();
-
-          ajaxPost('/api/lims/instrument/createInstrument', values, '데이터요청중입니다.잠시만 기다려주세요.', function (res) {
-            if (res.s2ResultCode !== 1) {
-              return;
-            }
-            $('#modal-lims-instrument').modal('hide');
-            S2Util.toasts('장비가 등록되었습니다. 교정 이력을 등록하면 차기 교정 기한이 생깁니다.', { class: 'Toast-bottom-web' });
-            getInstrumentList();
-          });
-        });
-      }
-
-      /* ---------------------------------------------------------------
-         장비 수정 모달 (560)
-         설명(`DESC`)은 목록에 싣지 않으므로 단건 조회로 읽는다. 그 뒤에 셀렉트를 채운다(체이닝).
-      --------------------------------------------------------------- */
-      function openModalInstrumentEdit(instrumentMno) {
-        ajaxPost('/api/lims/instrument/instrumentDetail', { instrumentMno: instrumentMno },
-          '데이터요청중입니다.잠시만 기다려주세요.', function (res) {
-            if (res.s2ResultCode !== 1 || !res.instrument) {
-              return;
-            }
-            const base = res.instrument;
-
-            $('#modal-lims-instrument-edit')
-              .draggable({ handle: '.modal-header' })
-              .modal('show')
-              .find('.modal-content')
-              .html(`
-                <div class="modal-header cursor-move">
-                  <p class="modal-title">장비 수정</p>
-                  <span class="modal-sub" title="${base.instrumentCd}">${base.instrumentCd}</span>
-                </div>
-                <div class="modal-body">
-                  <form method="post" role="form" id="limsInstrumentEditForm">
-                    ${instrumentFormHtml('edit')}
-                    <div class="flex-sty04 ma-t10">
-                      <div class="guidetext-sty01">
-                        차기 교정 기한은 이 화면에서 바꿀 수 없습니다. 교정 이력 등록으로만 갱신됩니다 —
-                        이력 없이 기한을 늘릴 수 있으면 결과 입력 차단이 근거 없이 풀립니다.
-                      </div>
-                    </div>
-                  </form>
-                </div>
-                <div class="modal-footer">
-                  <div class="button-wrap02">
-                    <button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">닫기</button>
-                    <button type="button" class="button-cnfm-sty01 button-cnfm">확인</button>
-                  </div>
-                </div>
-              `);
-
-            $('#editInstrumentNm').val(base.instrumentNm || '');
-            $('#editInstrumentTpCcd').val(base.instrumentTpCcd);
-            $('#editModelNm').val(base.modelNm || '');
-            $('#editMakerNm').val(base.makerNm || '');
-            $('#editSerialNo').val(base.serialNo || '');
-            $('#editCalCycleMonth').val(base.calCycleMonth != null ? base.calCycleMonth : '');
-            $('#editDesc').val(base.desc || '');
-            $('#editIntroDe').val(deDisp(base.introDe) === '-' ? '' : deDisp(base.introDe));
-            $('#modal-lims-instrument-edit .form_date').coreDateRangePicker({ beginInputId: 'editIntroDe' });
-
-            loadLocationOptions('#editLocationMno', function () {
-              $('#editLocationMno').val(base.locationMno || '');
-              loadUserOptions('#editManagerMno', function () {
-                $('#editManagerMno').val(base.managerMno || '');
-              });
-            });
-
-            $('#modal-lims-instrument-edit').find('button.button-cnfm').off('click').on('click', function () {
-              if (!S2Util.s2validate('#limsInstrumentEditForm')) {
-                return;
-              }
-              const values = collectInstrumentForm('edit');
-              values.instrumentMno = base.instrumentMno;
-
-              ajaxPost('/api/lims/instrument/modifyInstrument', values, '데이터요청중입니다.잠시만 기다려주세요.', function (r) {
-                if (r.s2ResultCode !== 1) {
-                  return;
-                }
-                $('#modal-lims-instrument-edit').modal('hide');
-                S2Util.toasts('수정되었습니다.', { class: 'Toast-bottom-web' });
-                getInstrumentList();
-              });
-            });
-          });
-      }
-
-      /* ---------------------------------------------------------------
-         장비 폐기 모달 (560) — 행은 남는다.
-      --------------------------------------------------------------- */
-      function openModalInstrumentRetire(instrumentMno, instrumentCd) {
-        $('#modal-lims-instrument-retire')
-          .draggable({ handle: '.modal-header' })
-          .modal('show')
-          .find('.modal-content')
-          .html(`
-            <div class="modal-header cursor-move">
-              <p class="modal-title">장비 폐기</p>
-              <span class="modal-sub" title="${instrumentCd}">${instrumentCd}</span>
-            </div>
-            <div class="modal-body">
-              <div class="flex-sty05">
-                <label class="modal-cont-label">확인</label>
-                <div class="guidetext-sty01">
-                  이 장비를 폐기 상태로 전환합니다. 대장에서 행이 지워지지 않습니다 —
-                  과거 시험 결과가 이 장비와 그 시점의 교정 이력을 근거로 삼기 때문입니다.
-                  폐기 후에는 결과 입력의 장비 선택 목록에서 빠집니다.
-                </div>
-                <div class="flex-sty04"><div class="guidetext-sty01">교정 이력도 함께 보존됩니다.</div></div>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <div class="button-wrap02">
-                <button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">닫기</button>
-                <button type="button" class="button-cnfm-sty01 button-cnfm">확인</button>
-              </div>
-            </div>
-          `)
-          .find('button.button-cnfm')
-          .off('click')
-          .on('click', function () {
-            ajaxPost('/api/lims/instrument/retireInstrument', { instrumentMno: instrumentMno },
-              '데이터요청중입니다.잠시만 기다려주세요.', function (res) {
-                if (res.s2ResultCode !== 1) {
-                  return;
-                }
-                $('#modal-lims-instrument-retire').modal('hide');
-                S2Util.toasts('폐기 처리되었습니다.', { class: 'Toast-bottom-web' });
-                getInstrumentList();
-              });
-          });
-      }
-
-      /* ---------------------------------------------------------------
-         교정·점검 이력 모달 (840x560) — 이력 열람 + 신규 등록
-         이력 행에 삭제 버튼이 없다. 의도적이다.
-      --------------------------------------------------------------- */
-      function openModalCalHistory(instrumentMno, instrumentCd, instrumentNm) {
-        gSelectedInstrumentMno = instrumentMno;
-        gSelectedInstrumentNm = instrumentNm;
-
-        $('#modal-lims-cal')
-          .draggable({ handle: '.modal-header' })
-          .modal('show')
-          .find('.modal-content')
-          .html(`
-            <div class="modal-header cursor-move">
-              <p class="modal-title">교정·점검 이력</p>
-              <span class="modal-sub" title="${instrumentCd} · ${instrumentNm}">${instrumentCd} · ${instrumentNm}</span>
-            </div>
-            <div class="modal-body">
-              <div class="core-table ma-b20">
-                <div class="table-responsive core-table-div">
-                  <table class="table table-sty01">
-                    <thead>
-                      <tr class="text-nowrap">
-                        <th class="text-left">교정일</th>
-                        <th class="text-left">유형</th>
-                        <th class="lims-num">결과</th>
-                        <th class="text-left">차기 기한</th>
-                        <th class="text-left">기관</th>
-                        <th class="text-left">성적서</th>
-                        <th class="text-left">확인자</th>
-                      </tr>
-                    </thead>
-                    <tbody class="cal-hist-body"></tbody>
-                  </table>
-                </div>
-              </div>
-              <div class="flex-sty04 ma-b20">
-                <div class="guidetext-sty01">
-                  이력은 추가만 가능하며 수정·삭제되지 않습니다. 지우면 "이 장비가 언제부터 유효했는가"를 잃고
-                  그 기간에 낸 결과의 근거가 사라집니다.
-                </div>
-              </div>
-              <form method="post" role="form" id="limsCalForm">
-                <div class="flex-sty05 ma-b20">
-                  <label for="calDe" class="modal-cont-label">교정 수행 일자</label>
-                  <div class="input-group form_date">
-                    <input type="text" id="calDe" name="calDe" readonly="readonly"
-                           class="form-control input-xs input-write-date2" title="교정 수행 일자" required="required" />
-                  </div>
-                  <div class="flex-sty04"><div class="guidetext-sty01">성적서에 적힌 실제 수행일입니다.</div></div>
-                </div>
-                <div class="flex-sty05 ma-b20">
-                  <label for="calTpCcd" class="modal-cont-label">교정 유형</label>
-                  <select id="calTpCcd" name="calTpCcd" class="btn btn-xs select-xs select-sty02 wp-100" title="교정 유형">
-                    <option value="CALIBRATION">교정</option>
-                    <option value="PM">예방점검</option>
-                    <option value="QUALIFICATION">적격성평가</option>
-                  </select>
-                  <div class="flex-sty04"><div class="guidetext-sty01">공통코드 LIMS_CAL_TP_CCD 입니다.</div></div>
-                </div>
-                <div class="flex-sty05 ma-b20">
-                  <label for="calResultCcd" class="modal-cont-label">교정 결과</label>
-                  <select id="calResultCcd" name="calResultCcd" class="btn btn-xs select-xs select-sty02 wp-100" title="교정 결과">
-                    <option value="PASS">적합</option>
-                    <option value="CONDITIONAL">조건부적합</option>
-                    <option value="FAIL">부적합</option>
-                  </select>
-                  <div class="flex-sty04"><div class="guidetext-sty01" id="calResultGuide">적합·조건부적합이면 차기 교정 기한이 갱신됩니다.</div></div>
-                </div>
-                <div class="flex-sty05 ma-b20">
-                  <label for="calNextCalDe" class="modal-cont-label">차기 교정 기한</label>
-                  <div class="input-group form_date">
-                    <input type="text" id="calNextCalDe" name="nextCalDe" readonly="readonly"
-                           class="form-control input-xs input-write-date2" title="차기 교정 기한" />
-                  </div>
-                  <div class="flex-sty04"><div class="guidetext-sty01">비워두면 장비의 교정 주기로 계산합니다. 주기도 없으면 기한이 생기지 않습니다 — 시스템이 기한을 추측하지 않습니다.</div></div>
-                </div>
-                <div class="flex-sty05 ma-b20">
-                  <label for="calAgencyNm" class="modal-cont-label">교정 기관</label>
-                  <input type="text" id="calAgencyNm" name="agencyNm" maxlength="200"
-                         class="input-write-sty02-line" title="교정 기관" />
-                  <div class="flex-sty04"><div class="guidetext-sty01">외부 교정이면 기관명을 적습니다. (선택)</div></div>
-                </div>
-                <div class="flex-sty05 ma-b20">
-                  <label for="calCertNo" class="modal-cont-label">성적서 번호</label>
-                  <input type="text" id="calCertNo" name="certNo" maxlength="100"
-                         class="input-write-sty02-line" title="성적서 번호" />
-                  <div class="flex-sty04"><div class="guidetext-sty01">감사 시 원본 성적서를 찾는 키입니다. (선택)</div></div>
-                </div>
-                <div class="flex-sty05">
-                  <label for="calDesc" class="modal-cont-label">설명</label>
-                  <textarea id="calDesc" name="desc" class="form-textarea form-textarea-line wp-100 h-70"
-                            title="설명"></textarea>
-                  <div class="flex-sty04"><div class="guidetext-sty01">조건부적합이면 제한 조건을 반드시 적습니다. (선택)</div></div>
-                </div>
-              </form>
-            </div>
-            <div class="modal-footer">
-              <div class="button-wrap02">
-                <button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">닫기</button>
-                <button type="button" class="button-cnfm-sty01 button-cnfm">교정 등록</button>
-              </div>
-            </div>
-          `);
-
-        $('#modal-lims-cal .form_date').coreDateRangePicker({ beginInputId: 'calDe' });
-
-        $('#calResultCcd').off('change').on('change', function () {
-          $('#calResultGuide').text($(this).val() === 'FAIL'
-            ? '부적합이면 차기 교정 기한을 연장하지 않습니다. 장비는 수리중 상태가 되고 결과 입력 차단은 그대로 유지됩니다.'
-            : '적합·조건부적합이면 차기 교정 기한이 갱신됩니다.');
-        });
-
-        loadCalList();
-
-        $('#modal-lims-cal').find('button.button-cnfm').off('click').on('click', function () {
-          if (!S2Util.s2validate('#limsCalForm')) {
-            return;
-          }
-          ajaxPost(
-            '/api/lims/instrument/createCal',
-            {
-              instrumentMno: gSelectedInstrumentMno,
-              calDe: $('#calDe').val(),
-              calTpCcd: $('#calTpCcd').val(),
-              calResultCcd: $('#calResultCcd').val(),
-              nextCalDe: $('#calNextCalDe').val(),
-              agencyNm: $('#calAgencyNm').val().trim(),
-              certNo: $('#calCertNo').val().trim(),
-              desc: $('#calDesc').val()
-            },
-            '데이터요청중입니다.잠시만 기다려주세요.',
-            function (res) {
-              if (res.s2ResultCode !== 1) {
-                return;
-              }
-              S2Util.toasts(
-                res.nextCalDe
-                  ? `교정이 등록되었습니다. 차기 기한 ${deDisp(res.nextCalDe)}`
-                  : '교정이 등록되었습니다. 차기 기한은 설정되지 않았습니다 — 교정 주기 또는 기한을 입력하세요.',
-                { class: 'Toast-bottom-web' }
-              );
-              $('#limsCalForm')[0].reset();
-              /* 이력 갱신 후 대장을 이어서 갱신한다 — 동시 요청은 조용히 버려진다. */
-              loadCalList(function () {
-                getInstrumentList();
-              });
-            }
-          );
-        });
-      }
-
-      /**
-       * 교정 이력을 다시 그린다. onDone 은 성공/실패와 무관하게 정확히 한 번 호출된다 —
-       * 호출측이 다음 ajax 를 안전하게 이어붙이기 위한 것이다.
-       */
-      function loadCalList(onDone) {
-        const done = typeof onDone === 'function' ? onDone : function () {};
-        ajaxPost('/api/lims/instrument/calList', { instrumentMno: gSelectedInstrumentMno }, null,
-          function (res) {
-            const $body = $('.cal-hist-body').empty();
-            if (res.calList && Object.keys(res.calList).length) {
-              for (const idx in res.calList) {
-                const c = res.calList[idx];
-                const resultCls = c.calResultCcd === 'FAIL'
-                  ? 'expired' : (c.calResultCcd === 'CONDITIONAL' ? 'soon' : 'normal');
-                $body.append(`
-                  <tr>
-                    <td class="text-left"><b>${deDisp(c.calDe)}</b></td>
-                    <td class="text-left">${CAL_TP[c.calTpCcd] || c.calTpCcd || '-'}</td>
-                    <td class="text-left"><span class="lims-state ${resultCls}">${CAL_RESULT[c.calResultCcd] || c.calResultCcd}</span></td>
-                    <td class="text-left">${deDisp(c.nextCalDe)}</td>
-                    <td class="text-left">${c.agencyNm || '-'}</td>
-                    <td class="text-left">${c.certNo || '-'}</td>
-                    <td class="text-left">${c.performUserNm || '-'}</td>
-                  </tr>`);
-              }
-            } else {
-              $body.html('<tr class="emptymessage"><td class="text-center" colspan="7">교정 이력이 없습니다.</td></tr>');
-            }
-            done();
-          },
-          done,
-          done
-        );
-      }
-
-      /**
-       * 위치 목록을 채운다. onDone 은 성공/실패와 무관하게 정확히 한 번 호출된다.
-       */
-      function loadLocationOptions(selector, onDone) {
-        const done = typeof onDone === 'function' ? onDone : function () {};
-        ajaxPost('/api/lims/location/locationList', {}, null,
-          function (res) {
-            const $sel = $(selector).empty();
-            $sel.append('<option value="">지정 안 함</option>');
-            if (res.locationList) {
-              for (const idx in res.locationList) {
-                const loc = res.locationList[idx];
-                $sel.append($('<option></option>').attr('value', loc.locationMno).text(loc.fullPathNm));
-              }
-            }
-            done();
-          },
-          done,
-          done
-        );
-      }
-
-      /**
-       * 관리자 후보를 채운다. 기존 사용자 API(/api/system/user/researcherList)를 재사용한다.
-       */
-      function loadUserOptions(selector, onDone) {
-        const done = typeof onDone === 'function' ? onDone : function () {};
-        ajaxPost('/api/system/user/researcherList', { schPageYn: 'N', orderBy: 'USER_NM ASC' }, null,
-          function (res) {
-            const $sel = $(selector).empty();
-            $sel.append('<option value="">지정 안 함</option>');
-            if (res.userListInfo && S2Util.isJSON(res.userListInfo.dataList)
-                && Object.keys(res.userListInfo.dataList).length) {
-              for (const idx in res.userListInfo.dataList) {
-                const user = res.userListInfo.dataList[idx];
-                const orztNm = user.orztNm ? ` (${user.orztNm})` : '';
-                $sel.append($('<option></option>').attr('value', user.userMno).text(`${user.userNm}${orztNm}`));
-              }
-            }
-            done();
-          },
-          done,
-          done
-        );
       }
 
       /*]]*/
@@ -5741,7 +5337,7 @@
                   <a class="menuCd MAIN_DASHBOARD"
                      href="dashboard.html">대시보드 홈</a>
                 
-                  <a class="menuCd MAIN_NOTE_INFO"
+                  <a class="menuCd MAIN_NOTE_INFO active"
                      href="note_management.html">노트 관리 현황</a>
                 
                   <a class="menuCd OPMS_RESEARCH_SUPPORT"
@@ -6201,159 +5797,324 @@
 
           <!-- body 영역  -->
           <div class="content-wrapper">
-    <div id="main" class="lims-page">
-      <header class="lims-head">
-        <div class="lims-head-main">
-          <nav class="lims-crumb">
-            <a href="index.html">LIMS</a>
-            <span class="sep">/</span>
-            <span>장비 관리</span>
-          </nav>
-          <h2 class="lims-title">장비 관리</h2>
-        </div>
-      </header>
-
+    <div id="main">
+      <div class="flex-sty01">
+        <p
+          class="main-title-sty01"
+        >노트 관리 현황</p>
+      </div>
       <div class="ma-tm20">
-        <div class="target-info-tab lims-filter flex-sty04 ma-t30">
-          <div class="tabs-box"></div>
-          <div class="flex-sty02 search-box">
-            <select id="schCalState"
-                    class="btn btn-xs select-xs select-sty02 w-150 ma-r10"
-                    onchange="getInstrumentList();">
-              <option value="">전체 교정상태</option>
-              <option value="EXPIRED">교정 만료</option>
-              <option value="SOON">30일 이내 임박</option>
-              <option value="NONE">교정 기록 없음</option>
-            </select>
-            <select id="schInstrumentTpCcd"
-                    class="btn btn-xs select-xs select-sty02 w-150 ma-r10"
-                    onchange="getInstrumentList();">
-              <option value="">전체 유형</option>
-              <option value="HPLC">HPLC</option>
-              <option value="LCMS">LC-MS</option>
-              <option value="NMR">NMR</option>
-              <option value="BALANCE">저울</option>
-              <option value="ETC">기타</option>
-            </select>
-            <select id="schInstrumentStatusCcd"
-                    class="btn btn-xs select-xs select-sty02 w-150 ma-r10"
-                    onchange="getInstrumentList();">
-              <option value="">전체 상태</option>
-              <option value="NORMAL">정상</option>
-              <option value="CAL_DUE">교정기한경과</option>
-              <option value="REPAIR">수리중</option>
-              <option value="RETIRED">폐기</option>
-            </select>
-            <div class="select-wrap">
-              <input type="text"
-                     id="searchKeyword"
-                     maxlength="255"
-                     sch-enter="getInstrumentList"
-                     placeholder="검색어를 입력해주세요."
-                     class="input-write-sty02-line w-250" />
-              <a href="#"
-                 class="c-pointer"
-                 onclick="getInstrumentList(); return false;">
-                <i class="fa far fa-m fa-search small"></i>
-              </a>
+        <div class="tab-board-sty02 flex-sty04 ma-t30">
+          <nav class="board-top">
+            <div class="nav nav-tabs tabs-box">
+              <a
+                href="#"
+                onclick="S2Util.goPage(&#39;/eln/note/noteManagementRequest&#39;)"
+                class="tab"
+              >요청 내역</a>
+              <a
+                href="#"
+                onclick="S2Util.goPage(&#39;/eln/note/noteManagementReceived&#39;)"
+                class="tab active"
+              >받은 요청</a>
+              <a
+                href="#"
+                onclick="S2Util.goPage(&#39;/eln/note/noteManagementComplete&#39;)"
+                class="tab"
+              >완료 내역</a>
             </div>
-            <button class="button-blue-full-sty01 ma-l10"
-                    onclick="openModalInstrumentCreate();"><span>장비 등록</span></button>
-          </div>
+          </nav>
+          <button
+            class="button-blue-full-sty01 down excel-down ma-l10"
+            onclick="noteMngExcelDownload()"
+          >
+            <span>엑셀 다운로드</span>
+          </button>
         </div>
-
-        <div class="flex-sty04 ma-t10">
-          <div class="guidetext-sty01">
-            차기 교정 기한이 지난 장비로는 결과를 입력할 수 없습니다. 목록은 기한이 임박한 순으로 정렬됩니다.
-            교정 기한은 교정 이력 등록으로만 갱신되며, 대장 수정 화면에서는 바꿀 수 없습니다.
+        <div class="ma-t10">
+          <div
+            class="alert alert-primary blue flex-sty04 align-items-center"
+            role="alert"
+          >
+            <div>김연구(님)이 점검 및 공유를 요청받으신 연구노트의 내역입니다.</div>
           </div>
-        </div>
-
-        <div class="instrument-info-list ma-t20">
-          <div class="core-table">
-            <div class="box">
-              <div class="box-body">
-                <div class="core-table-body">
-                  <div class="table-responsive pa-b30 core-table-div">
-                    <table class="table table-hover table-sty01"
-                           id="tableInstrumentList">
-                      <thead>
-                        <tr class="text-nowrap">
-                          <th class="text-left">관리번호</th>
-                          <th class="text-left">장비 명</th>
-                          <th class="text-left">유형</th>
-                          <th class="text-left">모델</th>
-                          <th class="text-left">설치 위치</th>
-                          <th class="text-left">최근 교정</th>
-                          <th class="text-left">차기 교정 기한</th>
-                          <th class="text-left">상태</th>
-                          <th class="text-right">관리</th>
-                        </tr>
-                      </thead>
-                      <tbody></tbody>
-                    </table>
-                    <div class="paging-box text-center"></div>
-                  </div>
-                </div>
-              </div>
+          <div class="note-info-tab po-r">
+            <div class="tabs-box">
+              <button
+                onclick="selectTabSe('full')"
+                class="tab-item full active"
+                data-tab-se="full"
+              >전체</button>
+              <button
+                onclick="selectTabSe('inspctn')"
+                class="tab-item inspctn"
+                data-tab-se="inspctn"
+              >점검</button>
+              <button
+                onclick="selectTabSe('share')"
+                class="tab-item share"
+                data-tab-se="share"
+              >공유</button>
+              
+              <button
+                onclick="selectTabSe('performance')"
+                class="tab-item performance"
+                data-tab-se="performance"
+              >진도관리</button>
             </div>
           </div>
+          <div class="note-info-list ma-t20">
+            <div class="no-data box d-none">
+              <div class="no-data-back"></div>
+              <span>데이터가 없습니다.</span>
+            </div>
+            <div class="not_mng_box"></div>
+            <div class="paging-box"></div>
+          </div>
         </div>
       </div>
-
-      
-      <div id="modal-lims-instrument"
-           class="modal fade"
-           data-bs-backdrop="static"
-           data-bs-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-pop modal-wrap-sty02 modal-content mh-800"></div>
-        </div>
-      </div>
-      <div id="modal-lims-instrument-edit"
-           class="modal fade"
-           data-bs-backdrop="static"
-           data-bs-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-pop modal-wrap-sty02 modal-content mh-800"></div>
-        </div>
-      </div>
-      <div id="modal-lims-instrument-retire"
-           class="modal fade"
-           data-bs-backdrop="static"
-           data-bs-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-pop modal-wrap-sty02 modal-content mh-800"></div>
-        </div>
-      </div>
-      <div id="modal-lims-cal"
-           class="modal fade"
-           data-bs-backdrop="static"
-           data-bs-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-          <div class="modal-pop modal-wrap-sty01 modal-content"></div>
-        </div>
-      </div>
-
-      <script id="template_instrument_list"
-              type="text/template">
-        <tr>
-          <td class="text-left"><b>{{=instrumentCd}}</b></td>
-          <td class="text-left">{{=instrumentNm}}</td>
-          <td class="text-left">{{=instrumentTpDisp}}</td>
-          <td class="text-left">{{=modelNmDisp}}</td>
-          <td class="text-left">{{=locationNmDisp}}</td>
-          <td class="text-left">{{=lastCalDeDisp}}</td>
-          <td class="text-left">{{=calDisp}}</td>
-          <td class="text-left">{{=statusDisp}}</td>
-          <td class="lims-actions-cell">
-            <button class="button-blue-line-sty01" onclick="openModalCalHistory('{{=instrumentMno}}', '{{=instrumentCd}}', '{{=instrumentNm}}');"><span>교정 이력</span></button>
-            <button class="button-blue-line-sty01" onclick="openModalInstrumentEdit('{{=instrumentMno}}');"><span>수정</span></button>
-            {{=retireDisp}}
-          </td>
-        </tr>
-      </script>
     </div>
+    
+    <!-- 연구노트 점검 요청 모달  -->
+    <div
+      id="modal-note-inspection-WRITING"
+      class="modal fade"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-pop modal-wrap-sty01 modal-content"></div>
+      </div>
+    </div>
+    <!-- 연구노트 점검중/점검완료 모달  -->
+    <div
+      id="modal-note-inspection-INSPECTION"
+      class="modal fade"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-pop modal-wrap-sty01 modal-content"></div>
+      </div>
+    </div>
+    <!-- 연구노트 점검관리 모달  -->
+    <div
+      id="modal-note-inspection-management"
+      class="modal fade"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-pop modal-wrap-sty01 modal-content"></div>
+      </div>
+    </div>
+
+    <!-- 연구노트 공유관리 모달  -->
+    <div
+      id="modal-note-confirm-share"
+      class="modal fade"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-pop modal-wrap-sty02 modal-content"></div>
+      </div>
+    </div>
+    <!-- 연구노트 공유관리 모달  -->
+    <div
+      id="modal-note-confirm-share-confirm"
+      class="modal fade"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-pop modal-wrap-sty02 modal-content shareV2"></div>
+      </div>
+    </div>
+    <!-- 연구노트 공유 점검중/완료 모달  -->
+    <div
+      id="modal-note-share-INSPECTION"
+      class="modal fade"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-pop modal-wrap-sty01 modal-content"></div>
+      </div>
+    </div>
+    <!-- 다운로드 요청 모달  -->
+    <div
+      id="modal-note-request-download-confirm"
+      class="modal fade"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-pop modal-wrap-sty01 modal-content"></div>
+      </div>
+    </div>
+    <!-- 연구노트 다운로드 관리 모달  -->
+    <div
+      id="modal-note-confirm-download-confirm"
+      class="modal fade"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-pop modal-wrap-sty02 modal-content downloadV2"></div>
+      </div>
+    </div>
+    <!-- 연구노트 다운로드 점검중/완료 모달  -->
+    <div
+      id="modal-note-download-INSPECTION"
+      class="modal fade"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-pop modal-wrap-sty01 modal-content"></div>
+      </div>
+    </div>
+    <!-- 성과 세부 목표 검토중/완료 모달  -->
+    <div
+      id="modal-performance-detail-goals"
+      class="modal fade"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-pop modal-wrap-sty01 modal-content long"></div>
+      </div>
+    </div>
+    <!-- 성과 세부 목표 승인 관리 모달  -->
+    <div
+      id="modal-performance-detail-goals-confirm"
+      class="modal fade"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-pop modal-wrap-sty01 modal-content long"></div>
+      </div>
+    </div>
+
+    <!-- 매개변수가 있는 국제화 메시지를(i18n.pkg.msg.377) 처리하기 위해서는 백틱 템플릿보다 script태그를 활용하는것이 유리해서 유지함 -->
+    <script
+      id="template_modal_note_confirm_share"
+      type="text/template"
+    >
+      <div class="modal-header cursor-move">
+          <p class="modal-title">연구노트 공유</p>
+          <span class="modal-sub img" title="{{=subTitle}}">{{=subTitle}}</span>
+      </div>
+      <div class="modal-body">
+          <div class="flex-sty05">
+              <p class="modal-cont-title2 text-center ma-b10">연구노트 공유요청을 승인하시겠습니까?</p>
+          </div>
+          <div class="modal-text-box ma-t15">
+              <div class="text-center">
+                  <span class="txt-blue fw-500"><span>{{=createUserNm}}</span><span if="isEmail">({{=createUserEmail}})</span></span>
+                  <p class="modal-cont-txt2 ma-b10 fw-400">님이 {{=shareReqstPeriodDays}}일간 연구노트 열람을 신청하셨습니다.</p>
+              </div>
+              <div class="radio-box-sty02 text-center">
+                  <input type="radio" name="shareStatusCcd" id="shareStatusCcd_APPROVAL" autocomplete="off" class="c-pointer" value="APPROVAL">
+                  <label for="shareStatusCcd_APPROVAL" class="c-pointer">승인</label>
+                  <input type="radio" name="shareStatusCcd" id="shareStatusCcd_REJECT" autocomplete="off" class="c-pointer" value="REJECT">
+                  <label for="shareStatusCcd_REJECT" class="c-pointer">반려</label>
+              </div>
+          </div>
+      </div>
+      <div class="modal-footer">
+          <div class="button-wrap02">
+              <button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">닫기</button>
+              <button type="button" class="button-cnfm-sty01 button-cnfm" onclick="clickModalNoteShareApproval();">확인</button>
+          </div>
+      </div>
+      </div>
+    </script>
+    <!-- 매개변수가 있는 국제화 메시지를(i18n.pkg.msg.377) 처리하기 위해서는 백틱 템플릿보다 script태그를 활용하는것이 유리해서 유지함 -->
+    <script
+      id="template_modal_note_confirm_share_confirm"
+      type="text/template"
+    >
+      <div class="modal-header cursor-move">
+          <p class="modal-title">연구노트 공유 관리</p>
+          <span class="modal-sub img" title="{{=subTitle}}">{{=subTitle}}</span>
+      </div>
+      <div class="modal-body share">
+          <div class="flex-sty05">
+              <p class="modal-cont-title2 text-center ma-b0">연구노트 공유요청을 승인하시겠습니까?</p>
+          </div>
+          <div class="modal-text-box ma-t15">
+              <div class="text-center">
+                  <span class="txt-blue fw-500"><span>{{=createUserNm}}</span><span if="isEmail">({{=createUserEmail}})</span></span>
+                  <p class="modal-cont-txt2 ma-b10 fw-400">님이 {{=shareReqstPeriodDays}}일간 연구노트 열람을 신청하셨습니다.</p>
+              </div>
+              <div class="text-center">
+                  <pre class="desc read ma-t10">{{=desc}}</pre>
+              </div>
+              <div class="radio-box-sty02 text-center ma-t8">
+                  <input type="radio" name="shareStatusCcd" id="shareStatusCcd_APPROVAL" autocomplete="off" class="c-pointer" value="APPROVAL">
+                  <label for="shareStatusCcd_APPROVAL" class="c-pointer">승인</label>
+                  <input type="radio" name="shareStatusCcd" id="shareStatusCcd_REJECT" autocomplete="off" class="c-pointer" value="REJECT">
+                  <label for="shareStatusCcd_REJECT" class="c-pointer">반려</label>
+              </div>
+          </div>
+          <div class="text-center ma-t15 rejectResn d-none">
+              <label for="shareDesc" class="modal-cont-label">반려 사유</label>
+              <textarea id="shareDesc" name="desc" rows="3" class="form-textarea form-textarea-line wp-100 h-70" placeholder="내용을 입력해주세요." maxlength="3000"></textarea>
+          </div>
+      </div>
+      <div class="modal-footer">
+          <div class="button-wrap02">
+              <button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">닫기</button>
+              <button type="button" class="button-cnfm-sty01 button-cnfm" onclick="clickModalNoteShareConfirmApproval();">확인</button>
+          </div>
+      </div>
+    </script>
+    <!-- 매개변수가 있는 국제화 메시지를(i18n.pkg.msg.607) 처리하기 위해서는 백틱 템플릿보다 script태그를 활용하는것이 유리해서 유지함 -->
+    <script
+      id="template_modal_note_confirm_download_confirm"
+      type="text/template"
+    >
+      <div class="modal-header cursor-move">
+          <p class="modal-title">연구노트 다운로드 관리</p>
+      </div>
+      <div class="modal-body download">
+          <div class="flex-sty05">
+              <p class="modal-cont-title2 text-center ma-b0">연구노트 다운로드를 승인하시겠습니까?</p>
+              <div class="text-center">
+                  <p class="modal-cont-txt1 ma-t20 fw-400 ma-auto wp-90">{{=noteNmDisplay}}</p>
+              </div>
+          </div>
+          <div class="modal-text-box ma-t15">
+              <div class="text-center">
+                  <span class="txt-blue fw-500"><span>{{=createUserNm}}</span><span if="isEmail">({{=createUserEmail}})</span></span>
+                  <p class="modal-cont-txt2 ma-b10 fw-400">님이 {{=downloadReqstPeriodDays}}일간 연구노트 다운로드를 신청하셨습니다.</p>
+              </div>
+              <div class="text-center">
+                  <pre class="desc read ma-t10">{{=desc}}</pre>
+              </div>
+              <div class="radio-box-sty02 text-center ma-t8">
+                  <input type="radio" name="downloadStatusCcd" id="downloadStatusCcd_APPROVAL" autocomplete="off" class="c-pointer" value="APPROVAL">
+                  <label for="downloadStatusCcd_APPROVAL" class="c-pointer">승인</label>
+                  <input type="radio" name="downloadStatusCcd" id="downloadStatusCcd_REJECT" autocomplete="off" class="c-pointer" value="REJECT">
+                  <label for="downloadStatusCcd_REJECT" class="c-pointer">반려</label>
+              </div>
+          </div>
+          <div class="text-center ma-t15 rejectResn d-none">
+              <label for="shareDesc" class="modal-cont-label">반려 사유</label>
+              <textarea id="downloadDesc" name="desc" rows="3" class="form-textarea form-textarea-line wp-100 h-70" placeholder="내용을 입력해주세요." maxlength="3000"></textarea>
+          </div>
+      </div>
+      <div class="modal-footer">
+          <div class="button-wrap02">
+              <button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">닫기</button>
+              <button type="button" class="button-cnfm-sty01 button-cnfm" onclick="clickModalNoteDownloadConfirmApproval();">확인</button>
+          </div>
+      </div>
+    </script>
+  
   </div>
         </div>
       </div>

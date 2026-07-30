@@ -4159,23 +4159,23 @@
                       isAdmin: '' === 'Y',
                       isElnProjectProcessUseYn: '' === 'Y',
                       isPerformanceRegistered:
-                        '' === 'Y' &&
+                        'N' === 'Y' &&
                         '' === 'Y' &&
                         project['performanceRegisteredYn'] === 'Y', // 이미 성과관리프로젝트에 등록 되었을경우 제외 버튼 표시
                       isAdminAndGnrlUserNm: '' === 'Y' && !!project['gnrlUserNm'],
                       isAdminAndNotGnrlUserNm: '' === 'Y' && !!!project['gnrlUserNm'], // 총괄이 없을 경우 버튼 표시
                       isPerformanceRegisterYn:
-                        '' === 'Y' &&
+                        'N' === 'Y' &&
                         project['performanceRegisteredYn'] === 'N' &&
                         '' === 'Y' &&
                         !!project['gnrlUserNm'], //성과관리프로젝트 등록 버튼 표시
                       isShowLockBtn:
-                        '' === 'Y' &&
+                        'N' === 'Y' &&
                         '' === 'Y' &&
                         project['performanceRegisteredYn'] === 'Y' &&
                         project['isPerformanceEditLocked'] === 'N',
                       isShowUnlockBtn:
-                        '' === 'Y' &&
+                        'N' === 'Y' &&
                         '' === 'Y' &&
                         project['performanceRegisteredYn'] === 'Y' &&
                         project['isPerformanceEditLocked'] === 'Y'
@@ -6226,9 +6226,6 @@
             
               
                 
-                  <a class="menuCd LIMS_NOTE active"
-                     href="note_write.html">연구노트 작성</a>
-                
                   <a class="menuCd LIMS_COMPOUND"
                      href="compound_list.html">화합물 라이브러리</a>
                 
@@ -6238,28 +6235,21 @@
                   <a class="menuCd LIMS_REAGENT"
                      href="reagent_list.html">시약/재고 관리</a>
                 
-                  <a class="menuCd LIMS_SCAN"
-                     href="scan.html">바코드 스캔</a>
-                
                   <a class="menuCd LIMS_LOCATION"
                      href="location_list.html">보관위치 관리</a>
                 
                   <a class="menuCd MAIN_DASHBOARD"
-                     href="#">대시보드 홈</a>
+                     href="dashboard.html">대시보드 홈</a>
                 
                   <a class="menuCd MAIN_NOTE_INFO"
-                     href="#">노트 관리 현황</a>
+                     href="note_management.html">노트 관리 현황</a>
                 
                   <a class="menuCd OPMS_RESEARCH_SUPPORT"
-                     href="#">연구 활동 지원</a>
+                     href="research_support.html">연구 활동 지원</a>
                 
                   <a class="menuCd MAIN_COMPLETED_PROJECT"
-                     href="#">완료 프로젝트</a>
+                     href="completed_project.html">완료 프로젝트</a>
                 
-              
-            
-              
-            
               
             
               
@@ -6722,7 +6712,6 @@
             <span>작성</span>
           </nav>
           <h2 class="lims-title">연구노트 작성</h2>
-          <p class="lims-head-desc">실험 과정을 블록으로 적습니다. 구조 블록에 구조를 붙여넣거나 구조 입력기에서 확정하면, 그 자리에서 분자식·분자량·Exact Mass 가 계산됩니다.</p>
         </div>
         <div class="lims-head-actions">
           <button class="button-gray-line-sty01"
@@ -6803,7 +6792,6 @@
                 <button class="button-gray-line-sty01"
                         onclick="addBlock('TABLE');"><span>표 블록</span></button>
               </div>
-              <p class="lims-card-desc">연구노트는 블록의 나열입니다. 텍스트로 목적·절차를 적고, 구조 블록에 구조를, 표 블록에 반응 시약과 당량을 넣습니다.</p>
             </div>
             <div class="lims-card-body">
               <div class="lims-note-blocks"
@@ -6822,7 +6810,6 @@
                 <button class="button-gray-line-sty01"
                         onclick="goScan();"><span>바코드 스캔</span></button>
               </div>
-              <p class="lims-card-desc">이 연구노트에서 실제로 차감된 재고 이력입니다. 표 블록의 시약은 계획이고, 재고는 바코드 스캔으로 용기 단위로 차감됩니다.</p>
             </div>
             <div class="lims-card-body">
               <div class="lims-note-usage"
@@ -7762,7 +7749,8 @@
         </div>
       </div>
     </script>
-    <script src="assets/poc/compounds.js"></script>
+    <script src="assets/poc/routes.js"></script>
+  <script src="assets/poc/compounds.js"></script>
   <script src="assets/poc/lims-mock.js"></script>
 </body>
 </html>

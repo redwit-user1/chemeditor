@@ -26,15 +26,15 @@
 }
 
 /* 업무 흐름 안내 — 지금 보는 화면이 전체 흐름의 어디인지 알려준다. */
+/* PoC 배너 바로 아래 한 줄. 본문에 넣으면 화면마다 끼어드는 자리가 달라진다. */
 .lims-poc-flow {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 6px;
-  margin: 0 0 18px;
-  padding: 12px 14px;
-  border: 1px solid #e4e7ec;
-  border-radius: 6px;
+  margin: 0;
+  padding: 6px 16px;
+  border-bottom: 1px solid #e4e7ec;
   background: #f9fafb;
 }
 .lims-poc-flow .lims-poc-flow-label {
@@ -46,7 +46,7 @@
 }
 .lims-poc-flow a,
 .lims-poc-flow span.lims-poc-step {
-  padding: 5px 11px;
+  padding: 3px 10px;
   border: 1px solid #e4e7ec;
   border-radius: 14px;
   background: #fff;
@@ -68,13 +68,6 @@
 .lims-poc-flow .lims-poc-arrow {
   color: #d0d5dd;
   font-size: 11px;
-}
-.lims-poc-flow .lims-poc-note {
-  flex-basis: 100%;
-  margin-top: 8px;
-  color: #667085;
-  font-size: 12px;
-  line-height: 1.6;
 }
 
 /* 구조 입력기 대역 — Ketcher 자리에 RDKit 이 그린 구조와 계산값을 보여준다. */
@@ -174,15 +167,28 @@
 }
 
 /* 확장 검토 묶음 — 재단이 요구한 핵심 세 축과 시각적으로 한 단 구분한다. */
+/* ③ 시약·재고에 딸린 곁가지. 번호 흐름의 일부가 아님을 크기로 구분한다. */
+.lims-poc-flow .lims-poc-sub {
+  display: inline-flex;
+  margin-left: 4px;
+}
+.lims-poc-flow .lims-poc-sub .lims-poc-step {
+  padding: 3px 9px;
+  font-size: 11px;
+  color: #667085;
+  border-style: dashed;
+}
+
+/* 같은 줄 오른쪽에 붙인다 — 줄을 하나 더 쓰면 본문이 그만큼 아래로 밀린다.
+   좁아지면 자연히 다음 줄로 넘어간다. */
 .lims-poc-flow .lims-poc-flow-ext {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 6px;
-  flex-basis: 100%;
-  margin-top: 8px;
-  padding-top: 10px;
-  border-top: 1px dashed #e4e7ec;
+  margin-left: 10px;
+  padding-left: 12px;
+  border-left: 1px dashed #d0d5dd;
 }
 .lims-poc-flow .lims-poc-flow-ext .lims-poc-step {
   padding: 4px 9px;

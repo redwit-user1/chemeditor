@@ -16,24 +16,25 @@
   /* ---------------------------------------------------------------
      페이지 이동 — 프로토타입은 정적 파일이라 서버 라우트가 없다.
   --------------------------------------------------------------- */
-  var ROUTES = {
-    '/lims/sample/sampleList': 'sample_list.html',
-    '/lims/sample/sampleDetails': 'sample_detail.html',
-    '/lims/test/testRequestList': 'test_list.html',
-    '/lims/test/testRequestDetails': 'test_detail.html',
-    '/lims/result/resultEntry': 'result_entry.html',
-    '/lims/oos/oosList': 'oos_list.html',
-    '/lims/method/methodList': 'method_list.html',
-    '/lims/method/methodDetail': 'method_detail.html',
-    '/lims/spec/specList': 'method_list.html',
-    '/lims/instrument/instrumentList': 'instrument_list.html',
-    '/lims/reagent/reagentList': 'reagent_list.html',
-    '/lims/location/locationList': 'location_list.html',
-    '/lims/compound/compoundList': 'compound_list.html',
-    '/lims/container/scan': 'scan.html',
-    '/lims/chem/chemPopup': 'chem_editor.html',
-    '/lims/note/noteWrite': 'note_write.html'
-  };
+  /*
+    라우트 표는 손으로 적지 않는다. mkfixtures.py 가 PAGES 에서 만든 것을
+    빌드 때 그대로 심는다(assets/poc/routes.js). 두 벌로 두면 화면을 늘릴 때마다
+    한쪽만 고쳐져 "메뉴를 눌러도 아무 데도 안 간다"가 조용히 생긴다.
+  */
+  var ROUTES = window.LIMS_POC_ROUTES || {};
+
+  function decodeParam(v) {
+    if (!v) return '';
+    try { return decodeURIComponent(String(v).replace(/\+/g, ' ')); } catch (e) { return String(v); }
+  }
+
+  /* 지금 열려 있는 화면의 프로젝트. 프로젝트 상세는 폴더 요소에 그 값을 달고 있다. */
+  function currentProjectMno() {
+    var el = document.querySelector('[data-project-mno].active, .folder-element[data-project-mno]');
+    if (el) return Number(el.getAttribute('data-project-mno'));
+    var input = document.querySelector('#schProjectMno, [name=schProjectMno]');
+    return input && input.value ? Number(input.value) : null;
+  }
 
   function toStaticUrl(url) {
     if (!url) return null;
@@ -341,6 +342,24 @@
   var PROP_ENTRIES = window.LIMS_POC_PROP_ENTRIES || [];
   var PROP_KEYS = window.LIMS_POC_PROPS || {};
 
+  /*
+    실제 chemeditor 백엔드 호출. 배포본에서만 닿는다(로컬 정적 서버에는 없다).
+    닿지 못하면 null 을 돌려주고, 부르는 쪽이 "계산하지 못했다"를 화면에 적는다 —
+    값을 지어내지 않는다.
+  */
+  function chemService(path, body, as) {
+    var root = chemEditorRoot();
+    if (!root || typeof fetch !== 'function') return Promise.resolve(null);
+    return fetch(root + 'api/v1/' + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }).then(function (r) {
+      if (!r.ok && as !== 'text') return r.json().catch(function () { return null; });
+      return as === 'text' ? (r.ok ? r.text() : null) : r.json();
+    }).catch(function () { return null; });
+  }
+
   function lookupStructure(structure) {
     if (!structure) return null;
     var idx = PROP_KEYS[String(structure).trim()];
@@ -397,6 +416,61 @@
       txnDtStr: '2026-07-12 10:07', txnUserNm: '이연구', noteNm: NOTE.noteNm,
       expiryOverrideYn: 'Y', reason: '유효기한 경과 — 책임자 승인 후 사용' }
   ];
+
+  /* ---------------------------------------------------------------
+     구노 ELN 본체 — 프로젝트와 그 안의 연구노트.
+
+     LIMS 는 이 흐름에 얹힌다. 노트는 프로젝트에 귀속되고, 프로젝트 상세에서
+     열린다. 그 사실이 화면으로 보여야 "따로 만든 별개 시스템"으로 읽히지 않는다.
+  --------------------------------------------------------------- */
+  var ELN_PROJECTS = [
+    { projectMno: 301, keywords: '저해제,합성,인돌', projectId: 'KM-2026-014', projectNm: '표적단백질 저해제 발굴',
+      categoryNm: '신약개발', gnrlUserNm: '김연구', beginDe: '20260302', endDe: '20261231', cmpltnDe: null,
+      noteCnt: 3, memberCnt: 4, writingNoteCnt: 1, inspectionNoteCnt: 1, completeNoteCnt: 1,
+      crrntProcessNm: '2단계 · 합성', projectPrgrstCcd: 'PROGRESS', projectPrgrstCcdNm: '진행' },
+    { projectMno: 302, keywords: '간독성,HepG2,스크리닝', projectId: 'KM-2026-021', projectNm: '간독성 스크리닝',
+      categoryNm: '안전성평가', gnrlUserNm: '박연구', beginDe: '20260401', endDe: '20261130', cmpltnDe: null,
+      noteCnt: 2, memberCnt: 3, writingNoteCnt: 0, inspectionNoteCnt: 0, completeNoteCnt: 2,
+      crrntProcessNm: '1단계 · 스크리닝', projectPrgrstCcd: 'PROGRESS', projectPrgrstCcdNm: '진행' },
+    { projectMno: 303, keywords: '밸리데이션,HPLC', projectId: 'KM-2026-030', projectNm: '시험법 검증 (KM-3719)',
+      categoryNm: '분석', gnrlUserNm: '김연구', beginDe: '20260511', endDe: '20261031', cmpltnDe: null,
+      noteCnt: 1, memberCnt: 2, writingNoteCnt: 0, inspectionNoteCnt: 0, completeNoteCnt: 1,
+      crrntProcessNm: '2단계 · 밸리데이션', projectPrgrstCcd: 'PROGRESS', projectPrgrstCcdNm: '진행' },
+    { projectMno: 304, keywords: '안정성,장기보관', projectId: 'KM-2025-118', projectNm: '장기 안정성 시험',
+      categoryNm: '안정성', gnrlUserNm: '이연구', beginDe: '20250901', endDe: '20260630', cmpltnDe: '20260630',
+      noteCnt: 6, memberCnt: 5, writingNoteCnt: 0, inspectionNoteCnt: 0, completeNoteCnt: 6,
+      crrntProcessNm: '종료', projectPrgrstCcd: 'COMPLETE', projectPrgrstCcdNm: '완료' }
+  ];
+
+  /* 노트는 프로젝트에 매달린다. projectMno 로 걸러 프로젝트 상세에 뿌린다. */
+  var ELN_NOTES = [
+    { noteMno: 9101, projectMno: 301, projectNm: '표적단백질 저해제 발굴', folderMno: 0,
+      noteNm: 'KM00003710 합성 — batch A', ownerNm: '이연구', modifyDtStr: '2026-07-12 17:40',
+      writeStatusCcd: 'COMPLETE', writeStatusCcdNm: '작성완료', keywords: '합성,batch', editorTpCcd: 'EDITOR', editorTpCcdNm: '에디터',
+      writeModeCcdNm: '온라인', sharedYn: 'N',
+      processNm: '2단계 · 합성', projectPrgrstCcdNm: '진행', securityGradeCcdNm: '2등급' },
+    { noteMno: 9102, projectMno: 301, projectNm: '표적단백질 저해제 발굴', folderMno: 0,
+      noteNm: 'HPLC 순도 분석 (M-HPLC-001 v3)', ownerNm: '김연구', modifyDtStr: '2026-07-27 14:22',
+      writeStatusCcd: 'INSPECTION', writeStatusCcdNm: '점검중', keywords: 'HPLC,순도', editorTpCcd: 'EDITOR', editorTpCcdNm: '에디터',
+      writeModeCcdNm: '온라인', sharedYn: 'N',
+      processNm: '3단계 · 물성 평가', projectPrgrstCcdNm: '진행', securityGradeCcdNm: '2등급' },
+    { noteMno: 9103, projectMno: 301, projectNm: '표적단백질 저해제 발굴', folderMno: 0,
+      noteNm: 'KM00003719 스케일업 검토', ownerNm: '김연구', modifyDtStr: '2026-07-28 10:03',
+      writeStatusCcd: 'WRITING', writeStatusCcdNm: '작성중', keywords: '스케일업', editorTpCcd: 'EDITOR', editorTpCcdNm: '에디터',
+      writeModeCcdNm: '온라인', sharedYn: 'N',
+      processNm: '2단계 · 합성', projectPrgrstCcdNm: '진행', securityGradeCcdNm: '2등급' },
+    { noteMno: 9104, projectMno: 302, projectNm: '간독성 스크리닝', folderMno: 0,
+      noteNm: 'HepG2 세포독성 1차', ownerNm: '박연구', modifyDtStr: '2026-07-20 16:11',
+      writeStatusCcd: 'COMPLETE', writeStatusCcdNm: '작성완료', keywords: '합성,batch', editorTpCcd: 'FILE', editorTpCcdNm: '파일', writeModeCcdNm: '온라인', sharedYn: 'N',
+      processNm: null, projectPrgrstCcdNm: '진행', securityGradeCcdNm: '2등급' },
+    { noteMno: 9105, projectMno: 303, projectNm: '시험법 검증 (KM-3719)', folderMno: 0,
+      noteNm: '직선성·정밀성 검증', ownerNm: '김연구', modifyDtStr: '2026-07-22 09:48',
+      writeStatusCcd: 'DRAFT', writeStatusCcdNm: '임시저장', keywords: '검증', editorTpCcd: 'EDITOR', editorTpCcdNm: '에디터',
+      writeModeCcdNm: '온라인', sharedYn: 'N',
+      processNm: null, projectPrgrstCcdNm: '진행', securityGradeCcdNm: '2등급' }
+  ];
+
+  var nextNoteMno = 9110;
 
   var SAMPLE_NOTES = [
     { noteMno: 9101, noteNm: 'KM00003710 합성 — batch A', projectNm: '표적단백질 저해제 발굴',
@@ -626,7 +700,10 @@
     '/api/lims/compound/compoundDetail': function () { return { compound: COMPOUNDS[0], noteList: [] }; },
     '/api/lims/chem/depict': function (p) {
       var hit = lookupStructure(p.structure);
-      return { depict: DEPICT_BY_MOLBLOCK[p.structure] || (hit && hit.svg) || PLACEHOLDER_SVG };
+      var known = DEPICT_BY_MOLBLOCK[p.structure] || (hit && hit.svg);
+      if (known) return { depict: known };
+      return chemService('depict', { text: p.structure, w: Number(p.w) || 260, h: Number(p.h) || 200 }, 'text')
+        .then(function (svg) { return { depict: svg || PLACEHOLDER_SVG }; });
     },
     /*
       이 PoC 의 메인 기능이 지나는 길이다 — 구조가 들어오면 분자식·분자량이 나온다.
@@ -639,11 +716,21 @@
     */
     '/api/lims/chem/properties': function (p) {
       var hit = lookupStructure(p.structure);
-      if (!hit) {
-        toast('데모 데이터에 없는 구조입니다. 실서버에서는 RDKit 이 그 자리에서 계산합니다.');
-        return { properties: {} };
-      }
-      return { properties: hit.properties };
+      if (hit) return { properties: hit.properties };
+      /*
+        표에 없는 구조는 실제 chemeditor 백엔드(RDKit)에 물어본다. 배포본에서는
+        같은 사이트 루트에 그 API 가 함께 올라가 있으므로, 시연 중 아무 구조나
+        붙여넣어도 진짜로 계산된다. 응답 키(mol_weight/exact_mass)는 화면이
+        이미 별칭으로 읽는다.
+      */
+      return chemService('chem/properties', { text: p.structure }).then(function (res) {
+        if (!res || res.ok === false) {
+          toast(res && res.error ? '구조를 읽지 못했습니다 — ' + res.error
+                                 : '화학 계산 서비스에 연결하지 못했습니다.');
+          return { properties: {} };
+        }
+        return { properties: res };
+      });
     },
 
     '/api/lims/project/projectReagentUsage': function () {
@@ -662,6 +749,105 @@
 
     '/api/lims/stoich/projectStoich': function () { return { stoich: { usageList: [] } }; },
     '/api/lims/stoich/noteStoich': function () { return { stoich: { usageList: [] } }; },
+
+    /* ---- 구노 ELN 본체 ---- */
+    /* 대시보드의 공지/자료실. 목록 자체가 이번 범위는 아니지만, 응답이 없으면
+       화면이 res.postsListInfo.dataList 에서 그대로 터진다. */
+    '/api/system/posts/postsList': function (p) {
+      var notice = String(p.schPostsSeCcd || '').indexOf('RESEARCH') < 0;
+      var rows = notice ? [
+        { rn: 1, postsMno: 1, subject: 'KMEDIhub ELN 시스템 점검 안내', writerUserNm: '운영팀',
+          modifyDe: '2026-07-24', hitCnt: 41, fileId: null, newPostsYn: 'Y' },
+        { rn: 2, postsMno: 2, subject: '연구노트 작성 가이드 개정(v2.1)', writerUserNm: '운영팀',
+          modifyDe: '2026-07-11', hitCnt: 128, fileId: null, newPostsYn: 'N' }
+      ] : [
+        { rn: 1, postsMno: 11, subject: '전자연구노트 표준 양식.hwp', writerUserNm: '운영팀',
+          modifyDe: '2026-06-30', hitCnt: 87, fileId: 'F-1', newPostsYn: 'N' }
+      ];
+      return { postsListInfo: page(rows, p.pageNo, p.pageUnit) };
+    },
+    '/api/eln/project/myProjectList': function (p) {
+      var rows = applyFilter(ELN_PROJECTS, p, {
+        searchKeyword: ['projectNm', 'projectId', 'gnrlUserNm'],
+        schProjectPrgrstCcd: 'projectPrgrstCcd'
+      });
+      rows = rows.map(function (r) {
+        // 화면이 그대로 찍는 표시용 문자열. 서버가 만들어 내려주는 값이다.
+        return Object.assign({}, r, {
+          noteCntStr: String(r.noteCnt), memberCntStr: String(r.memberCnt)
+        });
+      });
+      return { projectListInfo: page(rows, p.pageNo, p.pageUnit) };
+    },
+    '/api/eln/project/projectList': function (p) {
+      return HANDLERS['/api/eln/project/myProjectList'](p);
+    },
+    '/api/eln/note/projectNoteList': function (p) {
+      var mno = Number(p.schProjectMno || p.projectMno || 301);
+      var rows = applyFilter(
+        ELN_NOTES.filter(function (n) { return n.projectMno === mno; }),
+        p, { searchKeyword: ['noteNm', 'ownerNm'], schWriteStatusCcd: 'writeStatusCcd' }
+      );
+      return {
+        noteListInfo: page(rows, p.pageNo, p.pageUnit),
+        elnProjectProcessUseYn: 'Y',
+        schElnNoteVO: { schProjectMno: mno, schFolderMno: Number(p.schFolderMno) || 0 }
+      };
+    },
+    /*
+      내 연구노트 / 프로젝트 상세의 목록 보기가 같이 쓰는 경로다.
+      schProjectMno 가 실리면 그 프로젝트로 좁힌다 — 안 좁히면 프로젝트 상세에
+      남의 프로젝트 노트까지 뜨고, 그러면 "노트가 프로젝트에 귀속된다"는 사실
+      자체가 화면에서 부정된다.
+    */
+    '/api/eln/note/myNoteList': function (p) {
+      var rows = ELN_NOTES;
+      if (p.schProjectMno) {
+        var mno = Number(p.schProjectMno);
+        rows = rows.filter(function (n) { return n.projectMno === mno; });
+      }
+      rows = applyFilter(rows, p, {
+        searchKeyword: ['noteNm', 'projectNm'], schWriteStatusCcd: 'writeStatusCcd'
+      });
+      return {
+        noteListInfo: page(rows, p.pageNo, p.pageUnit),
+        elnProjectProcessUseYn: p.schProjectMno ? 'Y' : 'N',
+        schElnNoteVO: { schProjectMno: p.schProjectMno || null, schFolderMno: Number(p.schFolderMno) || 0 }
+      };
+    },
+    '/api/eln/note/noteList': function (p) { return HANDLERS['/api/eln/note/myNoteList'](p); },
+    '/api/eln/folder/projectFolderList': function () { return { folderList: [] }; },
+    '/api/eln/folder/myFolderList': function () { return { folderList: [] }; },
+    '/api/eln/project/projectFolderProcessList': function () { return { folderList: [], processList: [] }; },
+    '/api/eln/member/projectMemberList': function (p) {
+      return { memberListInfo: page(USERS, p.pageNo, p.pageUnit) };
+    },
+    /*
+      에디터로 연구노트 만들기. 여기서 실제로 목록에 넣어야 "만들었는데 없다"가
+      되지 않는다. 노트는 고른 프로젝트에 귀속된다 — 그것이 구노 ELN 의 흐름이다.
+    */
+    '/api/eln/note/createNote': function (p) {
+      /*
+        사이드바의 생성 모달에는 프로젝트 칸이 없다. 실서비스에서도 그렇고,
+        노트는 열려 있는 프로젝트 화면의 문맥으로 귀속된다.
+        문맥이 없으면(참여 프로젝트 목록 등) 첫 프로젝트로 넣는다 — 시연에서
+        "만들었는데 어디에도 없다"가 되지 않게 하기 위한 선택이다.
+      */
+      var mno = Number(p.projectMno || p.schProjectMno || currentProjectMno() || 301);
+      var project = findBy(ELN_PROJECTS, 'projectMno', mno) || ELN_PROJECTS[0];
+      var note = {
+        noteMno: nextNoteMno++, projectMno: project.projectMno, projectNm: project.projectNm,
+        // 생성 모달은 form.serialize() 결과를 그대로 싣는다 — 값이 퍼센트 인코딩돼 있다.
+        folderMno: 0, noteNm: decodeParam(p.noteNm) || '제목 없는 연구노트', ownerNm: '김연구',
+        modifyDtStr: '2026-07-30 09:00', writeStatusCcd: 'DRAFT', writeStatusCcdNm: '임시저장', keywords: '검증',
+        editorTpCcd: 'EDITOR', editorTpCcdNm: '에디터', writeModeCcdNm: '온라인',
+        sharedYn: 'N', keywords: '', processNm: null, projectPrgrstCcdNm: '진행',
+        securityGradeCcdNm: '2등급'
+      };
+      ELN_NOTES.unshift(note);
+      project.noteCnt += 1;
+      return { newNoteMno: note.noteMno, noteMno: note.noteMno };
+    },
 
     '/api/lims/note/noteDetail': function () {
       return { note: NOTE, blockList: NOTE_BLOCKS };
@@ -865,11 +1051,21 @@
     var body;
     if (handler) {
       body = handler(params);
+      // 핸들러가 실제 서비스에 물어보는 경우가 있다(구조 계산). 그때는 Promise 다.
+      if (body && typeof body.then === 'function') {
+        return body.then(envelope);
+      }
     } else if (WRITERS[path]) {
       body = Object.assign(JSON.parse(JSON.stringify(WRITE_DEFAULT)), WRITERS[path](params));
     } else {
       body = JSON.parse(JSON.stringify(WRITE_DEFAULT));
     }
+    return envelope(body);
+  }
+
+  /* 실제 컨트롤러가 씌우는 봉투. 화면의 성공 분기가 이 두 값을 본다. */
+  function envelope(body) {
+    body = body || {};
     body.status = { result: 'SUCCESS', message: '', code: '200' };
     body.s2ResultCode = 1;   /* 컨트롤러가 Constants.RESULT_CODE 로 넣는 값과 같은 숫자 1 이다 */
     return body;
@@ -904,23 +1100,34 @@
         return origAjax.apply(this, arguments);
       }
 
-      var body = respond(path, parseParams(opts.data));
-      var timer = setTimeout(function () {
-        if (typeof opts.success === 'function') {
-          opts.success(body, 'success', fakeXhr);
-        }
-        if (typeof opts.complete === 'function') {
-          opts.complete(fakeXhr, 'success');
-        }
-      }, 40);
+      /*
+        응답이 Promise 일 수 있다 — 구조 계산은 실제 백엔드로 나간다.
+        아직 안 온 값을 기다렸다가 같은 순서로 콜백을 부른다.
+      */
+      var pending = Promise.resolve(respond(path, parseParams(opts.data)));
+      var body = null;
+      var aborted = false;
+
+      pending.then(function (res) {
+        body = res;
+        if (aborted) return;
+        // 즉답이면 40ms 를 얹어 실제 왕복처럼 보이게 한다(화면이 로딩 상태를 그린다).
+        setTimeout(function () {
+          if (aborted) return;
+          if (typeof opts.success === 'function') opts.success(body, 'success', fakeXhr);
+          if (typeof opts.complete === 'function') opts.complete(fakeXhr, 'success');
+        }, 40);
+      });
+
+      function later(fn) { pending.then(function (res) { setTimeout(function () { fn(res); }, 40); }); }
 
       var fakeXhr = {
         status: 200,
-        responseText: JSON.stringify(body),
-        abort: function () { clearTimeout(timer); },
-        done: function (fn) { setTimeout(function () { fn(body); }, 40); return fakeXhr; },
+        get responseText() { return JSON.stringify(body); },
+        abort: function () { aborted = true; },
+        done: function (fn) { later(fn); return fakeXhr; },
         fail: function () { return fakeXhr; },
-        always: function (fn) { setTimeout(function () { fn(body); }, 40); return fakeXhr; }
+        always: function (fn) { later(fn); return fakeXhr; }
       };
       return fakeXhr;
     };
@@ -946,18 +1153,34 @@
     */
     /*
       window.open 으로 여는 구조 입력기 팝업.
-      프로토타입에는 서버 라우트가 없어 팝업이 빈 창으로 뜬다. 같은 창에서
-      구조 입력기 화면으로 보내 시연 흐름이 끊기지 않게 한다.
+      서버 경로를 정적 파일로 바꾸되 창은 진짜로 연다. 같은 창으로 보내면
+      window.opener 가 없어져, 편집기가 구조를 되돌려주는 경로
+      (applyStructureToOpener → opener.limsApplyStructureQuery)가 성립하지 않는다.
     */
     var origOpen = window.open;
-    window.open = function (url) {
+    window.open = function (url, name, features) {
       var target = toStaticUrl(url);
       if (target) {
-        window.location.href = target;
-        return null;
+        return origOpen.call(window, target, name || '_blank', features);
       }
       return origOpen.apply(window, arguments);
     };
+
+    /*
+      연구노트 생성(에디터 작성). 공통 layout 의 모달은 coreFileUpload 로 보내는데
+      그건 XHR 직접 호출이라 $.ajax 대역을 지나지 않는다. 같은 계약으로 대신 답한다.
+      — 여기서 노트가 실제로 생기고, 고른 프로젝트에 귀속된다.
+    */
+    if (typeof window.coreFileUpload !== 'undefined') {
+      window.coreFileUpload = function (id, url, postData, files, onSuccess) {
+        var path = String(url || '').split('?')[0].replace(/^https?:\/\/[^/]+/, '');
+        var body = respond(path, postData || {});
+        setTimeout(function () {
+          if (typeof onSuccess === 'function') onSuccess(body);
+        }, 60);
+        return { abort: function () {} };
+      };
+    }
 
     if (typeof S2Util !== 'undefined' && S2Util) {
       S2Util.goPage = function (url) {
@@ -1018,9 +1241,40 @@
      지목한 것이 바로 이 화면(구조를 넣으면 분자식·분자량이 즉시 나온다)이므로,
      빈 채로 두지 않고 RDKit 이 미리 그려 둔 구조와 계산값으로 대신 보여준다.
   --------------------------------------------------------------- */
+  /*
+    배포본에서는 chemeditor SPA(오픈소스 Ketcher 기반, ChemDraw/PerkinElmer 호환)가
+    사이트 루트에 함께 올라가고 프로토타입은 그 아래 한 칸(/lims-poc/)에 있다.
+    그래서 "상위 디렉터리가 있으면 거기에 편집기가 있다"로 판단한다.
+    로컬 정적 서버에서는 프로토타입 자체가 루트라 상위가 없고, 그때는 RDKit 대역을 쓴다.
+    호스트 이름으로 가르지 않는 이유: 도메인이 바뀌면 조용히 틀리기 때문이다.
+  */
+  function chemEditorRoot() {
+    var dir = window.location.pathname.replace(/[^/]*$/, '');
+    if (dir === '/' || dir === '') return null;
+    return dir.replace(/[^/]+\/$/, '');
+  }
+
   function installChemEditorStub() {
     var frame = document.getElementById('chem-frame');
     if (!frame) return;
+
+    var root = chemEditorRoot();
+    if (root) {
+      /*
+        실제 편집기를 붙인다. 화면(chem_popup)의 postMessage 리스너는 이미 붙어
+        있고 같은 오리진이라 origin 검사도 통과한다 — src 만 실물로 바꾸면 된다.
+
+        화면의 initPage() 가 $(document).ready 에서 src 를 서버 경로로 넣는다.
+        우리 스크립트가 그보다 뒤에 실리므로 ready 큐 맨 끝에 붙여 마지막에 덮는다.
+        (지금 바로 넣으면 잠시 뒤 initPage 가 다시 서버 경로로 되돌려 놓는다.)
+      */
+      $(function () {
+        frame.src = root + '?embed=1&parentOrigin=' + encodeURIComponent(window.location.origin);
+        var status = document.getElementById('chem-status');
+        if (status) status.textContent = '편집기 불러오는 중';
+      });
+      return;
+    }
 
     var lib = window.LIMS_POC_COMPOUNDS || [];
     if (!lib.length) return;
@@ -1090,9 +1344,18 @@
     핵심 세 축을 앞세우고, QC 워크플로는 '확장 검토'로 내려 둘을 구분한다.
   */
   var FLOW = [
-    { file: 'note_write.html',    label: '① 연구노트 · 구조 입력' },
-    { file: 'compound_list.html', label: '② 화합물 라이브러리' },
-    { file: 'reagent_list.html',  label: '③ 시약 · 재고' }
+    { file: 'participation_project.html', label: '① 프로젝트 · 연구노트' },
+    { file: 'compound_list.html',         label: '② 화합물 라이브러리' },
+    { file: 'reagent_list.html',          label: '③ 시약 · 재고' }
+  ];
+
+  /*
+    바코드 스캔은 ③ 시약·재고 안의 수단이라 메뉴에서 내렸다. 그렇다고 화면까지
+    닿을 수 없게 두면 구현해 둔 기능(기한 경과 용기 사용 통제)을 시연할 방법이
+    없어진다. 번호 없는 곁가지로 붙여 둔다.
+  */
+  var FLOW_SUB = [
+    { file: 'scan.html', label: '바코드 스캔' }
   ];
 
   var FLOW_EXT = [
@@ -1101,25 +1364,6 @@
     { file: 'oos_list.html',     label: '기준이탈' }
   ];
 
-  /* 화면마다 "여기서 무슨 일이 일어나는가"를 한 문장으로. 용어는 docs/lims/glossary.md 기준. */
-  var FLOW_NOTE = {
-    'note_write.html': '이 PoC 의 메인 기능입니다. 구조를 그리거나 ChemDraw 에서 복사해 붙여넣으면 그 자리에서 분자식·분자량·Exact Mass 가 계산됩니다.',
-    'compound_list.html': '등록된 화합물 저장소입니다. 등록번호·분자식으로 찾거나, 구조를 그려 부분구조·유사도로 찾습니다.',
-    'chem_editor.html': '구조를 그리거나 붙여넣는 도구입니다. 확정하면 연구노트나 화합물 라이브러리로 넘어갑니다.',
-    'reagent_list.html': '시약은 품목, 용기는 실물 한 병입니다. 재고는 입고·사용·폐기 이력의 합계이며 이력은 지워지지 않습니다.',
-    'scan.html': '바코드를 찍어 용기를 조회하고 사용량을 기록합니다. 기한이 지난 용기는 사유 없이 사용할 수 없습니다.',
-    'location_list.html': '보관위치 계층입니다. 바코드 접두사와 온도 조건을 위치에 매답니다.',
-    'sample_list.html': '시험 대상 검체입니다. 시약(실험에 쓰는 물질)과 반대 개념입니다.',
-    'sample_detail.html': '분주는 물리적 분할이라 같은 시료로 남고, 화학적으로 달라지면 새 시료가 됩니다.',
-    'test_list.html': '시료에 대한 시험 요청입니다. 접수 대기 건을 열어 담당자를 배정하면 접수됩니다.',
-    'test_detail.html': '항목마다 시험법·판정기준 버전을 고정합니다. 착수한 시험은 시험법이 개정돼도 착수 시점 버전을 계속 씁니다.',
-    'result_entry.html': '값을 저장하면 그 시점 판정기준으로 즉시 판정하고, 판정에 쓴 기준값을 결과에 함께 남깁니다. 결과는 지울 수 없고 정정은 새 버전으로 쌓입니다.',
-    'oos_list.html': '판정이 부적합·판정불가일 때 자동으로 열리는 조사 건입니다. 사람이 직접 등록하지 않습니다.',
-    'method_list.html': '시험법은 "어떻게 측정하는가", 판정기준은 "얼마면 적합인가" 입니다. 둘 다 버전으로 관리합니다.',
-    'method_detail.html': '개정 이력과 판정기준 목록입니다. 폐지된 버전도 지우지 않습니다 — 과거 판정을 재현해야 하기 때문입니다.',
-    'instrument_list.html': '교정이 만료된 장비로는 결과를 입력할 수 없습니다.'
-  };
-
   function stepHtml(step, here) {
     return step.file === here
       ? '<span class="lims-poc-step on">' + step.label + '</span>'
@@ -1127,14 +1371,23 @@
   }
 
   function installFlowBar() {
-    var here = (window.location.pathname.split('/').pop() || 'note_write.html');
-    var host = document.querySelector('.content-wrapper #main') || document.querySelector('.content-wrapper');
+    var here = (window.location.pathname.split('/').pop() || 'participation_project.html');
+    /*
+      본문(#main) 안에 넣으면 화면마다 다른 자리에 끼어든다 — 프로젝트 상세에서는
+      탭과 목록 사이에 들어가 화면을 두 동강 낸다. 문서 맨 위, PoC 배너 바로 아래에
+      고정한다. 어느 화면에서든 같은 자리다.
+    */
+    var host = document.body;
     if (!host) return;
 
     var html = '<div class="lims-poc-flow-label">핵심 기능</div>';
     FLOW.forEach(function (step, i) {
       if (i) html += '<span class="lims-poc-arrow">▶</span>';
       html += stepHtml(step, here);
+    });
+
+    FLOW_SUB.forEach(function (step) {
+      html += '<span class="lims-poc-sub">' + stepHtml(step, here) + '</span>';
     });
 
     // 확장 검토 묶음은 한 단 낮춰 둔다 — 요구된 것과 덧붙인 것이 같은 줄에 있으면 구분이 안 된다.
@@ -1146,14 +1399,11 @@
     });
     html += '</div>';
 
-    if (FLOW_NOTE[here]) {
-      html += '<div class="lims-poc-note">' + FLOW_NOTE[here] + '</div>';
-    }
-
     var bar = document.createElement('div');
     bar.className = 'lims-poc-flow';
     bar.innerHTML = html;
-    host.insertBefore(bar, host.firstChild);
+    var banner = document.querySelector('.lims-poc-banner');
+    host.insertBefore(bar, banner ? banner.nextSibling : host.firstChild);
   }
 
   if (window.jQuery) {

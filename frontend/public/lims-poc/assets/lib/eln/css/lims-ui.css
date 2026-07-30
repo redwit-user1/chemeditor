@@ -13,7 +13,7 @@
    "잘리거나, 뭉치거나, 화면을 넘긴다".
 
    그래서 이 레이어는 네 가지를 한다.
-     1) 밀도 — 행 높이와 여백을 줄이고 글자 위계(12/13/14)를 세워 같은 화면에
+     1) 밀도 — 행 높이와 여백을 줄이고 글자 위계를 세워 같은 화면에
         더 많은 사실을 담되 읽히게 한다.
      2) 위계 — 페이지 머리말 / KPI / 카드(탭·툴바·표·페이징)로 구조를 고정한다.
      3) 연계 — 식별자(의뢰번호·시료번호·규격코드)를 링크로 세운다. LIMS 는
@@ -23,6 +23,14 @@
         아이콘이 하드코딩돼 있어 "삭제" 버튼에도 파란 + 가 붙는다.
         LIMS 목록은 한 행에 버튼이 2~3개씩 들어가므로 이 규격으로는 표가 버튼에
         먹힌다. 여기서 다시 세운다.
+
+   그리고 그 넷을 지탱하는 규칙이 하나 더 있다 — **스케일은 두 개뿐이다.**
+   여백은 4px 배수 하나(--lims-gap-*), 글자는 역할 기반 하나(--lims-fs-*).
+   이 파일 안에서 그 변수를 거치지 않은 px 값을 쓰지 않는다. 이전에는
+   9/11/13/14/18/20/22/30px 여백과 11/12/13/14/15/16/18/19/20/22/24/26px 글자가
+   섞여 있었고, 값이 제각각인 것 자체가 화면을 "덜 정리된 것"으로 읽히게 했다.
+   개별 규칙이 각자 판단해서 숫자를 고르는 순간 다시 어긋나므로, 판단은 아래
+   토큰 블록에서 한 번만 한다.
 
    색·폰트는 새로 만들지 않는다. style.css 가 이미 가진 값만 쓴다.
      primary #1761de / primary-dark #0f4094 / primary-weak #edf3fd
@@ -46,18 +54,241 @@
 	--lims-danger: #ee5139;
 	--lims-warn: #a1730a;
 
-	/* 조작 요소 공통 규격 — 버튼/입력/셀렉트가 한 줄에 서면 높이가 같아야 한다 */
-	--lims-control-h: 34px;
+	/*
+	  여백 스케일 — 4px 배수 하나로만 잰다.
+	  단계를 7개로 묶는 이유는 "적당히 줄이기" 를 못 하게 하기 위해서다.
+	  줄일지 말지는 정할 수 있어도 얼마나 줄일지는 정할 수 없게 만든다.
+	*/
+	--lims-gap-1: 4px;
+	--lims-gap-2: 8px;
+	--lims-gap-3: 12px;
+	--lims-gap-4: 16px;
+	--lims-gap-5: 20px;
+	--lims-gap-6: 24px;
+	--lims-gap-8: 32px;
+
+	/*
+	  타이포 스케일 — 크기가 아니라 역할로 부른다.
+	  "13px 로 해달라" 가 아니라 "표 셀이다" 로 말하게 하려는 것이다. 크기로
+	  부르면 같은 뜻의 요소가 화면마다 다른 값을 갖게 되고(카드 제목이 어디선
+	  15px, 어디선 16px), 그게 지금 이 화면의 상태였다.
+
+	    micro   11 — 배지, 두 줄 셀의 보조행
+	    caption 12 — 표 머리행, 라벨, 안내 문구
+	    body    13 — 본문, 표 데이터 셀, 버튼·입력 글자
+	    strong  14 — 카드 제목, 소제목
+	    lead    18 — 모달 제목, 물성 값
+	    title   20 — 페이지 제목
+	    metric  24 — KPI 숫자, 바코드 입력
+	*/
+	--lims-fs-micro: 11px;
+	--lims-fs-caption: 12px;
+	--lims-fs-body: 13px;
+	--lims-fs-strong: 14px;
+	--lims-fs-lead: 18px;
+	--lims-fs-title: 20px;
+	--lims-fs-metric: 24px;
+
+	/*
+	  굵기는 셋뿐이다. 600 을 뺀 이유가 있다 — Noto Sans / Noto Sans KR 은
+	  100/300/400/500/700/900 만 로드된다. 600 은 실물이 없어 브라우저가 700 으로
+	  올려 그린다. 즉 지금까지 "가볍게 600" 이라고 적어 둔 표 머리행·배지는
+	  전부 Bold 로 그려지고 있었고, 본문(400)보다 무겁다는 원래 문제가 그대로
+	  남아 있었다. 500 으로 내려야 의도한 위계가 실제로 나온다.
+	*/
+	--lims-fw-normal: 400;
+	--lims-fw-medium: 500;
+	--lims-fw-bold: 700;
+
+	/*
+	  행간은 네 단계이고, 어느 단계를 쓸지는 글자 크기가 정한다 — 규칙 하나다.
+	    11 / 14px → snug   (짧은 한 줄: 배지, 카드 제목)
+	    12 / 13px → base   (읽는 글: 본문, 표 셀, 라벨, 안내)
+	    18 / 20 / 24px → tight (제목·숫자)
+	  이렇게 묶어야 "같은 크기인데 줄 간격이 다른 글자"가 안 생긴다. 지금 화면에는
+	  12~35px 사이 행간이 스무 가지쯤 섞여 있었고, 그 대부분은 부모에게서
+	  절대값(24px, 30px)을 물려받은 결과라 크기와 무관하게 결정돼 있었다.
+	  세로로 가운데 정렬하는 조작 요소(버튼·페이징·순번 배지)만 line-height:1 로 뺀다.
+	*/
+	--lims-lh-tight: 1.25;
+	--lims-lh-snug: 1.4;
+	--lims-lh-base: 1.5;
+	--lims-lh-loose: 1.7;    /* 긴 입력(노트 본문)만 */
+
+	/* 조작 요소 공통 규격 — 버튼/입력/셀렉트가 한 줄에 서면 높이가 같아야 한다.
+	   32px 은 4px 배수이면서 클릭 대상 최소치(28px)를 넘긴다. */
+	--lims-control-h: 32px;
+	--lims-control-h-sm: 28px;
 	--lims-radius: 8px;
 	--lims-ring: 0 0 0 3px rgba(23, 97, 222, 0.18);
 
-	font-size: 14px;
+	font-size: var(--lims-fs-body);
+	line-height: var(--lims-lh-base);
 	color: var(--lims-ink-2);
-	letter-spacing: -0.02em;
 }
 
 /* ---------------------------------------------------------------------------
-   0) 아이콘 유틸 — Lucide(24x24 stroke) 를 CSS mask 로 찍는다.
+   0) 스케일 적용 — 폰트 계열 / 자간 / 표 안 행간
+
+   여기가 "폰트 통일성" 의 실제 원인이다. 한 화면 안에서 서체가 셋으로 갈린다.
+     - h2.lims-title → AdminLTE 의 `h1..h6 { font-family: Roboto }` 가 잡는다.
+       페이지 제목만 라틴 서체가 다르다.
+     - 표 머리행·표 안 span → core.table.css 가 'Noto Sans KR' 을 박는다.
+     - 그 밖 전부 → style.css 의 body 스택 'Noto Sans' 인데, 이 웹폰트는
+       라틴 전용(200KB)이라 한글은 OS 기본(맑은 고딕 등)으로 떨어진다.
+   결과적으로 같은 표에서 머리행 한글과 데이터 셀 한글이 다른 서체로 그려진다.
+
+   그래서 스택을 하나로 고정한다. 라틴은 제품 나머지와 같은 'Noto Sans',
+   한글은 이미 로드돼 있는 'Noto Sans KR' 로 확정한다 — OS 에 맡기지 않는다.
+
+   `!important` 는 이 파일에서 여기 두 줄뿐이다. 서로 다른 세 벤더가 각자 더
+   높은 우선순위로 박아 둔 값이라, 우선순위 사다리를 쌓아 이기는 방식은 다음
+   사람이 화면을 하나 추가하는 순간 조용히 무너진다. 여기서 한 번에 끊는다.
+   아이콘 폰트(fa-*, bi-*)는 서체가 곧 글리프라 반드시 제외한다.
+
+   자간도 같은 규칙이다. 지금은 -0.01 / -0.02 / -0.03 / -0.04em 이 요소마다
+   달라 한글 낱자 간격이 줄마다 흔들린다. `.lims-page` 에 한 번만 건다.
+--------------------------------------------------------------------------- */
+.lims-page,
+.lims-page *:not([class*="fa-"]):not([class*="bi-"]),
+.modal[id^="modal-lims-"] *:not([class*="fa-"]):not([class*="bi-"]) {
+	font-family: 'Noto Sans', 'Noto Sans KR', 'Malgun Gothic', Dotum, Helvetica, 'Apple SD Gothic Neo', sans-serif !important;
+	letter-spacing: -0.02em !important;
+}
+
+/* 숫자는 전부 자리를 맞춘다. LIMS 는 수량·분자량·농도를 위아래로 비교하는
+   화면이라 자릿수가 흔들리면 큰 값과 작은 값이 뒤바뀌어 보인다. */
+.lims-page,
+.modal[id^="modal-lims-"] {
+	font-variant-numeric: tabular-nums;
+}
+
+/*
+  core.table.css 의 `.core-table .core-table-body span { line-height: 30px }` 는
+  표 안의 모든 span 을 30px 로 못 박는다. 상태 배지·식별자·두 줄 셀의 보조행이
+  전부 그 값을 받아, 셀 padding 을 아무리 줄여도 행 높이가 내려가지 않았다.
+  (같은 뜻의 글자가 표 밖에서는 18px, 표 안에서는 30px 로 그려지던 원인이기도 하다)
+  상속으로 되돌린다 — 셀이 정한 행간을 span 이 다시 뒤집지 않게.
+*/
+.lims-page .core-table .core-table-body span {
+	line-height: inherit;
+}
+
+/* 단, 스스로 높이를 갖는 span 은 예외다. 버튼 라벨은 세로 가운데 정렬이라 1,
+   상태 배지는 제 역할의 행간(snug)을 지켜야 한다. 위 재설정보다 한 단 위에 둔다. */
+.lims-page .core-table .core-table-body [class*="button-"] > span {
+	line-height: 1;
+}
+
+.lims-page .core-table .core-table-body span.lims-state {
+	line-height: var(--lims-lh-snug);
+}
+
+/*
+  구노 공통 클래스 중 `.lims-page` 안에서 스케일 밖으로 튀는 것들.
+  전부 화면 하나씩에만 쓰이지만, 하나만 튀어도 "이 화면만 다른 페이지 같다"가 된다.
+    .guidetext-sty01 — margin-top 10px 를 클래스에 갖고 있다
+    .no-data span    — 16px. 결과 없음 문구가 본문보다 크다
+    .alert           — 16px/28.8px 에 좌측 55px(아이콘 자리) 여백
+    .tab.test-tab    — 18px. 페이지 제목(20)에 육박한다
+    .form_date       — 달력 아이콘 자리로 padding-left 35px
+*/
+.lims-page .guidetext-sty01 {
+	margin-top: var(--lims-gap-1);
+}
+
+.lims-page .no-data span {
+	font-size: var(--lims-fs-body);
+	line-height: var(--lims-lh-base);
+}
+
+.lims-page .alert,
+.lims-page .alert-primary,
+.lims-page .alert-primary.blue {
+	padding: var(--lims-gap-3) var(--lims-gap-4) var(--lims-gap-3) var(--lims-gap-8);
+	margin-bottom: var(--lims-gap-3);
+	font-size: var(--lims-fs-body);
+	line-height: var(--lims-lh-base);
+	background-position: left var(--lims-gap-2) center;
+}
+
+.lims-page .tab.test-tab {
+	padding: 0 0 var(--lims-gap-2);
+	margin-right: var(--lims-gap-4);
+	font-size: var(--lims-fs-strong);
+	font-weight: var(--lims-fw-medium);
+	line-height: var(--lims-lh-snug);
+}
+
+.lims-page .tab.test-tab.active {
+	font-weight: var(--lims-fw-bold);
+}
+
+.lims-page .form_date {
+	padding-left: var(--lims-gap-8);
+	background-position: left var(--lims-gap-2) center;
+}
+
+.lims-page .form-check-input {
+	margin: 0 var(--lims-gap-2) 0 0;
+	font-size: var(--lims-fs-body);
+}
+
+/* 라디오/체크 라벨은 행간 35.28px 이 곧 높이다 — 조작 요소 높이(32)에 맞춘다.
+   왼쪽 22px 은 체크 표시 자리라 건드리지 않는다. */
+.lims-page .form-check-label2 {
+	font-size: var(--lims-fs-body);
+	line-height: var(--lims-control-h);
+}
+
+/* 셀렉트는 flex gap 으로 간격을 받는다. 클래스에 박힌 6px 이 겹쳐 줄마다 달라졌다. */
+.lims-page .select-xs {
+	margin-right: var(--lims-gap-1);
+}
+
+.lims-page .project-info-note-box .note-card-title {
+	font-size: var(--lims-fs-strong);
+	font-weight: var(--lims-fw-medium);
+	line-height: var(--lims-lh-snug);
+}
+
+/* ---------------------------------------------------------------------------
+   0-1) 페이지 여백과 구노 공통 여백 유틸
+
+   `.lims-page` 는 `#main` 에 함께 붙는다. `#main` 이 상하 30px 을 잡고 있어
+   본문이 시작되기도 전에 한 화면의 6%가 빈 채로 지나간다. 목록 화면은 한 행이라도
+   더 보이는 쪽이 낫다.
+
+   구노 공통 유틸(ma-t10/20/30, ma-tm20, ma-r10, ma-l5/10, pa-b30)은 !important 로
+   값을 박아 두어 스케일 밖의 10/20/30px 을 강제한다. LIMS 화면 안에서만
+   스케일 값으로 되돌린다 — 선택자를 `.lims-page` 로 감싸므로 ELN 다른 화면에는
+   새지 않는다.
+--------------------------------------------------------------------------- */
+#main.lims-page {
+	padding: var(--lims-gap-5) var(--lims-gap-4);
+}
+
+.lims-page .ma-t10 { margin-top: var(--lims-gap-2) !important; }
+.lims-page .ma-t20 { margin-top: var(--lims-gap-3) !important; }
+.lims-page .ma-t30 { margin-top: var(--lims-gap-4) !important; }
+.lims-page .ma-b10 { margin-bottom: var(--lims-gap-2) !important; }
+.lims-page .ma-b20 { margin-bottom: var(--lims-gap-3) !important; }
+.lims-page .ma-b30 { margin-bottom: var(--lims-gap-4) !important; }
+.lims-page .ma-r10 { margin-right: var(--lims-gap-2) !important; }
+.lims-page .ma-l10 { margin-left: var(--lims-gap-2) !important; }
+.lims-page .ma-l5 { margin-left: var(--lims-gap-1) !important; }
+.lims-page .pa-b30 { padding-bottom: 0 !important; }
+
+/*
+  ma-tm20 은 머리말 아래 도구 줄을 위로 끌어올리려고 붙은 음수 여백이다.
+  머리말 padding-bottom(18→12)과 필터 margin-top(14→12)이 함께 줄었으므로
+  당기는 양도 같이 줄여야 한다. 그대로 -20px 을 두면 필터가 머리말 구분선을
+  타고 올라가 겹친다.
+*/
+.lims-page .ma-tm20 { margin-top: calc(var(--lims-gap-3) * -1) !important; }
+
+/* ---------------------------------------------------------------------------
+   0-2) 아이콘 유틸 — Lucide(24x24 stroke) 를 CSS mask 로 찍는다.
 
    HTML 을 고칠 수 없는 화면이 대부분이라 아이콘은 기존 버튼에 ::before 로
    얹는다. 색을 파일에 박지 않고 mask + background-color: currentColor 로
@@ -117,16 +348,15 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	gap: 6px;
+	gap: var(--lims-gap-1);
 	min-height: var(--lims-control-h);
 	height: var(--lims-control-h);
-	padding: 0 14px;
+	padding: 0 var(--lims-gap-3);
 	border-radius: var(--lims-radius);
 	background-image: none;
-	font-size: 13px;
-	font-weight: 500;
+	font-size: var(--lims-fs-body);
+	font-weight: var(--lims-fw-medium);
 	line-height: 1;
-	letter-spacing: -0.02em;
 	text-align: center;
 	white-space: nowrap;
 	vertical-align: middle;
@@ -219,22 +449,26 @@
 	pointer-events: none;
 }
 
-/* 모달 바닥 버튼 — 본문 버튼보다 한 단계 크되 규격은 같은 계열로 맞춘다 */
+/*
+  모달 바닥 버튼 — 본문 버튼과 같은 규격으로 맞춘다.
+  이전에는 40px/14px 로 한 단계 크게 뒀는데, 모달 안에도 본문과 같은 목록·표가
+  들어가면서 한 화면에 34px 버튼과 40px 버튼이 동시에 서는 상황이 생겼다.
+  "여기는 모달이라 크다" 는 사용자에게 보이지 않는 사정이다.
+*/
 .lims-page .button-cnfm-sty01,
 .lims-page .button-cncl-sty01,
 .lims-page .button-remove-sty01 {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	gap: 6px;
-	min-width: 88px;
-	height: 40px;
-	padding: 0 18px;
+	gap: var(--lims-gap-1);
+	min-width: 80px;
+	height: var(--lims-control-h);
+	padding: 0 var(--lims-gap-4);
 	border-radius: var(--lims-radius);
-	font-size: 14px;
-	font-weight: 500;
+	font-size: var(--lims-fs-body);
+	font-weight: var(--lims-fw-medium);
 	line-height: 1;
-	letter-spacing: -0.02em;
 	transition: background-color 0.12s ease;
 }
 
@@ -254,12 +488,17 @@
 
 /* 블록 머리말의 버튼은 한 단 작다 — 블록마다 3~4개가 붙어 있어 34px 로 두면
    머리말이 통째로 버튼 줄이 된다. */
+/* 기본 규칙이 min-height 로 32px 을 잡고 있으므로 height 만 낮추면 먹지 않는다.
+   작은 단(28px/12px)은 둘 다 내려야 실제로 작아진다 — 안 그러면 높이는 그대로인데
+   글자만 작은, 어느 단도 아닌 버튼이 된다. */
 .lims-page .lims-note-block-tools > .button-blue-full-sty01,
 .lims-page .lims-note-block-tools > .button-blue-line-sty01,
-.lims-page .lims-note-block-tools > .button-gray-line-sty01 {
-	height: 28px;
-	padding: 0 10px;
-	font-size: 12px;
+.lims-page .lims-note-block-tools > .button-gray-line-sty01,
+.lims-page .lims-note-block .lims-actions-cell > .button-gray-line-sty01 {
+	min-height: var(--lims-control-h-sm);
+	height: var(--lims-control-h-sm);
+	padding: 0 var(--lims-gap-2);
+	font-size: var(--lims-fs-caption);
 }
 
 .lims-page td.lims-actions-cell > * {
@@ -268,7 +507,7 @@
 }
 
 .lims-page td.lims-actions-cell > * + * {
-	margin-left: 6px !important;
+	margin-left: var(--lims-gap-1) !important;
 }
 
 /* ---------------------------------------------------------------------------
@@ -457,8 +696,8 @@
 .lims-page .lims-head {
 	display: flex;
 	align-items: flex-start;
-	gap: 16px;
-	padding: 4px 0 18px;
+	gap: var(--lims-gap-4);
+	padding: 0 0 var(--lims-gap-3);
 	border-bottom: 1px solid var(--lims-line);
 }
 
@@ -471,9 +710,10 @@
 	display: flex;
 	align-items: center;
 	flex-wrap: wrap;
-	gap: 6px;
-	margin-bottom: 6px;
-	font-size: 12px;
+	gap: var(--lims-gap-1);
+	margin-bottom: var(--lims-gap-1);
+	font-size: var(--lims-fs-caption);
+	line-height: var(--lims-lh-base);
 	color: var(--lims-ink-3);
 }
 
@@ -492,30 +732,35 @@
 	color: var(--lims-line-strong);
 }
 
-/* 구노 기본 제목(.main-title-sty01)을 그대로 쓰는 화면도 같은 크기로 맞춘다. */
+/* 구노 기본 제목(.main-title-sty01)을 그대로 쓰는 화면도 같은 크기로 맞춘다.
+   단, 이 클래스는 화면에 따라 페이지 제목으로도, 구획 제목으로도 쓰인다
+   (시험 상세의 "시험 항목", 판정기준 상세의 "판정기준 — v3").
+   페이지 제목은 반드시 `.lims-head` 안에 있으므로 그것만 제목 크기로 본다.
+   나머지는 아래 12) 에서 구획 제목(strong 14)으로 내려 `.sub-title-sty01` 과
+   같은 크기가 되게 한다 — 같은 뜻이면 화면이 달라도 같은 크기여야 한다. */
 .lims-page .lims-title,
-.lims-page .main-title-sty01 {
+.lims-page .lims-head .main-title-sty01 {
 	margin: 0;
-	font-size: 22px;
-	font-weight: 700;
-	line-height: 1.35;
+	font-size: var(--lims-fs-title);
+	font-weight: var(--lims-fw-bold);
+	line-height: var(--lims-lh-tight);
 	color: var(--lims-ink);
-	letter-spacing: -0.04em;
 	word-break: keep-all;
 }
 
 .lims-page .lims-title .lims-title-id {
-	margin-left: 8px;
-	font-size: 18px;
-	font-weight: 500;
+	margin-left: var(--lims-gap-2);
+	font-size: var(--lims-fs-strong);
+	font-weight: var(--lims-fw-medium);
 	color: var(--lims-ink-3);
-	font-variant-numeric: tabular-nums;
 }
 
+/* 화면 설명은 제목이 아니라 주석이다 — 본문(13)이 아니라 caption(12)으로 내린다.
+   13px 이면 아래 표의 데이터와 같은 크기라 눈이 어느 쪽을 먼저 볼지 정하지 못한다. */
 .lims-page .lims-head-desc {
-	margin: 6px 0 0;
-	font-size: 13px;
-	line-height: 1.6;
+	margin: var(--lims-gap-1) 0 0;
+	font-size: var(--lims-fs-caption);
+	line-height: var(--lims-lh-base);
 	color: var(--lims-ink-3);
 }
 
@@ -524,9 +769,8 @@
 	align-items: center;
 	flex-wrap: wrap;
 	justify-content: flex-end;
-	gap: 8px;
+	gap: var(--lims-gap-2);
 	flex: 0 0 auto;
-	padding-top: 2px;
 }
 
 /* ---------------------------------------------------------------------------
@@ -537,16 +781,16 @@
 --------------------------------------------------------------------------- */
 .lims-page .lims-kpi {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-	gap: 10px;
-	margin-top: 18px;
+	grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+	gap: var(--lims-gap-2);
+	margin-top: var(--lims-gap-3);
 }
 
 .lims-page .lims-kpi-item {
 	display: flex;
 	flex-direction: column;
-	gap: 4px;
-	padding: 14px 16px;
+	gap: var(--lims-gap-1);
+	padding: var(--lims-gap-3);
 	border: 1px solid var(--lims-line);
 	border-radius: 10px;
 	background: var(--lims-surface);
@@ -561,17 +805,17 @@
 }
 
 .lims-page .lims-kpi-label {
-	font-size: 12px;
-	font-weight: 500;
+	font-size: var(--lims-fs-caption);
+	font-weight: var(--lims-fw-medium);
+	line-height: var(--lims-lh-base);
 	color: var(--lims-ink-3);
 }
 
 .lims-page .lims-kpi-value {
-	font-size: 26px;
-	font-weight: 700;
-	line-height: 1.15;
+	font-size: var(--lims-fs-metric);
+	font-weight: var(--lims-fw-bold);
+	line-height: var(--lims-lh-tight);
 	color: var(--lims-ink);
-	font-variant-numeric: tabular-nums;
 }
 
 .lims-page .lims-kpi-value.is-warn { color: var(--lims-warn); }
@@ -580,23 +824,34 @@
 .lims-page .lims-kpi-value.is-zero { color: var(--lims-ink-3); }
 
 .lims-page .lims-kpi-note {
-	font-size: 12px;
-	line-height: 1.5;
+	font-size: var(--lims-fs-caption);
+	line-height: var(--lims-lh-base);
 	color: var(--lims-ink-3);
 }
 
 /* 구노 기본 요약 카드(.lims-summary-row)를 쓰는 화면도 같은 규격으로 맞춘다 */
+.lims-page .lims-summary-row {
+	gap: var(--lims-gap-2);
+}
+
 .lims-page .lims-summary-row .lims-summary-card {
-	padding: 14px 16px;
+	padding: var(--lims-gap-3);
 	border-color: var(--lims-line);
 	border-radius: 10px;
 }
 
+.lims-page .lims-summary-row .lims-summary-label {
+	font-size: var(--lims-fs-caption);
+	font-weight: var(--lims-fw-medium);
+	line-height: var(--lims-lh-base);
+	color: var(--lims-ink-3);
+}
+
 .lims-page .lims-summary-row .lims-summary-value {
-	font-size: 26px;
-	font-weight: 700;
+	font-size: var(--lims-fs-metric);
+	font-weight: var(--lims-fw-bold);
+	line-height: var(--lims-lh-tight);
 	color: var(--lims-ink);
-	font-variant-numeric: tabular-nums;
 }
 
 /* ---------------------------------------------------------------------------
@@ -604,23 +859,25 @@
    지금은 넷이 각각 떠 있어 어떤 필터가 어떤 표에 걸리는지 화면상 알 수 없다.
 --------------------------------------------------------------------------- */
 .lims-page .lims-card {
-	margin-top: 16px;
+	margin-top: var(--lims-gap-3);
 	border: 1px solid var(--lims-line);
 	border-radius: 10px;
 	background: var(--lims-surface);
 	overflow: hidden;
 }
 
+/* 카드 사이 간격을 카드 안쪽 여백(12)보다 크게 두지 않는다. 20px 을 주면
+   카드가 서로 떨어져 "같은 화면의 일부" 가 아니라 각각의 페이지처럼 읽힌다. */
 .lims-page .lims-card + .lims-card {
-	margin-top: 20px;
+	margin-top: var(--lims-gap-3);
 }
 
 .lims-page .lims-card-head {
 	display: flex;
 	align-items: center;
 	flex-wrap: wrap;
-	gap: 10px 16px;
-	padding: 14px 16px;
+	gap: var(--lims-gap-2) var(--lims-gap-3);
+	padding: var(--lims-gap-2) var(--lims-gap-3);
 	border-bottom: 1px solid var(--lims-line);
 	background: var(--lims-surface);
 }
@@ -628,24 +885,25 @@
 .lims-page .lims-card-title {
 	flex: 0 0 auto;
 	margin: 0;
-	font-size: 15px;
-	font-weight: 700;
+	font-size: var(--lims-fs-strong);
+	font-weight: var(--lims-fw-bold);
+	line-height: var(--lims-lh-snug);
 	color: var(--lims-ink);
 }
 
 .lims-page .lims-card-title .lims-card-count {
-	margin-left: 6px;
-	font-size: 13px;
-	font-weight: 500;
+	margin-left: var(--lims-gap-1);
+	font-size: var(--lims-fs-caption);
+	font-weight: var(--lims-fw-medium);
+	line-height: var(--lims-lh-base);
 	color: var(--lims-ink-3);
-	font-variant-numeric: tabular-nums;
 }
 
 .lims-page .lims-card-desc {
 	flex: 1 1 100%;
 	margin: 0;
-	font-size: 12px;
-	line-height: 1.6;
+	font-size: var(--lims-fs-caption);
+	line-height: var(--lims-lh-base);
 	color: var(--lims-ink-3);
 }
 
@@ -653,19 +911,19 @@
 	display: flex;
 	align-items: center;
 	flex-wrap: wrap;
-	gap: 8px;
+	gap: var(--lims-gap-2);
 	margin-left: auto;
 }
 
 .lims-page .lims-card-body {
-	padding: 16px;
+	padding: var(--lims-gap-3);
 }
 
 .lims-page .lims-card-body > :first-child { margin-top: 0; }
 .lims-page .lims-card-body > :last-child { margin-bottom: 0; }
 
 .lims-page .lims-card-foot {
-	padding: 12px 16px;
+	padding: var(--lims-gap-2) var(--lims-gap-3);
 	border-top: 1px solid var(--lims-line);
 	background: var(--lims-surface-2);
 }
@@ -687,24 +945,23 @@
 .lims-page .input-write-date2,
 .lims-page .form_date input {
 	height: var(--lims-control-h);
-	padding: 0 12px;
+	padding: 0 var(--lims-gap-3);
 	border: 1px solid var(--lims-line-strong);
 	border-radius: var(--lims-radius);
 	background-color: var(--lims-surface);
-	font-size: 13px;
+	font-size: var(--lims-fs-body);
 	line-height: calc(var(--lims-control-h) - 2px);
 	color: var(--lims-ink);
-	letter-spacing: -0.02em;
 	transition: border-color 0.12s ease, box-shadow 0.12s ease;
 }
 
 .lims-page .select-sty02 {
-	padding-right: 28px;
-	background-position: right 6px center;
+	padding-right: var(--lims-gap-6);
+	background-position: right var(--lims-gap-1) center;
 }
 
 .lims-page .input-write-sty02-line::placeholder {
-	font-size: 13px;
+	font-size: var(--lims-fs-body);
 	color: var(--lims-ink-4);
 }
 
@@ -748,8 +1005,8 @@
 .lims-page .lims-scan-box .button-blue-full-sty01,
 .lims-page .lims-scan-box .button-gray-line-sty01 {
 	height: 48px;
-	padding: 0 22px;
-	font-size: 15px;
+	padding: 0 var(--lims-gap-5);
+	font-size: var(--lims-fs-strong);
 }
 
 .lims-page .lims-scan-box .button-blue-full-sty01::before,
@@ -760,12 +1017,13 @@
 
 /* 필터 줄 — 카드 위에 놓인 도구 줄이다. 별도 상자로 보이지 않게 여백만 준다. */
 .lims-page .target-info-tab.lims-filter {
-	margin-top: 14px !important;
-	margin-bottom: 10px;
+	margin-top: var(--lims-gap-3) !important;
+	margin-bottom: var(--lims-gap-2);
 }
 
 .lims-page .lims-filter .search-box {
-	gap: 8px;
+	gap: var(--lims-gap-2);
+	row-gap: var(--lims-gap-2);
 }
 
 /* ma-r10 유틸(!important 10px)이 gap 과 겹쳐 간격이 18px 로 벌어졌다 */
@@ -820,37 +1078,55 @@
    일자가 함께 오므로 이 밀도로는 한 화면에 6행밖에 담기지 않고, 머리행이
    본문보다 무거워 눈이 데이터가 아니라 제목에 먼저 걸린다.
 
-   머리행은 가볍게(12px/600, 회색), 본문은 또렷하게(13px, 잉크색) 뒤집는다.
+   머리행은 가볍게(caption 12/500, 회색), 본문은 또렷하게(body 13, 잉크색) 뒤집는다.
+   머리행 굵기를 600 이 아니라 500 으로 적는 이유는 위 토큰 블록에 있다 —
+   600 은 실물 서체가 없어 700 으로 그려지므로, 600 으로 적으면 위계가 되레 뒤집힌다.
 --------------------------------------------------------------------------- */
+/* `<thead>` 없이 `<table><tr><th>` 로 쓴 화면(시료 상세·시험 상세)이 있어
+   브라우저가 그 행을 tbody 로 감싼다. 그 머리행이 규칙에서 새면 같은 표가
+   화면마다 다른 크기(14/700 vs 12/500)로 나온다 — 둘 다 잡는다. */
 .lims-page .core-table .core-table-body .table > thead > tr > th,
-.lims-page .lims-table > thead > tr > th {
-	padding: 10px 16px !important;
+.lims-page .core-table .core-table-body .table > tbody > tr > th,
+.lims-page .table-sty01 > thead > tr > th,
+.lims-page .table-sty01 > tbody > tr > th,
+.lims-page .lims-table > thead > tr > th,
+.lims-page .lims-table > tbody > tr > th {
+	padding: var(--lims-gap-2) var(--lims-gap-3) !important;
 	border: 0 !important;
 	border-bottom: 1px solid var(--lims-line-strong) !important;
 	border-radius: 0 !important;
 	background: var(--lims-surface-2) !important;
-	font-size: 12px;
-	font-weight: 600;
-	line-height: 1.5;
+	font-size: var(--lims-fs-caption);
+	font-weight: var(--lims-fw-medium);
+	line-height: var(--lims-lh-base);
 	color: var(--lims-ink-3);
-	letter-spacing: -0.01em;
 	white-space: nowrap;
 	vertical-align: middle;
 }
 
 .lims-page .core-table .core-table-body .table > tbody > tr > td,
+.lims-page .table-sty01 > tbody > tr > td,
 .lims-page .lims-table > tbody > tr > td {
-	padding: 11px 16px !important;
+	padding: var(--lims-gap-2) var(--lims-gap-3) !important;
 	border-bottom: 1px solid var(--lims-line) !important;
-	font-size: 13px;
-	line-height: 1.5;
+	font-size: var(--lims-fs-body);
+	line-height: var(--lims-lh-base);
 	color: var(--lims-ink-2);
 	vertical-align: middle;
 }
 
+/* `.table-sty01 tbody { font-size: 14px }` 때문에 tr/tbody 가 14px 로 남고, 셀에
+   자기 크기를 안 준 요소(<b>, 클래스 없는 span)가 그 14px 을 물려받는다.
+   같은 표 안에서 어떤 글자는 13, 어떤 글자는 14 가 되던 이유다. */
+.lims-page .table-sty01 > thead,
+.lims-page .table-sty01 > tbody {
+	font-size: var(--lims-fs-body);
+	line-height: var(--lims-lh-base);
+}
+
 /* 첫 열은 20px 을 !important 로 박아둔 기본 규칙이 있어 맞춰 눌러준다 */
 .lims-page .table-sty01 tr td:nth-child(1) {
-	padding-left: 16px !important;
+	padding-left: var(--lims-gap-3) !important;
 }
 
 .lims-page .core-table .core-table-body .table > tbody > tr:last-child > td,
@@ -888,11 +1164,11 @@
 	box-shadow: inset 2px 0 0 var(--lims-primary);
 }
 
-/* 표 안의 1차 식별자 — 굵기와 색으로 눈이 먼저 닿게 한다. */
+/* 표 안의 1차 식별자 — 굵기와 색으로 눈이 먼저 닿게 한다.
+   500 이면 옆 셀(400)과 구분되고 카드 제목(700)과는 섞이지 않는다. */
 .lims-page .lims-id {
-	font-weight: 600;
+	font-weight: var(--lims-fw-medium);
 	color: var(--lims-ink);
-	font-variant-numeric: tabular-nums;
 	white-space: nowrap;
 }
 
@@ -913,7 +1189,7 @@
 /* 식별자가 아닌 첫 열(일련번호·이름)도 본문보다 한 단계 올린다 */
 .lims-page .core-table .core-table-body .table > tbody > tr > td:first-child {
 	color: var(--lims-ink);
-	font-weight: 500;
+	font-weight: var(--lims-fw-medium);
 }
 
 /*
@@ -923,14 +1199,14 @@
 .lims-page .lims-cell {
 	display: flex;
 	flex-direction: column;
-	gap: 3px;
+	gap: 0;
 	min-width: 0;
-	line-height: 1.45;
+	line-height: var(--lims-lh-base);
 }
 
 .lims-page .lims-cell-sub {
-	font-size: 12px;
-	line-height: 1.45;
+	font-size: var(--lims-fs-caption);
+	line-height: var(--lims-lh-base);
 	color: var(--lims-ink-3);
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -939,9 +1215,9 @@
 /* 두 줄 셀을 <br> + .guidetext-sty01 로 쓰는 화면도 같은 행간으로 맞춘다 */
 .lims-page .core-table .core-table-body .table > tbody > tr > td .guidetext-sty01 {
 	display: inline-block;
-	margin-top: 3px;
-	font-size: 12px;
-	line-height: 1.45;
+	margin-top: 0;
+	font-size: var(--lims-fs-caption);
+	line-height: var(--lims-lh-base);
 	color: var(--lims-ink-3);
 }
 
@@ -950,13 +1226,14 @@
 .lims-page .core-table .core-table-body .table > tbody > tr > td.num,
 .lims-page .core-table .core-table-body .table > tbody > tr > td.text-right {
 	text-align: right;
-	font-variant-numeric: tabular-nums;
 	white-space: nowrap;
 }
 
 .lims-page th.lims-num,
 .lims-page .core-table .core-table-body .table > thead > tr > th.num,
-.lims-page .core-table .core-table-body .table > thead > tr > th.text-right {
+.lims-page .core-table .core-table-body .table > tbody > tr > th.num,
+.lims-page .core-table .core-table-body .table > thead > tr > th.text-right,
+.lims-page .core-table .core-table-body .table > tbody > tr > th.text-right {
 	text-align: right;
 }
 
@@ -965,7 +1242,7 @@
 	display: flex;
 	align-items: center;
 	justify-content: flex-end;
-	gap: 6px;
+	gap: var(--lims-gap-1);
 	white-space: nowrap;
 }
 
@@ -974,14 +1251,32 @@
 	white-space: nowrap;
 }
 
+/*
+  조작 열에 버튼이 아니라 맨 링크로 들어간 항목이 있다(결과 입력의 "이력").
+  글자 높이 그대로라 클릭 대상이 15px 이고, 옆의 32px 버튼과 세로로도 어긋난다.
+  생김새는 링크로 두되 최소 28px 은 잡아 준다 — 밀도를 줄인 만큼 손가락이
+  닿을 자리는 남겨야 한다.
+*/
+.lims-page td.lims-actions-cell a.c-pointer {
+	display: inline-flex;
+	align-items: center;
+	min-height: var(--lims-control-h-sm);
+	padding: 0 var(--lims-gap-2);
+	font-size: var(--lims-fs-body);
+	font-weight: var(--lims-fw-medium);
+	line-height: 1;
+	color: var(--lims-primary);
+	vertical-align: middle;
+}
+
 /* 빈 상태 — 문구만 있어 "로딩 중인지 결과가 없는지" 구분되지 않았다.
    아이콘을 얹어 한눈에 '없음'으로 읽히게 한다. */
 .lims-page .emptymessage > td {
-	padding: 48px 16px !important;
+	padding: var(--lims-gap-8) var(--lims-gap-3) !important;
 	border-bottom: 0 !important;
 	color: var(--lims-ink-3);
-	font-size: 13px;
-	line-height: 1.6;
+	font-size: var(--lims-fs-body);
+	line-height: var(--lims-lh-base);
 	text-align: center;
 	white-space: normal;
 }
@@ -989,9 +1284,9 @@
 .lims-page .emptymessage > td::before {
 	content: '';
 	display: block;
-	width: 36px;
-	height: 36px;
-	margin: 0 auto 10px;
+	width: var(--lims-gap-8);
+	height: var(--lims-gap-8);
+	margin: 0 auto var(--lims-gap-2);
 	background-color: var(--lims-ink-3);
 	opacity: 0.4;
 	-webkit-mask: url(../img/lucide/inbox.svg) center / contain no-repeat;
@@ -1029,7 +1324,7 @@
 
 .lims-page .core-table .paging-box {
 	margin: 0;
-	padding: 10px 16px;
+	padding: var(--lims-gap-2) var(--lims-gap-3);
 	border-top: 1px solid var(--lims-line);
 	background: var(--lims-surface-2);
 }
@@ -1052,12 +1347,12 @@
 .lims-page .paging-box .pagination {
 	display: inline-flex;
 	align-items: center;
-	gap: 4px;
+	gap: var(--lims-gap-1);
 	margin: 0;
 }
 
 .lims-page .paging-box .pagination > li {
-	font-size: 13px;
+	font-size: var(--lims-fs-body);
 }
 
 .lims-page .paging-box .pagination > li > a,
@@ -1065,16 +1360,16 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	min-width: 30px;
-	height: 30px;
-	padding: 0 8px;
+	min-width: var(--lims-control-h-sm);
+	height: var(--lims-control-h-sm);
+	padding: 0 var(--lims-gap-2);
 	border: 1px solid transparent;
 	border-radius: 6px;
 	background: transparent;
-	font-size: 13px;
-	font-weight: 500;
+	font-size: var(--lims-fs-body);
+	font-weight: var(--lims-fw-medium);
+	line-height: 1;
 	color: var(--lims-ink-2);
-	font-variant-numeric: tabular-nums;
 	transition: background-color 0.12s ease, color 0.12s ease;
 }
 
@@ -1098,29 +1393,38 @@
 .lims-page .lims-def {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-	gap: 0 24px;
+	gap: 0 var(--lims-gap-6);
 }
 
 .lims-page .lims-def-row {
 	display: flex;
-	gap: 16px;
-	padding: 11px 0;
+	gap: var(--lims-gap-3);
+	padding: var(--lims-gap-2) 0;
 	border-bottom: 1px solid var(--lims-line);
 }
 
+/* 라벨은 값이 아니라 값을 가리키는 이름이다 — caption 으로 내려 값(body)과 갈라놓는다 */
 .lims-page .lims-def-label {
-	flex: 0 0 116px;
-	font-size: 13px;
-	font-weight: 500;
+	flex: 0 0 112px;
+	font-size: var(--lims-fs-caption);
+	font-weight: var(--lims-fw-medium);
+	line-height: var(--lims-lh-base);
 	color: var(--lims-ink-3);
 }
 
 .lims-page .lims-def-value {
 	flex: 1 1 auto;
 	min-width: 0;
-	font-size: 13px;
+	font-size: var(--lims-fs-body);
+	line-height: var(--lims-lh-base);
 	color: var(--lims-ink);
 	word-break: break-word;
+}
+
+/* 구노 기본 label 은 margin-bottom 8px 을 갖는다. 정의행은 좌우 배치라
+   그 8px 이 행 높이만 늘리고 아무것도 띄우지 않는다. */
+.lims-page .lims-def-row > label.lims-def-label {
+	margin-bottom: 0;
 }
 
 .lims-page .lims-def-value.is-empty {
@@ -1142,14 +1446,13 @@
 .lims-page .lims-state {
 	display: inline-flex;
 	align-items: center;
-	min-height: 20px;
-	padding: 1px 8px;
+	min-height: var(--lims-gap-5);
+	padding: 0 var(--lims-gap-2);
 	border: 1px solid transparent;
 	border-radius: 6px;
-	font-size: 11px;
-	font-weight: 600;
-	line-height: 1.6;
-	letter-spacing: -0.01em;
+	font-size: var(--lims-fs-micro);
+	font-weight: var(--lims-fw-medium);
+	line-height: var(--lims-lh-snug);
 	white-space: nowrap;
 }
 
@@ -1165,17 +1468,18 @@
 .lims-page .lims-tabs {
 	display: flex;
 	align-items: center;
-	gap: 4px;
+	gap: var(--lims-gap-1);
 	margin: 0;
 }
 
 .lims-page .lims-tabs .lims-tab {
-	padding: 9px 14px;
+	padding: var(--lims-gap-2) var(--lims-gap-3);
 	border: 0;
 	border-bottom: 2px solid transparent;
 	background: transparent;
-	font-size: 14px;
-	font-weight: 500;
+	font-size: var(--lims-fs-body);
+	font-weight: var(--lims-fw-medium);
+	line-height: var(--lims-lh-base);
 	color: var(--lims-ink-3);
 	text-decoration: none;
 	cursor: pointer;
@@ -1188,29 +1492,49 @@
 .lims-page .lims-tabs .lims-tab.active {
 	border-bottom-color: var(--lims-primary);
 	color: var(--lims-primary);
-	font-weight: 700;
+	font-weight: var(--lims-fw-bold);
 }
 
 /* ---------------------------------------------------------------------------
-   12) 안내 문구 — 화면마다 크기가 달랐다. 한 값으로 모은다.
+   12) 안내 문구 · 소제목 — 화면마다 크기가 달랐다. 한 값으로 모은다.
+
+   `.guidetext-sty01` 은 구노 공통 클래스라 화면마다 부모가 다르고, 부모가 준
+   행간(표 안 30px / 모달 안 24px)을 그대로 물려받아 같은 문구가 자리마다 다른
+   높이로 앉았다. 크기·행간·색을 여기서 못 박는다.
 --------------------------------------------------------------------------- */
 .lims-page .guidetext-sty01,
 .lims-page .lims-note {
-	font-size: 12px;
-	line-height: 1.6;
+	font-size: var(--lims-fs-caption);
+	line-height: var(--lims-lh-base);
 	color: var(--lims-ink-3);
+}
+
+/*
+  구획 제목 — `.sub-title-sty01` 과 (머리말 밖의) `.main-title-sty01` 은 둘 다
+  "카드/블록 하나를 여는 제목" 이라는 같은 역할인데, 구노 기본값이 각각 18~20px 와
+  22px 라 화면마다 크기가 달랐다. 시료 상세의 "기본 정보"(sub)와 시험 상세의
+  "시험 항목"(main)이 같은 자리에 서는데 14 vs 22 로 그려지던 상태다.
+  카드 제목과 같은 값 하나로 모은다.
+*/
+.lims-page .sub-title-sty01,
+.lims-page .main-title-sty01 {
+	margin: 0 0 var(--lims-gap-2);
+	font-size: var(--lims-fs-strong);
+	font-weight: var(--lims-fw-bold);
+	line-height: var(--lims-lh-snug);
+	color: var(--lims-ink);
 }
 
 .lims-page .lims-note-box {
 	display: flex;
-	gap: 8px;
-	padding: 12px 14px;
+	gap: var(--lims-gap-2);
+	padding: var(--lims-gap-2) var(--lims-gap-3);
 	border: 1px solid var(--lims-line);
 	border-left: 3px solid var(--lims-primary);
 	border-radius: 6px;
 	background: var(--lims-surface-2);
-	font-size: 12px;
-	line-height: 1.65;
+	font-size: var(--lims-fs-caption);
+	line-height: var(--lims-lh-base);
 	color: var(--lims-ink-2);
 }
 
@@ -1222,17 +1546,26 @@
 /* 물성 패널 — 붙여넣기 직후 분자식·분자량이 뜨는 자리. 이 PoC 의 주인공이라
    카드 테두리를 한 톤 세우고 값의 크기를 키운다. */
 .lims-page .lims-prop-bar {
+	gap: var(--lims-gap-2) var(--lims-gap-6);
+	padding: var(--lims-gap-3) var(--lims-gap-4);
 	border-color: var(--lims-line-strong);
 	border-radius: 10px;
 }
 
+.lims-page .lims-prop-bar .prop-item {
+	gap: var(--lims-gap-2);
+}
+
 .lims-page .lims-prop-bar .prop-label {
-	font-size: 13px;
+	font-size: var(--lims-fs-caption);
+	line-height: var(--lims-lh-base);
 	color: var(--lims-ink-3);
 }
 
 .lims-page .lims-prop-bar .prop-value {
-	font-size: 19px;
+	font-size: var(--lims-fs-lead);
+	font-weight: var(--lims-fw-bold);
+	line-height: var(--lims-lh-tight);
 }
 
 /* ---------------------------------------------------------------------------
@@ -1246,7 +1579,7 @@
 .lims-page .lims-note-layout {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) 320px;
-	gap: 16px;
+	gap: var(--lims-gap-3);
 	align-items: start;
 }
 
@@ -1259,14 +1592,14 @@
    (헤더 높이만큼 띄운다 — 그 아래로 들어가면 제목이 가린다.) */
 .lims-page .lims-note-side > .lims-card {
 	position: sticky;
-	top: 16px;
+	top: var(--lims-gap-3);
 }
 
 /* --- 블록 --- */
 .lims-page .lims-note-blocks {
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
+	gap: var(--lims-gap-2);
 }
 
 .lims-page .lims-note-block {
@@ -1283,8 +1616,8 @@
 .lims-page .lims-note-block-head {
 	display: flex;
 	align-items: center;
-	gap: 8px;
-	padding: 8px 12px;
+	gap: var(--lims-gap-2);
+	padding: var(--lims-gap-1) var(--lims-gap-3);
 	border-bottom: 1px solid var(--lims-line);
 	background: var(--lims-surface-2);
 }
@@ -1294,20 +1627,21 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	min-width: 22px;
-	height: 22px;
-	padding: 0 6px;
-	border-radius: 11px;
+	min-width: var(--lims-gap-5);
+	height: var(--lims-gap-5);
+	padding: 0 var(--lims-gap-1);
+	border-radius: 10px;
 	background: var(--lims-line-strong);
 	color: var(--lims-ink-2);
-	font-size: 11px;
-	font-weight: 600;
-	font-variant-numeric: tabular-nums;
+	font-size: var(--lims-fs-micro);
+	font-weight: var(--lims-fw-medium);
+	line-height: 1;
 }
 
 .lims-page .lims-note-block-kind {
-	font-size: 12px;
-	font-weight: 600;
+	font-size: var(--lims-fs-caption);
+	font-weight: var(--lims-fw-medium);
+	line-height: var(--lims-lh-base);
 	color: var(--lims-ink-2);
 }
 
@@ -1319,25 +1653,25 @@
    같은 크기로 두면 머리말이 버튼 줄이 된다. */
 .lims-page .lims-note-block-tools {
 	display: flex;
-	gap: 6px;
+	gap: var(--lims-gap-1);
 	margin-left: auto;
 	flex-wrap: wrap;
 	justify-content: flex-end;
 }
 
 .lims-page .lims-note-block-body {
-	padding: 12px;
+	padding: var(--lims-gap-3);
 }
 
 .lims-page .lims-note-text {
 	display: block;
 	width: 100%;
-	min-height: 120px;
-	padding: 10px 12px;
+	min-height: 96px;
+	padding: var(--lims-gap-2) var(--lims-gap-3);
 	border: 1px solid var(--lims-line-strong);
 	border-radius: var(--lims-radius);
-	font-size: 13px;
-	line-height: 1.7;
+	font-size: var(--lims-fs-body);
+	line-height: var(--lims-lh-loose);
 	color: var(--lims-ink);
 	resize: vertical;
 }
@@ -1352,7 +1686,7 @@
 .lims-page .lims-note-struct {
 	display: grid;
 	grid-template-columns: 260px minmax(0, 1fr);
-	gap: 14px;
+	gap: var(--lims-gap-3);
 	align-items: start;
 }
 
@@ -1360,8 +1694,8 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	min-height: 200px;
-	padding: 8px;
+	min-height: 192px;
+	padding: var(--lims-gap-2);
 	border: 1px solid var(--lims-line-strong);
 	border-radius: 10px;
 	background: var(--lims-surface);
@@ -1371,7 +1705,8 @@
 	border-style: dashed;
 	background: var(--lims-surface-2);
 	color: var(--lims-ink-4);
-	font-size: 12px;
+	font-size: var(--lims-fs-caption);
+	line-height: var(--lims-lh-base);
 	text-align: center;
 }
 
@@ -1386,13 +1721,13 @@
 
 /* 붙여넣는 자리. "여기에 넣으라"는 말은 테두리로 하는 편이 문구보다 빠르다. */
 .lims-page .lims-note-paste {
-	min-height: 52px;
-	padding: 12px 14px;
+	min-height: 48px;
+	padding: var(--lims-gap-2) var(--lims-gap-3);
 	border: 1px dashed var(--lims-primary);
 	border-radius: var(--lims-radius);
 	background: var(--lims-primary-weak);
-	font-size: 12px;
-	line-height: 1.6;
+	font-size: var(--lims-fs-caption);
+	line-height: var(--lims-lh-base);
 	color: var(--lims-ink-2);
 	cursor: text;
 }
@@ -1410,7 +1745,7 @@
 
 /* 계산 결과. 이 세 값이 이 화면의 결론이다. */
 .lims-page .lims-note-calc {
-	margin-top: 10px;
+	margin-top: var(--lims-gap-2);
 	border-radius: 10px;
 	transition: box-shadow 0.2s ease, background-color 0.2s ease;
 }
@@ -1439,9 +1774,9 @@
 }
 
 .lims-page .lims-note-struct-status {
-	margin-top: 8px;
-	font-size: 12px;
-	line-height: 1.6;
+	margin-top: var(--lims-gap-2);
+	font-size: var(--lims-fs-caption);
+	line-height: var(--lims-lh-base);
 	color: var(--lims-ink-3);
 }
 
@@ -1454,20 +1789,21 @@
 }
 
 .lims-page .lims-note-editor-guide {
-	margin-top: 6px;
+	margin-top: var(--lims-gap-1);
 }
 
 /* --- 표 블록 --- */
 .lims-page .lims-note-eq-summary {
 	display: inline-flex;
 	align-items: center;
-	gap: 6px;
-	padding: 4px 10px;
+	gap: var(--lims-gap-1);
+	padding: var(--lims-gap-1) var(--lims-gap-2);
 	border: 1px solid var(--lims-line-strong);
 	border-radius: 14px;
 	background: var(--lims-surface-2);
-	font-size: 12px;
-	font-weight: 600;
+	font-size: var(--lims-fs-caption);
+	font-weight: var(--lims-fw-medium);
+	line-height: var(--lims-lh-base);
 	color: var(--lims-ink-2);
 }
 
@@ -1475,30 +1811,37 @@
    반응 시약 표는 열이 9개인데 본문 폭은 사이드 패널(320px)을 뺀 나머지다.
    조작 요소를 기본 규격(34px·280px 셀렉트)으로 두면 mmol·당량 열이 화면 밖으로
    밀려나 "계산 결과가 안 보인다"가 된다 — 이 표에서만 좁힌다. */
+/* 표 안의 작은 조작 요소는 높이가 28px 이다 — 행간도 그 높이에 맞춰야
+   글자가 칸 위쪽으로 붙지 않는다 (기본 규칙은 34px 기준의 30px 을 물려준다) */
+.lims-page .lims-note-eq-input,
+.lims-page .lims-note-block .lims-stoich-role-sel,
+.lims-page .lims-note-block .lims-stoich-unit-sel {
+	line-height: calc(var(--lims-control-h-sm) - 2px);
+}
+
 .lims-page .lims-note-eq-input {
 	width: 76px;
 	min-width: 76px;
-	height: 28px;
-	padding: 0 8px;
+	height: var(--lims-control-h-sm);
+	padding: 0 var(--lims-gap-2);
 	text-align: right;
-	font-variant-numeric: tabular-nums;
 }
 
 .lims-page .lims-note-block .lims-stoich-role-sel {
 	width: 88px;
 	min-width: 88px;
-	height: 28px;
-	padding: 0 22px 0 8px;
-	font-size: 12px;
+	height: var(--lims-control-h-sm);
+	padding: 0 var(--lims-gap-5) 0 var(--lims-gap-2);
+	font-size: var(--lims-fs-caption);
 }
 
 .lims-page .lims-note-block .lims-stoich-unit-sel {
 	width: 68px;
 	min-width: 68px;
-	height: 28px;
-	margin-left: 4px;
-	padding: 0 20px 0 8px;
-	font-size: 12px;
+	height: var(--lims-control-h-sm);
+	margin-left: var(--lims-gap-1);
+	padding: 0 var(--lims-gap-5) 0 var(--lims-gap-2);
+	font-size: var(--lims-fs-caption);
 	vertical-align: middle;
 }
 
@@ -1506,29 +1849,23 @@
 	vertical-align: middle;
 }
 
-.lims-page .lims-note-block .lims-actions-cell .button-gray-line-sty01 {
-	height: 28px;
-	padding: 0 10px;
-	font-size: 12px;
-}
-
 /* 표 밀도 — 셀 여백을 한 단 줄여 아홉 열이 한 화면에 들어오게 한다. */
 .lims-page .lims-note-block .core-table .table-sty01 > :not(caption) > * > * {
-	padding-left: 8px;
-	padding-right: 8px;
+	padding-left: var(--lims-gap-2) !important;
+	padding-right: var(--lims-gap-2) !important;
 }
 
 /* --- 사용 시약 패널 --- */
 .lims-page .lims-note-usage {
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
+	gap: var(--lims-gap-2);
 	max-height: 420px;
 	overflow-y: auto;
 }
 
 .lims-page .lims-note-usage-item {
-	padding: 9px 11px;
+	padding: var(--lims-gap-2) var(--lims-gap-3);
 	border: 1px solid var(--lims-line);
 	border-radius: var(--lims-radius);
 	background: var(--lims-surface-2);
@@ -1537,14 +1874,15 @@
 .lims-page .lims-note-usage-main {
 	display: flex;
 	align-items: baseline;
-	gap: 6px;
+	gap: var(--lims-gap-1);
 }
 
 .lims-page .lims-note-usage-nm {
 	flex: 1 1 auto;
 	min-width: 0;
-	font-size: 13px;
-	font-weight: 500;
+	font-size: var(--lims-fs-body);
+	font-weight: var(--lims-fw-medium);
+	line-height: var(--lims-lh-base);
 	color: var(--lims-ink);
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -1553,26 +1891,27 @@
 
 .lims-page .lims-note-usage-amt {
 	flex: none;
-	font-size: 13px;
-	font-weight: 600;
+	font-size: var(--lims-fs-body);
+	font-weight: var(--lims-fw-bold);
+	line-height: var(--lims-lh-base);
 	color: var(--lims-primary-dark);
-	font-variant-numeric: tabular-nums;
 }
 
 .lims-page .lims-note-usage-sub {
-	margin-top: 3px;
-	font-size: 11px;
-	line-height: 1.5;
+	margin-top: 0;
+	font-size: var(--lims-fs-micro);
+	line-height: var(--lims-lh-snug);
 	color: var(--lims-ink-3);
 	word-break: break-all;
 }
 
 .lims-page .lims-note-empty {
-	padding: 18px 12px;
+	padding: var(--lims-gap-4) var(--lims-gap-3);
 	border: 1px dashed var(--lims-line-strong);
 	border-radius: var(--lims-radius);
 	background: var(--lims-surface-2);
-	font-size: 12px;
+	font-size: var(--lims-fs-caption);
+	line-height: var(--lims-lh-base);
 	color: var(--lims-ink-3);
 	text-align: center;
 }
@@ -1582,14 +1921,332 @@
 .modal .lims-note-reagent {
 	display: flex;
 	align-items: center;
-	gap: 10px;
-	padding: 10px 12px;
+	gap: var(--lims-gap-2);
+	padding: var(--lims-gap-2) var(--lims-gap-3);
 	border: 1px solid var(--lims-line);
 	border-radius: var(--lims-radius);
 }
 
 /* ---------------------------------------------------------------------------
-   14) 좁은 화면
+   14) lims.css 컴포넌트를 스케일 안으로
+
+   화합물 카드·바코드 조회·화학량론은 lims.css 에서 각자 만들어졌고, 그때마다
+   그 화면에서 좋아 보이는 값을 골랐다. 그래서 같은 뜻의 요소가 화면마다 다른
+   크기로 나온다 — 라벨이 12/13/14px 세 가지, 값이 13/14/16/18/20/24px 여섯 가지다.
+   lims.css 는 이 작업의 소관이 아니므로 여기서 스케일로 덮어쓴다.
+--------------------------------------------------------------------------- */
+
+/* --- 화합물 카드 --- */
+.lims-page .lims-compound-grid {
+	gap: var(--lims-gap-3);
+}
+
+.lims-page .lims-compound-card {
+	padding: var(--lims-gap-3);
+}
+
+.lims-page .lims-compound-thumb {
+	height: 128px;
+	margin-bottom: var(--lims-gap-2);
+}
+
+.lims-page .lims-compound-thumb.is-empty {
+	font-size: var(--lims-fs-caption);
+	line-height: var(--lims-lh-base);
+}
+
+.lims-page .lims-compound-regid {
+	margin-bottom: var(--lims-gap-1);
+	font-size: var(--lims-fs-strong);
+	font-weight: var(--lims-fw-bold);
+	line-height: var(--lims-lh-snug);
+}
+
+.lims-page .lims-compound-meta {
+	gap: var(--lims-gap-2);
+	margin-bottom: 0;
+	font-size: var(--lims-fs-body);
+	line-height: var(--lims-lh-base);
+}
+
+.lims-page .lims-compound-meta-label {
+	flex: 0 0 44px;
+	font-size: var(--lims-fs-caption);
+}
+
+.lims-page .lims-compound-notecnt {
+	margin-top: var(--lims-gap-2);
+	padding-top: var(--lims-gap-2);
+	font-size: var(--lims-fs-caption);
+	line-height: var(--lims-lh-base);
+}
+
+.lims-page .lims-compound-resultbar {
+	gap: var(--lims-gap-3);
+	padding: var(--lims-gap-2) var(--lims-gap-3);
+}
+
+.lims-page .lims-compound-resultbar .lims-compound-resultbar-text {
+	font-size: var(--lims-fs-body);
+	line-height: var(--lims-lh-base);
+}
+
+.lims-page .lims-compound-detail {
+	gap: var(--lims-gap-4);
+}
+
+.lims-page .lims-compound-detail-structure.is-empty {
+	font-size: var(--lims-fs-caption);
+	line-height: var(--lims-lh-base);
+}
+
+/* --- 바코드 조회 ---
+   입력칸(56px)과 값(metric)만 크게 남긴다. 실험대에서 한 손으로 읽는 화면이라
+   여기서는 밀도보다 가독이 먼저다. 나머지 라벨·필드는 다른 화면과 같은 값이다. */
+.lims-page .lims-scan-box {
+	gap: var(--lims-gap-3);
+	padding: var(--lims-gap-4) var(--lims-gap-5);
+}
+
+.lims-page .lims-scan-box .lims-scan-label {
+	font-size: var(--lims-fs-body);
+	font-weight: var(--lims-fw-medium);
+	line-height: var(--lims-lh-base);
+}
+
+.lims-page .lims-scan-box .lims-scan-input {
+	height: 56px;
+	padding: 0 var(--lims-gap-4);
+	font-size: var(--lims-fs-metric);
+	font-weight: var(--lims-fw-bold);
+	line-height: 1;
+}
+
+.lims-page .lims-scan-box .lims-scan-input::placeholder {
+	font-size: var(--lims-fs-strong);
+	font-weight: var(--lims-fw-normal);
+}
+
+.lims-page .lims-scan-card {
+	padding: var(--lims-gap-4);
+}
+
+.lims-page .lims-scan-card .lims-scan-card-head {
+	gap: var(--lims-gap-2);
+}
+
+.lims-page .lims-scan-card .lims-scan-card-barcode {
+	font-size: var(--lims-fs-lead);
+	font-weight: var(--lims-fw-bold);
+	line-height: var(--lims-lh-tight);
+}
+
+.lims-page .lims-scan-card .lims-scan-card-nm {
+	margin: var(--lims-gap-1) 0 var(--lims-gap-3);
+	font-size: var(--lims-fs-strong);
+	font-weight: var(--lims-fw-medium);
+	line-height: var(--lims-lh-snug);
+}
+
+.lims-page .lims-scan-card .lims-scan-card-grid {
+	gap: var(--lims-gap-2) var(--lims-gap-6);
+	padding: var(--lims-gap-3) var(--lims-gap-4);
+}
+
+.lims-page .lims-scan-card .lims-scan-field {
+	gap: var(--lims-gap-2);
+}
+
+.lims-page .lims-scan-card .lims-scan-field-label {
+	flex: 0 0 60px;
+	font-size: var(--lims-fs-caption);
+	line-height: var(--lims-lh-base);
+}
+
+.lims-page .lims-scan-card .lims-scan-field-value {
+	font-size: var(--lims-fs-body);
+	line-height: var(--lims-lh-base);
+}
+
+.lims-page .lims-scan-card .lims-scan-field-value.strong {
+	font-size: var(--lims-fs-lead);
+	font-weight: var(--lims-fw-bold);
+	line-height: var(--lims-lh-tight);
+}
+
+.lims-page .lims-scan-card .lims-scan-actions {
+	gap: var(--lims-gap-2);
+	margin-top: var(--lims-gap-3);
+}
+
+.lims-page .lims-scan-choices {
+	padding: var(--lims-gap-4);
+}
+
+.lims-page .lims-scan-choice-list {
+	margin-top: var(--lims-gap-2);
+}
+
+.lims-page .lims-scan-choice {
+	gap: var(--lims-gap-1) var(--lims-gap-3);
+	padding: var(--lims-gap-2) var(--lims-gap-3);
+}
+
+.lims-page .lims-scan-choice + .lims-scan-choice {
+	margin-top: var(--lims-gap-2);
+}
+
+.lims-page .lims-scan-choice .lims-scan-choice-barcode {
+	font-size: var(--lims-fs-body);
+	font-weight: var(--lims-fw-bold);
+	line-height: var(--lims-lh-base);
+}
+
+.lims-page .lims-scan-choice .lims-scan-choice-nm {
+	font-size: var(--lims-fs-body);
+	line-height: var(--lims-lh-base);
+}
+
+.lims-page .lims-scan-choice .lims-scan-choice-sub {
+	font-size: var(--lims-fs-caption);
+	line-height: var(--lims-lh-base);
+}
+
+/* --- 화학량론 --- */
+.lims-page .lims-stoich-summary {
+	gap: var(--lims-gap-2) var(--lims-gap-6);
+	padding: var(--lims-gap-2) var(--lims-gap-3);
+}
+
+.lims-page .lims-stoich-summary .stoich-item {
+	gap: var(--lims-gap-1);
+}
+
+.lims-page .lims-stoich-summary .stoich-label {
+	font-size: var(--lims-fs-caption);
+	line-height: var(--lims-lh-base);
+}
+
+.lims-page .lims-stoich-summary .stoich-value {
+	font-size: var(--lims-fs-strong);
+	font-weight: var(--lims-fw-bold);
+	line-height: var(--lims-lh-snug);
+}
+
+.lims-page .lims-stoich-summary .stoich-value.empty {
+	font-size: var(--lims-fs-body);
+	font-weight: var(--lims-fw-normal);
+}
+
+/* 출처 배지·한계시약 표시는 상태 배지(.lims-state)와 같은 자리에 서므로 같은 규격이다 */
+.lims-page .lims-stoich-source,
+.lims-page .lims-stoich-limiting-mark {
+	display: inline-flex;
+	align-items: center;
+	min-height: var(--lims-gap-5);
+	padding: 0 var(--lims-gap-2);
+	font-size: var(--lims-fs-micro);
+	font-weight: var(--lims-fw-medium);
+	line-height: var(--lims-lh-snug);
+}
+
+.lims-page .lims-stoich-limiting-mark {
+	margin-left: var(--lims-gap-1);
+}
+
+.lims-page .lims-stoich-reason {
+	font-size: var(--lims-fs-caption);
+	line-height: var(--lims-lh-base);
+}
+
+.lims-page .lims-stoich-note-box .stoich-line {
+	gap: var(--lims-gap-2);
+	margin-top: var(--lims-gap-1);
+}
+
+.lims-page .lims-stoich-note-box .stoich-line .k {
+	font-size: var(--lims-fs-caption);
+	line-height: var(--lims-lh-base);
+}
+
+.lims-page .lims-stoich-note-box .stoich-line .v {
+	font-size: var(--lims-fs-body);
+	font-weight: var(--lims-fw-bold);
+	line-height: var(--lims-lh-base);
+}
+
+.lims-page .lims-stoich-note-box .stoich-line .v.empty {
+	font-weight: var(--lims-fw-normal);
+}
+
+/* ---------------------------------------------------------------------------
+   15) 모달 밀도
+
+   구노 모달은 머리말 10/30, 본문 30, 바닥 11/30 을 쓰고, 폼 한 행이
+   라벨(16px/27px) + 8 + 입력(34) + 안내(10+19) + 아래여백(20) = 118px 이다.
+   항목이 열 개면 그것만으로 1,180px 이라 세로 768px 노트북에서는 모달이
+   무조건 스크롤된다. 등록 폼이 스크롤된다는 것은 "무엇을 더 채워야 하는지"가
+   화면 밖에 있다는 뜻이라, 여기서는 밀도가 편의가 아니라 기능이다.
+
+   범위는 id 접두사 `modal-lims-` 로 한정한다 — ELN 기존 모달은 건드리지 않는다.
+--------------------------------------------------------------------------- */
+.modal[id^="modal-lims-"] .modal-pop .modal-header {
+	min-height: 0;
+	max-height: none;
+	padding: var(--lims-gap-3) var(--lims-gap-4);
+}
+
+.modal[id^="modal-lims-"] .modal-pop .modal-header .modal-title {
+	font-size: var(--lims-fs-lead);
+	font-weight: var(--lims-fw-bold);
+	line-height: var(--lims-lh-tight);
+}
+
+/* 부제는 제목의 설명이다. 15px 이면 제목(18)과 한 덩어리로 붙어 두 줄 제목처럼 읽힌다. */
+.modal[id^="modal-lims-"] .modal-pop .modal-header .modal-sub {
+	margin-top: var(--lims-gap-1);
+	font-size: var(--lims-fs-caption);
+	line-height: var(--lims-lh-base);
+	color: var(--lims-ink-3);
+}
+
+.modal[id^="modal-lims-"] .modal-pop .modal-body {
+	padding: var(--lims-gap-4);
+}
+
+.modal[id^="modal-lims-"] .modal-pop .modal-footer {
+	height: auto;
+	padding: var(--lims-gap-2) var(--lims-gap-4);
+}
+
+/* 폼 라벨 — 16px/500 은 카드 제목(14/700)보다 크다. 라벨이 제목보다 클 이유가 없다. */
+.modal[id^="modal-lims-"] .modal-pop .modal-body .modal-cont-label {
+	margin-bottom: var(--lims-gap-1);
+	font-size: var(--lims-fs-caption);
+	font-weight: var(--lims-fw-medium);
+	line-height: var(--lims-lh-base);
+	color: var(--lims-ink-3);
+}
+
+/* 폼 행 사이 — ma-b20 스코프 규칙(12px)과 같은 값으로 못 박는다 */
+.modal[id^="modal-lims-"] .modal-pop .modal-body .flex-sty05 {
+	margin-bottom: var(--lims-gap-3) !important;
+}
+
+.modal[id^="modal-lims-"] .modal-pop .modal-body .flex-sty05:last-child {
+	margin-bottom: 0 !important;
+}
+
+/* 필드 아래 안내 문구 — 10px 씩 벌어져 행마다 높이가 달랐다 */
+.modal[id^="modal-lims-"] .modal-pop .modal-body .guidetext-sty01 {
+	margin-top: var(--lims-gap-1) !important;
+	font-size: var(--lims-fs-caption);
+	line-height: var(--lims-lh-base);
+	color: var(--lims-ink-3);
+}
+
+/* ---------------------------------------------------------------------------
+   16) 좁은 화면
    표는 구노 규약대로 가로 스크롤을 유지하되, 머리말·툴바·KPI 는 접힌다.
 --------------------------------------------------------------------------- */
 @media (max-width: 1100px) {
@@ -1630,7 +2287,7 @@
 @media (max-width: 760px) {
 	.lims-page .lims-def-row {
 		flex-direction: column;
-		gap: 2px;
+		gap: var(--lims-gap-1);
 	}
 
 	.lims-page .lims-def-label {

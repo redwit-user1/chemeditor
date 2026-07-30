@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html
   lang="ko"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -97,6 +97,273 @@
 
     
     
+    
+    <script type="text/javascript">
+		/*<![CDATA[*/
+
+		let coverImage;
+
+		function initProjectDetailsTop() {
+		}
+
+		function top_getProjectHist() {
+			top_setSchHistPeriod();
+			ajaxPost('/api/eln/project/histList', {
+				schProjectMno: '301',
+				schPeriod: $('#schPeriod').val(),
+				schSe: $('[name=schHistSe]:checked').val()
+			}, '데이터요청중입니다.잠시만 기다려주세요.', function(res) {
+				$('#project_hist > ul').empty();
+				const histCnt = res.projectHistList ? Object.keys(res.projectHistList).length : 0;
+
+				if(histCnt) {
+					$('#project_hist .no-data').addClass('d-none');
+					for(const idx in res.projectHistList) {
+						const hist = res.projectHistList[idx];
+						$('#project_hist > ul').append(`
+								<li class="tab-cont list-all">
+									<div class="alarm_top">
+										<img src="/api/system/file/imageView?fileId=${hist.createUserFileId}&defaultImagePath=img_gnb_profile.png" alt="profile" id="myImg">
+										<span class="name">${hist.createUserNm}</span>
+										<span class="date">${hist.createDtStr}</span>
+									</div>
+									<div class="alarm_text ma-t10">
+										<div>
+											<div class="title">${hist.content}</div>
+										</div>
+										<div class="ma-t5">
+											<span class="event">${hist.elnHistSeCcdNm}</span><span> 했습니다.</span>
+											    ${Number(hist.createUserMno) === 0 ? '&lt; PMS_SYSTEM &gt;' : ''}
+										</div>
+									</div>
+									<div class="flex-sty02">
+										<div class="alarm_icon ma-t10">${hist.crudSeCcdNm}</div>
+									</div>
+								</li>
+							`);
+					}
+				} else {
+					$('#project_hist .no-data').removeClass('d-none');
+				}
+
+				$('#histCnt').text(S2Util.comma(histCnt));
+			});
+		}
+
+		function top_setSchHistPeriod() {
+			let startDe = '';
+
+			switch($('#schPeriod').val()) {
+				case '1W':
+					startDe = dayjs().subtract(6, 'days').format('YYYY. MM. DD');
+					break;
+				case '1M':
+					startDe = dayjs().subtract(1, 'month').add(1, 'days').format('YYYY. MM. DD');
+          break;
+				case '3M':
+					startDe = dayjs().subtract(3, 'month').add(1, 'days').format('YYYY. MM. DD');
+          break;
+				case '6M':
+					startDe = dayjs().subtract(6, 'month').add(1, 'days').format('YYYY. MM. DD');
+					break;
+				case '9M':
+					startDe = dayjs().subtract(9, 'month').add(1, 'days').format('YYYY. MM. DD');
+					break;
+				case '12M':
+					startDe = dayjs().subtract(12, 'month').add(1, 'days').format('YYYY. MM. DD');
+					break;
+			}
+
+			$('#schHistStartDe').text(startDe);
+			$('#schHistEndDe').text(dayjs().format('YYYY. MM. DD'));
+		}
+
+		// 표지 등록 모달
+		function top_openModalCoverRegistration() {
+			coverImage = null;
+
+			const params ={
+		modalTitle: '표지 등록',
+		subTitle: '프로젝트 표지로 사용될 이미지를 업로드해주세요.',
+
+		cnclTxt: '닫기',
+		cnfmTxt: '등록',
+	};
+
+			$('#modal-cover-registration .modal-content').html(S2Util.s2Template(`
+					<div class="modal-header cursor-move">
+						<p class="modal-title">${params.modalTitle}</p>
+						<span class="modal-sub imgAlert">${params.subTitle}</span>
+					</div>
+					<div class="modal-body">
+						<div class="add-project-sty01 ma-t10 po-r">
+							<div if="isGnrlAuthYn" class="grid-add2 cover-box-drop-zone">
+								<div class="cover-delete d-none">
+									<button type="button" class="button-cover-delete ce-cover-del">${'표지 삭제'}</button>
+								</div>
+								<div class="file-box">
+									<div class="flex-sty05">
+										<span class="ma-b10">${'파일 업로드 또는 Drag &amp; Drop으로 표지를 등록해주세요.'}</span>
+										<span><span class="limit_txt">${'파일 용량 한도'}</span><span class="limit_txt">:&nbsp;<span>${'10'}</span>MB</span></span>
+										<span class="ma-b20"><span class="limit_txt">${'허용 확장자'}</span><span class="limit_txt">:&nbsp;<span>${'jpg,jpeg,png'}</span></span></span>
+									</div>
+									<div if="isRspnsbltyGrp" class="po-r cover-box-file-list">
+										<input type="file" class="cover-file-upload d-none"/>
+										<a type="button" class="button-blue-line-sty01 upload ce-cover-upload">
+											<img src="assets/lib/eln/img/icon_upload_blue.png" alt="">
+											<span>${'파일 업로드'}</span>
+										</a>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<div class="button-wrap02">
+							<button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">${params.cnclTxt}</button>
+							<button type="button" class="button-cnfm-sty01 button-cnfm" onclick="top_updateCoverImage(); return false;">${params.cnfmTxt}</button>
+						</div>
+					</div>
+				`, {isGnrlAuthYn: 'Y' === 'Y'}));
+			$('#modal-cover-registration').draggable({handle : '.modal-header'}).modal('show');
+
+			objDropZone = new coreDropZone($('#modal-cover-registration .cover-box-drop-zone'), function(){
+				return '/';
+			},function(uploadItems) {
+				const file = uploadItems.files[0];
+				if(!top_isUploadFileExt(file.name)){
+					coreDialog.alert('첨부 가능한 파일 형식은 다음과 같습니다.\n[' + 'jpg,jpeg,png]');
+					files = [];
+					return;
+				}
+
+				top_uploadFiles(file);
+			});
+
+			{
+				$('#modal-cover-registration .cover-box-drop-zone').on('dragenter', function() {
+					$(this).addClass('active');
+				}).on('dragover', function() {
+					$(this).addClass('active');
+				}).on('dragleave', function() {
+					$(this).removeClass('active');
+				}).on('drop', function() {
+					$(this).removeClass('active');
+				});
+			}
+
+			$('#modal-cover-registration .cover-box-file-list').find('.ce-cover-upload').on('click', function (e) {
+				$('#modal-cover-registration .cover-box-file-list').find('.cover-file-upload').trigger('click');
+			});
+
+			$('#modal-cover-registration .cover-box-file-list').find('.cover-file-upload').on('change', function (e) {
+				top_inputFileUpload(this);
+			});
+
+			$('#modal-cover-registration .ce-cover-del').on('click', function(e){
+				$('#modal-cover-registration .cover-box-drop-zone .cover-delete').addClass('d-none');
+				$('#modal-cover-registration .cover-box-drop-zone .file-box').removeClass('d-none');
+				$('#modal-cover-registration .cover-box-drop-zone .imgPreview').remove();
+			});
+		}
+
+		function top_inputFileUpload(obj) {
+			const filePath = '/';
+			let isMsg = '';
+			for (let i = 0; i < obj.files.length; i++) {
+				const file =  obj.files[i];
+				file.filePath = filePath;
+				if( file.filePath != '/') {
+					file.fullPath = file.filePath + '/' +  file.name;
+				}
+				else {
+					file.fullPath =  file.filePath + file.name;
+				}
+
+				isMsg = top_uploadFiles(file);
+			}
+
+			if(coreCommon.isEmpty(!isMsg)){
+				coreDialog.alert(isMsg);
+			}
+		}
+
+		function top_uploadFiles(file){
+			let isMsg = '';
+			if( top_isUploadFileExt(file.name) && top_isUploadFileSize(file.size) ){
+				coverImage = file;
+				const reader = new FileReader();
+				reader.onload = function(e) {
+					const img  = '<img src="' + e.target.result + '" class="imgPreview" width="760" height="332" alt="img" style="margin-left: -21px; cursor: pointer;">';
+					$('#modal-cover-registration .cover-box-drop-zone .cover-delete').removeClass('d-none');
+					$('#modal-cover-registration .cover-box-drop-zone .file-box').addClass('d-none');
+					$('#modal-cover-registration .cover-box-drop-zone').append(img);
+				}
+				reader.readAsDataURL(coverImage);
+			}else {
+				isMsg = '첨부 가능한 파일 형식은 다음과 같습니다.' + '\n[' + 'jpg,jpeg,png]';
+			}
+			return isMsg;
+		}
+
+		function top_isUploadFileExt(fileName) {
+			const fileExtList = 'jpg,jpeg,png'.split(',');
+			fileName = fileName.slice(fileName.lastIndexOf(".") + 1).toLowerCase();
+			return fileExtList.includes(fileName);
+		}
+		function top_isUploadFileSize(size) {
+			if(size > 2097152) {
+				return false;
+			}
+			return true;
+		}
+
+		// 표지 등록 모달 - 표지 등록
+		function top_updateCoverImage() {
+			if(!coverImage || !coverImage.size) {
+				coreDialog.alert('이미지를 선택하세요.');
+				return;
+			}
+			new coreFileUpload('301', getAjaxUrl('/api/eln/project/uploadCoverFile'), {projectMno: '301'}, [coverImage], function(res) {
+				coreDialog.alert('정상 처리되었습니다.', function(){
+					location.reload(true);
+				});
+			});
+		}
+
+		// 연구노트 다운로드
+		function top_toggleNoteDownraodWrap() {
+			if($('.content-wrapper').hasClass('chk-mode')) {
+				// 연구노트 다운로드 비활성화
+				$('.content-wrapper').removeClass('chk-mode');
+
+				$('.button-blue-full-sty01.note-down').removeClass('active');
+				$('.search-filter-box').removeClass('d-none');
+				$('.create-folder, .create-note, .button-sty002.history').removeClass('disabled').removeAttr('disabled');
+				$('.no-folder-list > ul, .folder-list > ul').find('.folder-element').removeClass('chk-active');
+				$('.note-card ul').find('.note-card-cont').removeClass('chk-active');
+
+				// 체크박스 초기화
+				if(window['selectAllNotePdf']) {
+					window['selectAllNotePdf'](true);
+				}
+			} else {
+				// 연구노트 다운로드 활성화
+				$('.content-wrapper').addClass('chk-mode');
+
+				$('.button-blue-full-sty01.note-down').addClass('active');
+				$('.search-filter-box').addClass('d-none');
+				$('.create-folder, .create-note, .button-sty002.history').addClass('disabled').attr('disabled', true);
+			}
+
+			if('/eln/project/projectDetailsNote' !== '/eln/project/projectDetailsNote') {
+				gfn_openProjectDetail('/eln/project/projectDetailsNote', '301');
+			}
+		}
+
+		/*]]*/
+	</script>
+  
     
     <script type="text/javascript">
       /*<![CDATA[*/
@@ -2486,610 +2753,862 @@
     <script type="text/javascript">
       /*<![CDATA[*/
 
-      let gSelectedInstrumentMno = null;
-      let gSelectedInstrumentNm = '';
-
-      /* 결정 Q13 초기안 — 기관 보유 장비 확인 전까지의 잠정 목록이다. */
-      const INSTRUMENT_TP = {
-        HPLC: 'HPLC', LCMS: 'LC-MS', NMR: 'NMR', BALANCE: '저울', ETC: '기타'
-      };
-
-      const INSTRUMENT_STATUS = {
-        NORMAL:  { nm: '정상',         cls: 'normal' },
-        CAL_DUE: { nm: '교정기한경과', cls: 'expired' },
-        REPAIR:  { nm: '수리중',       cls: 'soon' },
-        RETIRED: { nm: '폐기',         cls: 'muted' }
-      };
-
-      const CAL_TP = { CALIBRATION: '교정', PM: '예방점검', QUALIFICATION: '적격성평가' };
-      const CAL_RESULT = { PASS: '적합', CONDITIONAL: '조건부적합', FAIL: '부적합' };
+      let checkedFolderInfo = {};
 
       function initPage() {
-        getInstrumentList();
-      }
-
-      function deDisp(de) {
-        if (!de || de.length !== 8) {
-          return '-';
+        const schWriteStatusCcd = '';
+        if (schWriteStatusCcd) {
+          $('.selectSortBox #filterWriteStatusCcdArr-' + schWriteStatusCcd).prop('checked', true);
+          selectSearchFilter('filterWriteStatusCcdArr');
+          searchApplyFilter();
         }
-        return `${de.substring(0, 4)}-${de.substring(4, 6)}-${de.substring(6, 8)}`;
+
+        initEvent();
+        getFolderList();
       }
 
-      /**
-       * 교정 기한 배지. 만료는 위험(expired), 30일 이내는 주의(soon).
-       * 교정 기록이 없는 장비는 '정상'이 아니라 '교정 기록 없음'으로 적는다 —
-       * 기록이 없는 것과 유효한 것은 다른 사실이고, 전자를 정상으로 칠하면 차단 근거가 흐려진다.
-       */
-      function calBadge(calState, nextCalDe) {
-        const de = deDisp(nextCalDe);
-        switch (calState) {
-          case 'EXPIRED':
-            return `${de} <span class="lims-state expired">교정 만료</span>`;
-          case 'SOON':
-            return `${de} <span class="lims-state soon">30일 이내</span>`;
-          case 'NORMAL':
-            return `${de} <span class="lims-state normal">유효</span>`;
-          default:
-            return '<span class="lims-state muted">교정 기록 없음</span>';
+      function initEvent() {
+        // 연구폴더 모달 - 생성
+        $('#modal-folder-add').on('click', '.button-cnfm', function () {
+          const folderNm = $('#modal-folder-add #setWord').val();
+          if (!folderNm) {
+            coreDialog.alert('폴더명을 입력해주세요.');
+            return;
+          }
+
+          ajaxPost(
+            '/api/eln/folder/createFolder',
+            {
+              projectMno: '301',
+              folderNm: folderNm
+            },
+            '데이터요청중입니다.잠시만 기다려주세요.',
+            function (res) {
+              S2Util.toasts('추가하였습니다.', {
+                class: 'Toast-bottom-web start-50 translate-middle-x'
+              });
+
+              $('#modal-folder-add').modal('hide');
+              getFolderList(res.newFolderMno);
+            }
+          );
+        });
+
+        // 연구폴더 모달 - 수정
+        $('#modal-folder-modify').on('click', '.button-cnfm', function () {
+          const folderNm = $('#modal-folder-modify #setWord').val();
+          if (!folderNm) {
+            coreDialog.alert('폴더명을 입력해주세요.');
+            return;
+          }
+
+          const folderMno = $('#modal-folder-modify .modal-header').data('folderMno');
+          ajaxPost(
+            '/api/eln/folder/modifyFolderNm',
+            {
+              projectMno: '301',
+              folderMno: folderMno,
+              folderNm: folderNm
+            },
+            '데이터요청중입니다.잠시만 기다려주세요.',
+            function (res) {
+              S2Util.toasts('수정되었습니다.', {
+                class: 'Toast-bottom-web start-50 translate-middle-x'
+              });
+
+              // 우측에 조회한 연구노트 목록의 폴더와 같다면 폴더명을 변경한다.
+              if ($('.folder_name.get-folder-name').data('folderMno') == folderMno) {
+                $('.folder_name.get-folder-name').text(folderNm);
+              }
+
+              $('#modal-folder-modify').modal('hide');
+              getFolderList();
+            }
+          );
+        });
+
+        //
+        $('#dropdownWriteStatusCcdArr, #dropdownUserMnoArr, #dropdownProcessMnoArr').on(
+          'hidden.bs.dropdown',
+          function () {
+            const filterNm = $(this)
+              .attr('id')
+              .replace(/dropdown/, 'filter');
+            $('.selectSortBox [name=' + filterNm + ']').each(function () {
+              if ($(this).data('checked') == 'Y') {
+                $(this).prop('checked', true).parents('li:first').addClass('active');
+              } else {
+                $(this).prop('checked', false).parents('li:first').removeClass('active');
+              }
+            });
+          }
+        );
+
+        document.addEventListener('click', function (event) {
+          // 연구노트 다운로드 - 연구폴더 체크박스 선택
+          if (event.target.matches('.folder-element .folderCheckbox')) {
+            const folder = event.target.closest('.folder-element');
+            const folderMno = folder.dataset.folderMno;
+            const isChecked = event.target.checked;
+            const selectNoteCnt = 0;
+
+            if (isChecked) {
+              S2Util.fetch(
+                '/api/eln/note/readable-list',
+                {
+                  projectMno: '301',
+                  folderMno: folderMno
+                },
+                function (result) {
+                  if (!Object.keys(result.readableNoteList).length) {
+                    coreDialog.alert('조회 가능한 연구노트가 없습니다.');
+                  }
+                  checkedFolderInfo[result.folderMno] = result.readableNoteList;
+                  setFolderCheckCnt();
+                }
+              );
+            } else {
+              delete checkedFolderInfo[folderMno];
+              setFolderCheckCnt();
+            }
+          }
+
+          // 연구노트 다운로드 - 연구노트 체크박스 선택
+          if (event.target.matches('.note-card-cont .noteCheckbox')) {
+            const folderMno = document.querySelector('.folder-element.active').dataset.folderMno;
+            const noteMno = Number(event.target.closest('.note-card-cont').dataset.noteMno);
+
+            if (event.target.checked) {
+              event.target.closest('li').classList.add('chk-active');
+
+              if (!checkedFolderInfo[folderMno]) {
+                checkedFolderInfo[folderMno] = [];
+              }
+
+              if (!checkedFolderInfo[folderMno].includes(noteMno)) {
+                checkedFolderInfo[folderMno].push(noteMno);
+              }
+            } else {
+              event.target.closest('li').classList.remove('chk-active');
+              checkedFolderInfo[folderMno] = checkedFolderInfo[folderMno].filter((item) => item != noteMno);
+            }
+
+            setFolderCheckCnt();
+          }
+        });
+      }
+
+      function setFolderCheckCnt() {
+        document.querySelectorAll('.folder-element').forEach(function (folderElement) {
+          const folderMno = folderElement.dataset.folderMno;
+          const folderCheckbox = folderElement.querySelector('.folderCheckbox');
+          const checkedNoteArr = checkedFolderInfo[folderMno] || [];
+          const checkedNoteCnt = checkedNoteArr.length;
+
+          if (checkedNoteCnt > 0) {
+            folderCheckbox.checked = true;
+            folderElement.classList.add('chk-active');
+          } else {
+            folderCheckbox.checked = false;
+            folderElement.classList.remove('chk-active');
+          }
+
+          if (folderElement.classList.contains('active')) {
+            document.querySelectorAll('.note-list .note-card-cont').forEach(function (noteCard) {
+              const noteCheckbox = noteCard.querySelector('.noteCheckbox');
+              if (noteCheckbox) {
+                noteCheckbox.checked = checkedNoteArr.includes(Number(noteCard.dataset.noteMno));
+                if (noteCheckbox.checked) {
+                  noteCard.classList.add('chk-active');
+                } else {
+                  noteCard.classList.remove('chk-active');
+                }
+              }
+            });
+          }
+
+          folderElement.querySelector('.chk_cnt').textContent = S2Util.comma(checkedNoteCnt);
+        });
+      }
+
+      function selectAllNotePdf(isClear) {
+        const checkboxes = document.querySelectorAll('.folder-element .folderCheckbox');
+        const checkedCheckboxes = document.querySelectorAll('.folder-element .folderCheckbox:checked');
+        const allCheck = isClear || checkboxes.length === checkedCheckboxes.length ? false : true;
+
+        if (allCheck) {
+          S2Util.fetch(
+            '/api/eln/note/readable-list-all',
+            {
+              projectMno: '301'
+            },
+            function (result) {
+              // 선택을 초기화 한다.
+              clearCheckedFolder(checkboxes);
+
+              let chkCnt = 0;
+
+              if (result.readableNoteListAll && Object.keys(result.readableNoteListAll).length) {
+                for (const idx in result.readableNoteListAll) {
+                  const readableNoteInfo = result.readableNoteListAll[idx];
+                  const folderMno = Number(readableNoteInfo.folderMno);
+                  const folderElement = document.querySelector(`.folder-element[data-folder-mno="${folderMno}"]`);
+                  const checkedNoteMnoArr = readableNoteInfo.noteMnoArr
+                    ? readableNoteInfo.noteMnoArr.split(',').map(Number)
+                    : [];
+
+                  if (folderElement && checkedNoteMnoArr.length) {
+                    const folderCheckbox = folderElement.querySelector('.folderCheckbox');
+                    if (folderCheckbox) {
+                      folderCheckbox.checked = true;
+                      checkedFolderInfo[folderMno] = checkedNoteMnoArr;
+                      chkCnt += checkedNoteMnoArr.length;
+                    }
+                  }
+                }
+              }
+
+              if (!chkCnt) {
+                coreDialog.alert('조회 가능한 연구노트가 없습니다.');
+              }
+
+              setFolderCheckCnt();
+            }
+          );
+        } else {
+          clearCheckedFolder(checkboxes);
+          setFolderCheckCnt();
         }
       }
 
-      function statusBadge(statusCcd) {
-        const meta = INSTRUMENT_STATUS[statusCcd];
-        if (!meta) {
-          return `<span class="lims-state muted">${statusCcd || '-'}</span>`;
+      function clearCheckedFolder(checkboxes) {
+        if (checkboxes) {
+          checkboxes.forEach(function (checkbox) {
+            checkbox.checked = false;
+          });
         }
-        return `<span class="lims-state ${meta.cls}">${meta.nm}</span>`;
+
+        checkedFolderInfo = {};
       }
 
-      /* ---------------------------------------------------------------
-         장비 목록 — 교정 임박·만료가 위로 오도록 서버가 정렬해 내려준다.
-      --------------------------------------------------------------- */
-      function getInstrumentList(pageNo) {
-        const targetSelector = '.instrument-info-list';
+      function downloadProjectNotePdf() {
+        const noteMnoArr = [];
+        for (const folderMno in checkedFolderInfo) {
+          noteMnoArr.push(...checkedFolderInfo[folderMno]);
+        }
+
+        if (!noteMnoArr.length) {
+          coreDialog.alert('다운로드할 연구노트를 선택해주세요.');
+          return;
+        }
+
+        /*
+        coreAjaxLoading.show('File Downloading...', 'circle');
+
+        S2Util.fetch(
+            '/api/eln/com/pdf/synap/projectNote',
+            {
+                projectMno: '301',
+                noteMnoArr: noteMnoArr
+            },
+            function (result) {
+                console.log('result', result);
+                coreAjaxLoading.hide();
+            },
+            function () {
+                coreAjaxLoading.hide();
+            }
+        );
+        */
+
+        if ('N' === 'N') {
+          S2Util.fetch(
+            '/api/eln/com/pdf/synap/projectNote',
+            {
+              method: 'POST',
+              responseType: 'blob',
+              projectMno: '301',
+              noteMnoArr: noteMnoArr
+            },
+            function () {
+              S2Util.toasts('다운로드 성공하였습니다.', {
+                class: 'Toast-bottom-web start-50 translate-middle-x'
+              });
+            }
+          );
+        } else {
+          eln_openModalNoteDownloadRequest(noteMnoArr, '70');
+        }
+      }
+
+      function getFolderList(openFolderMno) {
+        ajaxPost(
+          '/api/eln/folder/projectFolderList',
+          {
+            schProjectMno: '301',
+            schWriteStatusCcdArr: $('.search-filter-box [name=schWriteStatusCcdArr]').val(),
+            schUserMnoArr: $('.search-filter-box [name=schUserMnoArr]').val(),
+            schProcessMnoArr: $('.search-filter-box [name=schProcessMnoArr]').val()
+          },
+          '데이터요청중입니다.잠시만 기다려주세요.',
+          function (res) {
+            $('.folder-list > ul').empty();
+            let schFolderMno;
+
+            if (res.folderList && Object.keys(res.folderList).length) {
+              for (const idx in res.folderList) {
+                const folder = res.folderList[idx];
+                folder['noteCntStr'] = S2Util.comma(folder.noteCnt);
+
+                if (folder.folderMno) {
+                  $('.folder-list > ul').append(
+                    S2Util.s2Template(
+                      `
+                        <li class="folder-element po-r" data-project-mno="${'301'}" data-folder-mno="${folder.folderMno}" data-note-cnt="${folder.noteCnt}">
+                            <input type="checkbox" class="folderCheckbox basic form-check-input check" id="downloadFolderArr_${folder.folderMno}"/>
+                            <div class="flex-sty03 folder-info">
+                                <span class="folder_name cursor-pointer" onclick="getFolderNoteList(${folder.folderMno});" title="${folder.folderNm}">${folder.folderNm}</span>
+                                <div class="note_cnt">${folder.noteCntStr}</div>
+                                <div class="chk_cnt">0</div>
+                            </div>
+                            <div class="icon-option-wrap dropdown w-30">
+                                <a href="#" class="icon-option ma-l5" id="dropdownOptionBtn" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ></a>
+                                <div id="dropdown_option" class="dropdown-menu" aria-labelledby="dropdownOptionBtn">
+                                    <div class="option_title">${'연구폴더 옵션'}</div>
+                                    <div class="option_list">
+                                    <a href="#" onclick="gfn_openModalModifyFolder(this);" class="dropdown-item">${'폴더명 수정'}</a>
+                                    <a href="#" onclick="gfn_deleteFolder(this);" class="dropdown-item">${'폴더 삭제'}</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                      `,
+                      { isGnrlAuth: 'Y' === 'Y' }
+                    )
+                  );
+
+                  if (!schFolderMno && folder.noteCnt > 0) {
+                    schFolderMno = folder.folderMno;
+                  }
+                } else {
+                  $('.note_cnt.no-folder').text(folder.noteCntStr);
+                }
+              }
+            }
+
+            const pSchFolderMno = '' || openFolderMno;
+            getFolderNoteList(pSchFolderMno ? pSchFolderMno : schFolderMno);
+          }
+        );
+      }
+      //선택된 폴더의 연구노트 목록 전체를 조회
+      function getFolderNoteList(schFolderMno) {
+        let $folder;
+        if (schFolderMno) {
+          $folder = $('.folder-element[data-folder-mno=' + schFolderMno + ']');
+        } else {
+          $folder = $('.no-folder-list .folder-element:first');
+        }
+
+        let pageUnit = 3;
+        if ($('.content-wrapper').hasClass('small') || $('.content-wrapper').hasClass('extra-small')) {
+          pageUnit = 2;
+        }
+
+        $('.folder-element').removeClass('active');
+        $folder.addClass('active');
+
+        $('.note-card-board .note-card ul').empty();
+
+        gfn_noteCardList(
+          {
+            url: '/api/eln/note/projectNoteList',
+            schProjectMno: '301',
+            schFolderMno: schFolderMno,
+            schNoFolderYn: schFolderMno ? 'N' : 'Y',
+            schWriteStatusCcdArr: $('.search-filter-box [name=schWriteStatusCcdArr]').val(),
+            schUserMnoArr: $('.search-filter-box [name=schUserMnoArr]').val(),
+            schProcessMnoArr: $('.search-filter-box [name=schProcessMnoArr]').val(),
+            pageNo: 1,
+            pageUnit: pageUnit,
+            orderBy: 'MODIFY_DT DESC'
+          },
+          $('.note-card-board'),
+          function (res) {
+            // 체크박스 표시 로직
+            const notes = document.querySelectorAll('.note-card-cont');
+            notes.forEach((note) => {
+              const checkbox = note.querySelector('.noteCheckbox');
+              if (checkbox) {
+                // timestampVerifiedYn 값 확인 및 체크박스 표시
+                checkbox.style.display = note.dataset.timestampVerified === 'Y' ? '' : 'none';
+              }
+            });
+            const targetFolerMno = res.schElnNoteVO.schFolderMno || 0;
+            const folderNameElement = document.querySelector('.folder_name.get-folder-name');
+            const selectedFolder = document.querySelector(`.folder-element[data-folder-mno="${targetFolerMno}"]`);
+
+            document.querySelector('.note_cnt.get-note-cnt').textContent = S2Util.comma(
+              res.noteListInfo.totalRecordCount
+            );
+            if (folderNameElement && selectedFolder) {
+              folderNameElement.textContent = selectedFolder.querySelector('.folder_name').textContent;
+              folderNameElement.dataset.folderMno = targetFolerMno;
+            }
+
+            setFolderCheckCnt();
+            getNoteList();
+          }
+        );
+      }
+
+      // 폴더 생성 모달
+      function openModalCreateFolder() {
+        const params = {
+          modalTitle: '새로운 폴더 생성',
+          subTitle: '표적단백질 저해제 발굴',
+          contTitle: '폴더명',
+          placeholder: '폴더명을 입력해주세요.',
+          guidTxt: '최대 50자 입력 가능합니다.',
+          maxlength: 50,
+
+          cnclTxt: '닫기',
+          cnfmTxt: '생성'
+        };
+
+        $('#modal-folder-add')
+          .draggable({ handle: '.modal-header' })
+          .modal('show')
+          .find('.modal-content')
+          .html(S2Util.s2Template(templateModalInputBasic, params));
+      }
+
+      {
+        // 검색조건
+        function openSearchbox() {
+          if ($('#dropdown_search .member-search').length == 0) {
+            getSearchMemberList();
+          }
+        }
+
+        function getSearchMemberList() {
+          ajaxPost(
+            '/api/eln/member/projectMemberList',
+            {
+              schProjectMno: '301',
+              searchKeyword: $('#dropdown_search #schMember').val(),
+              searchCondition: 'userNmEmail',
+              orderBy: 'USER_NM ASC'
+            },
+            '데이터요청중입니다.잠시만 기다려주세요.',
+            function (res) {
+              if (res && res.memberListInfo) {
+                $('#dropdown_search')
+                  .find('#searchbox-member-cnt')
+                  .text(S2Util.comma(res.memberListInfo.totalRecordCount))
+                  .end()
+                  .find('#searchbox-member-list')
+                  .empty();
+
+                if (res.memberListInfo.totalRecordCount > 0) {
+                  $('.dropdown-sch-select.member')
+                    .find('.no-data')
+                    .addClass('d-none')
+                    .end()
+                    .find('#searchbox-member-list')
+                    .removeClass('d-none')
+                    .empty();
+
+                  for (const idx in res.memberListInfo.dataList) {
+                    $('#dropdown_search #searchbox-member-list').append(
+                      S2Util.s2Template('template_searchbox_member', res.memberListInfo.dataList[idx])
+                    );
+                  }
+                } else {
+                  $('.dropdown-sch-select.member')
+                    .find('.no-data')
+                    .removeClass('d-none')
+                    .end()
+                    .find('#searchbox-member-list')
+                    .addClass('d-none')
+                    .empty();
+                }
+              }
+            }
+          );
+        }
+
+        function changeSearchboxChk(target) {
+          const $target = $(target);
+          const $targetBtn = $target.parents('.dropdown-menu:first').find('button.button-search');
+
+          if ($target.is(':checked')) {
+            $target.parents('li:first').addClass('active');
+          } else {
+            $target.parents('li:first').removeClass('active');
+          }
+        }
+
+        function allSearchboxChk(filterNm) {
+          const liSeletor = '.search-' + filterNm;
+          const chkSeletor = '[name=' + filterNm + ']';
+
+          if ($(liSeletor).length == $(liSeletor + ' ' + chkSeletor + ':checked').length) {
+            $(liSeletor).removeClass('active').find(chkSeletor).prop('checked', false);
+          } else {
+            $(liSeletor).addClass('active').find(chkSeletor).prop('checked', true);
+          }
+        }
+
+        function selectSearchFilter(filterNm) {
+          const $chkList = $('.selectSortBox [name=' + filterNm + ']:checked');
+          if ($chkList.length) {
+            $('.selectSortBox .dropdown-select-btn.' + filterNm)
+              .removeClass('default')
+              .find('.caret')
+              .text($chkList.length + window.i18n['i18n.pkg.49']);
+          } else {
+            $('.selectSortBox .dropdown-select-btn.' + filterNm)
+              .addClass('default')
+              .find('.caret')
+              .empty();
+          }
+
+          $chkList.data('checked', 'Y');
+          $('.selectSortBox [name=' + filterNm + ']:not(:checked)').data('checked', 'N');
+
+          if ($('.selectSortBox .searchbox-filter-item:checked').length) {
+            $('#searchbox-search-act-btn').removeClass('default');
+          } else {
+            $('#searchbox-search-act-btn').addClass('default');
+          }
+          $('.selectSortBox .dropdown-select-btn.' + filterNm).dropdown('hide');
+        }
+
+        function searchApplyFilter() {
+          const $filterItems = $('.selectSortBox .searchbox-filter-item:checked');
+          if ($filterItems.length) {
+            const filterObj = {};
+
+            $filterItems.each(function () {
+              const filterNm = $(this).attr('name');
+              if (!filterObj[filterNm]) {
+                filterObj[filterNm] = [];
+              }
+              filterObj[filterNm].push($(this).val());
+            });
+
+            $('#filter-box').empty();
+            for (const filterNm in filterObj) {
+              const filters = filterObj[filterNm];
+              if (filters && filters.length) {
+                const searchNm = filterNm.replace(/filter/, 'sch');
+
+                $('#filter-box').append(`
+                  <div class="filter-elmnt" data-filter-nm="${filterNm}">
+                      <span class="filter-elmnt-title">${$('.selectSortBox .dropdown-select-btn.' + filterNm + ' .filterTitle').text()}</span>
+                      <span class="filter-elmnt-cont">${filters.length} ${i18n['i18n.pkg.49']}</span>
+                      <a href="#" onclick="removeSearchFilterAndSearch(this); return false;" class="removeFilter"></a>
+                      <input type="hidden" name="${searchNm}" value="${filters.join(',')}"/>
+                  </div>
+                `);
+              }
+            }
+
+            $('#dropdownSearchbox').dropdown('hide');
+            getFolderList();
+          }
+        }
+
+        function removeSearchFilterAndSearch(target) {
+          removeSearchFilter($(target).parents('.filter-elmnt:first').data('filterNm'));
+          getFolderList();
+        }
+
+        function removeSearchFilter(filterNm) {
+          $('.selectSortBox')
+            .find('.searchbox-filter-item[name=' + filterNm + ']')
+            .each(function () {
+              $(this).prop('checked', false).parents('li.dropdown-item:first').removeClass('active');
+            });
+
+          $('.selectSortBox button.button-search.' + filterNm).click();
+          $('.search-filter-box .filter-elmnt[data-filter-nm=' + filterNm + ']').remove();
+        }
+
+        function clearSearchboxAndSearch() {
+          document.querySelectorAll('.search-filter-box .filter-elmnt').forEach((element) => {
+            removeSearchFilter(element.dataset.filterNm);
+          });
+          getFolderList();
+        }
+      }
+
+      // 연구노트 생성 모달
+      function openModalCreateNote() {
+        g_uploadNoteFiles = [];
+
+        const folderMno = document.querySelector('.folder-element.active').dataset.folderMno;
 
         ajaxPost(
-          '/api/lims/instrument/instrumentList',
+          '/api/eln/project/projectFolderProcessList',
           {
-            searchKeyword: $('#searchKeyword').val().trim(),
-            schInstrumentTpCcd: $('#schInstrumentTpCcd').val(),
-            schInstrumentStatusCcd: $('#schInstrumentStatusCcd').val(),
-            schCalState: $('#schCalState').val(),
+            schProjectMno: '301'
+          },
+          '데이터요청중입니다.잠시만 기다려주세요.',
+          function (res) {
+            $('#modal-note-create')
+              .draggable({ handle: '.modal-header' })
+              .modal('show')
+              .find('.modal-content')
+              .html(
+                S2Util.s2Template('template_modal_project_note_create', {
+                  projectMno: '301',
+                  folderMno: folderMno,
+                  isElnProjectProcessUseYn: '' === 'Y'
+                })
+              )
+              .find('[name=writeModeCcd]')
+              .change(function () {
+                if ('EDITOR' == $(this).val()) {
+                  $('#modal-note-create #multiCollapseEditor.collapse').collapse('show');
+                  $('#modal-note-create #multiCollapseFile.collapse').collapse('hide');
+                  $('#modal-note-create [name=editorTpCcd]:first').attr('required', 'required');
+                } else {
+                  $('#modal-note-create #multiCollapseEditor.collapse').collapse('hide');
+                  $('#modal-note-create #multiCollapseFile.collapse').collapse('show');
+                  $('#modal-note-create [name=editorTpCcd]:first').removeAttr('required');
+                }
+              })
+              .end()
+              .find('button.button-cnfm')
+              .click(function () {
+                if (!S2Util.s2validate('#createNoteForm')) {
+                  return;
+                } else if (
+                  $('#createNoteForm [name=writeModeCcd]:checked').val() == 'FILE' &&
+                  (!g_uploadNoteFiles || g_uploadNoteFiles.length == 0)
+                ) {
+                  coreDialog.alert('Drag &amp; Drop 으로 연구파일을 추가 해주세요.');
+                  return;
+                }
+
+                // 첨부파일을 순서대로 정렬한다.
+                g_uploadNoteFiles.sort(function (a, b) {
+                  return a.sortSn - b.sortSn;
+                });
+
+                {
+                  // 키워드
+                  const $keywordArr = $('#modal-note-create .keyword-wrap .keyword [name=keywordArr]');
+                  const keywordValues = $keywordArr
+                    .map(function () {
+                      return $(this).val();
+                    })
+                    .get();
+
+                  $('#modal-note-create .keyword-wrap [name=keywordArrStr]').val(keywordValues.join(','));
+                }
+
+                new coreFileUpload(
+                  'createNote_' + dayjs().format('YYYYMMDDHHmmss'),
+                  getAjaxUrl('/api/eln/note/createNote'),
+                  S2Util.queryStringToJson($('#createNoteForm').serialize()),
+                  g_uploadNoteFiles,
+                  function (res) {
+                    coreDialog.confirm('정상 처리되었습니다.\n생성한 연구노트로 이동하시겠습니까?', function (result) {
+                      if (result) {
+                        gfn_openNoteDetail('/eln/note/noteDetails', res.newNoteMno);
+                      } else {
+                        location.reload();
+                      }
+                    });
+                  }
+                );
+              });
+
+            // 파일 드래그
+            $('#modal-note-create #sortable')
+              .disableSelection()
+              .sortable({
+                stop: function (event, ui) {
+                  for (const idx in g_uploadNoteFiles) {
+                    const noteFile = g_uploadNoteFiles[idx];
+                    noteFile['sortSn'] =
+                      $('.note-upload-file-list li[data-file-mng-id=' + noteFile.fileMngId + ']').index() + 1;
+                  }
+                }
+              });
+
+            if (res.folderList && Object.keys(res.folderList).length) {
+              for (var idx in res.folderList) {
+                const folder = res.folderList[idx];
+                if (folder && folder.folderMno) {
+                  $('<option>', { value: folder.folderMno })
+                    .text(folder.folderNm)
+                    .appendTo('#modal-note-create #selectFolder');
+
+                  if (folder.folderMno == $('#modal-note-create [name=folderMno]').val()) {
+                    const selectElement = document.getElementById('selectFolder');
+                    selectElement.value = folder.folderMno;
+                  }
+                }
+              }
+            }
+
+            if (res.processList && Object.keys(res.processList).length) {
+              for (var idx in res.processList) {
+                const process = res.processList[idx];
+                if (process && process.processMno) {
+                  $('<option>', { value: process.processMno })
+                    .text(process.processNm)
+                    .appendTo('#modal-note-create #selectProcess');
+                }
+              }
+            }
+
+            /* // 에디터 작성방식
+            if (res.editorTpCcdList && Object.keys(res.editorTpCcdList).length) {
+                for (var idx in res.editorTpCcdList) {
+                    var editorTp = res.editorTpCcdList[idx];
+
+                    if (editorTp && editorTp.comCd) {
+                        $('#modal-note-create #selectEditorTp').append(
+                            S2Util.s2Template(
+                                `
+                            <div class="form-check form-check-inline">
+                                <input if="isFirst" type="radio" class="form-check-input basic" name="editorTpCcd" id="editorTpCcd_${editorTp.comCd}" title="${'파일 형식'}" value="${editorTp.comCd}">
+                                <input else="isFirst" type="radio" class="form-check-input basic" name="editorTpCcd" id="editorTpCcd_${editorTp.comCd}" value="${editorTp.comCd}">
+                                <label class="form-check-label" for="editorTpCcd_${editorTp.comCd}">${editorTp.comCdNm}</label>
+                            </div>
+                        `,
+                                {isFirst: idx == 0}
+                            )
+                        );
+                    }
+                }
+            }
+            */
+
+            // 키워드 입력(엔터 또는 스페이스키 입력시 새로운 키워드 등록)
+            $('#modal-note-create #setKeyword')
+              .keydown(function (event) {
+                switch (event.keyCode) {
+                  case 13:
+                  case 32:
+                    var keywords = $(this).val().trim();
+                    if (!keywords) {
+                      coreDialog.alert('키워드를 입력하세요.');
+                      return;
+                    }
+                    gfn_addKeyword(keywords);
+                    $(this).val('');
+                    break;
+                }
+              })
+              .change(function () {
+                gfn_addKeyword($(this).val().trim());
+                $(this).val('');
+              });
+
+            gfn_noteInitDropZone($('#multiCollapseFile .box-drop-zone'));
+          }
+        );
+
+        $('#modal-note-create .modal-footer').on('click', '.button-cnfm', function (e) {
+          // 연구노트 상세 페이지로 이동
+          gfn_openNoteDetail('/eln/note/noteDetails');
+        });
+      }
+
+      // 목록 보기를 클릭했을 때
+      function getNoteList(pageNo) {
+        const targetSelector = '.note-box-wrap';
+        const folderMno = document.querySelector('.folder-element.active').dataset.folderMno;
+
+        ajaxPost(
+          '/api/eln/note/noteList',
+          {
+            schDetailInfoYn: 'Y',
+            schProjectMno: '301',
+            schFolderMno: folderMno === '0' ? '' : folderMno,
+            schNoFolderYn: folderMno === '0' ? 'Y' : 'N',
+            schWriteStatusCcdArr: $('.search-filter-box [name=schWriteStatusCcdArr]').val(),
+            schUserMnoArr: $('.search-filter-box [name=schUserMnoArr]').val(),
+            schProcessMnoArr: $('.search-filter-box [name=schProcessMnoArr]').val(),
             pageNo: pageNo ? pageNo : 1,
-            pageUnit: 10
+            pageUnit: 10,
+            orderBy: S2Util.getThOrderBy(targetSelector, 'MODIFY_DT DESC')
           },
           '데이터요청중입니다.잠시만 기다려주세요.',
           function (res) {
             const $target = $(targetSelector + ' tbody').empty();
+            if (res.noteListInfo) {
+              if (S2Util.isJSON(res.noteListInfo.dataList) && Object.keys(res.noteListInfo.dataList).length) {
+                for (const idx in res.noteListInfo.dataList) {
+                  const note = res.noteListInfo.dataList[idx];
 
-            /* nullToEmpty 가 배열을 숫자키 객체로 바꾸므로 Object.keys(...).length 로 판정한다. */
-            if (res.instrumentListInfo && S2Util.isJSON(res.instrumentListInfo.dataList)
-                && Object.keys(res.instrumentListInfo.dataList).length) {
-              for (const idx in res.instrumentListInfo.dataList) {
-                const i = res.instrumentListInfo.dataList[idx];
-                i.instrumentTpDisp = INSTRUMENT_TP[i.instrumentTpCcd] || i.instrumentTpCcd || '-';
-                i.modelNmDisp = i.modelNm || '-';
-                i.locationNmDisp = i.locationNm || '-';
-                i.lastCalDeDisp = deDisp(i.lastCalDe);
-                i.calDisp = calBadge(i.calState, i.nextCalDe);
-                i.statusDisp = statusBadge(i.instrumentStatusCcd);
-                i.retireDisp = i.instrumentStatusCcd === 'RETIRED'
-                  ? ''
-                  : `<button class="button-gray-line-sty01" onclick="openModalInstrumentRetire('${i.instrumentMno}', '${i.instrumentCd}');"><span>폐기</span></button>`;
-                $target.append(S2Util.s2Template('template_instrument_list', i));
-              }
-              $target.parents(targetSelector).find('.paging-box')
-                .html(S2Util.pagination(res.instrumentListInfo, 'getInstrumentList'));
-            } else {
-              $target.html('<tr class="text-nowrap emptymessage"><td class="text-center" colspan="9">등록된 장비가 없습니다.</td></tr>');
-            }
-          }
-        );
-      }
+                  note.elnProjectProcessUseYn = res.elnProjectProcessUseYn;
+                  note['idx'] = idx;
+                  note['dateStr'] = note.modifyDtStr;
+                  note['processNm'] = note.processNm ? note.processNm : '정보없음';
 
-      /* ---------------------------------------------------------------
-         공통 폼 조각 — 등록/수정이 같은 입력을 쓴다.
-         교정 기한 입력칸이 없는 것은 누락이 아니다. 그 값은 교정 이력 등록으로만 생긴다.
-      --------------------------------------------------------------- */
-      function instrumentFormHtml(prefix) {
-        return `
-          <div class="flex-sty05 ma-b20">
-            <label for="${prefix}InstrumentNm" class="modal-cont-label">장비 명</label>
-            <input type="text" id="${prefix}InstrumentNm" name="instrumentNm" maxlength="200"
-                   class="input-write-sty02-line" title="장비 명" required="required" />
-            <div class="flex-sty04"><div class="guidetext-sty01">결과 입력 화면의 장비 선택 목록에 표시됩니다.</div></div>
-          </div>
-          <div class="flex-sty05 ma-b20">
-            <label for="${prefix}InstrumentTpCcd" class="modal-cont-label">장비 유형</label>
-            <select id="${prefix}InstrumentTpCcd" name="instrumentTpCcd" class="btn btn-xs select-xs select-sty02 wp-100"
-                    title="장비 유형" required="required">
-              <option value="HPLC">HPLC</option>
-              <option value="LCMS">LC-MS</option>
-              <option value="NMR">NMR</option>
-              <option value="BALANCE">저울</option>
-              <option value="ETC">기타</option>
-            </select>
-            <div class="flex-sty04"><div class="guidetext-sty01">공통코드 LIMS_INSTRUMENT_TP_CCD 입니다. 기관 보유 장비 확인 전 잠정 목록입니다. (결정 Q13)</div></div>
-          </div>
-          <div class="flex-sty05 ma-b20">
-            <label for="${prefix}ModelNm" class="modal-cont-label">모델 명</label>
-            <input type="text" id="${prefix}ModelNm" name="modelNm" maxlength="200"
-                   class="input-write-sty02-line" title="모델 명" />
-            <div class="flex-sty04"><div class="guidetext-sty01">예) Agilent 1260 Infinity II (선택)</div></div>
-          </div>
-          <div class="flex-sty05 ma-b20">
-            <label for="${prefix}MakerNm" class="modal-cont-label">제조사</label>
-            <input type="text" id="${prefix}MakerNm" name="makerNm" maxlength="200"
-                   class="input-write-sty02-line" title="제조사" />
-            <div class="flex-sty04"><div class="guidetext-sty01">교정 의뢰 시 참조합니다. (선택)</div></div>
-          </div>
-          <div class="flex-sty05 ma-b20">
-            <label for="${prefix}SerialNo" class="modal-cont-label">제조 번호</label>
-            <input type="text" id="${prefix}SerialNo" name="serialNo" maxlength="100"
-                   class="input-write-sty02-line" title="제조 번호" />
-            <div class="flex-sty04"><div class="guidetext-sty01">성적서와 대조할 때 쓰는 시리얼 번호입니다. (선택)</div></div>
-          </div>
-          <div class="flex-sty05 ma-b20">
-            <label for="${prefix}LocationMno" class="modal-cont-label">설치 위치</label>
-            <select id="${prefix}LocationMno" name="locationMno" class="btn btn-xs select-xs select-sty02 wp-100"
-                    title="설치 위치"></select>
-            <div class="flex-sty04"><div class="guidetext-sty01">시료·시약과 같은 위치 마스터를 씁니다. (선택)</div></div>
-          </div>
-          <div class="flex-sty05 ma-b20">
-            <label for="${prefix}ManagerMno" class="modal-cont-label">관리자</label>
-            <select id="${prefix}ManagerMno" name="managerMno" class="btn btn-xs select-xs select-sty02 wp-100"
-                    title="관리자"></select>
-            <div class="flex-sty04"><div class="guidetext-sty01">교정 기한을 관리하는 담당자입니다. (선택)</div></div>
-          </div>
-          <div class="flex-sty05 ma-b20">
-            <label for="${prefix}IntroDe" class="modal-cont-label">도입 일자</label>
-            <div class="input-group form_date">
-              <input type="text" id="${prefix}IntroDe" name="introDe" readonly="readonly"
-                     class="form-control input-xs input-write-date2" title="도입 일자" />
-            </div>
-            <div class="flex-sty04"><div class="guidetext-sty01">자산 관리용 참고 값입니다. (선택)</div></div>
-          </div>
-          <div class="flex-sty05 ma-b20">
-            <label for="${prefix}CalCycleMonth" class="modal-cont-label">교정 주기 (개월)</label>
-            <input type="number" id="${prefix}CalCycleMonth" name="calCycleMonth" step="1" min="0"
-                   class="input-write-sty02-line" title="교정 주기" />
-            <div class="flex-sty04"><div class="guidetext-sty01">교정 이력 등록 시 차기 교정 기한을 이 주기로 계산합니다. 비워두면 계산하지 않고, 등록 화면에서 기한을 직접 입력해야 합니다.</div></div>
-          </div>
-          <div class="flex-sty05">
-            <label for="${prefix}Desc" class="modal-cont-label">설명</label>
-            <textarea id="${prefix}Desc" name="desc" class="form-textarea form-textarea-line wp-100 h-70"
-                      title="설명"></textarea>
-            <div class="flex-sty04"><div class="guidetext-sty01">사용 제한, 부속 장치 등 특기 사항을 적습니다. (선택)</div></div>
-          </div>`;
-      }
+                  const model = `
+                    <tr>
+                        <td class="flex-sty04 mw-500">
+                            <div class="editor_type ${note.editorTpCcd}"></div>
+                            ${note.elnProjectProcessUseYn === 'Y' ? `<div class="txt-step" title="${note.processNm}">${note.processNm}</div>` : ''}
+                            <div class="txt_ellipsis c-pointer note-list-title" title="${note.noteNm}" onclick="gfn_openNoteDetail('/eln/note/noteDetails', ${note.noteMno}); return false;">${note.noteNm ? note.noteNm : '제목없음'}</div>
+                        </td>
+                        <td><div class="txt_ellipsis">${note.ownerNm ? note.ownerNm : '작성자 없음'}</div></td>
+                        <td class="">${note.dateStr}</td>
+                        <td><div class="icon-note-status write-status-${note['writeStatusCcd']}">${note.writeStatusCcdNm}</div></td>
+                        <td class="text-right">
+                            <div class="icon-option-wrap btn-group dropdown dropend">
+                                <a href="#" class="icon-option" id="dropdownOptionBtn_col${note.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
+                                <div id="dropdown_option" class="dropdown-menu" aria-labelledby="dropdownOptionBtn_col${note.idx}">
+                                    <div class="option_title">${'연구노트 옵션'}</div>
+                                    <div class="option_list">
+                                        <a else ="isNoteComplete" href="#" onclick="gfn_openModalModifyNoteInfo(${note.noteMno}, ${note.projectMno}, this); return false;" class="dropdown-item">${'연구노트 정보 수정'}</a>
+                                        <a if="isProject" href="#" onclick="gfn_openModalMoveNote(${note.noteMno}, ${note.projectMno}, ${note.folderMno}, this); return false;" class="dropdown-item">${'연구노트 이동'}</a>
+                                        <a else="isTimestamp" href="#" onclick="gfn_openModalDeleteNote(${note.noteMno}, '${note.noteNm}'); return false;" class="dropdown-item ce-delete-note">${'연구노트 삭제'}</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                  `;
 
-      function collectInstrumentForm(prefix) {
-        return {
-          instrumentNm: $('#' + prefix + 'InstrumentNm').val().trim(),
-          instrumentTpCcd: $('#' + prefix + 'InstrumentTpCcd').val(),
-          modelNm: $('#' + prefix + 'ModelNm').val().trim(),
-          makerNm: $('#' + prefix + 'MakerNm').val().trim(),
-          serialNo: $('#' + prefix + 'SerialNo').val().trim(),
-          locationMno: $('#' + prefix + 'LocationMno').val(),
-          managerMno: $('#' + prefix + 'ManagerMno').val(),
-          introDe: $('#' + prefix + 'IntroDe').val(),
-          calCycleMonth: $('#' + prefix + 'CalCycleMonth').val(),
-          desc: $('#' + prefix + 'Desc').val()
-        };
-      }
-
-      /* ---------------------------------------------------------------
-         장비 등록 모달 (560)
-      --------------------------------------------------------------- */
-      function openModalInstrumentCreate() {
-        $('#modal-lims-instrument')
-          .draggable({ handle: '.modal-header' })
-          .modal('show')
-          .find('.modal-content')
-          .html(`
-            <div class="modal-header cursor-move">
-              <p class="modal-title">장비 등록</p>
-              <span class="modal-sub">교정 기한은 교정 이력을 등록해야 생깁니다.</span>
-            </div>
-            <div class="modal-body">
-              <form method="post" role="form" id="limsInstrumentForm">
-                <div class="flex-sty05 ma-b20">
-                  <label for="newInstrumentCd" class="modal-cont-label">관리번호</label>
-                  <input type="text" id="newInstrumentCd" name="instrumentCd" maxlength="50"
-                         class="input-write-sty02-line" title="관리번호" required="required" />
-                  <div class="flex-sty04"><div class="guidetext-sty01">기관 자산번호입니다. 중복 등록은 차단됩니다.</div></div>
-                </div>
-                ${instrumentFormHtml('new')}
-              </form>
-            </div>
-            <div class="modal-footer">
-              <div class="button-wrap02">
-                <button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">닫기</button>
-                <button type="button" class="button-cnfm-sty01 button-cnfm">확인</button>
-              </div>
-            </div>
-          `);
-
-        $('#modal-lims-instrument .form_date').coreDateRangePicker({ beginInputId: 'newIntroDe' });
-        /*
-          두 목록을 연달아 호출하면 안 된다. reqAjax 는 요청 하나가 떠 있는 동안 다음 요청을
-          조용히 버린다(에러도 콜백도 없다). 첫 응답 뒤에 두 번째를 태운다.
-        */
-        loadLocationOptions('#newLocationMno', function () {
-          loadUserOptions('#newManagerMno');
-        });
-
-        $('#modal-lims-instrument').find('button.button-cnfm').off('click').on('click', function () {
-          if (!S2Util.s2validate('#limsInstrumentForm')) {
-            return;
-          }
-          const values = collectInstrumentForm('new');
-          values.instrumentCd = $('#newInstrumentCd').val().trim();
-
-          ajaxPost('/api/lims/instrument/createInstrument', values, '데이터요청중입니다.잠시만 기다려주세요.', function (res) {
-            if (res.s2ResultCode !== 1) {
-              return;
-            }
-            $('#modal-lims-instrument').modal('hide');
-            S2Util.toasts('장비가 등록되었습니다. 교정 이력을 등록하면 차기 교정 기한이 생깁니다.', { class: 'Toast-bottom-web' });
-            getInstrumentList();
-          });
-        });
-      }
-
-      /* ---------------------------------------------------------------
-         장비 수정 모달 (560)
-         설명(`DESC`)은 목록에 싣지 않으므로 단건 조회로 읽는다. 그 뒤에 셀렉트를 채운다(체이닝).
-      --------------------------------------------------------------- */
-      function openModalInstrumentEdit(instrumentMno) {
-        ajaxPost('/api/lims/instrument/instrumentDetail', { instrumentMno: instrumentMno },
-          '데이터요청중입니다.잠시만 기다려주세요.', function (res) {
-            if (res.s2ResultCode !== 1 || !res.instrument) {
-              return;
-            }
-            const base = res.instrument;
-
-            $('#modal-lims-instrument-edit')
-              .draggable({ handle: '.modal-header' })
-              .modal('show')
-              .find('.modal-content')
-              .html(`
-                <div class="modal-header cursor-move">
-                  <p class="modal-title">장비 수정</p>
-                  <span class="modal-sub" title="${base.instrumentCd}">${base.instrumentCd}</span>
-                </div>
-                <div class="modal-body">
-                  <form method="post" role="form" id="limsInstrumentEditForm">
-                    ${instrumentFormHtml('edit')}
-                    <div class="flex-sty04 ma-t10">
-                      <div class="guidetext-sty01">
-                        차기 교정 기한은 이 화면에서 바꿀 수 없습니다. 교정 이력 등록으로만 갱신됩니다 —
-                        이력 없이 기한을 늘릴 수 있으면 결과 입력 차단이 근거 없이 풀립니다.
-                      </div>
-                    </div>
-                  </form>
-                </div>
-                <div class="modal-footer">
-                  <div class="button-wrap02">
-                    <button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">닫기</button>
-                    <button type="button" class="button-cnfm-sty01 button-cnfm">확인</button>
-                  </div>
-                </div>
-              `);
-
-            $('#editInstrumentNm').val(base.instrumentNm || '');
-            $('#editInstrumentTpCcd').val(base.instrumentTpCcd);
-            $('#editModelNm').val(base.modelNm || '');
-            $('#editMakerNm').val(base.makerNm || '');
-            $('#editSerialNo').val(base.serialNo || '');
-            $('#editCalCycleMonth').val(base.calCycleMonth != null ? base.calCycleMonth : '');
-            $('#editDesc').val(base.desc || '');
-            $('#editIntroDe').val(deDisp(base.introDe) === '-' ? '' : deDisp(base.introDe));
-            $('#modal-lims-instrument-edit .form_date').coreDateRangePicker({ beginInputId: 'editIntroDe' });
-
-            loadLocationOptions('#editLocationMno', function () {
-              $('#editLocationMno').val(base.locationMno || '');
-              loadUserOptions('#editManagerMno', function () {
-                $('#editManagerMno').val(base.managerMno || '');
-              });
-            });
-
-            $('#modal-lims-instrument-edit').find('button.button-cnfm').off('click').on('click', function () {
-              if (!S2Util.s2validate('#limsInstrumentEditForm')) {
-                return;
-              }
-              const values = collectInstrumentForm('edit');
-              values.instrumentMno = base.instrumentMno;
-
-              ajaxPost('/api/lims/instrument/modifyInstrument', values, '데이터요청중입니다.잠시만 기다려주세요.', function (r) {
-                if (r.s2ResultCode !== 1) {
-                  return;
+                  if (model) {
+                    $target.append(
+                      S2Util.s2Template(model, {
+                        isProject: !!note.projectMno,
+                        isTimestamp: note['timestampYn'] === 'Y',
+                        isNoteComplete: note.writeStatusCcd === 'COMPLETE' || note.writeStatusCcd === 'INSPECTION'
+                      })
+                    );
+                  }
                 }
-                $('#modal-lims-instrument-edit').modal('hide');
-                S2Util.toasts('수정되었습니다.', { class: 'Toast-bottom-web' });
-                getInstrumentList();
-              });
-            });
-          });
-      }
-
-      /* ---------------------------------------------------------------
-         장비 폐기 모달 (560) — 행은 남는다.
-      --------------------------------------------------------------- */
-      function openModalInstrumentRetire(instrumentMno, instrumentCd) {
-        $('#modal-lims-instrument-retire')
-          .draggable({ handle: '.modal-header' })
-          .modal('show')
-          .find('.modal-content')
-          .html(`
-            <div class="modal-header cursor-move">
-              <p class="modal-title">장비 폐기</p>
-              <span class="modal-sub" title="${instrumentCd}">${instrumentCd}</span>
-            </div>
-            <div class="modal-body">
-              <div class="flex-sty05">
-                <label class="modal-cont-label">확인</label>
-                <div class="guidetext-sty01">
-                  이 장비를 폐기 상태로 전환합니다. 대장에서 행이 지워지지 않습니다 —
-                  과거 시험 결과가 이 장비와 그 시점의 교정 이력을 근거로 삼기 때문입니다.
-                  폐기 후에는 결과 입력의 장비 선택 목록에서 빠집니다.
-                </div>
-                <div class="flex-sty04"><div class="guidetext-sty01">교정 이력도 함께 보존됩니다.</div></div>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <div class="button-wrap02">
-                <button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">닫기</button>
-                <button type="button" class="button-cnfm-sty01 button-cnfm">확인</button>
-              </div>
-            </div>
-          `)
-          .find('button.button-cnfm')
-          .off('click')
-          .on('click', function () {
-            ajaxPost('/api/lims/instrument/retireInstrument', { instrumentMno: instrumentMno },
-              '데이터요청중입니다.잠시만 기다려주세요.', function (res) {
-                if (res.s2ResultCode !== 1) {
-                  return;
-                }
-                $('#modal-lims-instrument-retire').modal('hide');
-                S2Util.toasts('폐기 처리되었습니다.', { class: 'Toast-bottom-web' });
-                getInstrumentList();
-              });
-          });
-      }
-
-      /* ---------------------------------------------------------------
-         교정·점검 이력 모달 (840x560) — 이력 열람 + 신규 등록
-         이력 행에 삭제 버튼이 없다. 의도적이다.
-      --------------------------------------------------------------- */
-      function openModalCalHistory(instrumentMno, instrumentCd, instrumentNm) {
-        gSelectedInstrumentMno = instrumentMno;
-        gSelectedInstrumentNm = instrumentNm;
-
-        $('#modal-lims-cal')
-          .draggable({ handle: '.modal-header' })
-          .modal('show')
-          .find('.modal-content')
-          .html(`
-            <div class="modal-header cursor-move">
-              <p class="modal-title">교정·점검 이력</p>
-              <span class="modal-sub" title="${instrumentCd} · ${instrumentNm}">${instrumentCd} · ${instrumentNm}</span>
-            </div>
-            <div class="modal-body">
-              <div class="core-table ma-b20">
-                <div class="table-responsive core-table-div">
-                  <table class="table table-sty01">
-                    <thead>
-                      <tr class="text-nowrap">
-                        <th class="text-left">교정일</th>
-                        <th class="text-left">유형</th>
-                        <th class="lims-num">결과</th>
-                        <th class="text-left">차기 기한</th>
-                        <th class="text-left">기관</th>
-                        <th class="text-left">성적서</th>
-                        <th class="text-left">확인자</th>
-                      </tr>
-                    </thead>
-                    <tbody class="cal-hist-body"></tbody>
-                  </table>
-                </div>
-              </div>
-              <div class="flex-sty04 ma-b20">
-                <div class="guidetext-sty01">
-                  이력은 추가만 가능하며 수정·삭제되지 않습니다. 지우면 "이 장비가 언제부터 유효했는가"를 잃고
-                  그 기간에 낸 결과의 근거가 사라집니다.
-                </div>
-              </div>
-              <form method="post" role="form" id="limsCalForm">
-                <div class="flex-sty05 ma-b20">
-                  <label for="calDe" class="modal-cont-label">교정 수행 일자</label>
-                  <div class="input-group form_date">
-                    <input type="text" id="calDe" name="calDe" readonly="readonly"
-                           class="form-control input-xs input-write-date2" title="교정 수행 일자" required="required" />
-                  </div>
-                  <div class="flex-sty04"><div class="guidetext-sty01">성적서에 적힌 실제 수행일입니다.</div></div>
-                </div>
-                <div class="flex-sty05 ma-b20">
-                  <label for="calTpCcd" class="modal-cont-label">교정 유형</label>
-                  <select id="calTpCcd" name="calTpCcd" class="btn btn-xs select-xs select-sty02 wp-100" title="교정 유형">
-                    <option value="CALIBRATION">교정</option>
-                    <option value="PM">예방점검</option>
-                    <option value="QUALIFICATION">적격성평가</option>
-                  </select>
-                  <div class="flex-sty04"><div class="guidetext-sty01">공통코드 LIMS_CAL_TP_CCD 입니다.</div></div>
-                </div>
-                <div class="flex-sty05 ma-b20">
-                  <label for="calResultCcd" class="modal-cont-label">교정 결과</label>
-                  <select id="calResultCcd" name="calResultCcd" class="btn btn-xs select-xs select-sty02 wp-100" title="교정 결과">
-                    <option value="PASS">적합</option>
-                    <option value="CONDITIONAL">조건부적합</option>
-                    <option value="FAIL">부적합</option>
-                  </select>
-                  <div class="flex-sty04"><div class="guidetext-sty01" id="calResultGuide">적합·조건부적합이면 차기 교정 기한이 갱신됩니다.</div></div>
-                </div>
-                <div class="flex-sty05 ma-b20">
-                  <label for="calNextCalDe" class="modal-cont-label">차기 교정 기한</label>
-                  <div class="input-group form_date">
-                    <input type="text" id="calNextCalDe" name="nextCalDe" readonly="readonly"
-                           class="form-control input-xs input-write-date2" title="차기 교정 기한" />
-                  </div>
-                  <div class="flex-sty04"><div class="guidetext-sty01">비워두면 장비의 교정 주기로 계산합니다. 주기도 없으면 기한이 생기지 않습니다 — 시스템이 기한을 추측하지 않습니다.</div></div>
-                </div>
-                <div class="flex-sty05 ma-b20">
-                  <label for="calAgencyNm" class="modal-cont-label">교정 기관</label>
-                  <input type="text" id="calAgencyNm" name="agencyNm" maxlength="200"
-                         class="input-write-sty02-line" title="교정 기관" />
-                  <div class="flex-sty04"><div class="guidetext-sty01">외부 교정이면 기관명을 적습니다. (선택)</div></div>
-                </div>
-                <div class="flex-sty05 ma-b20">
-                  <label for="calCertNo" class="modal-cont-label">성적서 번호</label>
-                  <input type="text" id="calCertNo" name="certNo" maxlength="100"
-                         class="input-write-sty02-line" title="성적서 번호" />
-                  <div class="flex-sty04"><div class="guidetext-sty01">감사 시 원본 성적서를 찾는 키입니다. (선택)</div></div>
-                </div>
-                <div class="flex-sty05">
-                  <label for="calDesc" class="modal-cont-label">설명</label>
-                  <textarea id="calDesc" name="desc" class="form-textarea form-textarea-line wp-100 h-70"
-                            title="설명"></textarea>
-                  <div class="flex-sty04"><div class="guidetext-sty01">조건부적합이면 제한 조건을 반드시 적습니다. (선택)</div></div>
-                </div>
-              </form>
-            </div>
-            <div class="modal-footer">
-              <div class="button-wrap02">
-                <button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">닫기</button>
-                <button type="button" class="button-cnfm-sty01 button-cnfm">교정 등록</button>
-              </div>
-            </div>
-          `);
-
-        $('#modal-lims-cal .form_date').coreDateRangePicker({ beginInputId: 'calDe' });
-
-        $('#calResultCcd').off('change').on('change', function () {
-          $('#calResultGuide').text($(this).val() === 'FAIL'
-            ? '부적합이면 차기 교정 기한을 연장하지 않습니다. 장비는 수리중 상태가 되고 결과 입력 차단은 그대로 유지됩니다.'
-            : '적합·조건부적합이면 차기 교정 기한이 갱신됩니다.');
-        });
-
-        loadCalList();
-
-        $('#modal-lims-cal').find('button.button-cnfm').off('click').on('click', function () {
-          if (!S2Util.s2validate('#limsCalForm')) {
-            return;
+                $target
+                  .parents('.note-box-wrap:first')
+                  .find('.paging-box')
+                  .html(S2Util.pagination(res.noteListInfo, 'getNoteList'));
+              } else {
+                $target.html(
+                  '<tr class="text-nowrap emptymessage"><td class="text-center" colspan="5">' +
+                    window.i18n['i18n.pkg.msg.823'] +
+                    '</td></tr>'
+                );
+                $target.parents('.note-box-wrap:first').find('.paging-box').html('');
+              }
+            }
           }
-          ajaxPost(
-            '/api/lims/instrument/createCal',
-            {
-              instrumentMno: gSelectedInstrumentMno,
-              calDe: $('#calDe').val(),
-              calTpCcd: $('#calTpCcd').val(),
-              calResultCcd: $('#calResultCcd').val(),
-              nextCalDe: $('#calNextCalDe').val(),
-              agencyNm: $('#calAgencyNm').val().trim(),
-              certNo: $('#calCertNo').val().trim(),
-              desc: $('#calDesc').val()
-            },
-            '데이터요청중입니다.잠시만 기다려주세요.',
-            function (res) {
-              if (res.s2ResultCode !== 1) {
-                return;
-              }
-              S2Util.toasts(
-                res.nextCalDe
-                  ? `교정이 등록되었습니다. 차기 기한 ${deDisp(res.nextCalDe)}`
-                  : '교정이 등록되었습니다. 차기 기한은 설정되지 않았습니다 — 교정 주기 또는 기한을 입력하세요.',
-                { class: 'Toast-bottom-web' }
-              );
-              $('#limsCalForm')[0].reset();
-              /* 이력 갱신 후 대장을 이어서 갱신한다 — 동시 요청은 조용히 버려진다. */
-              loadCalList(function () {
-                getInstrumentList();
-              });
-            }
-          );
-        });
-      }
-
-      /**
-       * 교정 이력을 다시 그린다. onDone 은 성공/실패와 무관하게 정확히 한 번 호출된다 —
-       * 호출측이 다음 ajax 를 안전하게 이어붙이기 위한 것이다.
-       */
-      function loadCalList(onDone) {
-        const done = typeof onDone === 'function' ? onDone : function () {};
-        ajaxPost('/api/lims/instrument/calList', { instrumentMno: gSelectedInstrumentMno }, null,
-          function (res) {
-            const $body = $('.cal-hist-body').empty();
-            if (res.calList && Object.keys(res.calList).length) {
-              for (const idx in res.calList) {
-                const c = res.calList[idx];
-                const resultCls = c.calResultCcd === 'FAIL'
-                  ? 'expired' : (c.calResultCcd === 'CONDITIONAL' ? 'soon' : 'normal');
-                $body.append(`
-                  <tr>
-                    <td class="text-left"><b>${deDisp(c.calDe)}</b></td>
-                    <td class="text-left">${CAL_TP[c.calTpCcd] || c.calTpCcd || '-'}</td>
-                    <td class="text-left"><span class="lims-state ${resultCls}">${CAL_RESULT[c.calResultCcd] || c.calResultCcd}</span></td>
-                    <td class="text-left">${deDisp(c.nextCalDe)}</td>
-                    <td class="text-left">${c.agencyNm || '-'}</td>
-                    <td class="text-left">${c.certNo || '-'}</td>
-                    <td class="text-left">${c.performUserNm || '-'}</td>
-                  </tr>`);
-              }
-            } else {
-              $body.html('<tr class="emptymessage"><td class="text-center" colspan="7">교정 이력이 없습니다.</td></tr>');
-            }
-            done();
-          },
-          done,
-          done
         );
       }
 
-      /**
-       * 위치 목록을 채운다. onDone 은 성공/실패와 무관하게 정확히 한 번 호출된다.
-       */
-      function loadLocationOptions(selector, onDone) {
-        const done = typeof onDone === 'function' ? onDone : function () {};
-        ajaxPost('/api/lims/location/locationList', {}, null,
-          function (res) {
-            const $sel = $(selector).empty();
-            $sel.append('<option value="">지정 안 함</option>');
-            if (res.locationList) {
-              for (const idx in res.locationList) {
-                const loc = res.locationList[idx];
-                $sel.append($('<option></option>').attr('value', loc.locationMno).text(loc.fullPathNm));
-              }
-            }
-            done();
-          },
-          done,
-          done
-        );
-      }
-
-      /**
-       * 관리자 후보를 채운다. 기존 사용자 API(/api/system/user/researcherList)를 재사용한다.
-       */
-      function loadUserOptions(selector, onDone) {
-        const done = typeof onDone === 'function' ? onDone : function () {};
-        ajaxPost('/api/system/user/researcherList', { schPageYn: 'N', orderBy: 'USER_NM ASC' }, null,
-          function (res) {
-            const $sel = $(selector).empty();
-            $sel.append('<option value="">지정 안 함</option>');
-            if (res.userListInfo && S2Util.isJSON(res.userListInfo.dataList)
-                && Object.keys(res.userListInfo.dataList).length) {
-              for (const idx in res.userListInfo.dataList) {
-                const user = res.userListInfo.dataList[idx];
-                const orztNm = user.orztNm ? ` (${user.orztNm})` : '';
-                $sel.append($('<option></option>').attr('value', user.userMno).text(`${user.userNm}${orztNm}`));
-              }
-            }
-            done();
-          },
-          done,
-          done
-        );
+      // thead의 정렬을 변경할때
+      function changeSort(target) {
+        getNoteList();
       }
 
       /*]]*/
@@ -3794,7 +4313,7 @@
 
         const params = {
           modalTitle: '폴더명 수정',
-          subTitle: '',
+          subTitle: '표적단백질 저해제 발굴',
           contTitle: '폴더명',
           placeholder: '폴더명을 입력해주세요.',
           guidTxt: '최대 50자 입력 가능합니다.',
@@ -3856,7 +4375,7 @@
         const $target = $(target);
         const params = {
           modalTitle: '연구노트명 수정',
-          subTitle: '',
+          subTitle: '표적단백질 저해제 발굴',
           contTitle: '노트명',
           txtValue: $target.parents('.note-card-cont:first').find('.noteNm').attr('title'),
           placeholder: '연구노트명을 입력해주세요.',
@@ -4321,7 +4840,7 @@
             contTxt3: '각 연구노트에 한명의 위임자만 선택이 가능 합니다.',
 
             contTitle: '프로젝트 참여자',
-            memberCnt: '0', // 프로젝트 참여자 수 조회 추가 필요!!!!
+            memberCnt: '4', // 프로젝트 참여자 수 조회 추가 필요!!!!
             guidTxt: '참여자의 이름/이메일로 검색 가능합니다.',
 
             noDismissYn: 'Y',
@@ -5785,7 +6304,7 @@
                 
                   <li>
                     <a href="#"
-                       class="projectList"
+                       class="projectList active"
                        onclick="gfn_openProjectDetail(&#39;/eln/project/projectDetails&#39;, &#39;301&#39;)"
                        data-project-mno="301"><span title="표적단백질 저해제 발굴">표적단백질 저해제 발굴</span></a>
                   </li>
@@ -6201,98 +6720,827 @@
 
           <!-- body 영역  -->
           <div class="content-wrapper">
-    <div id="main" class="lims-page">
-      <header class="lims-head">
-        <div class="lims-head-main">
-          <nav class="lims-crumb">
-            <a href="index.html">LIMS</a>
-            <span class="sep">/</span>
-            <span>장비 관리</span>
-          </nav>
-          <h2 class="lims-title">장비 관리</h2>
-        </div>
-      </header>
-
-      <div class="ma-tm20">
-        <div class="target-info-tab lims-filter flex-sty04 ma-t30">
-          <div class="tabs-box"></div>
-          <div class="flex-sty02 search-box">
-            <select id="schCalState"
-                    class="btn btn-xs select-xs select-sty02 w-150 ma-r10"
-                    onchange="getInstrumentList();">
-              <option value="">전체 교정상태</option>
-              <option value="EXPIRED">교정 만료</option>
-              <option value="SOON">30일 이내 임박</option>
-              <option value="NONE">교정 기록 없음</option>
-            </select>
-            <select id="schInstrumentTpCcd"
-                    class="btn btn-xs select-xs select-sty02 w-150 ma-r10"
-                    onchange="getInstrumentList();">
-              <option value="">전체 유형</option>
-              <option value="HPLC">HPLC</option>
-              <option value="LCMS">LC-MS</option>
-              <option value="NMR">NMR</option>
-              <option value="BALANCE">저울</option>
-              <option value="ETC">기타</option>
-            </select>
-            <select id="schInstrumentStatusCcd"
-                    class="btn btn-xs select-xs select-sty02 w-150 ma-r10"
-                    onchange="getInstrumentList();">
-              <option value="">전체 상태</option>
-              <option value="NORMAL">정상</option>
-              <option value="CAL_DUE">교정기한경과</option>
-              <option value="REPAIR">수리중</option>
-              <option value="RETIRED">폐기</option>
-            </select>
-            <div class="select-wrap">
-              <input type="text"
-                     id="searchKeyword"
-                     maxlength="255"
-                     sch-enter="getInstrumentList"
-                     placeholder="검색어를 입력해주세요."
-                     class="input-write-sty02-line w-250" />
-              <a href="#"
-                 class="c-pointer"
-                 onclick="getInstrumentList(); return false;">
-                <i class="fa far fa-m fa-search small"></i>
-              </a>
+    
+    <div class="top_title_wrap project-detail">
+      <div class="top_title">
+        <div class="flex-sty01 po-r">
+          <div class="flex-sty06"
+               style="width: 75%;">
+            
+            <div class="project_simple_info">
+              <p class="main-title-sty01"
+                 title="표적단백질 저해제 발굴">표적단백질 저해제 발굴</p>
+              <div class="project_info_div">
+                <div>
+                  <span class="project_title ma-r10">업데이트</span>
+                  <span class="project_cont ma-r15">2026-07-27 14:22</span>
+                </div>
+                <div>
+                  <span class="project_title ma-r10">프로젝트 유형</span>
+                  <span class="project_cont ma-r15"><span>비공개</span><span>프로젝트</span></span>
+                </div>
+                <div>
+                  <span class="project_title ma-r10">참여자</span>
+                  <span class="project_cont"><span>4</span>명</span>
+                  <a href="#"
+                     onclick="gfn_openProjectDetail(&#39;/eln/project/projectDetailsMember&#39;, &#39;301&#39;);"
+                     class="button-blue-sty03 ma-l10">참여자 초대하기</a>
+                </div>
+              </div>
             </div>
-            <button class="button-blue-full-sty01 ma-l10"
-                    onclick="openModalInstrumentCreate();"><span>장비 등록</span></button>
+          </div>
+          <div class="flex-sty08 project-detail-btn-wrap">
+            <div class="button-wrap pa-0 pa-b30">
+              <button onclick="top_getProjectHist();"
+                      class="button-sty002 history"
+                      id="dropdownHistoryBtn"
+                      data-bs-toggle="dropdown"
+                      data-bs-auto-close="outside"
+                      data-bs-display="static"
+                      aria-haspopup="true"
+                      aria-expanded="false"><span>활동 내역</span></button>
+              <div id="dropdown_history"
+                   class="dropdown-menu dropdown-menu-lg-end"
+                   aria-labelledby="dropdownHistoryBtn">
+                <div class="dropdown_header">
+                  <div class="title">프로젝트 활동내역</div>
+                  <div class="search-top flex-sty04 ma-t15">
+                    <select class="btn btn-xs select-xs select-sty02"
+                            id="schPeriod"
+                            onchange="top_getProjectHist(); return false;">
+                      <option value="1W"
+                              selected="selected">최근 1주일</option>
+                      <option value="1M">최근 1개월</option>
+                      <option value="3M">최근 3개월</option>
+                      <option value="6M">최근 6개월</option>
+                      <option value="9M">최근 9개월</option>
+                      <option value="12M">최근 1년</option>
+                    </select>
+                    <div class="button-chk-sty02 flex-sty02 ">
+                      <input type="radio"
+                             class="btn btn-check"
+                             name="schHistSe"
+                             id="schHistSe_1"
+                             autocomplete="off"
+                             onchange="top_getProjectHist(); return false;"
+                             value="all"
+                             checked="checked">
+                      <label class="btn btn-secondary"
+                             for="schHistSe_1">전체이력</label>
+                      <input type="radio"
+                             class="btn btn-check"
+                             name="schHistSe"
+                             id="schHistSe_2"
+                             autocomplete="off"
+                             onchange="top_getProjectHist(); return false;"
+                             value="indi">
+                      <label class="btn btn-secondary"
+                             for="schHistSe_2">개인이력</label>
+                    </div>
+                  </div>
+                  <div class="ma-t10 ma-b10 flex-sty04">
+                    <span class="date_txt"><span id="schHistStartDe"></span> ~ <span id="schHistEndDe"></span></span>
+                    <span class="sch_cnt"><span class="txt-blue"
+                            id="histCnt">0</span><span>건</span> </span>
+                  </div>
+                </div>
+                <div id="project_hist"
+                     class="dropdown_content">
+                  <ul>
+                  </ul>
+                  <div class="no-data d-none">
+                    <div class="no-data-back"></div>
+                    <span>알림 내역이 없습니다.</span>
+                  </div>
+                </div>
+              </div>
+              <button class="button-blue-full-sty01 down note-down ma-l10"
+                      onclick="top_toggleNoteDownraodWrap();"><span>연구노트 다운로드</span></button>
+            </div>
+            <div class="icon-option-wrap dropdown pa-l10"
+                 style="top: 16px; right: 0;">
+              <a href="#"
+                 class="icon-option"
+                 id="dropdownOptionBtn{{=idx}}"
+                 data-bs-toggle="dropdown"
+                 aria-haspopup="true"
+                 aria-expanded="false"></a>
+              <div id="dropdown_option"
+                   class="dropdown-menu"
+                   aria-labelledby="dropdownOptionBtn{{=idx}}">
+                <div class="option_title">프로젝트 옵션</div>
+                <div class="option_list">
+                  <a href="#"
+                     onclick="S2Util.goPage(&#39;/eln/project/modifyProject&#39;, {schProjectMno: 301})"
+                     class="dropdown-item">프로젝트 수정</a>
+                  
+                  <a href="#"
+                     onclick="gfn_openModalMemberMandate(301, &quot;\uD45C\uC801\uB2E8\uBC31\uC9C8 \uC800\uD574\uC81C \uBC1C\uAD74&quot;);"
+                     class="dropdown-item">총괄 위임</a>
+                  <a href="#"
+                     onclick="gfn_openModalProjectComplete(301, &quot;\uD45C\uC801\uB2E8\uBC31\uC9C8 \uC800\uD574\uC81C \uBC1C\uAD74&quot;, &quot;N&quot;);"
+                     class="dropdown-item">완료 처리</a>
+                  <a href="#"
+                     onclick="top_openModalCoverRegistration();"
+                     class="dropdown-item">표지 등록</a>
+                  <a href="#"
+                     onclick="gfn_openModalProjectDelete(301, &quot;\uD45C\uC801\uB2E8\uBC31\uC9C8 \uC800\uD574\uC81C \uBC1C\uAD74&quot;, 3);"
+                     class="dropdown-item">프로젝트 삭제</a>
+                </div>
+              </div>
+            </div>
+            
           </div>
         </div>
+        <div class="tab-board-sty03 ma-t30">
+          <nav class="board-top">
+            <div class="nav nav-tabs tabs-box"
+                 id="nav-tab"
+                 role="tablist">
+              <a href="#"
+                 onclick="gfn_openProjectDetail(&#39;/eln/project/projectDetails&#39;, &#39;301&#39;)"
+                 class="nav-link tab">
+                <span>프로젝트 정보</span>
+              </a>
+              <a href="#"
+                 onclick="gfn_openProjectDetail(&#39;/eln/project/projectDetailsNote&#39;, &#39;301&#39;)"
+                 class="nav-link tab active">
+                <span>연구노트</span>
+              </a>
+              
+              <a href="#"
+                 onclick="gfn_openProjectDetail(&#39;/eln/project/projectDetailsMember&#39;, &#39;301&#39;)"
+                 class="nav-link tab">
+                <span>연구 참여자</span>
+              </a>
 
-        <div class="flex-sty04 ma-t10">
-          <div class="guidetext-sty01">
-            차기 교정 기한이 지난 장비로는 결과를 입력할 수 없습니다. 목록은 기한이 임박한 순으로 정렬됩니다.
-            교정 기한은 교정 이력 등록으로만 갱신되며, 대장 수정 화면에서는 바꿀 수 없습니다.
-          </div>
+              
+              <a href="#"
+                 onclick="gfn_openProjectDetail(&#39;/lims/project/projectDetailsReagent&#39;, &#39;301&#39;)"
+                 class="nav-link tab">
+                <span>시약/화합물</span>
+              </a>
+              
+              
+            </div>
+          </nav>
         </div>
+      </div>
+    </div>
+    <!-- 탭 공통 모달 start -->
+    <!-- 표지 등록 -->
+    <div id="modal-cover-registration"
+         class="modal fade"
+         data-bs-backdrop='static'
+         data-bs-keyboard='false'>
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-pop modal-wrap-sty01 modal-content">
+        </div>
+      </div>
+    </div>
+    <!-- 탭 공통 모달 end -->
 
-        <div class="instrument-info-list ma-t20">
-          <div class="core-table">
-            <div class="box">
-              <div class="box-body">
-                <div class="core-table-body">
-                  <div class="table-responsive pa-b30 core-table-div">
-                    <table class="table table-hover table-sty01"
-                           id="tableInstrumentList">
-                      <thead>
-                        <tr class="text-nowrap">
-                          <th class="text-left">관리번호</th>
-                          <th class="text-left">장비 명</th>
-                          <th class="text-left">유형</th>
-                          <th class="text-left">모델</th>
-                          <th class="text-left">설치 위치</th>
-                          <th class="text-left">최근 교정</th>
-                          <th class="text-left">차기 교정 기한</th>
-                          <th class="text-left">상태</th>
-                          <th class="text-right">관리</th>
-                        </tr>
-                      </thead>
-                      <tbody></tbody>
-                    </table>
-                    <div class="paging-box text-center"></div>
+  
+    <div
+      id="main"
+      style="height: calc(100% - 190px)"
+    >
+      <div
+        class="tab-content"
+        id="nav-tabContent"
+      >
+        <div class="tab-wrap project-detail-note">
+          <div class="search-filter-box flex-sty04">
+            <div class="flex-sty02 filter-elmnt-box">
+              <div>
+                <a
+                  href="#"
+                  class="icon_filter"
+                  id="dropdownSearchbox"
+                  onclick="openSearchbox();"
+                  data-bs-toggle="dropdown"
+                  data-bs-auto-close="outside"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                ></a>
+                <div
+                  id="dropdown_search"
+                  class="dropdown-menu"
+                  aria-labelledby="dropdownSearchbox"
+                >
+                  <div
+                    class="title"
+                  >상세검색</div>
+                  <div class="cont">
+                    <div class="selectSortBox">
+                      <div class="flex-sty04">
+                        <!-- 노트상태 -->
+                        <button
+                          type="button"
+                          class="dropdown-select-btn filterWriteStatusCcdArr default dropdown-toggle wp-49 text-left"
+                          id="dropdownWriteStatusCcdArr"
+                          data-order-by=""
+                          data-bs-toggle="dropdown"
+                          data-bs-auto-close="outside"
+                          aria-haspopup="true"
+                          aria-expanded="false"
+                        >
+                          <span
+                            class="filterTitle"
+                          >연구노트상태</span>
+                          <span class="caret"></span>
+                        </button>
+                        <div
+                          class="dropdown-menu dropdown-sch-select status"
+                          aria-labelledby="dropdownWriteStatusCcdArr"
+                        >
+                          <div class="dropdown-menu-title">
+                            <span
+                              class="drop-title"
+                            >노트상태옵션</span>
+                          </div>
+                          <div class="dropdown-menu-cont">
+                            <div class="drop-cont1 flex-sty04">
+                              <div>
+                                <span>전체</span>
+                                (
+                                <span>5</span>
+                                )
+                              </div>
+                              <span
+                                class="allCheck"
+                                onclick="allSearchboxChk(&#39;filterWriteStatusCcdArr&#39;);"
+                              >전체 노트상태</span>
+                            </div>
+                            <ul>
+                              
+                                <li
+                                  class="flex-sty04 po-r dropdown-item status-search search-filterWriteStatusCcdArr write-status-DRAFT"
+                                  data-status="WRITING"
+                                >
+                                  <div
+                                    class="icon-status"
+                                  >임시저장</div>
+                                  <div class="button-chk-list-sty01 form-check-reverse">
+                                    <input
+                                      type="checkbox"
+                                      class="btn form-check-input searchbox-filter-item"
+                                      name="filterWriteStatusCcdArr"
+                                      id="filterWriteStatusCcdArr-DRAFT"
+                                      autocomplete="off"
+                                      value="DRAFT"
+                                      onchange="changeSearchboxChk(this);"
+                                    />
+                                  </div>
+                                  <label
+                                    class="po-a"
+                                    for="filterWriteStatusCcdArr-DRAFT"
+                                  ></label>
+                                </li>
+                              
+                                <li
+                                  class="flex-sty04 po-r dropdown-item status-search search-filterWriteStatusCcdArr write-status-WRITING"
+                                  data-status="WRITING"
+                                >
+                                  <div
+                                    class="icon-status"
+                                  >작성중</div>
+                                  <div class="button-chk-list-sty01 form-check-reverse">
+                                    <input
+                                      type="checkbox"
+                                      class="btn form-check-input searchbox-filter-item"
+                                      name="filterWriteStatusCcdArr"
+                                      id="filterWriteStatusCcdArr-WRITING"
+                                      autocomplete="off"
+                                      value="WRITING"
+                                      onchange="changeSearchboxChk(this);"
+                                    />
+                                  </div>
+                                  <label
+                                    class="po-a"
+                                    for="filterWriteStatusCcdArr-WRITING"
+                                  ></label>
+                                </li>
+                              
+                                <li
+                                  class="flex-sty04 po-r dropdown-item status-search search-filterWriteStatusCcdArr write-status-INSPECTION"
+                                  data-status="WRITING"
+                                >
+                                  <div
+                                    class="icon-status"
+                                  >점검중</div>
+                                  <div class="button-chk-list-sty01 form-check-reverse">
+                                    <input
+                                      type="checkbox"
+                                      class="btn form-check-input searchbox-filter-item"
+                                      name="filterWriteStatusCcdArr"
+                                      id="filterWriteStatusCcdArr-INSPECTION"
+                                      autocomplete="off"
+                                      value="INSPECTION"
+                                      onchange="changeSearchboxChk(this);"
+                                    />
+                                  </div>
+                                  <label
+                                    class="po-a"
+                                    for="filterWriteStatusCcdArr-INSPECTION"
+                                  ></label>
+                                </li>
+                              
+                                <li
+                                  class="flex-sty04 po-r dropdown-item status-search search-filterWriteStatusCcdArr write-status-REJECT"
+                                  data-status="WRITING"
+                                >
+                                  <div
+                                    class="icon-status"
+                                  >반려</div>
+                                  <div class="button-chk-list-sty01 form-check-reverse">
+                                    <input
+                                      type="checkbox"
+                                      class="btn form-check-input searchbox-filter-item"
+                                      name="filterWriteStatusCcdArr"
+                                      id="filterWriteStatusCcdArr-REJECT"
+                                      autocomplete="off"
+                                      value="REJECT"
+                                      onchange="changeSearchboxChk(this);"
+                                    />
+                                  </div>
+                                  <label
+                                    class="po-a"
+                                    for="filterWriteStatusCcdArr-REJECT"
+                                  ></label>
+                                </li>
+                              
+                                <li
+                                  class="flex-sty04 po-r dropdown-item status-search search-filterWriteStatusCcdArr write-status-COMPLETE"
+                                  data-status="WRITING"
+                                >
+                                  <div
+                                    class="icon-status"
+                                  >작성완료</div>
+                                  <div class="button-chk-list-sty01 form-check-reverse">
+                                    <input
+                                      type="checkbox"
+                                      class="btn form-check-input searchbox-filter-item"
+                                      name="filterWriteStatusCcdArr"
+                                      id="filterWriteStatusCcdArr-COMPLETE"
+                                      autocomplete="off"
+                                      value="COMPLETE"
+                                      onchange="changeSearchboxChk(this);"
+                                    />
+                                  </div>
+                                  <label
+                                    class="po-a"
+                                    for="filterWriteStatusCcdArr-COMPLETE"
+                                  ></label>
+                                </li>
+                              
+                            </ul>
+                          </div>
+                          <div class="dropdown-menu-footer">
+                            <div class="button-wrap02">
+                              <button
+                                type="button"
+                                class="button-cncl-sty01 small button-cncl"
+                                onclick="$(&#39;#dropdownWriteStatusCcdArr&#39;).dropdown(&#39;hide&#39;);"
+                              >닫기</button>
+                              <button
+                                type="button"
+                                class="button-cnfm-sty01 small button-search filterWriteStatusCcdArr"
+                                onclick="selectSearchFilter('filterWriteStatusCcdArr')"
+                              >선택</button>
+                            </div>
+                          </div>
+                        </div>
+                        <!-- 작성자 -->
+                        <button
+                          type="button"
+                          class="dropdown-select-btn filterUserMnoArr default dropdown-toggle wp-49 text-left"
+                          id="dropdownUserMnoArr"
+                          data-bs-toggle="dropdown"
+                          data-bs-auto-close="outside"
+                          aria-haspopup="true"
+                          aria-expanded="false"
+                        >
+                          <span
+                            class="filterTitle"
+                          >작성자</span>
+                          <span class="caret"></span>
+                        </button>
+                        <div
+                          class="dropdown-menu dropdown-sch-select member"
+                          aria-labelledby="dropdownUserMnoArr"
+                        >
+                          <div class="dropdown-menu-title">
+                            <span
+                              class="drop-title"
+                            >연구원 검색</span>
+                            <div class="ma-t10 ma-b10 flex-sty02">
+                              <input
+                                type="text"
+                                id="schMember"
+                                maxlength="255"
+                                placeholder="이름, 이메일로 검색해주세요."
+                                class="input-write-sty02-line"
+                                sch-enter="getSearchMemberList"
+                              />
+                              <a
+                                href="#"
+                                onclick="
+                                  getSearchMemberList();
+                                  return false;
+                                "
+                                class="c-pointer"
+                              >
+                                <i class="fa far fa-m fa-search small"></i>
+                              </a>
+                            </div>
+                          </div>
+                          <div class="dropdown-menu-cont">
+                            <div class="drop-cont1 flex-sty04">
+                              <div>
+                                <span>전체</span>
+                                (
+                                <span id="searchbox-member-cnt">0</span>
+                                )
+                              </div>
+                              <span
+                                class="allCheck"
+                                onclick="allSearchboxChk(&#39;filterUserMnoArr&#39;);"
+                              >전체 연구원</span>
+                            </div>
+                            <ul id="searchbox-member-list"></ul>
+                            <div class="no-data small d-none">
+                              <div class="no-data-back"></div>
+                              <span>검색결과가 없습니다.</span>
+                            </div>
+                          </div>
+                          <div class="dropdown-menu-footer">
+                            <div class="button-wrap02">
+                              <button
+                                type="button"
+                                class="button-cncl-sty01 small button-cncl"
+                                onclick="$(&#39;#dropdownUserMnoArr&#39;).dropdown(&#39;hide&#39;);"
+                              >닫기</button>
+                              <button
+                                type="button"
+                                class="button-cnfm-sty01 small button-search filterUserMnoArr"
+                                onclick="selectSearchFilter('filterUserMnoArr')"
+                              >선택</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="ma-t8">
+                        <!-- 단계 -->
+                        <button
+                          type="button"
+                          class="dropdown-select-btn filterProcessMnoArr default dropdown-toggle wp-100 text-left"
+                          id="dropdownProcessMnoArr"
+                          data-bs-toggle="dropdown"
+                          data-bs-auto-close="outside"
+                          aria-haspopup="true"
+                          aria-expanded="false"
+                        >
+                          <span
+                            class="filterTitle"
+                          >단계</span>
+                          <span class="caret"></span>
+                        </button>
+                        <div
+                          class="dropdown-menu dropdown-sch-select process"
+                          aria-labelledby="dropdownProcessMnoArr"
+                        >
+                          <div class="dropdown-menu-title">
+                            <span
+                              class="drop-title"
+                            >단계 검색</span>
+                          </div>
+                          <div class="dropdown-menu-cont">
+                            <div class="drop-cont1 flex-sty04">
+                              <div>
+                                <span>전체</span>
+                                (
+                                <span>3</span>
+                                )
+                              </div>
+                              <span
+                                class="allCheck"
+                                onclick="allSearchboxChk(&#39;filterProcessMnoArr&#39;);"
+                              >전체 단계</span>
+                            </div>
+                            <ul>
+                              
+                                <li class="flex-sty04 po-r dropdown-item step-search search-filterProcessMnoArr">
+                                  <span
+                                    class="txt"
+                                  >1단계 · 라이브러리 설계</span>
+                                  <div class="button-chk-list-sty01 form-check-reverse">
+                                    <input
+                                      type="checkbox"
+                                      class="btn form-check-input searchbox-filter-item"
+                                      name="filterProcessMnoArr"
+                                      id="filterProcessMnoArr-1"
+                                      autocomplete="off"
+                                      value="1"
+                                      onchange="changeSearchboxChk(this);"
+                                    />
+                                  </div>
+                                  <label
+                                    class="po-a"
+                                    for="filterProcessMnoArr-1"
+                                  ></label>
+                                </li>
+                              
+                                <li class="flex-sty04 po-r dropdown-item step-search search-filterProcessMnoArr">
+                                  <span
+                                    class="txt"
+                                  >2단계 · 합성</span>
+                                  <div class="button-chk-list-sty01 form-check-reverse">
+                                    <input
+                                      type="checkbox"
+                                      class="btn form-check-input searchbox-filter-item"
+                                      name="filterProcessMnoArr"
+                                      id="filterProcessMnoArr-2"
+                                      autocomplete="off"
+                                      value="2"
+                                      onchange="changeSearchboxChk(this);"
+                                    />
+                                  </div>
+                                  <label
+                                    class="po-a"
+                                    for="filterProcessMnoArr-2"
+                                  ></label>
+                                </li>
+                              
+                                <li class="flex-sty04 po-r dropdown-item step-search search-filterProcessMnoArr">
+                                  <span
+                                    class="txt"
+                                  >3단계 · 물성 평가</span>
+                                  <div class="button-chk-list-sty01 form-check-reverse">
+                                    <input
+                                      type="checkbox"
+                                      class="btn form-check-input searchbox-filter-item"
+                                      name="filterProcessMnoArr"
+                                      id="filterProcessMnoArr-3"
+                                      autocomplete="off"
+                                      value="3"
+                                      onchange="changeSearchboxChk(this);"
+                                    />
+                                  </div>
+                                  <label
+                                    class="po-a"
+                                    for="filterProcessMnoArr-3"
+                                  ></label>
+                                </li>
+                              
+                            </ul>
+                            
+                          </div>
+                          <div class="dropdown-menu-footer">
+                            <div class="button-wrap02">
+                              <button
+                                type="button"
+                                class="button-cncl-sty01 small button-cncl"
+                                onclick="$(&#39;#dropdownProcessMnoArr&#39;).dropdown(&#39;hide&#39;);"
+                              >닫기</button>
+                              <button
+                                type="button"
+                                class="button-cnfm-sty01 small button-search filterProcessMnoArr"
+                                onclick="selectSearchFilter('filterProcessMnoArr')"
+                              >선택</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="footer">
+                    <div class="button-wrap02">
+                      <button
+                        type="button"
+                        class="button-cncl-sty01 small button-cncl"
+                        onclick="$(&#39;#dropdownSearchbox&#39;).dropdown(&#39;hide&#39;);"
+                      >닫기</button>
+                      <button
+                        type="button"
+                        class="button-cnfm-sty01 small button-search default"
+                        id="searchbox-search-act-btn"
+                        onclick="searchApplyFilter()"
+                      >검색</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                id="filter-box"
+                class="flex-sty02"
+              ></div>
+            </div>
+            <div class="filter-reset-box">
+              <a
+                href="#"
+                class="button-gray-txt-sty01"
+                onclick="clearSearchboxAndSearch()"
+              >검색 초기화</a>
+            </div>
+          </div>
+          <div class="tab-left ma-t15">
+            <div class="box01">
+              <p
+                class="sub-title-sty03"
+              >연구폴더 목록</p>
+              <button
+                onclick="openModalCreateFolder()"
+                class="button-blue-full-sty01 folder ma-t10 create-folder"
+              >연구폴더 생성</button>
+            </div>
+            <div class="box02-wrap">
+              <div class="box02 no-folder-list">
+                <ul>
+                  <li
+                    class="folder-element cursor-pointer po-r"
+                    data-folder-mno="0"
+                  >
+                    <input
+                      type="checkbox"
+                      class="folderCheckbox basic form-check-input check c-pointer"
+                      id="downloadFolderArr_0"
+                      style="z-index: 1"
+                    />
+                    <div class="flex-sty03 folder-info">
+                      <span
+                        class="folder_name"
+                        onclick="getFolderNoteList()"
+                      >
+                        미분류
+                      </span>
+                      <div class="note_cnt no-folder">0</div>
+                      <div class="chk_cnt">0</div>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+              <div class="box02 folder-list">
+                <ul></ul>
+              </div>
+            </div>
+          </div>
+          <div class="tab-right ma-t15">
+            <div class="flex-sty04 note-top">
+              <div>
+                <div class="flex-sty03 note">
+                  <div class="folder_name get-folder-name"></div>
+                  <div class="folder_text">
+                    <span class="ma-r10"></span>
+                    /
+                    <span class="ma-r10"></span>
+                    <span>연구노트 목록</span>
+                    (
+                    <span class="note_cnt get-note-cnt">0</span>
+                    )
+                  </div>
+                </div>
+              </div>
+              <div class="flex-sty02 note-btn-wrap">
+                <div
+                  class="button-wrap pa-r0 pa-t0 pa-b0"
+                >
+                  <button
+                    onclick="openModalCreateNote()"
+                    class="button-blue-full-sty01 note create-note"
+                  >연구노트 생성</button>
+                </div>
+                <div
+                  class="button-wrap"
+                  style="top: 0"
+                >
+                  <nav class="list-block-btn-box ma-l10">
+                    <div
+                      class="nav nav-tabs tabs-box"
+                      id="nav-tab"
+                      role="tablist"
+                    >
+                      <button
+                        class="list-btn-box btn"
+                        onclick="getNoteList()"
+                        id="list-box"
+                        data-bs-toggle="tab"
+                        data-bs-target="#nav-list-box"
+                        type="button"
+                        role="tab"
+                        aria-controls="nav-list-box"
+                        aria-selected="true"
+                      ></button>
+                      <button
+                        class="block-btn-box btn active"
+                        id="block-box"
+                        data-bs-toggle="tab"
+                        data-bs-target="#nav-block-box"
+                        type="button"
+                        role="tab"
+                        aria-controls="nav-block-box"
+                        aria-selected="false"
+                      ></button>
+                    </div>
+                  </nav>
+                </div>
+              </div>
+            </div>
+            <div class="tab-content note-box-wrap ma-t10">
+              <!-- 연구노트 리스트 -->
+              <div
+                class="tab-pane fade"
+                id="nav-list-box"
+                role="tabpanel"
+                aria-labelledby="list-box"
+                tabindex="0"
+              >
+                <div class="core-table">
+                  <div class="note-list-con box-table">
+                    <div class="box">
+                      <div class="box-header"></div>
+                      <div class="box-body">
+                        <div class="core-table-body">
+                          <div class="table-responsive pa-b30 core-table-div">
+                            <table
+                              class="table table-hover table-sty01"
+                              id="tableNoteList_"
+                            >
+                              <colgroup>
+                                <col width="500px;" />
+                                <col width="200px;" />
+                                <col />
+                                <col />
+                                <col />
+                              </colgroup>
+                              <thead>
+                                <tr class="text-nowrap">
+                                  <th class="text-left c-pointer">
+                                    <span
+                                      sort-fn-nm="changeSort"
+                                      sort-nm="NOTE_NM"
+                                    >
+                                      연구노트
+                                    </span>
+                                  </th>
+                                  <th class="text-left c-pointer">
+                                    <span
+                                      sort-fn-nm="changeSort"
+                                      sort-nm="MODIFY_USER_NM"
+                                    >
+                                      작성자
+                                    </span>
+                                  </th>
+                                  <th class="text-left c-pointer">
+                                    <span
+                                      sort-fn-nm="changeSort"
+                                      sort-nm="MODIFY_DT"
+                                    >
+                                      최근작성일
+                                    </span>
+                                  </th>
+                                  <th class="text-left c-pointer">
+                                    <span>
+                                      상태
+                                    </span>
+                                  </th>
+                                  <th class="text-left c-pointer"></th>
+                                </tr>
+                              </thead>
+                              <tbody></tbody>
+                            </table>
+                            <div class="paging-box"></div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="box-footer"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- 연구노트 카드 -->
+              <div
+                class="tab-pane fade show active"
+                id="nav-block-box"
+                role="tabpanel"
+                aria-labelledby="block-box"
+              >
+                <div class="main-wrap2 note-card-board small">
+                  <div class="note-card">
+                    <div class="no-data d-none">
+                      <div class="no-data-back"></div>
+                      <span>검색결과가 없습니다.</span>
+                    </div>
+                    <ul class="note-list d-none"></ul>
+                  </div>
+                  <div class="flex-sty01">
+                    <div
+                      class="more_list_data d-none"
+                      onclick="gfn_noteCardList()"
+                    >
+                      <span class="remainCnt">1</span>
+                      <span>개 더보기</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -6301,59 +7549,451 @@
         </div>
       </div>
 
-      
-      <div id="modal-lims-instrument"
-           class="modal fade"
-           data-bs-backdrop="static"
-           data-bs-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered">
+      <!-- 연구노트 생성 모달  -->
+      <div
+        id="modal-note-create"
+        class="modal fade"
+        data-bs-backdrop="static"
+        data-bs-keyboard="false"
+      >
+        <div class="modal-dialog modal-dialog-centered modal-m">
           <div class="modal-pop modal-wrap-sty02 modal-content mh-800"></div>
-        </div>
-      </div>
-      <div id="modal-lims-instrument-edit"
-           class="modal fade"
-           data-bs-backdrop="static"
-           data-bs-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-pop modal-wrap-sty02 modal-content mh-800"></div>
-        </div>
-      </div>
-      <div id="modal-lims-instrument-retire"
-           class="modal fade"
-           data-bs-backdrop="static"
-           data-bs-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-pop modal-wrap-sty02 modal-content mh-800"></div>
-        </div>
-      </div>
-      <div id="modal-lims-cal"
-           class="modal fade"
-           data-bs-backdrop="static"
-           data-bs-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-          <div class="modal-pop modal-wrap-sty01 modal-content"></div>
         </div>
       </div>
 
-      <script id="template_instrument_list"
-              type="text/template">
-        <tr>
-          <td class="text-left"><b>{{=instrumentCd}}</b></td>
-          <td class="text-left">{{=instrumentNm}}</td>
-          <td class="text-left">{{=instrumentTpDisp}}</td>
-          <td class="text-left">{{=modelNmDisp}}</td>
-          <td class="text-left">{{=locationNmDisp}}</td>
-          <td class="text-left">{{=lastCalDeDisp}}</td>
-          <td class="text-left">{{=calDisp}}</td>
-          <td class="text-left">{{=statusDisp}}</td>
-          <td class="lims-actions-cell">
-            <button class="button-blue-line-sty01" onclick="openModalCalHistory('{{=instrumentMno}}', '{{=instrumentCd}}', '{{=instrumentNm}}');"><span>교정 이력</span></button>
-            <button class="button-blue-line-sty01" onclick="openModalInstrumentEdit('{{=instrumentMno}}');"><span>수정</span></button>
-            {{=retireDisp}}
-          </td>
-        </tr>
-      </script>
+      <!-- 연구폴더 생성 모달  -->
+      <div
+        id="modal-folder-add"
+        class="modal fade"
+        data-bs-backdrop="static"
+        data-bs-keyboard="false"
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-pop modal-wrap-sty02 modal-content"></div>
+        </div>
+      </div>
     </div>
+    <div class="form_footer_wrap note-download-wrap">
+      <div class="form_footer flex-sty04">
+        <div></div>
+        <div class="button-wrap pa-0">
+          <a
+            href="#"
+            class="button-cncl-sty01 ma-l10 button-cncl"
+            onclick="top_toggleNoteDownraodWrap()"
+          >닫기</a>
+          <a
+            href="#"
+            class="button-cncl-sty01 ma-l10"
+            onclick="
+              selectAllNotePdf();
+              return false;
+            "
+          >전체선택</a>
+          <a
+            href="#"
+            class="button-cnfm-sty01 ma-l10"
+            onclick="
+              downloadProjectNotePdf();
+              return false;
+            "
+          >연구노트 다운로드</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 매개변수가 있는 th 태그를(#userTh.getImageUrl) 처리하기 위해서는 백틱 템플릿보다 script태그를 활용하는것이 유리해서 유지함 -->
+    <script
+      id="template_searchbox_member"
+      type="text/template"
+    >
+      <li class="flex-sty04 po-r dropdown-item member-search search-filterUserMnoArr">
+          <div class="flex-sty02">
+              <img src="assets/lib/eln/img/img_gnb_profile.png" class="profileImg profileSmallImg" alt="profile">
+              <div class="profile_info ma-l5">
+                  <div class="txt name">{{=userNm}}</div>
+                  <div class="sub-txt email">{{=email}}</div>
+              </div>
+          </div>
+          <div class="button-chk-list-sty01 form-check-reverse">
+              <input type="checkbox" class="btn form-check-input searchbox-filter-item" name="filterUserMnoArr" id="filterUserMnoArr-{{=userMno}}" autocomplete="off" value="{{=userMno}}" onchange="changeSearchboxChk(this);">
+          </div>
+          <label class="po-a" for="filterUserMnoArr-{{=userMno}}"></label>
+      </li>
+    </script>
+
+    <!-- 매개변수가 있는 국제화 메시지를(i18n.txt.guide.msg.20) 처리하기 위해서는 백틱 템플릿보다 script태그를 활용하는것이 유리해서 유지함 -->
+    <script
+      id="template_modal_project_note_create"
+      type="text/template"
+    >
+      <div class="modal-header cursor-move">
+          <p class="modal-title">연구노트 생성</p>
+      </div>
+      <div class="modal-body">
+          <form method="post" role="form" id="createNoteForm">
+              <input type="hidden" name="projectMno" value="{{=projectMno}}"/>
+              <input type="hidden" name="folderMno" value="{{=folderMno}}"/>
+              <div if="isElnProjectProcessUseYn" class="flex-sty05 ma-b20">
+                  <label for="selectProcess" class="modal-cont-label">단계</label>
+                  <select class="btn btn-xs select-xs select-sty02 wp-100" name="processMno" id="selectProcess">
+                      <option value="">선택없음</option>
+                  </select>
+                  <div class="flex-sty04">
+                      <div class="guidetext-sty01">연구노트의 단계를 설정해주세요.</div>
+                  </div>
+              </div>
+              <div class="flex-sty05 ma-b20">
+                  <label for="selectFolder" class="modal-cont-label">연구폴더</label>
+                  <select class="btn btn-xs select-xs select-sty02 wp-100" name="folderMno" id="selectFolder">
+                      <option value="">선택없음</option>
+                  </select>
+                  <div class="flex-sty04">
+                      <div class="guidetext-sty01">연구노트의 폴더를 설정해주세요.</div>
+                  </div>
+              </div>
+              <div class="flex-sty05 ma-b20">
+                  <label for="noteNm" class="modal-cont-label">연구노트명</label>
+                  <input type="text" name="noteNm" id="noteNm" maxlength="50" placeholder="연구노트명을 입력해주세요." class="input-write-sty02-line" title="연구노트명"
+                      onKeyDown="coreCommon.inputLimitText('#noteNm', '.noteNm-count', 50);"
+                      onKeyUp="coreCommon.inputLimitText('#noteNm', '.noteNm-count', 50);">
+                  <div class="flex-sty04">
+                      <div class="guidetext-sty01">최소 1글자 이상 입력해주세요.</div>
+                      <div>
+                          <code class="noteNm-count">0</code><span class="guidetext-sty02"> / 50</span>
+                      </div>
+                  </div>
+              </div>
+              <div class="flex-sty05 ma-b20">
+                  <label for="selectGrade" class="modal-cont-label">연구노트 보안 등급</label>
+                  <select class="btn btn-xs select-xs select-sty02 wp-100" name="securityGradeCcd" id="selectGrade" title="연구노트 보안 등급" required="required">
+                      <option value="">선택없음</option>
+                      <option value="SECURITY_GRADE_MEMBER_1">1등급</option>
+                      <option value="SECURITY_GRADE_MEMBER_2">2등급</option>
+                      <option value="SECURITY_GRADE_MEMBER_3">3등급</option>
+                      <option value="SECURITY_GRADE_EXTERNAL_SECRET">기밀</option>
+                      <option value="SECURITY_GRADE_EXTERNAL_A">사외비 A</option>
+                      <option value="SECURITY_GRADE_EXTERNAL_B">사외비 B</option>
+                  </select>
+                  <div class="flex-sty04">
+                      <div class="guidetext-sty01">보안 등급은 숫자가 낮을 수록 높아집니다.</div>
+                  </div>
+              </div>
+              <div class="flex-sty05 ma-b20">
+                  <label for="setKeyword" class="modal-cont-label">연구노트 키워드</label>
+                  <div class="add-project-sty01">
+                      <input type="text" id="setKeyword" maxlength="20" placeholder="내용을 입력해주세요." onKeyDown="coreCommon.inputLimitText('#setKeyword','.keyword-count',20);" onKeyUp="coreCommon.inputLimitText('#setKeyword','.keyword-count',20);" class="input-write-sty01-line" />
+                  </div>
+                  <div class="flex-sty04">
+                      <div class="guidetext-sty01">최대 20자 입력 가능합니다.</div>
+                      <div><code class="keyword-count">0</code><span class="guidetext-sty02"> / 20</span></div>
+                  </div>
+                  <div class="keyword-wrap">
+                      <input type="hidden" name="keywordArrStr"/>
+                  </div>
+              </div>
+              <div class="flex-sty05 ma-b20">
+                  <label for="noteDesc" class="modal-cont-label">연구노트 요약</label>
+                  <input type="text" name="desc" id="noteDesc" maxlength="200" placeholder="내용을 입력해주세요." class="input-write-sty02-line" title="연구노트 요약"
+                      onKeyDown="coreCommon.inputLimitText('#noteDesc', '.noteDesc-count', 200);"
+                      onKeyUp="coreCommon.inputLimitText('#noteDesc', '.noteDesc-count', 200);">
+                  <div class="flex-sty04">
+                      <div class="guidetext-sty01">최대 200자 입력 가능합니다.</div>
+                      <div>
+                          <code class="noteDesc-count">0</code><span class="guidetext-sty02"> / 200</span>
+                      </div>
+                  </div>
+              </div>
+              <div class="flex-sty05 ma-b20">
+                  <label for="writeModeCcd_EDITOR" class="modal-cont-label">작성방식</label>
+                  <div class="radio-box-sty01 flex-sty02 wp-100">
+                      <input type="radio" class="btn btn-check" name="writeModeCcd" id="writeModeCcd_EDITOR" autocomplete="off" value="EDITOR" data-bs-target="#multiCollapseEditor" aria-expanded="false" aria-controls="multiCollapseEditor" required="required" title="작성방식">
+                      <label class="btn btn-secondary" for="writeModeCcd_EDITOR">에디터</label>
+                      <input type="radio" class="btn btn-check" name="writeModeCcd" id="writeModeCcd_FILE" autocomplete="off" value="FILE" data-bs-target="#multiCollapseFile" aria-expanded="false" aria-controls="multiCollapseFile">
+                      <label class="btn btn-secondary" for="writeModeCcd_FILE">파일 업로드</label>
+                  </div>
+              </div>
+              <div id="multiCollapseEditor" class="collapse flex-sty05">
+                  <!-- <label for="" class="modal-cont-label" th:text="#{i18n.pkg.msg.314}">파일 형식</label>
+                  <div class="ma-b20" id="selectEditorTp">
+                  </div> -->
+                  <label for="editorAutoSaveMin" class="modal-cont-label">자동저장</label>
+                  <select class="btn btn-xs select-xs select-sty02 wp-100" name="editorAutoSaveMin" id="editorAutoSaveMin">
+                      <option value="0">사용안함</option>
+                      <option value="5">5분</option>
+                      <option value="10">10분</option>
+                      <option value="20">20분</option>
+                      <option value="30">30분</option>
+                  </select>
+                  <div class="flex-sty04">
+                      <div class="guidetext-sty01">자동저장 설정 시 용량 및 저장 이력이 많아질 수 있습니다.</div>
+                  </div>
+              </div>
+              <div id="multiCollapseFile" class="collapse flex-sty05">
+                  <label for="layout-main-note-file-drop-zone" class="modal-cont-label">파일 업로드</label>
+                  <input type="file" id="layout-note-file-upload" class="d-none" />
+                  <div id="layout-main-note-file-drop-zone" class="grid-add box-drop-zone c-pointer h-180">
+                      <span class="limit_txt ma-t20 flex-sty09">클릭 또는 Drag&amp;Drop으로 화면에 파일을 끌어다 놓으면 업로드됩니다.</span>
+                      <div class="ma-t20">
+                          <span class="limit_txt"><span>파일 용량 한도</span>:&nbsp;<span>300</span>MB</span>
+                          <span class="limit_txt ma-b20 line-break"><span>허용 확장자</span>:&nbsp;<span class=" line-break">pdf,jpg,jpeg,png,hwp,hwpx,doc,docx,ppt,pptx,xls,xlsx</span></span>
+                      </div>
+                  </div>
+                  <div>
+                      <ul id="sortable" class="ma-t10 mt-2 file-list note-upload-file-list">
+                      </ul>
+                  </div>
+              </div>
+          </form>
+      </div>
+      <div class="modal-footer">
+          <div class="button-wrap02">
+              <button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">닫기</button>
+              <button type="button" class="button-cnfm-sty01 button-cnfm">확인</button>
+          </div>
+      </div>
+    </script>
+    
+    <!-- 연구노트 점검 요청 모달  -->
+    <div
+      id="modal-note-inspection-WRITING"
+      class="modal fade"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-pop modal-wrap-sty01 modal-content"></div>
+      </div>
+    </div>
+    <!-- 연구노트 점검중/점검완료 모달  -->
+    <div
+      id="modal-note-inspection-INSPECTION"
+      class="modal fade"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-pop modal-wrap-sty01 modal-content"></div>
+      </div>
+    </div>
+    <!-- 연구노트 점검관리 모달  -->
+    <div
+      id="modal-note-inspection-management"
+      class="modal fade"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-pop modal-wrap-sty01 modal-content"></div>
+      </div>
+    </div>
+
+    <!-- 연구노트 공유관리 모달  -->
+    <div
+      id="modal-note-confirm-share"
+      class="modal fade"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-pop modal-wrap-sty02 modal-content"></div>
+      </div>
+    </div>
+    <!-- 연구노트 공유관리 모달  -->
+    <div
+      id="modal-note-confirm-share-confirm"
+      class="modal fade"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-pop modal-wrap-sty02 modal-content shareV2"></div>
+      </div>
+    </div>
+    <!-- 연구노트 공유 점검중/완료 모달  -->
+    <div
+      id="modal-note-share-INSPECTION"
+      class="modal fade"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-pop modal-wrap-sty01 modal-content"></div>
+      </div>
+    </div>
+    <!-- 다운로드 요청 모달  -->
+    <div
+      id="modal-note-request-download-confirm"
+      class="modal fade"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-pop modal-wrap-sty01 modal-content"></div>
+      </div>
+    </div>
+    <!-- 연구노트 다운로드 관리 모달  -->
+    <div
+      id="modal-note-confirm-download-confirm"
+      class="modal fade"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-pop modal-wrap-sty02 modal-content downloadV2"></div>
+      </div>
+    </div>
+    <!-- 연구노트 다운로드 점검중/완료 모달  -->
+    <div
+      id="modal-note-download-INSPECTION"
+      class="modal fade"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-pop modal-wrap-sty01 modal-content"></div>
+      </div>
+    </div>
+    <!-- 성과 세부 목표 검토중/완료 모달  -->
+    <div
+      id="modal-performance-detail-goals"
+      class="modal fade"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-pop modal-wrap-sty01 modal-content long"></div>
+      </div>
+    </div>
+    <!-- 성과 세부 목표 승인 관리 모달  -->
+    <div
+      id="modal-performance-detail-goals-confirm"
+      class="modal fade"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-pop modal-wrap-sty01 modal-content long"></div>
+      </div>
+    </div>
+
+    <!-- 매개변수가 있는 국제화 메시지를(i18n.pkg.msg.377) 처리하기 위해서는 백틱 템플릿보다 script태그를 활용하는것이 유리해서 유지함 -->
+    <script
+      id="template_modal_note_confirm_share"
+      type="text/template"
+    >
+      <div class="modal-header cursor-move">
+          <p class="modal-title">연구노트 공유</p>
+          <span class="modal-sub img" title="{{=subTitle}}">{{=subTitle}}</span>
+      </div>
+      <div class="modal-body">
+          <div class="flex-sty05">
+              <p class="modal-cont-title2 text-center ma-b10">연구노트 공유요청을 승인하시겠습니까?</p>
+          </div>
+          <div class="modal-text-box ma-t15">
+              <div class="text-center">
+                  <span class="txt-blue fw-500"><span>{{=createUserNm}}</span><span if="isEmail">({{=createUserEmail}})</span></span>
+                  <p class="modal-cont-txt2 ma-b10 fw-400">님이 {{=shareReqstPeriodDays}}일간 연구노트 열람을 신청하셨습니다.</p>
+              </div>
+              <div class="radio-box-sty02 text-center">
+                  <input type="radio" name="shareStatusCcd" id="shareStatusCcd_APPROVAL" autocomplete="off" class="c-pointer" value="APPROVAL">
+                  <label for="shareStatusCcd_APPROVAL" class="c-pointer">승인</label>
+                  <input type="radio" name="shareStatusCcd" id="shareStatusCcd_REJECT" autocomplete="off" class="c-pointer" value="REJECT">
+                  <label for="shareStatusCcd_REJECT" class="c-pointer">반려</label>
+              </div>
+          </div>
+      </div>
+      <div class="modal-footer">
+          <div class="button-wrap02">
+              <button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">닫기</button>
+              <button type="button" class="button-cnfm-sty01 button-cnfm" onclick="clickModalNoteShareApproval();">확인</button>
+          </div>
+      </div>
+      </div>
+    </script>
+    <!-- 매개변수가 있는 국제화 메시지를(i18n.pkg.msg.377) 처리하기 위해서는 백틱 템플릿보다 script태그를 활용하는것이 유리해서 유지함 -->
+    <script
+      id="template_modal_note_confirm_share_confirm"
+      type="text/template"
+    >
+      <div class="modal-header cursor-move">
+          <p class="modal-title">연구노트 공유 관리</p>
+          <span class="modal-sub img" title="{{=subTitle}}">{{=subTitle}}</span>
+      </div>
+      <div class="modal-body share">
+          <div class="flex-sty05">
+              <p class="modal-cont-title2 text-center ma-b0">연구노트 공유요청을 승인하시겠습니까?</p>
+          </div>
+          <div class="modal-text-box ma-t15">
+              <div class="text-center">
+                  <span class="txt-blue fw-500"><span>{{=createUserNm}}</span><span if="isEmail">({{=createUserEmail}})</span></span>
+                  <p class="modal-cont-txt2 ma-b10 fw-400">님이 {{=shareReqstPeriodDays}}일간 연구노트 열람을 신청하셨습니다.</p>
+              </div>
+              <div class="text-center">
+                  <pre class="desc read ma-t10">{{=desc}}</pre>
+              </div>
+              <div class="radio-box-sty02 text-center ma-t8">
+                  <input type="radio" name="shareStatusCcd" id="shareStatusCcd_APPROVAL" autocomplete="off" class="c-pointer" value="APPROVAL">
+                  <label for="shareStatusCcd_APPROVAL" class="c-pointer">승인</label>
+                  <input type="radio" name="shareStatusCcd" id="shareStatusCcd_REJECT" autocomplete="off" class="c-pointer" value="REJECT">
+                  <label for="shareStatusCcd_REJECT" class="c-pointer">반려</label>
+              </div>
+          </div>
+          <div class="text-center ma-t15 rejectResn d-none">
+              <label for="shareDesc" class="modal-cont-label">반려 사유</label>
+              <textarea id="shareDesc" name="desc" rows="3" class="form-textarea form-textarea-line wp-100 h-70" placeholder="내용을 입력해주세요." maxlength="3000"></textarea>
+          </div>
+      </div>
+      <div class="modal-footer">
+          <div class="button-wrap02">
+              <button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">닫기</button>
+              <button type="button" class="button-cnfm-sty01 button-cnfm" onclick="clickModalNoteShareConfirmApproval();">확인</button>
+          </div>
+      </div>
+    </script>
+    <!-- 매개변수가 있는 국제화 메시지를(i18n.pkg.msg.607) 처리하기 위해서는 백틱 템플릿보다 script태그를 활용하는것이 유리해서 유지함 -->
+    <script
+      id="template_modal_note_confirm_download_confirm"
+      type="text/template"
+    >
+      <div class="modal-header cursor-move">
+          <p class="modal-title">연구노트 다운로드 관리</p>
+      </div>
+      <div class="modal-body download">
+          <div class="flex-sty05">
+              <p class="modal-cont-title2 text-center ma-b0">연구노트 다운로드를 승인하시겠습니까?</p>
+              <div class="text-center">
+                  <p class="modal-cont-txt1 ma-t20 fw-400 ma-auto wp-90">{{=noteNmDisplay}}</p>
+              </div>
+          </div>
+          <div class="modal-text-box ma-t15">
+              <div class="text-center">
+                  <span class="txt-blue fw-500"><span>{{=createUserNm}}</span><span if="isEmail">({{=createUserEmail}})</span></span>
+                  <p class="modal-cont-txt2 ma-b10 fw-400">님이 {{=downloadReqstPeriodDays}}일간 연구노트 다운로드를 신청하셨습니다.</p>
+              </div>
+              <div class="text-center">
+                  <pre class="desc read ma-t10">{{=desc}}</pre>
+              </div>
+              <div class="radio-box-sty02 text-center ma-t8">
+                  <input type="radio" name="downloadStatusCcd" id="downloadStatusCcd_APPROVAL" autocomplete="off" class="c-pointer" value="APPROVAL">
+                  <label for="downloadStatusCcd_APPROVAL" class="c-pointer">승인</label>
+                  <input type="radio" name="downloadStatusCcd" id="downloadStatusCcd_REJECT" autocomplete="off" class="c-pointer" value="REJECT">
+                  <label for="downloadStatusCcd_REJECT" class="c-pointer">반려</label>
+              </div>
+          </div>
+          <div class="text-center ma-t15 rejectResn d-none">
+              <label for="shareDesc" class="modal-cont-label">반려 사유</label>
+              <textarea id="downloadDesc" name="desc" rows="3" class="form-textarea form-textarea-line wp-100 h-70" placeholder="내용을 입력해주세요." maxlength="3000"></textarea>
+          </div>
+      </div>
+      <div class="modal-footer">
+          <div class="button-wrap02">
+              <button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">닫기</button>
+              <button type="button" class="button-cnfm-sty01 button-cnfm" onclick="clickModalNoteDownloadConfirmApproval();">확인</button>
+          </div>
+      </div>
+    </script>
+  
   </div>
         </div>
       </div>

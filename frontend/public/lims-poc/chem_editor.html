@@ -2489,7 +2489,7 @@
       const chemEmbedUrl = "\/lims\/chem\/chemPopup";
       const gProjectMno = null;
       /* 'Y' 이면 화합물 라이브러리 화면이 띄운 구조 질의용 창이다. */
-      const gSearchYn = null;
+      const gSearchYn = "Y";
       let gLastProperties = null;
       let gReadyRetry = null;
 
@@ -3212,23 +3212,23 @@
                       isAdmin: '' === 'Y',
                       isElnProjectProcessUseYn: '' === 'Y',
                       isPerformanceRegistered:
-                        '' === 'Y' &&
+                        'N' === 'Y' &&
                         '' === 'Y' &&
                         project['performanceRegisteredYn'] === 'Y', // 이미 성과관리프로젝트에 등록 되었을경우 제외 버튼 표시
                       isAdminAndGnrlUserNm: '' === 'Y' && !!project['gnrlUserNm'],
                       isAdminAndNotGnrlUserNm: '' === 'Y' && !!!project['gnrlUserNm'], // 총괄이 없을 경우 버튼 표시
                       isPerformanceRegisterYn:
-                        '' === 'Y' &&
+                        'N' === 'Y' &&
                         project['performanceRegisteredYn'] === 'N' &&
                         '' === 'Y' &&
                         !!project['gnrlUserNm'], //성과관리프로젝트 등록 버튼 표시
                       isShowLockBtn:
-                        '' === 'Y' &&
+                        'N' === 'Y' &&
                         '' === 'Y' &&
                         project['performanceRegisteredYn'] === 'Y' &&
                         project['isPerformanceEditLocked'] === 'N',
                       isShowUnlockBtn:
-                        '' === 'Y' &&
+                        'N' === 'Y' &&
                         '' === 'Y' &&
                         project['performanceRegisteredYn'] === 'Y' &&
                         project['isPerformanceEditLocked'] === 'Y'
@@ -5279,9 +5279,6 @@
             
               
                 
-                  <a class="menuCd LIMS_NOTE"
-                     href="note_write.html">연구노트 작성</a>
-                
                   <a class="menuCd LIMS_COMPOUND"
                      href="compound_list.html">화합물 라이브러리</a>
                 
@@ -5291,28 +5288,21 @@
                   <a class="menuCd LIMS_REAGENT"
                      href="reagent_list.html">시약/재고 관리</a>
                 
-                  <a class="menuCd LIMS_SCAN"
-                     href="scan.html">바코드 스캔</a>
-                
                   <a class="menuCd LIMS_LOCATION"
                      href="location_list.html">보관위치 관리</a>
                 
                   <a class="menuCd MAIN_DASHBOARD"
-                     href="#">대시보드 홈</a>
+                     href="dashboard.html">대시보드 홈</a>
                 
                   <a class="menuCd MAIN_NOTE_INFO"
-                     href="#">노트 관리 현황</a>
+                     href="note_management.html">노트 관리 현황</a>
                 
                   <a class="menuCd OPMS_RESEARCH_SUPPORT"
-                     href="#">연구 활동 지원</a>
+                     href="research_support.html">연구 활동 지원</a>
                 
                   <a class="menuCd MAIN_COMPLETED_PROJECT"
-                     href="#">완료 프로젝트</a>
+                     href="completed_project.html">완료 프로젝트</a>
                 
-              
-            
-              
-            
               
             
               
@@ -5773,7 +5763,6 @@
             <span>구조 입력기</span>
           </nav>
           <h2 class="lims-title">구조 입력기</h2>
-          <p class="lims-head-desc">구조를 그리거나 ChemDraw 등에서 복사해 붙여넣으면 분자식·분자량이 즉시 계산됩니다.</p>
         </div>
         <div class="lims-head-actions">
           <button class="button-blue-full-sty01"
@@ -6571,7 +6560,8 @@
         </div>
       </div>
     </script>
-    <script src="assets/poc/compounds.js"></script>
+    <script src="assets/poc/routes.js"></script>
+  <script src="assets/poc/compounds.js"></script>
   <script src="assets/poc/lims-mock.js"></script>
 </body>
 </html>
