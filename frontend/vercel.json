@@ -4,6 +4,10 @@
     {
       "source": "/api/:path*",
       "destination": "https://chemeditor.srv1711580.hstgr.cloud/api/:path*"
+    },
+    {
+      "source": "/editor",
+      "destination": "/index.html"
     }
   ],
   "redirects": [
