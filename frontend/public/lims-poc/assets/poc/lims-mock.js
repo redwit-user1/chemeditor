@@ -99,6 +99,60 @@
     };
   }
 
+  /* 시연 로그인 사용자. mkfixtures 의 loginUserNm 과 같은 값이어야 화면의
+     "승인자 ≠ 입력자" 판단과 목의 판단이 어긋나지 않는다. */
+  var POC_ME = '김연구';
+
+  /* 목에는 시계가 없다. 화면에 찍히는 시각이 매번 달라지면 스크린샷 비교가
+     흔들리므로, 실제 시각 대신 데모 기준 시각에서 분만 늘린다. */
+  var stampSeq = 0;
+  function stampNow() {
+    stampSeq += 1;
+    var mm = 30 + stampSeq;
+    return '2026-07-31 10:' + (mm < 10 ? '0' + mm : mm);
+  }
+
+  function findReview(resultMno) {
+    for (var i = 0; i < REVIEWS.length; i++) {
+      if (String(REVIEWS[i].resultMno) === String(resultMno)) { return REVIEWS[i]; }
+    }
+    return null;
+  }
+
+  /* 승인 결과가 들어갈 연구노트. 시료 → 프로젝트 → 그 프로젝트의 작성중 노트. */
+  function noteForSample(sampleMno) {
+    var sample = SAMPLES.filter(function (s) {
+      return String(s.sampleMno) === String(sampleMno);
+    })[0];
+    if (!sample) { return null; }
+    var notes = ELN_NOTES.filter(function (n) {
+      return String(n.projectMno) === String(sample.projectMno);
+    });
+    if (!notes.length) { return null; }
+
+    /* 완료된 노트에 결과를 덧붙이면 안 된다 — 작성중인 것만 후보다. */
+    var writing = notes.filter(function (n) { return n.writeStatusCcd === 'WRITING'; });
+    if (!writing.length) { return null; }
+
+    /* 같은 화합물을 다루는 노트를 먼저 고른다. 시료명이 'KM00003710 합성 원료'
+       라면 'KM00003710 …' 노트로 가야 한다 — 프로젝트가 같다는 이유만으로
+       엉뚱한 노트에 결과가 붙으면 기록이 거짓이 된다. */
+    var regId = (sample.sampleNm || '').match(/KM\d{8}/);
+    if (regId) {
+      var same = writing.filter(function (n) {
+        return (n.noteNm || '').indexOf(regId[0]) >= 0;
+      });
+      if (same.length) { return same[0]; }
+      /* 같은 화합물의 작성중 노트가 없으면 붙이지 않는다. 프로젝트가 같다는
+         이유로 아무 노트에나 넣으면 그 기록은 거짓이 된다. */
+      return null;
+    }
+    return writing[0];
+  }
+
+  /* 노트에 붙은 결과 기록. 연구노트 화면이 읽어 간다. */
+  var NOTE_RESULT_LOG = [];
+
   var SAMPLES = [
     { sampleMno: 5001, sampleNo: 'SMP-20260712-001', sampleNm: 'KM00003710 합성 원료 (batch A)',
       sampleTpCcd: 'COMPOUND', sampleSrcCcd: 'INTERNAL', sampleStatusCcd: 'IN_TEST',
@@ -205,6 +259,77 @@
       judgeCcd: 'PASS', judgeRsn: null, inputUserNm: '김연구', inputDt: '2026-07-27 14:20' }
   ];
 
+  /*
+    결과 검토 · 승인 대기열.
+
+    RESULTS 와 따로 두는 이유 — RESULTS 는 "한 시험 항목의 결과 이력"이고 이쪽은
+    "검토자가 처리해야 할 일감"이다. 화면도 다르고 수명도 다르다.
+
+    데모가 보여야 하는 세 가지를 데이터로 심어 둔다.
+      · 남이 입력한 적합 결과   → 승인할 수 있다
+      · 내가 입력한 적합 결과   → 승인 버튼이 잠긴다 (승인자 ≠ 입력자)
+      · 규격을 벗어난 결과      → 승인이 아니라 기준이탈 조사로 간다
+  */
+  var REVIEWS = [
+    { resultMno: 91, testItemMno: 8001, testItemNm: 'HPLC 순도',
+      sampleMno: 5001, sampleNo: 'SMP-20260712-001', sampleNm: 'KM00003710 합성 원료 (batch A)',
+      resultVal: '98.42', unitCcd: '%',
+      specJudgeTpCcd: 'RANGE', specLowerVal: 98.0, specUpperVal: 102.0, specExpectVal: null,
+      judgeCcd: 'PASS', inputUserNm: '이연구', inputDt: '2026-07-27 14:20',
+      instrumentNm: 'HPLC-01 (Agilent 1260)',
+      inputMemo: '표준품 3회 주입 RSD 0.4 %. 크로마토그램 이상 없음.',
+      reviewStatusCcd: 'PENDING',
+      approveUserNm: null, approveDt: null, noteMno: null, noteNo: null,
+      rejectUserNm: null, rejectDt: null, rejectRsn: null },
+
+    { resultMno: 92, testItemMno: 8002, testItemNm: '수분 (KF)',
+      sampleMno: 5001, sampleNo: 'SMP-20260712-001', sampleNm: 'KM00003710 합성 원료 (batch A)',
+      resultVal: '0.18', unitCcd: '%',
+      specJudgeTpCcd: 'RANGE', specLowerVal: 0.0, specUpperVal: 0.5, specExpectVal: null,
+      judgeCcd: 'PASS', inputUserNm: '김연구', inputDt: '2026-07-28 09:05',
+      instrumentNm: 'KF-02 (Metrohm 899)',
+      inputMemo: null,
+      reviewStatusCcd: 'PENDING',
+      approveUserNm: null, approveDt: null, noteMno: null, noteNo: null,
+      rejectUserNm: null, rejectDt: null, rejectRsn: null },
+
+    { resultMno: 93, testItemMno: 8003, testItemNm: '잔류용매 (GC)',
+      sampleMno: 5003, sampleNo: 'SMP-20260705-014', sampleNm: 'HepG2 세포용해물 (P12)',
+      resultVal: '0.62', unitCcd: '%',
+      specJudgeTpCcd: 'RANGE', specLowerVal: 0.0, specUpperVal: 0.5, specExpectVal: null,
+      judgeCcd: 'FAIL', inputUserNm: '박연구', inputDt: '2026-07-26 16:40',
+      instrumentNm: 'GC-03 (Agilent 8890)',
+      inputMemo: 'DCM 피크가 규격 상한을 넘었습니다.',
+      reviewStatusCcd: 'PENDING',
+      approveUserNm: null, approveDt: null, noteMno: null, noteNo: null,
+      rejectUserNm: null, rejectDt: null, rejectRsn: null },
+
+    { resultMno: 94, testItemMno: 8006, testItemNm: '성상',
+      sampleMno: 5004, sampleNo: 'SMP-20260628-003', sampleNm: 'KM00003719 표준품',
+      resultVal: '백색 결정성 분말', unitCcd: null,
+      specJudgeTpCcd: 'TEXT', specLowerVal: null, specUpperVal: null,
+      specExpectVal: '백색~미황색 결정성 분말',
+      judgeCcd: 'PASS', inputUserNm: '이연구', inputDt: '2026-07-15 11:02',
+      instrumentNm: null,
+      inputMemo: null,
+      reviewStatusCcd: 'APPROVED',
+      approveUserNm: '최QA', approveDt: '2026-07-15 15:30',
+      noteMno: 9103, noteNo: 'KM00003719 스케일업 검토',
+      rejectUserNm: null, rejectDt: null, rejectRsn: null },
+
+    { resultMno: 95, testItemMno: 8007, testItemNm: 'HPLC 순도',
+      sampleMno: 5002, sampleNo: 'SMP-20260712-002', sampleNm: 'KM00003711 정제 분획 F-3',
+      resultVal: '99.1', unitCcd: '%',
+      specJudgeTpCcd: 'RANGE', specLowerVal: 98.0, specUpperVal: 102.0, specExpectVal: null,
+      judgeCcd: 'PASS', inputUserNm: '박연구', inputDt: '2026-07-20 10:15',
+      instrumentNm: 'HPLC-01 (Agilent 1260)',
+      inputMemo: '주입량 10 µL 로 기재. 시험법은 20 µL.',
+      reviewStatusCcd: 'REJECTED',
+      approveUserNm: null, approveDt: null, noteMno: null, noteNo: null,
+      rejectUserNm: '최QA', rejectDt: '2026-07-20 17:40',
+      rejectRsn: '주입량이 시험법(M-HPLC-001 v3, 20 µL)과 다릅니다. 재주입 후 다시 입력해 주세요.' }
+  ];
+
   var OOS = [
     { oosMno: 21, oosNo: 'OOS-2026-0007', testItemMno: 8003, testItemNm: '잔류용매 (GC)',
       testReqstMno: 7002, testReqstNo: 'TR-20260710-01', resultVal: '0.62', unitCcd: '%',
@@ -249,6 +374,23 @@
       judgeTpCcd: 'MAX', lowerVal: null, upperVal: 0.5, unitCcd: '%',
       lowerIncludeYn: null, upperIncludeYn: 'Y', toleranceVal: null, expectVal: null,
       decimalPt: 2, effectDe: '20260105' }
+  ];
+
+  /*
+    시험 항목 → 시험법 → 장비 연쇄.
+
+    Figma 설계안은 이 관계를 세 개의 맵(protocols, equipmentByTest)으로 들고 있다.
+    우리는 이미 시험법이 methodTpCcd/instrumentTpCcd 를 갖고 있으므로 맵을 하나만
+    둔다 — 장비는 고른 시험법의 instrumentTpCcd 로 자동으로 좁혀진다.
+
+    '성상' 처럼 육안으로 보는 항목은 시험법도 장비도 없다. 빈 배열이 그 사실이다.
+  */
+  var TEST_CATALOG = [
+    { testItemNm: 'HPLC 순도',     methodCds: ['M-HPLC-001'] },
+    { testItemNm: '잔류용매 (GC)',  methodCds: ['M-GC-002'] },
+    { testItemNm: '수분 (KF)',      methodCds: ['M-KF-004'] },
+    { testItemNm: '함량 (UV)',      methodCds: ['M-UV-003'] },
+    { testItemNm: '성상',           methodCds: [] }
   ];
 
   var INSTRUMENTS = [
@@ -457,6 +599,11 @@
       writeStatusCcd: 'INSPECTION', writeStatusCcdNm: '점검중', keywords: 'HPLC,순도', editorTpCcd: 'EDITOR', editorTpCcdNm: '에디터',
       writeModeCcdNm: '온라인', sharedYn: 'N',
       processNm: '3단계 · 물성 평가', projectPrgrstCcdNm: '진행', securityGradeCcdNm: '2등급' },
+    { noteMno: 9105, projectMno: 301, projectNm: '표적단백질 저해제 발굴', folderMno: 0,
+      noteNm: 'KM00003710 순도 · 수분 시험 기록', ownerNm: '김연구', modifyDtStr: '2026-07-30 09:12',
+      writeStatusCcd: 'WRITING', writeStatusCcdNm: '작성중', keywords: 'HPLC,수분,규격',
+      editorTpCcd: 'EDITOR', editorTpCcdNm: '에디터', writeModeCcdNm: '온라인', sharedYn: 'N',
+      processNm: '2단계 · 합성', projectPrgrstCcdNm: '진행', securityGradeCcdNm: '2등급' },
     { noteMno: 9103, projectMno: 301, projectNm: '표적단백질 저해제 발굴', folderMno: 0,
       noteNm: 'KM00003719 스케일업 검토', ownerNm: '김연구', modifyDtStr: '2026-07-28 10:03',
       writeStatusCcd: 'WRITING', writeStatusCcdNm: '작성중', keywords: '스케일업', editorTpCcd: 'EDITOR', editorTpCcdNm: '에디터',
@@ -580,6 +727,141 @@
     '/api/lims/test/methodOptionList': function () { return { optionList: METHODS }; },
     '/api/lims/test/specOptionList': function () { return { optionList: SPECS }; },
     '/api/lims/test/sampleOptionList': function () { return { optionList: SAMPLES }; },
+
+    /* ---------------------------------------------------------------
+       결과 검토 · 승인
+
+       상태를 실제로 바꾼다. 승인을 누르면 그 행이 "검토 대기"에서 사라지고
+       "승인 완료"에 나타나야 한다 — 목록만 보여주고 아무 일도 안 일어나면
+       시연에서 "버튼이 안 먹는다"로 읽힌다.
+    --------------------------------------------------------------- */
+    /* ---------------------------------------------------------------
+       워크리스트 일괄 배정
+
+       기존 "시험 요청"은 시료 하나에 항목 여럿이다. 이쪽은 반대로 시료 여럿에
+       항목 하나씩 — 아침에 들어온 시료를 한 번에 배정하는 자리다.
+    --------------------------------------------------------------- */
+    '/api/lims/test/worklistCatalog': function () {
+      return {
+        /* 배정할 수 있는 시료만 — 폐기된 것은 목록에 없어야 한다. */
+        sampleList: SAMPLES.filter(function (x) { return x.sampleStatusCcd !== 'DISPOSED'; }),
+        catalogList: TEST_CATALOG,
+        methodList: METHODS.filter(function (m) { return m.methodStatusCcd === 'ACTIVE'; }),
+        instrumentList: INSTRUMENTS.filter(function (i) { return i.instrumentStatusCcd === 'ACTIVE'; }),
+        userList: USERS
+      };
+    },
+
+    '/api/lims/test/createWorklist': function (p) {
+      var rows = [];
+      try { rows = typeof p.items === 'string' ? JSON.parse(p.items) : (p.items || []); }
+      catch (e) { return { message: '배정 정보를 읽지 못했습니다.' }; }
+      if (!rows.length) { return { message: '배정할 시료가 없습니다.' }; }
+
+      var made = 0;
+      var blocked = [];
+      rows.forEach(function (row) {
+        var sample = SAMPLES.filter(function (x) {
+          return String(x.sampleMno) === String(row.sampleMno);
+        })[0];
+        if (!sample) { return; }
+
+        /* 교정 기한이 지난 장비로는 배정하지 않는다. 화면에서도 못 고르게 막고
+           있지만 화면만 믿으면 규칙이 아니다 — 결과 승인 규칙과 같은 원칙이다. */
+        if (row.instrumentNm) {
+          var inst = INSTRUMENTS.filter(function (i) {
+            return i.instrumentCd === row.instrumentNm;
+          })[0];
+          if (inst && inst.calState === 'EXPIRED') {
+            blocked.push(sample.sampleNo + ' — ' + inst.instrumentCd + ' 교정 기한 경과');
+            return;
+          }
+        }
+
+        var method = METHODS.filter(function (m) { return m.methodCd === row.methodCd; })[0];
+        WORKLIST.unshift({
+          testItemMno: 8900 + WORKLIST.length + made,
+          testReqstMno: 7900 + made,
+          testReqstNo: 'TR-20260731-' + String(made + 1).padStart(2, '0'),
+          testItemNm: row.testItemNm,
+          methodNm: method ? method.methodCd : null,
+          methodVerNo: method ? method.verNo : null,
+          planDe: (row.planDe || '20260807').replace(/-/g, ''),
+          resultCnt: 0,
+          sampleMno: sample.sampleMno, sampleNo: sample.sampleNo, sampleNm: sample.sampleNm,
+          testItemStatusCcd: 'ASSIGNED', testItemStatusCcdNm: '배정',
+          chargeUserNm: row.chargeUserNm,
+          instrumentNm: row.instrumentNm || null,
+          urgentYn: row.priorityCcd === 'URGENT' ? 'Y' : 'N'
+        });
+        made += 1;
+      });
+      return { createdCnt: made, blockedList: blocked };
+    },
+
+    '/api/lims/result/reviewList': function (p) {
+      var rows = applyFilter(REVIEWS, p, {
+        schReviewStatusCcd: 'reviewStatusCcd',
+        searchKeyword: ['testItemNm', 'sampleNo', 'sampleNm', 'inputUserNm']
+      });
+      var cnt = { PENDING: 0, APPROVED: 0, REJECTED: 0 };
+      REVIEWS.forEach(function (r) {
+        if (cnt[r.reviewStatusCcd] !== undefined) { cnt[r.reviewStatusCcd] += 1; }
+      });
+      return { reviewListInfo: page(rows, 1, 50), reviewCount: cnt };
+    },
+
+    '/api/lims/result/approveResult': function (p) {
+      var row = findReview(p.resultMno);
+      if (!row) { return { message: '결과를 찾을 수 없습니다.' }; }
+
+      /* 화면에서 이미 막고 있지만 서버도 막는다 — 화면만 믿으면 규칙이 아니다. */
+      if (row.judgeCcd !== 'PASS') {
+        return { message: '규격을 벗어난 결과는 승인할 수 없습니다.' };
+      }
+      if (row.inputUserNm === POC_ME) {
+        return { message: '본인이 입력한 결과는 본인이 승인할 수 없습니다.' };
+      }
+
+      row.reviewStatusCcd = 'APPROVED';
+      row.approveUserNm = POC_ME;
+      row.approveDt = stampNow();
+
+      /*
+        승인 결과를 연구노트에 기록한다. Figma 설계안에는 없는 연결이다 —
+        거기서는 승인 다음이 "고객에게 보고서 발송"이지만, 재단에서 결과의
+        종착지는 연구노트다.
+
+        시료가 속한 프로젝트의 노트를 찾아 붙인다. 없으면 기록하지 않고
+        그 사실을 그대로 돌려준다(조용히 성공한 척하지 않는다).
+      */
+      if (p.noteRecordYn === 'Y') {
+        var note = noteForSample(row.sampleMno);
+        if (note) {
+          row.noteMno = note.noteMno;
+          row.noteNo = note.noteNm;
+          NOTE_RESULT_LOG.push({
+            noteMno: note.noteMno, resultMno: row.resultMno,
+            testItemNm: row.testItemNm, resultVal: row.resultVal, unitCcd: row.unitCcd,
+            judgeCcd: row.judgeCcd, approveUserNm: row.approveUserNm, approveDt: row.approveDt
+          });
+        }
+      }
+      return { noteNo: row.noteNo || null };
+    },
+
+    '/api/lims/result/rejectResult': function (p) {
+      var row = findReview(p.resultMno);
+      if (!row) { return { message: '결과를 찾을 수 없습니다.' }; }
+      if (!p.rejectRsn || !String(p.rejectRsn).trim()) {
+        return { message: '반려 사유가 없습니다.' };
+      }
+      row.reviewStatusCcd = 'REJECTED';
+      row.rejectUserNm = POC_ME;
+      row.rejectDt = stampNow();
+      row.rejectRsn = String(p.rejectRsn).trim();
+      return {};
+    },
 
     '/api/lims/result/resultInfo': function () {
       return {

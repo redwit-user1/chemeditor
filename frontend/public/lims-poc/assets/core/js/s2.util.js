@@ -447,7 +447,13 @@ const S2Util = (function () {
                * ※ 그외의 상황이 있는지 확인 필요
                */
               const trimmedHtml = replacedHtml.trim();
-              const resultContainer = document.createElement(trimmedHtml.startsWith('<tr') ? 'tbody' : 'div');
+              /* <th> 로 시작하는 조각도 행(tr) 안에 들어가야 살아남는다.
+                 <td> 와 같은 자리다 — 빠져 있어서 표 머리행 템플릿이 태그를
+                 잃고 글자만 남았다. */
+              const resultContainer = document.createElement(
+                trimmedHtml.startsWith('<tr') ? 'tbody'
+                  : (trimmedHtml.startsWith('<td') || trimmedHtml.startsWith('<th')) ? 'tr'
+                    : 'div');
 
               /**
                * XSS 방지를 위해 innerHTML 대신 DOMParser 사용
@@ -462,7 +468,7 @@ const S2Util = (function () {
                 } else if (trimmedHtml.startsWith('<tr')) {
                   normalizedHtml = `<table><tbody>${replacedHtml}</tbody></table>`;
                   normalizedParentTag = 'tbody';
-                } else if (trimmedHtml.startsWith('<td')) {
+                } else if (trimmedHtml.startsWith('<td') || trimmedHtml.startsWith('<th')) {
                   normalizedHtml = `<table><tbody><tr>${replacedHtml}</tr></tbody></table>`;
                   normalizedParentTag = 'tr';
                 } else {
@@ -1545,7 +1551,20 @@ const S2Util = (function () {
     },
     toasts: function (message, option) {
       const opt = {
-        title: '<i class="fa fa-check-circle mr-1" style="color: #28a745;"></i>[[#{i18n.common.save.ok}]]',
+        /*
+          여기 있던 '[[#{i18n.common.save.ok}]]' 는 화면에 그대로 찍혔다.
+          이 파일은 static/ 아래 순수 js 라 Thymeleaf 를 거치지 않는다 —
+          표현식이 치환될 기회가 없다. 그래서 모든 토스트의 제목이
+          "[[#{i18n.common.save.ok}]]" 였다.
+
+          메시지를 쓰려면 서버가 window 에 실어 줘야 한다. 있으면 쓰고,
+          없으면 기본 문구로 간다.
+        */
+        title:
+          '<i class="fa fa-check-circle mr-1" style="color: #28a745;"></i>' +
+          (window.i18nMessages && window.i18nMessages['i18n.common.save.ok']
+            ? window.i18nMessages['i18n.common.save.ok']
+            : '알림'),
         autohide: true,
         delay: 2000,
         close: false,

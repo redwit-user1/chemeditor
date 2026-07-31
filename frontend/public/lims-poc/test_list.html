@@ -2867,6 +2867,349 @@
          요청 등록 모달 (840x560)
          시료 선택 → 시험 항목 N개 추가 → 항목마다 시험법·판정기준·예정일 지정
       --------------------------------------------------------------- */
+      /* =================================================================
+         일괄 배정 마법사 (2단계)
+
+         출처: Figma LIMS 설계안의 "워크리스트 생성". 대조는 reports/lims-mapping.md.
+
+         1단계 — 배정할 시료를 고른다 (다중)
+         2단계 — 시료마다 시험 항목·시험법·장비·담당자·우선순위·예정일을 정한다
+
+         연쇄 선택: 시험 항목을 고르면 그에 걸린 시험법만 남고, 시험법을 고르면
+         그 시험법이 쓰는 장비만 남는다. 아무거나 고를 수 있게 두면 시험법과
+         장비가 어긋난 배정이 만들어진다.
+      ================================================================= */
+      let gWl = { step: 1, samples: [], picked: [], cfg: {}, catalog: [], methods: [], instruments: [], users: [] };
+
+      function openModalWorklistCreate() {
+        bindWlPick();
+        gWl = { step: 1, samples: [], picked: [], cfg: {}, catalog: [], methods: [], instruments: [], users: [] };
+
+        $('#modal-lims-worklist')
+          .draggable({ handle: '.modal-header' })
+          .modal('show')
+          .find('.modal-content')
+          .html('<div class="modal-header cursor-move"><p class="modal-title">일괄 배정</p>'
+            + '<span class="modal-sub">불러오는 중…</span></div>'
+            + '<div class="modal-body"></div>'
+            + '<div class="modal-footer"></div>');
+
+        ajaxPost('/api/lims/test/worklistCatalog', {}, '데이터요청중입니다.잠시만 기다려주세요.', function (res) {
+          gWl.samples     = toArr(res.sampleList);
+          gWl.catalog     = toArr(res.catalogList);
+          gWl.methods     = toArr(res.methodList);
+          gWl.instruments = toArr(res.instrumentList);
+          gWl.users       = toArr(res.userList);
+          renderWl();
+        });
+      }
+
+      /* nullToEmpty 가 최상위 배열을 숫자키 객체로 바꾼다. 매번 같은 처리를 한다. */
+      function toArr(v) {
+        if (!v) { return []; }
+        if (Array.isArray(v)) { return v; }
+        return Object.keys(v).map(function (k) { return v[k]; });
+      }
+
+      function wlEsc(v) {
+        if (v == null) { return ''; }
+        const el = document.createElement('div');
+        el.textContent = String(v);
+        return el.innerHTML;
+      }
+
+      function renderWl() {
+        const $m = $('#modal-lims-worklist');
+        $m.find('.modal-sub').text(gWl.step === 1
+          ? '배정할 시료를 고릅니다'
+          : '시료마다 무엇을, 어떤 시험법으로, 누가 언제까지 할지 정합니다');
+        $m.find('.modal-body').html(gWl.step === 1 ? wlStep1Html() : wlStep2Html());
+        $m.find('.modal-footer').html(wlFooterHtml());
+        if (gWl.step === 2) { bindWlStep2(); }
+      }
+
+      /* --- 1단계 --- */
+      function wlStep1Html() {
+        let rows = '';
+        gWl.samples.forEach(function (s) {
+          const on = gWl.picked.indexOf(String(s.sampleMno)) >= 0;
+          rows += ''
+            + '<label class="lims-pick-row' + (on ? ' is-on' : '') + '">'
+            + '  <input type="checkbox" class="btn form-check-input basic wl-pick"'
+            + '         value="' + s.sampleMno + '"' + (on ? ' checked="checked"' : '') + ' />'
+            + '  <span class="lims-pick-main">'
+            + '    <span class="lims-pick-no">' + wlEsc(s.sampleNo) + '</span>'
+            + '    <span class="lims-pick-nm">' + wlEsc(s.sampleNm) + '</span>'
+            + '  </span>'
+            + '  <span class="guidetext-sty01">' + wlEsc(s.projectNm || '-') + '</span>'
+            + '  <span class="lims-state muted">' + wlEsc(s.receiveDt || '') + '</span>'
+            + '</label>';
+        });
+        return ''
+          + '<div class="flex-sty01 ma-b10">'
+          + '  <div class="guidetext-sty01">고른 시료 <b id="wlPickCnt">' + gWl.picked.length + '</b>건</div>'
+          + '  <button type="button" class="button-gray-line-sty01" onclick="wlClearPick();"><span>전체 해제</span></button>'
+          + '</div>'
+          + '<div class="lims-pick-list">' + (rows || '<div class="lims-note-empty">배정할 수 있는 시료가 없습니다.</div>') + '</div>';
+      }
+
+      function wlClearPick() {
+        gWl.picked = [];
+        $('.wl-pick').prop('checked', false).closest('.lims-pick-row').removeClass('is-on');
+        $('#wlPickCnt').text(0);
+        $('#wlNext').prop('disabled', true);
+      }
+
+      /* --- 2단계 --- */
+      function wlStep2Html() {
+        let cards = '';
+        gWl.picked.forEach(function (id, i) {
+          const s = gWl.samples.filter(function (x) { return String(x.sampleMno) === String(id); })[0];
+          if (!s) { return; }
+          const c = gWl.cfg[id] || {};
+          cards += ''
+            + '<div class="lims-wl-card" data-sample="' + id + '">'
+            + '  <div class="flex-sty01 ma-b10">'
+            + '    <div class="lims-wl-card-head">'
+            + '      <span class="lims-wl-ord">' + (i + 1) + '</span>'
+            + '      <span><b>' + wlEsc(s.sampleNo) + '</b><br /><span class="guidetext-sty01">'
+            +          wlEsc(s.sampleNm) + '</span></span>'
+            + '    </div>'
+            + '    <button type="button" class="button-gray-line-sty01" onclick="wlDrop(\'' + id + '\');"><span>빼기</span></button>'
+            + '  </div>'
+            + wlGridHtml(id)
+            + '</div>';
+        });
+        return '<div class="lims-wl-list">' + cards + '</div>';
+      }
+
+      /* 한 칸이 바뀔 때 목록 전체를 다시 그리면 다른 카드의 초점과 스크롤이 날아간다.
+         바뀐 카드의 격자만 갈아끼운다. */
+      function renderWlCard(id) {
+        const $card = $('#modal-lims-worklist .lims-wl-card[data-sample="' + id + '"]');
+        if (!$card.length) { return; }
+        $card.find('.lims-wl-grid').replaceWith(wlGridHtml(id));
+        bindWlStep2();
+      }
+
+      function wlGridHtml(id) {
+        const c = gWl.cfg[id] || {};
+        return '<div class="lims-wl-grid">'
+          + wlField('시험 항목', true, wlSelect('wl-test', id, catalogOptions(c.testItemNm)))
+          + wlField('시험법', true, wlSelect('wl-method', id, methodOptions(c.testItemNm, c.methodCd), !c.testItemNm))
+          + wlField('장비', false, wlSelect('wl-inst', id, instOptions(c.methodCd, c.instrumentNm), !c.methodCd))
+          + wlField('담당자', true, wlSelect('wl-user', id, userOptions(c.chargeUserNm)))
+          + wlField('우선순위', false, wlSelect('wl-pri', id, priOptions(c.priorityCcd)))
+          + wlField('예정일', false, '<input type="date" class="input-write-sty02-line wl-date wp-100"'
+              + ' data-sample="' + id + '" value="' + (c.planDe || '2026-08-07') + '" />')
+          + '</div>';
+      }
+
+      function wlField(label, required, control) {
+        return '<div class="lims-wl-field"><span class="modal-cont-label">' + label
+          + (required ? ' <span class="lims-req">*</span>' : '') + '</span>' + control + '</div>';
+      }
+
+      function wlSelect(cls, id, options, disabled) {
+        return '<select class="btn btn-xs select-xs select-sty02 wp-100 ' + cls + '"'
+          + ' data-sample="' + id + '"' + (disabled ? ' disabled="disabled"' : '') + '>'
+          + options + '</select>';
+      }
+
+      function opt(v, label, sel) {
+        return '<option value="' + wlEsc(v) + '"' + (String(sel) === String(v) ? ' selected' : '') + '>'
+          + wlEsc(label) + '</option>';
+      }
+
+      function catalogOptions(sel) {
+        let o = opt('', '선택하세요', sel || '');
+        gWl.catalog.forEach(function (c) { o += opt(c.testItemNm, c.testItemNm, sel); });
+        return o;
+      }
+
+      /* 고른 시험 항목에 걸린 시험법만 남긴다 */
+      function methodOptions(testItemNm, sel) {
+        let o = opt('', testItemNm ? '선택하세요' : '시험 항목을 먼저 고르세요', sel || '');
+        if (!testItemNm) { return o; }
+        const cat = gWl.catalog.filter(function (c) { return c.testItemNm === testItemNm; })[0];
+        const cds = cat ? toArr(cat.methodCds) : [];
+        if (!cds.length) { return opt('', '시험법 없음 (육안 판정)', ''); }
+        gWl.methods.forEach(function (m) {
+          if (cds.indexOf(m.methodCd) < 0) { return; }
+          o += opt(m.methodCd, m.methodCd + ' v' + m.verNo + ' · ' + m.methodNm, sel);
+        });
+        return o;
+      }
+
+      /* 고른 시험법이 쓰는 장비 종류만 남긴다 */
+      function instOptions(methodCd, sel) {
+        let o = opt('', methodCd ? '선택하세요' : '시험법을 먼저 고르세요', sel || '');
+        if (!methodCd) { return o; }
+        const m = gWl.methods.filter(function (x) { return x.methodCd === methodCd; })[0];
+        if (!m) { return o; }
+        gWl.instruments.forEach(function (i) {
+          if (i.instrumentTpCcd !== m.instrumentTpCcd) { return; }
+          /* 교정 기한이 지난 장비는 고를 수 없다 — 그 장비로 낸 값은 근거가 없다. */
+          const dead = i.calState === 'EXPIRED';
+          o += '<option value="' + wlEsc(i.instrumentCd) + '"' + (dead ? ' disabled' : '')
+            + (String(sel) === String(i.instrumentCd) ? ' selected' : '') + '>'
+            + wlEsc(i.instrumentCd + ' · ' + i.instrumentNm + (dead ? ' (교정 기한 경과)' : ''))
+            + '</option>';
+        });
+        return o;
+      }
+
+      function userOptions(sel) {
+        let o = opt('', '선택하세요', sel || '');
+        gWl.users.forEach(function (u) { o += opt(u.userNm, u.userNm + ' · ' + u.orztNm, sel); });
+        return o;
+      }
+
+      function priOptions(sel) {
+        return opt('NORMAL', '보통', sel || 'NORMAL')
+          + opt('HIGH', '높음', sel) + opt('URGENT', '긴급', sel);
+      }
+
+      function bindWlStep2() {
+        const $m = $('#modal-lims-worklist');
+        $m.find('.wl-test').off('change').on('change', function () {
+          const id = $(this).data('sample');
+          gWl.cfg[id] = gWl.cfg[id] || {};
+          gWl.cfg[id].testItemNm = this.value;
+          /* 상위가 바뀌면 하위는 무효다 — 남겨 두면 어긋난 조합이 저장된다. */
+          gWl.cfg[id].methodCd = '';
+          gWl.cfg[id].instrumentNm = '';
+          renderWlCard(id);
+        });
+        $m.find('.wl-method').off('change').on('change', function () {
+          const id = $(this).data('sample');
+          gWl.cfg[id] = gWl.cfg[id] || {};
+          gWl.cfg[id].methodCd = this.value;
+          gWl.cfg[id].instrumentNm = '';
+          renderWlCard(id);
+        });
+        $m.find('.wl-inst').off('change').on('change', function () {
+          const id = $(this).data('sample');
+          gWl.cfg[id] = gWl.cfg[id] || {};
+          gWl.cfg[id].instrumentNm = this.value;
+        });
+        $m.find('.wl-user').off('change').on('change', function () {
+          const id = $(this).data('sample');
+          gWl.cfg[id] = gWl.cfg[id] || {};
+          gWl.cfg[id].chargeUserNm = this.value;
+        });
+        $m.find('.wl-pri').off('change').on('change', function () {
+          const id = $(this).data('sample');
+          gWl.cfg[id] = gWl.cfg[id] || {};
+          gWl.cfg[id].priorityCcd = this.value;
+        });
+        $m.find('.wl-date').off('change').on('change', function () {
+          const id = $(this).data('sample');
+          gWl.cfg[id] = gWl.cfg[id] || {};
+          gWl.cfg[id].planDe = this.value;
+        });
+      }
+
+      function wlDrop(id) {
+        gWl.picked = gWl.picked.filter(function (x) { return String(x) !== String(id); });
+        delete gWl.cfg[id];
+        if (!gWl.picked.length) { gWl.step = 1; }
+        renderWl();
+      }
+
+      /* --- 바닥 --- */
+      function wlFooterHtml() {
+        if (gWl.step === 1) {
+          return '<div class="button-wrap02">'
+            + '<button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">취소</button>'
+            + '<button type="button" class="button-cnfm-sty01' + (gWl.picked.length ? '' : ' disabled') + '"'
+            + ' id="wlNext" onclick="wlGoStep2();">다음 (' + gWl.picked.length + '건)</button>'
+            + '</div>';
+        }
+        return '<div class="button-wrap02">'
+          + '<button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">취소</button>'
+          + '<button type="button" class="button-gray-line-sty01" onclick="wlGoStep1();"><span>이전</span></button>'
+          + '<button type="button" class="button-cnfm-sty01" onclick="wlSubmit();">배정 (' + gWl.picked.length + '건)</button>'
+          + '</div>';
+      }
+
+      function wlGoStep1() { gWl.step = 1; renderWl(); }
+
+      function wlGoStep2() {
+        if (!gWl.picked.length) { return; }
+        gWl.picked.forEach(function (id) {
+          if (!gWl.cfg[id]) { gWl.cfg[id] = { priorityCcd: 'NORMAL', planDe: '2026-08-07' }; }
+        });
+        gWl.step = 2;
+        renderWl();
+      }
+
+      function wlSubmit() {
+        const items = [];
+        let missing = 0;
+        gWl.picked.forEach(function (id) {
+          const c = gWl.cfg[id] || {};
+          const cat = gWl.catalog.filter(function (x) { return x.testItemNm === c.testItemNm; })[0];
+          const needsMethod = cat && toArr(cat.methodCds).length > 0;
+          /* 시험법이 없는 항목(성상)은 시험법·장비를 요구하지 않는다. */
+          if (!c.testItemNm || !c.chargeUserNm || (needsMethod && !c.methodCd)) { missing += 1; return; }
+          items.push({
+            sampleMno: id, testItemNm: c.testItemNm, methodCd: c.methodCd || null,
+            instrumentNm: c.instrumentNm || null, chargeUserNm: c.chargeUserNm,
+            priorityCcd: c.priorityCcd || 'NORMAL', planDe: c.planDe || '2026-08-07'
+          });
+        });
+
+        if (missing) {
+          S2Util.toasts('필수 항목이 비어 있는 시료가 ' + missing + '건 있습니다. 시험 항목·시험법·담당자를 채워 주세요.',
+            { class: 'Toast-bottom-web' });
+          return;
+        }
+
+        ajaxPost('/api/lims/test/createWorklist', { items: JSON.stringify(items) },
+          '',
+          function (res) {
+            /* 서버가 막은 건이 있으면 조용히 성공한 척하지 않는다.
+               몇 건이 왜 빠졌는지 그대로 알린다. */
+            const blocked = toArr(res.blockedList);
+            if (blocked.length) {
+              S2Util.toasts(
+                (res.createdCnt || 0) + '건 배정, ' + blocked.length + '건 제외 — ' + blocked.join(' / '),
+                { class: 'Toast-bottom-web', delay: 6000 });
+            } else {
+              S2Util.toasts((res.createdCnt || items.length) + '건을 배정했습니다.', { class: 'Toast-bottom-web' });
+            }
+            $('#modal-lims-worklist').modal('hide');
+            searchCurrentTab();
+          });
+      }
+
+      /*
+        체크박스는 목록을 다시 그리지 않고 상태만 바꾼다 — 다시 그리면 스크롤이 튄다.
+
+        이 바인딩을 스크립트 최상위에 두면 "$ is not defined" 로 죽는다. 이 블록은
+        jQuery 가 실려 있지 않은 시점에 파싱·실행된다. 모달을 열 때 한 번만 건다.
+      */
+      let gWlBound = false;
+      function bindWlPick() {
+        if (gWlBound) { return; }
+        gWlBound = true;
+        $(document).on('change', '.wl-pick', function () {
+          const v = String(this.value);
+          if (this.checked) {
+            if (gWl.picked.indexOf(v) < 0) { gWl.picked.push(v); }
+            $(this).closest('.lims-pick-row').addClass('is-on');
+          } else {
+            gWl.picked = gWl.picked.filter(function (x) { return x !== v; });
+            $(this).closest('.lims-pick-row').removeClass('is-on');
+          }
+          $('#wlPickCnt').text(gWl.picked.length);
+          $('#wlNext').prop('disabled', !gWl.picked.length)
+            .toggleClass('disabled', !gWl.picked.length)
+            .text('다음 (' + gWl.picked.length + '건)');
+        });
+      }
+
       function openModalTestRequestCreate() {
         gItemRowSeq = 0;
         gMethodOptions = [];
@@ -6307,6 +6650,11 @@
           </nav>
           <h2 class="lims-title">시험 요청 · 워크리스트</h2>
         </div>
+        <div class="lims-head-actions">
+          
+          <a class="button-blue-line-sty01 none"
+             href="result_review.html"><span>결과 검토</span></a>
+        </div>
       </header>
 
       <div class="ma-tm20">
@@ -6352,6 +6700,9 @@
                  onclick="switchTab('MY_REQST'); return false;">내가 낸 요청</a>
             </div>
           </nav>
+          
+          <button class="button-blue-line-sty01 none ma-l10"
+                  onclick="openModalWorklistCreate();"><span>일괄 배정</span></button>
           <button class="button-blue-full-sty01 ma-l10"
                   onclick="openModalTestRequestCreate();"><span>시험 요청</span></button>
         </div>
@@ -6474,6 +6825,15 @@
 
       
       <div id="modal-lims-test-reqst"
+           class="modal fade"
+           data-bs-backdrop="static"
+           data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+          <div class="modal-pop modal-wrap-sty01 modal-content"></div>
+        </div>
+      </div>
+      
+      <div id="modal-lims-worklist"
            class="modal fade"
            data-bs-backdrop="static"
            data-bs-keyboard="false">
