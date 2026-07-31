@@ -952,7 +952,9 @@ a.button-more-sty01 {
 [disabled].button-cnfm-sty01 {
 	border-color: var(--ds-line) !important;
 	background-color: var(--ds-hover) !important;
-	color: var(--ds-ink-4) !important;
+	/* ink-4 는 이 회색 바탕에서 4.39:1 로 기준(4.5)에 못 미쳤다. 못 누르는
+	   버튼이라도 왜 못 누르는지는 읽혀야 한다 — 한 단 어둡게 간다. */
+	color: var(--ds-ink-3) !important;
 	cursor: not-allowed;
 	pointer-events: none;
 }

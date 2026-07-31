@@ -1792,4 +1792,12 @@
   } else {
     document.addEventListener('DOMContentLoaded', install);
   }
+  /*
+    검수용 창구. 목이 들고 있는 데이터를 밖에서 읽을 수 있게 한다 —
+    "이 목록에 그 프로젝트 것만 나오는가" 같은 것을 개수로 못 박지 않고
+    실제 데이터와 대조해 확인하기 위해서다. 프로토타입 전용 파일이다.
+  */
+  window.LIMS_POC_NOTES = ELN_NOTES;
+  window.LIMS_POC_REVIEWS = REVIEWS;
+
 })();
