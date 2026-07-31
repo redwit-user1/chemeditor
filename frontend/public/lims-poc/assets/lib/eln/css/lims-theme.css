@@ -82,6 +82,8 @@
 	--ds-radius-lg: 14px;
 	--ds-pill: 999px;
 	--ds-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+	--ds-shadow-pop: 0 12px 32px rgba(16, 24, 40, 0.14), 0 2px 8px rgba(16, 24, 40, 0.08);
+	--ds-ring: 0 0 0 3px rgba(47, 91, 245, 0.18);
 
 	/* 이전 파일들이 쓰는 이름을 여기로 잇는다 — 값의 출처를 하나로 모은다. */
 	--shell-w: var(--ds-shell);
@@ -136,9 +138,24 @@
 	letter-spacing: -0.02em;
 }
 
-/* .lims-page 는 자체 스케일을 갖고 있었다. 뿌리 값으로 되돌린다. */
-.lims-page {
+/* lims-ui.css 는 --lims-* 를 `.lims-page { … }` 안에서만 정의한다. 그런데
+   Bootstrap 모달은 body 직속으로 옮겨져 .lims-page 밖에 선다. 그 순간
+   `padding: var(--lims-gap-3) var(--lims-gap-4)` 같은 선언이 통째로 무효가
+   되어 padding 0 으로 렌더된다 — 화학량론 모달의 머리글이 25px 로 찌부러져
+   본문과 붙어 보이던 것이 이것이다.
+
+   토큰은 뿌리에 둔다. 어느 자리에 붙든 값이 풀리게. */
+:root,
+.lims-page,
+.modal {
 	--lims-unit: var(--ds-unit);
+	--lims-gap-1: var(--ds-1);
+	--lims-gap-2: var(--ds-2);
+	--lims-gap-3: var(--ds-3);
+	--lims-gap-4: var(--ds-4);
+	--lims-gap-5: var(--ds-5);
+	--lims-gap-6: var(--ds-6);
+	--lims-gap-8: var(--ds-8);
 	--lims-fs-body: var(--ds-fs-cell);
 	/* lims-ui.css 는 나머지 크기를 --lims-fs-body 에서 더해 만든다. 그러면
 	   제목이 20px 로 ELN 화면(22px)과 어긋난다. 하나씩 척도로 되돌린다. */
@@ -148,6 +165,13 @@
 	--lims-fs-lead: var(--ds-fs-lead);
 	--lims-fs-title: var(--ds-fs-title);
 	--lims-fs-metric: var(--ds-fs-metric);
+	--lims-fw-normal: 400;
+	--lims-fw-medium: 500;
+	--lims-fw-bold: 700;
+	--lims-lh-tight: var(--ds-lh-tight);
+	--lims-lh-snug: 1.4;
+	--lims-lh-base: var(--ds-lh);
+	--lims-lh-loose: 1.7;
 	--lims-control-h: var(--ds-control);
 	--lims-control-h-sm: var(--ds-control-sm);
 	--lims-radius: var(--ds-radius);
@@ -157,11 +181,19 @@
 	--lims-ink: var(--ds-ink);
 	--lims-ink-2: var(--ds-ink-2);
 	--lims-ink-3: var(--ds-ink-4);
+	--lims-ink-4: var(--ds-ink-4);
 	--lims-line: var(--ds-line);
 	--lims-line-strong: var(--ds-line-2);
 	--lims-surface: var(--ds-surface);
 	--lims-surface-2: var(--ds-canvas);
-	--lims-ring: 0 0 0 3px rgba(47, 91, 245, 0.14);
+	--lims-danger: var(--ds-danger);
+	--lims-danger-ink: var(--ds-danger);
+	--lims-warn: var(--ds-warn);
+	--lims-warn-ink: var(--ds-warn);
+	--lims-ring: var(--ds-ring);
+}
+
+.lims-page {
 	font-size: var(--ds-fs-body);
 }
 
@@ -211,6 +243,32 @@ h2.title {
 .dropdown-select-sty01,
 .dropdown-select-sty01.dropdown-toggle {
 	font-size: var(--ds-fs-body);
+}
+
+/* 화면 안 탭 — .tab-board-sty0X .board-top .tab 이 18px 을 3단 선택자로 박아
+   두어, 라벨(13px)과 어긋난 채 상자 폭만 키웠다. 그 결과 "연구노트 초안 (1)"
+   같은 탭이 두 줄로 접혔다. 같은 형태로 눌러 한 줄에 세운다. */
+.tab-board-sty01 .board-top .tab,
+.tab-board-sty02 .board-top .tab,
+.tab-board-sty03 .board-top .tab,
+.tab-board-sty04 .board-top .tab,
+.tab-board-sty05 .board-top .tab,
+.tab-board-sty06 .board-top .tab,
+.board-top .nav-link.tab {
+	font-size: var(--ds-fs-body);
+	white-space: nowrap;
+}
+
+.tab-board-sty01 .board-top .tab .title_cnt,
+.tab-board-sty02 .board-top .tab .title_cnt,
+.tab-board-sty03 .board-top .tab .title_cnt,
+.tab-board-sty04 .board-top .tab .title_cnt,
+.tab-board-sty05 .board-top .tab .title_cnt,
+.tab-board-sty06 .board-top .tab .title_cnt,
+.board-top .nav-link.tab .title_cnt,
+.board-top .nav-link.tab .txt {
+	font-size: var(--ds-fs-body);
+	font-weight: inherit;
 }
 
 /* 화면 안 탭, 구획 제목, 안내 띠 — 각각 16/20/16px 로 척도 밖에 있었다 */
@@ -739,15 +797,39 @@ body,
 }
 
 /* ---------------------------------------------------------------------------
-   8) 조작 요소 — 버튼·탭
+   8) 버튼 — 뜻(4) × 크기(3)
 
-   구노 기본 버튼은 높이 40px, 글자 15~16px 이다. 표 안에 두세 개가 들어가는
-   화면에서는 표가 버튼에 먹힌다. 한 규격으로 모은다.
+   원본에는 button-cnfm-sty01 / button-cncl-sty01 / button-blue-full-sty01 /
+   button-blue-line-sty01 / button-gray-line-sty01 / button-sty002 / sty05 /
+   sty07 / sty003 / sty02-gray / remove-sty01 … 20 종이 넘는 이름이 있고,
+   각자 높이(28·32·40·46)와 글자(14·15·16)를 따로 들고 있다. 같은 줄에 두
+   개만 놓여도 높이가 어긋난다.
+
+   이름을 없앨 수는 없다(마크업이 이미 쓰고 있다). 대신 뜻을 네 가지로 줄이고
+   모든 이름을 그 위에 얹는다.
+
+     주(primary)   — 화면에서 한 번만. 파란 면
+     보조(secondary) — 테두리만
+     조용함(quiet)  — 면도 테두리도 없음. 표 안 동작
+     위험(danger)   — 삭제·회수
+
+   크기는 --ds-control(36) 한 값에서 나온다. sm 은 표 안, lg 는 모달 바닥.
 --------------------------------------------------------------------------- */
 .button-blue-full-sty01,
 .button-blue-line-sty01,
 .button-gray-line-sty01,
+.button-gray-full-sty02,
 .button-sty002,
+.button-sty003,
+.button-sty005,
+.button-sty02-gray,
+.button-sty-darkblue,
+.button-cnfm-sty01,
+.button-cncl-sty01,
+.button-remove-sty01,
+.button-blue-line-sty02,
+.button-blue-line-sty04,
+.button-blue-sty03,
 a.button-more-sty01 {
 	display: inline-flex;
 	align-items: center;
@@ -756,11 +838,134 @@ a.button-more-sty01 {
 	min-height: var(--ds-control);
 	height: var(--ds-control);
 	padding: 0 var(--ds-4);
+	border: 1px solid transparent;
 	border-radius: var(--ds-radius);
 	font-size: var(--ds-fs-cell);
 	font-weight: 500;
 	line-height: 1;
 	white-space: nowrap;
+	cursor: pointer;
+	transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+/* --- 주 --- */
+.button-blue-full-sty01,
+.button-cnfm-sty01,
+.button-sty-darkblue {
+	border-color: var(--ds-primary);
+	background-color: var(--ds-primary);
+	color: #fff !important;
+}
+
+.button-blue-full-sty01:hover,
+.button-cnfm-sty01:hover,
+.button-sty-darkblue:hover {
+	border-color: var(--ds-primary-dark);
+	background-color: var(--ds-primary-dark);
+	opacity: 1 !important;   /* 원본은 hover 에 opacity .8 을 걸어 글자까지 흐려졌다 */
+}
+
+/* --- 보조 --- */
+.button-blue-line-sty01,
+.button-blue-line-sty02,
+.button-blue-line-sty04,
+.button-blue-sty03 {
+	border-color: var(--ds-line-2);
+	background-color: var(--ds-surface);
+	color: var(--ds-primary-dark) !important;
+}
+
+.button-gray-line-sty01,
+.button-cncl-sty01,
+.button-sty002,
+.button-sty003,
+.button-sty02-gray,
+.button-gray-full-sty02 {
+	border-color: var(--ds-line-2);
+	background-color: var(--ds-surface);
+	color: var(--ds-ink-2) !important;
+}
+
+.button-blue-line-sty01:hover,
+.button-blue-line-sty02:hover,
+.button-blue-line-sty04:hover,
+.button-blue-sty03:hover,
+.button-gray-line-sty01:hover,
+.button-cncl-sty01:hover,
+.button-sty002:hover,
+.button-sty003:hover,
+.button-sty02-gray:hover,
+.button-gray-full-sty02:hover {
+	border-color: var(--ds-ink-4);
+	background-color: var(--ds-hover);
+	opacity: 1 !important;
+}
+
+/* --- 위험 --- */
+.button-remove-sty01 {
+	border-color: var(--ds-danger);
+	background-color: var(--ds-danger);
+	color: #fff !important;
+}
+
+/* --- 크기 --- */
+.button-blue-full-sty01.small,
+.button-blue-line-sty04,
+.btn-xs,
+.core-table td .button-gray-line-sty01,
+.core-table td .button-blue-line-sty01,
+.lims-actions-cell .button-gray-line-sty01,
+.lims-actions-cell .button-blue-line-sty01 {
+	min-height: var(--ds-control-sm);
+	height: var(--ds-control-sm);
+	padding: 0 var(--ds-3);
+	font-size: var(--ds-fs-small);
+	border-radius: calc(var(--ds-radius) - 2px);
+}
+
+.modal-footer .button-cnfm-sty01,
+.modal-footer .button-cncl-sty01,
+.modal-footer .button-remove-sty01 {
+	min-height: var(--ds-10);
+	height: var(--ds-10);
+	padding: 0 var(--ds-5);
+	font-size: var(--ds-fs-body);
+}
+
+/* --- 초점 --- */
+.button-blue-full-sty01:focus-visible,
+.button-blue-line-sty01:focus-visible,
+.button-gray-line-sty01:focus-visible,
+.button-cnfm-sty01:focus-visible,
+.button-cncl-sty01:focus-visible,
+.button-remove-sty01:focus-visible {
+	outline: none;
+	box-shadow: var(--ds-ring);
+}
+
+/* --- 못 누르는 상태 --- */
+.button-blue-full-sty01.disabled,
+.button-blue-line-sty01.disabled,
+.button-gray-line-sty01.disabled,
+.button-cnfm-sty01.disabled,
+[disabled].button-blue-full-sty01,
+[disabled].button-cnfm-sty01 {
+	border-color: var(--ds-line) !important;
+	background-color: var(--ds-hover) !important;
+	color: var(--ds-ink-4) !important;
+	cursor: not-allowed;
+	pointer-events: none;
+}
+
+/* 버튼 줄 — 원본 button-wrap* 은 정렬만 있고 사이 간격이 없어 서로 붙었다 */
+.button-wrap,
+.button-wrap02,
+.button-wrap03,
+.button-wrap-del,
+.button-wrap-po-a {
+	display: flex;
+	align-items: center;
+	gap: var(--ds-2);
 }
 
 /* 아이콘을 배경으로 그리는 것들. 원본은 padding-left 37px 로 자리를 비워
@@ -981,7 +1186,579 @@ a.note-card-title {
 }
 
 /* ---------------------------------------------------------------------------
-   12) 좁은 화면
+   12) 모달 · 팝업
+
+   원본 모달은 크기를 픽셀로 못박고(840×560, 560×560, 500×350) 본문 높이를
+   height: calc(100% - 139px) 로 계산한다. 139 는 "머리글 82 + 바닥 57" 을
+   손으로 더한 값이다. 머리글이 한 줄이거나 세 줄이 되는 순간 이 셈이 어긋나
+   본문이 머리글을 덮거나 바닥 버튼이 잘려 나간다 — 화학량론 모달에서 실제로
+   그렇게 됐다.
+
+   높이를 계산하지 않는다. 세로 flex 로 두고 머리글·바닥은 제 내용만큼,
+   본문은 남는 만큼 차지하며 넘치면 본문만 구른다.
+--------------------------------------------------------------------------- */
+.modal-backdrop.show {
+	background-color: #101828;
+	opacity: 0.44;
+}
+
+.modal-dialog {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	max-width: none;
+	margin: var(--ds-6) auto;
+}
+
+/* 크기는 세 단계. vw/vh 를 섞어 좁은 화면에서도 화면을 넘지 않는다. */
+.modal .modal-wrap-sty01,
+.modal .modal-wrap-sty02,
+.modal .modal-wrap-sty03,
+.modal .modal-wrap-sty04,
+.modal .modal-pop {
+	display: flex;
+	flex-direction: column;
+	width: min(920px, 94vw);
+	height: auto;
+	max-height: min(86vh, 760px);
+	border: 1px solid var(--ds-line);
+	border-radius: var(--ds-radius-lg);
+	background: var(--ds-surface);
+	box-shadow: var(--ds-shadow-pop);
+	overflow: hidden;
+}
+
+.modal .modal-wrap-sty01.long {
+	min-height: 0;
+}
+
+.modal .modal-wrap-sty02:not(.preview),
+.modal .modal-wrap-sty03 {
+	width: min(600px, 94vw);
+	max-height: min(80vh, 660px);
+}
+
+.modal .modal-wrap-sty02.preview {
+	width: min(720px, 94vw);
+	max-height: min(86vh, 760px);
+}
+
+.modal .modal-wrap-sty04 {
+	width: min(480px, 94vw);
+	max-height: min(70vh, 480px);
+}
+
+/* --- 머리글 ---
+   lims-ui.css 가 .modal[id^="modal-lims-"] .modal-pop .modal-header 로 한 번 더
+   잡고 있어 그쪽이 더 구체적이다. 골격은 어느 모달이든 같아야 하므로 같은
+   모양의 선택자를 함께 적는다. */
+.modal .modal-pop .modal-header,
+.modal .modal-pop.modal-wrap-sty03 .modal-header,
+.modal[id^="modal-lims-"] .modal-pop .modal-header {
+	display: flex;
+	flex: 0 0 auto;
+	flex-direction: row;
+	flex-wrap: wrap;
+	align-items: baseline;
+	align-content: center;
+	justify-content: flex-start;
+	gap: var(--ds-3);
+	min-height: 0;
+	max-height: none;
+	padding: var(--ds-4) var(--ds-6);
+	border-bottom: 1px solid var(--ds-line);
+	background: var(--ds-surface);
+}
+
+.modal .modal-pop .modal-header .modal-title,
+.modal[id^="modal-lims-"] .modal-pop .modal-header .modal-title {
+	margin: 0;
+	font-size: var(--ds-fs-lead);
+	font-weight: 700;
+	line-height: var(--ds-lh-tight);
+	color: var(--ds-ink);
+}
+
+/* 부제는 제목 옆에 붙는 한 줄이다. 원본은 width:100% + padding-left:31px 라
+   혼자 다음 줄로 내려가면서 머리글 높이를 밀어 올렸다. */
+.modal .modal-pop .modal-header .modal-sub,
+.modal[id^="modal-lims-"] .modal-pop .modal-header .modal-sub {
+	width: auto;
+	margin: 0;
+	padding-left: 0;
+	font-size: var(--ds-fs-small);
+	font-weight: 400;
+	line-height: var(--ds-lh);
+	color: var(--ds-ink-4);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.modal .modal-pop .modal-header .modal-sub.img,
+.modal .modal-pop .modal-header .modal-sub.imgAlert,
+.modal .modal-pop .modal-header .modal-sub.img.perfGoals {
+	padding-left: var(--ds-5);
+	background-position: left center;
+	background-size: 14px 14px;
+}
+
+/* --- 본문 --- */
+.modal .modal-pop .modal-body,
+.modal .modal-pop.modal-wrap-sty03 .modal-body,
+.modal[id^="modal-lims-"] .modal-pop .modal-body {
+	flex: 1 1 auto;
+	min-height: 0;          /* 이게 없으면 flex 자식이 안 줄어들어 넘친다 */
+	height: auto;
+	padding: var(--ds-5) var(--ds-6);
+	border: 0;
+	background: var(--ds-canvas);
+	box-shadow: none;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+}
+
+.modal .modal-pop .modal-body.divide,
+.modal .modal-pop .modal-body.user,
+.modal .modal-pop .modal-body.list,
+.modal .modal-pop .modal-body.inspection:not(.reqst),
+.modal .modal-pop .modal-body.divide-sty02,
+.modal .modal-pop .modal-body.divide-sty03 {
+	overflow-y: auto;
+}
+
+/* --- 바닥 --- */
+.modal .modal-pop .modal-footer,
+.modal[id^="modal-lims-"] .modal-pop .modal-footer {
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: var(--ds-2);
+	height: auto;
+	min-height: 0;
+	padding: var(--ds-3) var(--ds-6);
+	border-top: 1px solid var(--ds-line);
+	background: var(--ds-surface);
+}
+
+.modal .modal-pop .modal-footer > * {
+	margin: 0;
+}
+
+/* 모달 안의 표는 머리행이 붙어 있어야 스크롤할 때 뜻을 잃지 않는다 */
+.modal .modal-pop .modal-body .core-table thead th,
+.modal .modal-pop .modal-body table thead th {
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	background-color: var(--ds-canvas) !important;
+	box-shadow: inset 0 -1px 0 var(--ds-line);
+}
+
+/* 모달 안 구획 제목 — 화학량론 모달이 "생성물 (수율 계산)" 을 본문 글자와
+   같은 크기로 흘려 두어 구획이 시작된 줄 몰랐다. */
+.modal .modal-pop .modal-body h3,
+.modal .modal-pop .modal-body .lims-stoich-section-title {
+	margin: var(--ds-5) 0 var(--ds-2);
+	font-size: var(--ds-fs-card);
+	font-weight: 700;
+	color: var(--ds-ink);
+}
+
+.modal .modal-pop .modal-body > :first-child {
+	margin-top: 0;
+}
+
+/* 배경막 위에서 드래그 손잡이임을 보이게 */
+.modal .modal-pop .modal-header.cursor-move {
+	cursor: move;
+	user-select: none;
+}
+
+/* ---------------------------------------------------------------------------
+   13) 연구노트 창 — 스크롤
+
+   노트 전용 레이아웃은 좌·우 칸을 둘 다 position: fixed + height:calc(100%-72px)
+   로 잡아 두고 overflow 를 주지 않았다. 그래서 본문이 창보다 길어지는 순간
+   (블록 두 개면 넘는다) 아래쪽에 닿을 방법이 없었다. 문서 스크롤도 안 된다 —
+   body 가 72px 밖에 안 되기 때문이다.
+--------------------------------------------------------------------------- */
+#main-body #main-body-left,
+#main-body #main-body-right {
+	overflow-y: auto;
+	overflow-x: hidden;
+	overscroll-behavior: contain;
+}
+
+#main-body #main-body-right .content-wrapper,
+#main-body #main-body-right .lims-page {
+	height: auto;
+	min-height: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   14) 연구노트 본문 — 한 장의 문서면
+
+   지금은 블록마다 테두리 + 회색 머리줄 + 상시 노출된 버튼 3~4개가 있다.
+   블록이 넷이면 테두리 넷, 머리줄 넷, 버튼 열넷이 동시에 보인다. 내용보다
+   틀이 더 눈에 띄고, 글을 쓰는 곳이 아니라 양식을 채우는 곳처럼 읽힌다.
+
+   Benchling 노트북이 하는 방식으로 바꾼다.
+     - 문서면은 한 장. 블록 사이는 실선 하나로만 나눈다
+     - 블록 조작은 평소에 숨기고, 그 블록에 마우스가 올라가거나 초점이
+       들어왔을 때만 오른쪽 위에 나타난다
+     - 서식 도구줄도 마찬가지 — 쓰고 있는 블록에만 보인다
+     - 에디터 안에 따로 스크롤을 두지 않는다. 창 하나만 구른다
+--------------------------------------------------------------------------- */
+.lims-page .lims-note-body {
+	display: block;
+	padding: 0;
+}
+
+/* 문서면 — 읽기 좋은 폭으로 가운데 정렬 */
+.lims-page .lims-note-main > .lims-card {
+	max-width: 1000px;
+	margin: 0 auto;
+	border: 1px solid var(--ds-line);
+	border-radius: var(--ds-radius-lg);
+	background: var(--ds-surface);
+	box-shadow: var(--ds-shadow);
+	overflow: visible;
+}
+
+/* 블록 넣기 줄 — 문서 위에 붙어 따라온다 */
+.lims-page .lims-note-main > .lims-card > .lims-card-head {
+	position: sticky;
+	top: 0;
+	z-index: 3;
+	padding: var(--ds-3) var(--ds-6);
+	border-bottom: 1px solid var(--ds-line);
+	border-radius: var(--ds-radius-lg) var(--ds-radius-lg) 0 0;
+	background: rgba(255, 255, 255, 0.92);
+	backdrop-filter: blur(6px);
+}
+
+.lims-page .lims-note-main > .lims-card > .lims-card-body {
+	padding: 0;
+}
+
+.lims-page .lims-note-blocks {
+	display: block;
+	gap: 0;
+}
+
+/* --- 블록 --- */
+.lims-page .lims-note-block,
+.lims-page .lims-note-block.is-struct {
+	position: relative;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	overflow: visible;
+}
+
+.lims-page .lims-note-block + .lims-note-block {
+	border-top: 1px solid var(--ds-line);
+}
+
+/* 머리줄 — 회색 띠를 걷어내고 조용한 이름표만 남긴다 */
+.lims-page .lims-note-block-head {
+	display: flex;
+	align-items: center;
+	gap: var(--ds-2);
+	min-height: var(--ds-8);
+	padding: var(--ds-3) var(--ds-6) 0;
+	border-bottom: 0;
+	background: transparent;
+}
+
+.lims-page .lims-note-block-ord {
+	min-width: auto;
+	height: auto;
+	padding: 0;
+	border-radius: 0;
+	background: transparent;
+	color: var(--ds-ink-4);
+	font-size: var(--ds-fs-micro);
+	font-weight: 500;
+	font-variant-numeric: tabular-nums;
+}
+
+.lims-page .lims-note-block-ord::after {
+	content: '·';
+	margin-left: var(--ds-1);
+	color: var(--ds-line-2);
+}
+
+.lims-page .lims-note-block-kind,
+.lims-page .lims-note-block-kind.is-struct {
+	font-size: var(--ds-fs-micro);
+	font-weight: 500;
+	letter-spacing: 0.02em;
+	color: var(--ds-ink-4);
+}
+
+/* 조작 버튼 — 평소엔 없다. 그 블록을 만질 때만 나온다. */
+.lims-page .lims-note-block-tools {
+	display: flex;
+	gap: var(--ds-1);
+	margin-left: auto;
+	opacity: 0;
+	transform: translateY(-2px);
+	pointer-events: none;
+	transition: opacity 0.12s ease, transform 0.12s ease;
+}
+
+.lims-page .lims-note-block:hover .lims-note-block-tools,
+.lims-page .lims-note-block:focus-within .lims-note-block-tools {
+	opacity: 1;
+	transform: none;
+	pointer-events: auto;
+}
+
+/* 키보드로만 쓰는 사람에게도 닿아야 한다 */
+.lims-page .lims-note-block-tools:focus-within {
+	opacity: 1;
+	transform: none;
+	pointer-events: auto;
+}
+
+.lims-page .lims-note-block-tools > * {
+	min-height: var(--ds-control-sm);
+	height: var(--ds-control-sm);
+	padding: 0 var(--ds-3);
+	font-size: var(--ds-fs-micro);
+}
+
+.lims-page .lims-note-block-body {
+	padding: var(--ds-2) var(--ds-6) var(--ds-5);
+}
+
+/* --- 본문 에디터 --- */
+.lims-page .lims-note-editor {
+	border: 0;
+	border-radius: 0;
+	overflow: visible;
+}
+
+.lims-page .lims-note-editor .rw-editor-ai,
+.lims-page .lims-note-editor .editor-wrap,
+.lims-page .lims-note-editor .workspace {
+	border: 0;
+	background: transparent;
+	box-shadow: none;
+}
+
+/* File/Edit/Insert/Format/Table/Help — 데스크톱 앱 메뉴막대다.
+   연구노트는 문서지 응용프로그램이 아니다. */
+.lims-page .lims-note-editor .menubar {
+	display: none !important;
+}
+
+/* 서식 도구줄 — 지금 쓰고 있는 블록에만. 40개 버튼이 블록마다 두 줄씩
+   상시로 떠 있으면 글이 어디서 시작하는지 알 수 없다. */
+.lims-page .lims-note-editor .toolbar {
+	position: sticky;
+	top: calc(var(--ds-control) + var(--ds-6));
+	z-index: 2;
+	max-height: 0;
+	margin-bottom: 0;
+	padding: 0 var(--ds-2);
+	border: 1px solid transparent;
+	border-radius: var(--ds-radius);
+	background: var(--ds-surface);
+	overflow: hidden;
+	opacity: 0;
+	transition: max-height 0.14s ease, opacity 0.14s ease, margin-bottom 0.14s ease;
+}
+
+/* 두 줄로 접히면 초점을 줄 때마다 본문이 79px 씩 내려간다. 한 줄로 세우고
+   넘치는 만큼만 가로로 민다 — 글이 있던 자리에 그대로 있게. */
+.lims-page .lims-note-editor .toolbar {
+	flex-wrap: nowrap;
+	overflow-x: auto;
+	overflow-y: hidden;
+	scrollbar-width: thin;
+}
+
+.lims-page .lims-note-block:focus-within .lims-note-editor .toolbar {
+	max-height: calc(var(--ds-unit) * 11);   /* 44 — 한 줄 */
+	margin-bottom: var(--ds-2);
+	padding: var(--ds-1) var(--ds-2);
+	border-color: var(--ds-line);
+	box-shadow: var(--ds-shadow);
+	opacity: 1;
+}
+
+/* 에디터 안에 스크롤을 또 두지 않는다 — 창 하나만 구르게 한다 */
+.lims-page .lims-note-editor .rw-editor-content {
+	max-height: none;
+	overflow-y: visible;
+}
+
+/* 에디터는 A4(210mm) 지면을 흉내내려고 본문을 760px 로 묶고 좌우 95px 을
+   띄운다. 문서면 폭은 이미 우리가 정했으므로 안쪽에서 한 번 더 좁히면
+   글이 블록 가운데에 뜬 것처럼 보인다. */
+.lims-page .lims-note-editor .rw-editor-content .tiptap {
+	max-width: none;
+	margin: 0;
+	min-height: calc(var(--ds-unit) * 22);   /* 88 — 빈 블록의 최소 높이 */
+	padding: 0;
+	font-size: var(--ds-fs-card);
+	line-height: 1.75;
+	color: var(--ds-ink);
+}
+
+/* 글자 수 표시는 초점이 있을 때만 */
+.lims-page .lims-note-editor .rw-statusbar {
+	padding: var(--ds-1) 0 0;
+	border: 0;
+	background: transparent;
+	font-size: var(--ds-fs-micro);
+	opacity: 0;
+	transition: opacity 0.12s ease;
+}
+
+.lims-page .lims-note-block:focus-within .lims-note-editor .rw-statusbar {
+	opacity: 1;
+}
+
+/* --- 구조 블록 --- */
+.lims-page .lims-note-block.is-struct .lims-note-struct {
+	gap: var(--ds-5);
+}
+
+.lims-page .lims-note-struct-canvas {
+	border: 1px solid var(--ds-line);
+	border-radius: var(--ds-radius);
+	background: var(--ds-canvas);
+}
+
+/* --- 블록 사이 넣기 자리 ---
+   블록 경계마다 놓인다. 평소엔 실선 하나. 마우스가 올라가면 그 자리에
+   무엇을 넣을지 고르는 버튼이 나타난다. 글 쓰던 자리에서 바로 넣는다. */
+.lims-page .lims-note-insert {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: var(--ds-5);
+	margin: 0;
+}
+
+.lims-page .lims-note-insert-line {
+	position: absolute;
+	left: var(--ds-6);
+	right: var(--ds-6);
+	height: 1px;
+	background: var(--ds-line);
+	transition: background-color 0.12s ease;
+}
+
+/* 블록끼리 맞닿은 자리는 넣기 줄이 실선을 대신한다 — 선이 둘이 되지 않게 */
+.lims-page .lims-note-block + .lims-note-insert + .lims-note-block {
+	border-top: 0;
+}
+
+.lims-page .lims-note-insert-actions {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	gap: var(--ds-1);
+	padding: 0 var(--ds-2);
+	border-radius: var(--ds-pill);
+	background: var(--ds-surface);
+	opacity: 0;
+	transform: scale(0.96);
+	pointer-events: none;
+	transition: opacity 0.12s ease, transform 0.12s ease;
+}
+
+.lims-page .lims-note-insert:hover .lims-note-insert-actions,
+.lims-page .lims-note-insert:focus-within .lims-note-insert-actions {
+	opacity: 1;
+	transform: none;
+	pointer-events: auto;
+}
+
+.lims-page .lims-note-insert:hover .lims-note-insert-line {
+	background: var(--ds-primary-weak);
+}
+
+.lims-page .lims-note-insert-btn {
+	height: calc(var(--ds-unit) * 6);   /* 24 */
+	padding: 0 var(--ds-3);
+	border: 1px solid var(--ds-line-2);
+	border-radius: var(--ds-pill);
+	background: var(--ds-surface);
+	color: var(--ds-ink-3);
+	font-size: var(--ds-fs-micro);
+	font-weight: 500;
+	line-height: 1;
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+.lims-page .lims-note-insert-btn:hover {
+	border-color: var(--ds-primary);
+	background: var(--ds-primary-weak);
+	color: var(--ds-primary-dark);
+}
+
+.lims-page .lims-note-insert-btn:focus-visible {
+	outline: none;
+	box-shadow: var(--ds-ring);
+}
+
+/* --- 왼쪽 정보 레일 ---
+   .note-info-box 에 min-height: 209px 이 박혀 있어, 내용이 없어도 세 칸이
+   각각 209px 씩 빈 상자로 서 있었다. 내용만큼만 차지하게 하고, 비어 있으면
+   왜 비었는지 한 줄로 말해 준다. */
+#main-body #main-body-left .note-info-box,
+#main-body-left .note-info-box {
+	min-height: 0;
+	padding: var(--ds-4) var(--ds-5);
+	border: 1px solid var(--ds-line);
+	border-radius: var(--ds-radius-lg);
+	background: var(--ds-surface);
+}
+
+#main-body #main-body-left .note-info-box > .title,
+#main-body-left .note-info-box > .title {
+	margin-bottom: var(--ds-3);
+	font-size: var(--ds-fs-card);
+	font-weight: 700;
+	color: var(--ds-ink);
+}
+
+.note-reagent-usage-list:empty::before,
+.note-stoich-summary:empty::before {
+	display: block;
+	padding: var(--ds-2) 0;
+	color: var(--ds-ink-4);
+	font-size: var(--ds-fs-small);
+	line-height: var(--ds-lh);
+}
+
+.note-reagent-usage-list:empty::before {
+	content: '아직 사용한 시약이 없습니다. 표 블록에서 시약을 넣으면 여기에 쌓입니다.';
+}
+
+.note-stoich-summary:empty::before {
+	content: '시약을 넣으면 한계시약과 당량이 계산됩니다.';
+}
+
+/* --- 넣기 줄이 비었을 때 --- */
+.lims-page .lims-note-empty {
+	padding: var(--ds-8) var(--ds-6);
+	color: var(--ds-ink-4);
+	font-size: var(--ds-fs-body);
+	text-align: center;
+}
+
+/* ---------------------------------------------------------------------------
+   15) 좁은 화면
 --------------------------------------------------------------------------- */
 @media (max-width: 1200px) {
 	.sticky-sty-01 .search-box-write {

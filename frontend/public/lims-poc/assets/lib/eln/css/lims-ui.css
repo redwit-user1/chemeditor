@@ -33,39 +33,39 @@
    토큰 블록에서 한 번만 한다.
 
    색·폰트는 새로 만들지 않는다. style.css 가 이미 가진 값만 쓴다.
-     primary #1761de / primary-dark #0f4094 / primary-weak #edf3fd
-     gray900 #212529 / gray700 #495057 / gray600 #868e96 / gray500 #adb5bd
-     gray300 #dee2e6 / gray200 #e9ecef / gray50 #f8f9fa
-     danger #ee5139 / warn #a1730a
+     primary var(--ds-primary) / primary-dark var(--ds-primary-dark) / primary-weak var(--ds-primary-weak)
+     gray900 var(--ds-ink) / gray700 var(--ds-ink-2) / gray600 var(--ds-ink-4) / gray500 var(--ds-ink-4)
+     gray300 var(--ds-line-2) / gray200 var(--ds-line) / gray50 var(--ds-canvas)
+     danger var(--ds-danger) / warn var(--ds-warn)
 =============================================================================*/
 
 .lims-page {
-	--lims-primary: #1761de;
-	--lims-primary-dark: #0f4094;
-	--lims-primary-weak: #edf3fd;
-	--lims-ink: #212529;
-	--lims-ink-2: #495057;
+	--lims-primary: var(--ds-primary);
+	--lims-primary-dark: var(--ds-primary-dark);
+	--lims-primary-weak: var(--ds-primary-weak);
+	--lims-ink: var(--ds-ink);
+	--lims-ink-2: var(--ds-ink-2);
 	/*
-	  보조 텍스트. style.css 의 gray600(#868e96)을 그대로 쓰면 흰 배경에서 3.32:1,
-	  회색 카드(#f8f9fa) 위에서 3.15:1 로 WCAG AA(4.5:1)에 못 미친다. 표 머리행·안내
+	  보조 텍스트. style.css 의 gray600(var(--ds-ink-4))을 그대로 쓰면 흰 배경에서 3.32:1,
+	  회색 카드(var(--ds-canvas)) 위에서 3.15:1 로 WCAG AA(4.5:1)에 못 미친다. 표 머리행·안내
 	  문구·항목 라벨이 전부 이 색이라 화면 대부분의 작은 글자가 기준 미달이었다.
 	  같은 계열에서 가장 밝으면서 두 배경 모두 4.5:1 을 넘기는 값으로 내린다
-	  (#6b7280 → 4.59:1 / 4.83:1).
+	  (var(--ds-ink-4) → 4.59:1 / 4.83:1).
 	*/
-	--lims-ink-3: #6b7280;
-	--lims-ink-4: #adb5bd;
-	--lims-line: #e9ecef;
-	--lims-line-strong: #dee2e6;
-	--lims-surface: #ffffff;
-	--lims-surface-2: #f8f9fa;
-	--lims-danger: #ee5139;
-	--lims-warn: #a1730a;
+	--lims-ink-3: var(--ds-ink-4);
+	--lims-ink-4: var(--ds-ink-4);
+	--lims-line: var(--ds-line);
+	--lims-line-strong: var(--ds-line-2);
+	--lims-surface: var(--ds-surface);
+	--lims-surface-2: var(--ds-canvas);
+	--lims-danger: var(--ds-danger);
+	--lims-warn: var(--ds-warn);
 	/*
 	  옅은 배경 배지 위의 글자색. 원색을 그대로 얹으면 대비가 3.1~3.9:1 로 모자란다
 	  (경고 3.92:1, 위험 3.13:1). 배경은 그대로 두고 글자만 어둡게 내린다.
 	*/
-	--lims-danger-ink: #c92a11;
-	--lims-warn-ink: #8a6208;
+	--lims-danger-ink: var(--ds-danger);
+	--lims-warn-ink: var(--ds-warn);
 
 	/*
 	  여백 스케일 — 4px 배수 하나로만 잰다.
@@ -397,7 +397,7 @@
 .lims-page .button-blue-full-sty01 {
 	border: 1px solid var(--lims-primary);
 	background-color: var(--lims-primary);
-	color: #fff !important;
+	color: var(--ds-surface) !important;
 }
 
 .lims-page .button-blue-full-sty01:hover {
@@ -496,7 +496,7 @@
 .lims-page .button-cnfm-sty01:hover { background-color: var(--lims-primary-dark); }
 .lims-page .button-cncl-sty01 { background-color: var(--lims-surface-2); border: 1px solid var(--lims-line-strong); color: var(--lims-ink-2); }
 .lims-page .button-cncl-sty01:hover { background-color: var(--lims-line); }
-.lims-page .button-remove-sty01:hover { background-color: #c92a11; }
+.lims-page .button-remove-sty01:hover { background-color: var(--ds-danger); }
 
 /* 버튼 묶음 간격 — ma-r10/ma-l10 유틸이 !important 로 10px 을 박아
    flex gap 과 겹쳐 간격이 제각각이었다. 묶음 안에서는 gap 하나로 통일한다. */
@@ -610,7 +610,7 @@
 	width: 16px;
 	height: 16px;
 	order: 2;
-	margin-left: -2px;
+	margin-left: -calc(var(--ds-unit) / 2);
 }
 
 /* 삭제 — 되돌릴 수 없는 조작만 휴지통을 준다 */
@@ -633,7 +633,7 @@
 .lims-page [onclick^="removeItemRow"] {
 	border-color: rgba(238, 81, 57, 0.45) !important;
 	/* 테두리는 원색을 유지해 "위험" 색으로 읽히게 하되, 글자는 어두운 쪽을 쓴다 —
-	   흰 배경 위의 #ee5139 은 3.58:1 로 기준 미달이다. */
+	   흰 배경 위의 var(--ds-danger) 은 3.58:1 로 기준 미달이다. */
 	color: var(--lims-danger-ink) !important;
 }
 
@@ -817,7 +817,7 @@
 	gap: var(--lims-gap-1);
 	padding: var(--lims-gap-3);
 	border: 1px solid var(--lims-line);
-	border-radius: 10px;
+	border-radius: var(--ds-radius);
 	background: var(--lims-surface);
 	text-decoration: none;
 	transition: border-color 0.12s ease, box-shadow 0.12s ease;
@@ -862,7 +862,7 @@
 .lims-page .lims-summary-row .lims-summary-card {
 	padding: var(--lims-gap-3);
 	border-color: var(--lims-line);
-	border-radius: 10px;
+	border-radius: var(--ds-radius);
 }
 
 .lims-page .lims-summary-row .lims-summary-label {
@@ -886,7 +886,7 @@
 .lims-page .lims-card {
 	margin-top: var(--lims-gap-3);
 	border: 1px solid var(--lims-line);
-	border-radius: 10px;
+	border-radius: var(--ds-radius);
 	background: var(--lims-surface);
 	overflow: hidden;
 }
@@ -1165,12 +1165,12 @@
 }
 
 /*
-  행 hover — 구노 기본은 회색(#f1f3f5)이라 "선택 불가" 처럼 보인다.
+  행 hover — 구노 기본은 회색(var(--ds-hover))이라 "선택 불가" 처럼 보인다.
   첫/끝 셀에 이미 라운드가 있으므로 옅은 파랑을 얹으면 참조 UI 의
   "라운드 행" 강조와 같은 결과가 된다.
 */
 /* 부트스트랩은 hover 틴트를 tr:hover 에 선언된 --bs-table-hover-bg 로 칠한다.
-   구노가 그 자리에 회색(#f1f3f5)을 박아두었으므로 같은 자리에서 덮어써야 한다. */
+   구노가 그 자리에 회색(var(--ds-hover))을 박아두었으므로 같은 자리에서 덮어써야 한다. */
 .lims-page .core-table .core-table-body .table > tbody > tr:hover {
 	--bs-table-hover-bg: #eff5ff !important;
 	--bs-table-hover-color: var(--lims-ink) !important;
@@ -1328,7 +1328,7 @@
 */
 .lims-page .core-table {
 	border: 1px solid var(--lims-line);
-	border-radius: 10px;
+	border-radius: var(--ds-radius);
 	background: var(--lims-surface);
 	overflow: hidden;
 }
@@ -1389,7 +1389,7 @@
 	height: var(--lims-control-h-sm);
 	padding: 0 var(--lims-gap-2);
 	border: 1px solid transparent;
-	border-radius: 6px;
+	border-radius: calc(var(--ds-radius) - 4px);
 	background: transparent;
 	font-size: var(--lims-fs-body);
 	font-weight: var(--lims-fw-medium);
@@ -1408,7 +1408,7 @@
 .lims-page .paging-box .pagination > .active > span:hover {
 	border-color: var(--lims-primary) !important;
 	background: var(--lims-primary) !important;
-	color: #fff !important;
+	color: var(--ds-surface) !important;
 }
 
 /* ---------------------------------------------------------------------------
@@ -1474,7 +1474,7 @@
 	min-height: var(--lims-gap-5);
 	padding: 0 var(--lims-gap-2);
 	border: 1px solid transparent;
-	border-radius: 6px;
+	border-radius: calc(var(--ds-radius) - 4px);
 	font-size: var(--lims-fs-micro);
 	font-weight: var(--lims-fw-medium);
 	line-height: var(--lims-lh-snug);
@@ -1561,7 +1561,7 @@
 	padding: var(--lims-gap-2) var(--lims-gap-3);
 	border: 1px solid var(--lims-line);
 	border-left: 3px solid var(--lims-primary);
-	border-radius: 6px;
+	border-radius: calc(var(--ds-radius) - 4px);
 	background: var(--lims-surface-2);
 	font-size: var(--lims-fs-caption);
 	line-height: var(--lims-lh-base);
@@ -1579,7 +1579,7 @@
 	gap: var(--lims-gap-2) var(--lims-gap-6);
 	padding: var(--lims-gap-3) var(--lims-gap-4);
 	border-color: var(--lims-line-strong);
-	border-radius: 10px;
+	border-radius: var(--ds-radius);
 }
 
 .lims-page .lims-prop-bar .prop-item {
@@ -1692,7 +1692,7 @@
 .lims-page .lims-note-kind {
 	flex: none;
 	padding: 2px var(--lims-gap-2);
-	border-radius: 4px;
+	border-radius: calc(var(--ds-radius) - 6px);
 	background: var(--lims-primary-weak);
 	color: var(--lims-primary-dark);
 	font-size: var(--lims-fs-micro);
@@ -1769,7 +1769,7 @@
 
 .lims-page .lims-note-block {
 	border: 1px solid var(--lims-line);
-	border-radius: 10px;
+	border-radius: var(--ds-radius);
 	background: var(--lims-surface);
 	overflow: hidden;
 }
@@ -1795,7 +1795,7 @@
 	min-width: var(--lims-gap-5);
 	height: var(--lims-gap-5);
 	padding: 0 var(--lims-gap-1);
-	border-radius: 10px;
+	border-radius: var(--ds-radius);
 	background: var(--lims-line-strong);
 	color: var(--lims-ink-2);
 	font-size: var(--lims-fs-micro);
@@ -1887,7 +1887,7 @@
 	min-height: 192px;
 	padding: var(--lims-gap-2);
 	border: 1px solid var(--lims-line-strong);
-	border-radius: 10px;
+	border-radius: var(--ds-radius);
 	background: var(--lims-surface);
 }
 
@@ -1962,7 +1962,7 @@
 
 .lims-page .lims-note-paste:empty::before {
 	content: attr(data-placeholder);
-	/* 옅은 파란 배경(#edf3fd) 위라 3.61:1 밖에 안 나온다. 안내 문구지만 이 화면의
+	/* 옅은 파란 배경(var(--ds-primary-weak)) 위라 3.61:1 밖에 안 나온다. 안내 문구지만 이 화면의
 	   핵심 조작을 설명하는 자리라 읽히지 않으면 기능이 없는 것과 같다. */
 	color: var(--lims-primary-dark);
 }
@@ -1976,7 +1976,7 @@
 /* 계산 결과. 이 세 값이 이 화면의 결론이다. */
 .lims-page .lims-note-calc {
 	margin-top: var(--lims-gap-2);
-	border-radius: 10px;
+	border-radius: var(--ds-radius);
 	transition: box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
@@ -2029,7 +2029,7 @@
 	gap: var(--lims-gap-1);
 	padding: var(--lims-gap-1) var(--lims-gap-2);
 	border: 1px solid var(--lims-line-strong);
-	border-radius: 14px;
+	border-radius: var(--ds-radius-lg);
 	background: var(--lims-surface-2);
 	font-size: var(--lims-fs-caption);
 	font-weight: var(--lims-fw-medium);
@@ -2529,7 +2529,7 @@
 /* ---------------------------------------------------------------------------
    17) 대비 — lims.css 에 hex 로 박힌 보조 색을 토큰으로 되돌린다
 
-   lims.css 는 토큰이 생기기 전에 쓰여 #868e96·#ced4da·#ee5139 을 직접 박아 뒀다.
+   lims.css 는 토큰이 생기기 전에 쓰여 var(--ds-ink-4)·var(--ds-line-2)·var(--ds-danger) 을 직접 박아 뒀다.
    흰 배경 위에서 각각 3.32:1 / 1.49:1 / 3.58:1 로 WCAG AA(4.5:1)에 못 미친다.
    색의 의도(보조·비활성·위험)는 그대로 두고 값만 토큰으로 바꾼다.
 

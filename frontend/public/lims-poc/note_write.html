@@ -2769,12 +2769,31 @@
         destroyTextEditors();
         const $wrap = $('#noteBlocks').empty();
 
+        /* 블록 사이(그리고 맨 위·맨 아래)에 넣기 자리를 깐다. 평소에는 실선
+           하나로만 보이고, 그 위에 마우스가 오면 버튼 셋이 나타난다. */
+        function insertRow(at) {
+          return ''
+            + '<div class="lims-note-insert" data-at="' + at + '">'
+            + '  <span class="lims-note-insert-line"></span>'
+            + '  <span class="lims-note-insert-actions">'
+            + '    <button type="button" class="lims-note-insert-btn"'
+            + '            onclick="insertBlockAt(' + at + ', \'TEXT\');">텍스트</button>'
+            + '    <button type="button" class="lims-note-insert-btn"'
+            + '            onclick="insertBlockAt(' + at + ', \'STRUCTURE\');">구조</button>'
+            + '    <button type="button" class="lims-note-insert-btn"'
+            + '            onclick="insertBlockAt(' + at + ', \'TABLE\');">표</button>'
+            + '  </span>'
+            + '</div>';
+        }
+
         gBlocks.forEach(function (b, idx) {
           const common = {
             blockId: b.blockId,
             ordDisp: idx + 1,
             captionVal: esc(b.caption)
           };
+
+          $wrap.append(insertRow(idx));
 
           if (b.blockTpCcd === 'STRUCTURE') {
             $wrap.append(S2Util.s2Template('template_note_block_struct', common));
@@ -2785,6 +2804,7 @@
               $.extend({ textVal: esc(b.textVal) }, common)));
           }
         });
+        $wrap.append(insertRow(gBlocks.length));
 
         /* 렌더가 끝난 뒤 블록별 내용을 채운다. 구조 썸네일은 한 번에 1건씩 순차로 요청한다
            — 블록 수만큼 동시에 던지면 reqAjax 가 뒤엣것을 조용히 버린다. */
@@ -2909,6 +2929,24 @@
         gBlocks.push(toBlock({ blockTpCcd: blockTpCcd }));
         renderBlocks();
       }
+
+      /*
+        블록 사이에 끼워 넣기.
+
+        지금까지는 무엇을 넣든 맨 아래에 붙었다. 문단 하나를 중간에 끼우려면
+        붙인 다음 "위로"를 여러 번 눌러 올려야 했다. 글을 쓰는 자리에서 바로
+        넣을 수 있어야 문서를 쓰는 느낌이 난다.
+
+        idx 는 "이 자리 앞에" 넣는다는 뜻이다 — 0 이면 맨 위, gBlocks.length
+        면 맨 아래.
+      */
+      function insertBlockAt(idx, blockTpCcd) {
+        syncTextBlocks();
+        const at = Math.max(0, Math.min(Number(idx) || 0, gBlocks.length));
+        gBlocks.splice(at, 0, toBlock({ blockTpCcd: blockTpCcd }));
+        renderBlocks();
+      }
+      window.insertBlockAt = insertBlockAt;
 
       function removeBlock(blockId) {
         if (gBlocks.length <= 1) {

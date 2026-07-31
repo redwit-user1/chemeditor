@@ -4,8 +4,8 @@
 
    원칙: 신규 색상/타이포/컴포넌트를 정의하지 않는다.
    Figma(구축형 GOONO_디자인)의 토큰은 style.css 가 이미 구현하고 있으므로
-   (primary/600 #1761DE, Gray/900 #212529, Gray/700 #495057, Gray/300 #DEE2E6,
-    Gray/50 #F8F9FA, 모달그림자 0 4px 16px #21252929, radius 10px)
+   (primary/600 var(--ds-primary), Gray/900 var(--ds-ink), Gray/700 var(--ds-ink-2), Gray/300 var(--ds-line-2),
+    Gray/50 var(--ds-canvas), 모달그림자 0 4px 16px #21252929, radius 10px)
    여기에는 style.css 가 커버하지 못하는 LIMS 전용 항목만 최소로 둔다.
 =============================================================================*/
 
@@ -19,7 +19,7 @@
 
    구현 메모
      - 외부 SVG 는 currentColor 를 상속받지 못한다. 그래서 네이비 사이드바
-       (#08204A)용으로 stroke 를 #ffffff 로 박아 구운 `-w.svg` 를 쓴다.
+       (#08204A)용으로 stroke 를 var(--ds-surface) 로 박아 구운 `-w.svg` 를 쓴다.
        (굽는 스크립트가 아니라 결과물만 저장소에 둔다: img/lucide/*.svg)
      - 규약은 기존과 같다 — `.nav-menu .menuCd.<MENU_CD>` 에 background-image.
        구조·레이아웃은 손대지 않는다.
@@ -59,13 +59,13 @@
 
 /* ---------------------------------------------------------------------------
    2) 상태 표기
-   Figma 의 Gray/Primary 스케일만 사용한다. 위험(경과)은 style.css 의 #ee5139 계열.
+   Figma 의 Gray/Primary 스케일만 사용한다. 위험(경과)은 style.css 의 var(--ds-danger) 계열.
 --------------------------------------------------------------------------- */
 .lims-state {
 	display: inline-block;
-	padding: 2px 8px;
-	border-radius: 4px;
-	font-size: 12px;
+	padding: calc(var(--ds-unit) / 2) var(--ds-2);
+	border-radius: calc(var(--ds-radius) - 6px);
+	font-size: var(--ds-fs-small);
 	font-weight: 500;
 	line-height: 1.5;
 	letter-spacing: -0.02em;
@@ -74,22 +74,22 @@
 
 .lims-state.expired {
 	background: #fdecea;
-	color: #ee5139;
+	color: var(--ds-danger);
 }
 
 .lims-state.soon {
 	background: #fff6e0;
-	color: #a1730a;
+	color: var(--ds-warn);
 }
 
 .lims-state.normal {
-	background: #edf3fd;
-	color: #1761de;
+	background: var(--ds-primary-weak);
+	color: var(--ds-primary);
 }
 
 .lims-state.muted {
-	background: #f1f3f5;
-	color: #495057;
+	background: var(--ds-hover);
+	color: var(--ds-ink-2);
 }
 
 /* ---------------------------------------------------------------------------
@@ -99,36 +99,36 @@
 .lims-prop-bar {
 	display: flex;
 	align-items: center;
-	gap: 32px;
-	padding: 14px 20px;
-	background: #f8f9fa;
-	border: 1px solid #dee2e6;
-	border-radius: 10px;
+	gap: var(--ds-8);
+	padding: 14px var(--ds-5);
+	background: var(--ds-canvas);
+	border: 1px solid var(--ds-line-2);
+	border-radius: var(--ds-radius);
 }
 
 .lims-prop-bar .prop-item {
 	display: flex;
 	align-items: baseline;
-	gap: 8px;
+	gap: var(--ds-2);
 }
 
 .lims-prop-bar .prop-label {
-	font-size: 14px;
+	font-size: var(--ds-fs-body);
 	font-weight: 400;
-	color: #495057;
+	color: var(--ds-ink-2);
 	letter-spacing: -0.02em;
 }
 
 .lims-prop-bar .prop-value {
-	font-size: 18px;
+	font-size: var(--ds-fs-lead);
 	font-weight: 700;
-	color: #1761de;
+	color: var(--ds-primary);
 	letter-spacing: -0.04em;
 	font-variant-numeric: tabular-nums;
 }
 
 .lims-prop-bar .prop-value.empty {
-	color: #adb5bd;
+	color: var(--ds-ink-4);
 	font-weight: 400;
 }
 
@@ -137,7 +137,7 @@
 --------------------------------------------------------------------------- */
 .lims-tree-depth {
 	display: inline-block;
-	color: #ced4da;
+	color: var(--ds-line-2);
 	font-variant-numeric: tabular-nums;
 }
 
@@ -148,9 +148,9 @@
 	display: block;
 	width: 100%;
 	height: 640px;
-	border: 1px solid #dee2e6;
-	border-radius: 10px;
-	background: #fff;
+	border: 1px solid var(--ds-line-2);
+	border-radius: var(--ds-radius);
+	background: var(--ds-surface);
 }
 
 /* 숫자 컬럼 정렬 — 재고 수량/분자량 */
@@ -173,21 +173,21 @@
 .lims-compound-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-	gap: 16px;
+	gap: var(--ds-4);
 }
 
 .lims-compound-card {
 	display: flex;
 	flex-direction: column;
-	padding: 16px;
-	border: 1px solid #dee2e6;
-	border-radius: 10px;
-	background: #fff;
+	padding: var(--ds-4);
+	border: 1px solid var(--ds-line-2);
+	border-radius: var(--ds-radius);
+	background: var(--ds-surface);
 	cursor: pointer;
 }
 
 .lims-compound-card:hover {
-	border-color: #1761de;
+	border-color: var(--ds-primary);
 	box-shadow: 0 4px 16px rgba(33, 37, 41, 0.16);
 }
 
@@ -197,9 +197,9 @@
 	justify-content: center;
 	width: 100%;
 	height: 140px;
-	margin-bottom: 12px;
-	border-radius: 10px;
-	background: #f8f9fa;
+	margin-bottom: var(--ds-3);
+	border-radius: var(--ds-radius);
+	background: var(--ds-canvas);
 	overflow: hidden;
 }
 
@@ -209,18 +209,18 @@
 }
 
 .lims-compound-thumb.is-empty {
-	font-size: 12px;
+	font-size: var(--ds-fs-small);
 	font-weight: 400;
-	color: #868e96;
+	color: var(--ds-ink-4);
 	letter-spacing: -0.02em;
 	text-align: center;
 }
 
 .lims-compound-regid {
-	margin-bottom: 8px;
-	font-size: 16px;
+	margin-bottom: var(--ds-2);
+	font-size: var(--ds-fs-body);
 	font-weight: 700;
-	color: #212529;
+	color: var(--ds-ink);
 	letter-spacing: -0.04em;
 	word-break: break-all;
 }
@@ -228,29 +228,29 @@
 .lims-compound-meta {
 	display: flex;
 	align-items: baseline;
-	gap: 8px;
-	margin-bottom: 4px;
-	font-size: 13px;
+	gap: var(--ds-2);
+	margin-bottom: var(--ds-1);
+	font-size: var(--ds-fs-cell);
 	letter-spacing: -0.02em;
 }
 
 .lims-compound-meta-label {
 	flex: 0 0 44px;
-	color: #868e96;
+	color: var(--ds-ink-4);
 }
 
 .lims-compound-meta-value {
-	color: #495057;
+	color: var(--ds-ink-2);
 	font-variant-numeric: tabular-nums;
 	word-break: break-all;
 }
 
 .lims-compound-notecnt {
-	margin-top: 8px;
-	padding-top: 8px;
-	border-top: 1px solid #dee2e6;
-	font-size: 12px;
-	color: #1761de;
+	margin-top: var(--ds-2);
+	padding-top: var(--ds-2);
+	border-top: 1px solid var(--ds-line-2);
+	font-size: var(--ds-fs-small);
+	color: var(--ds-primary);
 	letter-spacing: -0.02em;
 }
 
@@ -262,16 +262,16 @@
 .lims-compound-resultbar {
 	display: flex;
 	align-items: center;
-	gap: 12px;
-	padding: 12px 20px;
-	border: 1px solid #dee2e6;
-	border-radius: 10px;
-	background: #edf3fd;
+	gap: var(--ds-3);
+	padding: var(--ds-3) var(--ds-5);
+	border: 1px solid var(--ds-line-2);
+	border-radius: var(--ds-radius);
+	background: var(--ds-primary-weak);
 }
 
 .lims-compound-resultbar .lims-compound-resultbar-text {
-	font-size: 14px;
-	color: #495057;
+	font-size: var(--ds-fs-body);
+	color: var(--ds-ink-2);
 	letter-spacing: -0.02em;
 }
 
@@ -282,7 +282,7 @@
 /* 상세 모달 — 좌측 구조 / 우측 물성 */
 .lims-compound-detail {
 	display: flex;
-	gap: 20px;
+	gap: var(--ds-5);
 	align-items: stretch;
 }
 
@@ -292,9 +292,9 @@
 	justify-content: center;
 	flex: 0 0 280px;
 	height: 220px;
-	border: 1px solid #dee2e6;
-	border-radius: 10px;
-	background: #f8f9fa;
+	border: 1px solid var(--ds-line-2);
+	border-radius: var(--ds-radius);
+	background: var(--ds-canvas);
 	overflow: hidden;
 }
 
@@ -304,8 +304,8 @@
 }
 
 .lims-compound-detail-structure.is-empty {
-	font-size: 13px;
-	color: #868e96;
+	font-size: var(--ds-fs-cell);
+	color: var(--ds-ink-4);
 	letter-spacing: -0.02em;
 	text-align: center;
 }
@@ -324,78 +324,78 @@
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
-	gap: 8px 24px;
-	padding: 12px 16px;
-	background: #f8f9fa;
-	border-radius: 10px;
+	gap: var(--ds-2) var(--ds-6);
+	padding: var(--ds-3) var(--ds-4);
+	background: var(--ds-canvas);
+	border-radius: var(--ds-radius);
 }
 
 .lims-stoich-summary .stoich-item {
 	display: flex;
 	align-items: baseline;
-	gap: 6px;
+	gap: calc(var(--ds-unit) * 1.5);
 }
 
 .lims-stoich-summary .stoich-label {
-	font-size: 13px;
+	font-size: var(--ds-fs-cell);
 	font-weight: 400;
-	color: #868e96;
+	color: var(--ds-ink-4);
 	letter-spacing: -0.02em;
 	white-space: nowrap;
 }
 
 .lims-stoich-summary .stoich-value {
-	font-size: 16px;
+	font-size: var(--ds-fs-body);
 	font-weight: 700;
-	color: #212529;
+	color: var(--ds-ink);
 	letter-spacing: -0.04em;
 	font-variant-numeric: tabular-nums;
 }
 
 .lims-stoich-summary .stoich-value.accent {
-	color: #1761de;
+	color: var(--ds-primary);
 }
 
 .lims-stoich-summary .stoich-value.empty {
-	font-size: 14px;
+	font-size: var(--ds-fs-body);
 	font-weight: 400;
-	color: #adb5bd;
+	color: var(--ds-ink-4);
 }
 
 /* 계산 출처 배지 — 이 숫자가 어디서 나왔는지 반드시 밝힌다 */
 .lims-stoich-source {
 	display: inline-block;
-	padding: 2px 8px;
-	border-radius: 10px;
-	font-size: 12px;
+	padding: calc(var(--ds-unit) / 2) var(--ds-2);
+	border-radius: var(--ds-radius);
+	font-size: var(--ds-fs-small);
 	font-weight: 400;
 	letter-spacing: -0.02em;
 	white-space: nowrap;
 }
 
 .lims-stoich-source.chem {
-	background: #edf3fd;
-	color: #1761de;
+	background: var(--ds-primary-weak);
+	color: var(--ds-primary);
 }
 
 .lims-stoich-source.local {
-	background: #f1f3f5;
-	color: #495057;
+	background: var(--ds-hover);
+	color: var(--ds-ink-2);
 }
 
 /* 한계시약 표시 */
 .table-sty01 tr.lims-stoich-limiting-row > td {
-	background: #edf3fd;
+	background: var(--ds-primary-weak);
 }
 
 .lims-stoich-limiting-mark {
 	display: inline-block;
-	margin-left: 6px;
-	padding: 2px 8px;
-	border-radius: 10px;
-	background: #1761de;
-	color: #fff;
-	font-size: 12px;
+	margin-left: calc(var(--ds-unit) * 1.5);
+	padding: calc(var(--ds-unit) / 2) var(--ds-2);
+	border-radius: var(--ds-radius);
+	background: var(--ds-primary);
+	color: var(--ds-surface);
+	font-size: var(--ds-fs-small);
 	font-weight: 400;
 	letter-spacing: -0.02em;
 	white-space: nowrap;
@@ -404,15 +404,15 @@
 /* 계산 불가 사유 — 빈칸이나 0 대신 이유를 적는다 */
 .lims-stoich-reason {
 	display: inline-block;
-	color: #868e96;
-	font-size: 13px;
+	color: var(--ds-ink-4);
+	font-size: var(--ds-fs-cell);
 	font-weight: 400;
 	letter-spacing: -0.02em;
 	line-height: 1.4;
 }
 
 .lims-stoich-reason.danger {
-	color: #ee5139;
+	color: var(--ds-danger);
 }
 
 /* 역할 선택 셀렉트 — style.css 에 맞는 폭 유틸리티가 없어 여기서만 지정 */
@@ -422,9 +422,9 @@
 
 /* 수율 행 */
 .table-sty01 tr.lims-stoich-yield-row > td {
-	background: #f8f9fa;
+	background: var(--ds-canvas);
 	font-weight: 700;
-	color: #212529;
+	color: var(--ds-ink);
 }
 
 /* 노트 우측 정보 컬럼용 축약 표기 */
@@ -432,27 +432,27 @@
 	display: flex;
 	align-items: baseline;
 	justify-content: space-between;
-	gap: 8px;
-	margin-top: 6px;
+	gap: var(--ds-2);
+	margin-top: calc(var(--ds-unit) * 1.5);
 }
 
 .lims-stoich-note-box .stoich-line .k {
-	font-size: 13px;
-	color: #868e96;
+	font-size: var(--ds-fs-cell);
+	color: var(--ds-ink-4);
 	letter-spacing: -0.02em;
 }
 
 .lims-stoich-note-box .stoich-line .v {
-	font-size: 14px;
+	font-size: var(--ds-fs-body);
 	font-weight: 700;
-	color: #212529;
+	color: var(--ds-ink);
 	letter-spacing: -0.02em;
 	font-variant-numeric: tabular-nums;
 }
 
 .lims-stoich-note-box .stoich-line .v.empty {
 	font-weight: 400;
-	color: #adb5bd;
+	color: var(--ds-ink-4);
 }
 
 /* 화학량론 모달 표는 가로 스크롤을 허용한다(좁은 화면에서 열이 뭉개지지 않게) */
@@ -468,19 +468,19 @@
 .lims-scan-box {
 	display: flex;
 	align-items: center;
-	gap: 16px;
-	padding: 20px 24px;
-	border: 1px solid #dee2e6;
-	border-radius: 10px;
-	background: #f8f9fa;
+	gap: var(--ds-4);
+	padding: var(--ds-5) var(--ds-6);
+	border: 1px solid var(--ds-line-2);
+	border-radius: var(--ds-radius);
+	background: var(--ds-canvas);
 }
 
 .lims-scan-box .lims-scan-label {
 	flex: 0 0 auto;
 	margin: 0;
-	font-size: 14px;
+	font-size: var(--ds-fs-body);
 	font-weight: 500;
-	color: #495057;
+	color: var(--ds-ink-2);
 	letter-spacing: -0.02em;
 }
 
@@ -488,67 +488,67 @@
 	flex: 1 1 auto;
 	min-width: 0;
 	height: 56px;
-	padding: 0 16px;
-	border: 1px solid #ced4da;
-	border-radius: 10px;
-	background: #fff;
-	font-size: 24px;
+	padding: 0 var(--ds-4);
+	border: 1px solid var(--ds-line-2);
+	border-radius: var(--ds-radius);
+	background: var(--ds-surface);
+	font-size: var(--ds-fs-metric);
 	font-weight: 700;
-	color: #212529;
+	color: var(--ds-ink);
 	letter-spacing: -0.02em;
 	font-variant-numeric: tabular-nums;
 }
 
 .lims-scan-box .lims-scan-input:focus {
-	border-color: #1761de;
+	border-color: var(--ds-primary);
 	outline: none;
 }
 
 .lims-scan-box .lims-scan-input::placeholder {
-	font-size: 15px;
+	font-size: var(--ds-fs-card);
 	font-weight: 400;
-	color: #adb5bd;
+	color: var(--ds-ink-4);
 }
 
 /* 단건 상세 카드 */
 .lims-scan-card {
-	padding: 24px;
-	border: 1px solid #dee2e6;
-	border-radius: 10px;
-	background: #fff;
+	padding: var(--ds-6);
+	border: 1px solid var(--ds-line-2);
+	border-radius: var(--ds-radius);
+	background: var(--ds-surface);
 }
 
 .lims-scan-card .lims-scan-card-head {
 	display: flex;
 	align-items: center;
-	gap: 12px;
+	gap: var(--ds-3);
 }
 
 .lims-scan-card .lims-scan-card-barcode {
 	margin: 0;
-	font-size: 20px;
+	font-size: var(--ds-fs-title);
 	font-weight: 700;
-	color: #1761de;
+	color: var(--ds-primary);
 	letter-spacing: -0.02em;
 	font-variant-numeric: tabular-nums;
 	word-break: break-all;
 }
 
 .lims-scan-card .lims-scan-card-nm {
-	margin: 4px 0 20px;
-	font-size: 16px;
+	margin: var(--ds-1) 0 var(--ds-5);
+	font-size: var(--ds-fs-body);
 	font-weight: 500;
-	color: #212529;
+	color: var(--ds-ink);
 	letter-spacing: -0.02em;
 }
 
 .lims-scan-card .lims-scan-card-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-	gap: 12px 24px;
-	padding: 16px 20px;
-	border-radius: 10px;
-	background: #f8f9fa;
+	gap: var(--ds-3) var(--ds-6);
+	padding: var(--ds-4) var(--ds-5);
+	border-radius: var(--ds-radius);
+	background: var(--ds-canvas);
 }
 
 .lims-scan-card .lims-scan-field {
@@ -560,22 +560,22 @@
 
 .lims-scan-card .lims-scan-field-label {
 	flex: 0 0 60px;
-	font-size: 13px;
-	color: #868e96;
+	font-size: var(--ds-fs-cell);
+	color: var(--ds-ink-4);
 	letter-spacing: -0.02em;
 }
 
 .lims-scan-card .lims-scan-field-value {
-	font-size: 14px;
-	color: #495057;
+	font-size: var(--ds-fs-body);
+	color: var(--ds-ink-2);
 	letter-spacing: -0.02em;
 	word-break: break-all;
 }
 
 .lims-scan-card .lims-scan-field-value.strong {
-	font-size: 18px;
+	font-size: var(--ds-fs-lead);
 	font-weight: 700;
-	color: #1761de;
+	color: var(--ds-primary);
 	font-variant-numeric: tabular-nums;
 }
 
@@ -584,19 +584,19 @@
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 10px;
-	margin-top: 20px;
+	margin-top: var(--ds-5);
 }
 
 /* 다건 조회 시의 선택 목록 */
 .lims-scan-choices {
-	padding: 20px 24px;
-	border: 1px solid #dee2e6;
-	border-radius: 10px;
-	background: #fff;
+	padding: var(--ds-5) var(--ds-6);
+	border: 1px solid var(--ds-line-2);
+	border-radius: var(--ds-radius);
+	background: var(--ds-surface);
 }
 
 .lims-scan-choice-list {
-	margin: 12px 0 0;
+	margin: var(--ds-3) 0 0;
 	padding: 0;
 	list-style: none;
 }
@@ -605,39 +605,39 @@
 	display: flex;
 	flex-wrap: wrap;
 	align-items: baseline;
-	gap: 8px 12px;
-	padding: 12px 16px;
-	border: 1px solid #dee2e6;
-	border-radius: 10px;
+	gap: var(--ds-2) var(--ds-3);
+	padding: var(--ds-3) var(--ds-4);
+	border: 1px solid var(--ds-line-2);
+	border-radius: var(--ds-radius);
 	cursor: pointer;
 }
 
 .lims-scan-choice + .lims-scan-choice {
-	margin-top: 8px;
+	margin-top: var(--ds-2);
 }
 
 .lims-scan-choice:hover {
-	border-color: #1761de;
-	background: #edf3fd;
+	border-color: var(--ds-primary);
+	background: var(--ds-primary-weak);
 }
 
 .lims-scan-choice .lims-scan-choice-barcode {
-	font-size: 14px;
+	font-size: var(--ds-fs-body);
 	font-weight: 700;
-	color: #1761de;
+	color: var(--ds-primary);
 	letter-spacing: -0.02em;
 	font-variant-numeric: tabular-nums;
 }
 
 .lims-scan-choice .lims-scan-choice-nm {
-	font-size: 14px;
-	color: #212529;
+	font-size: var(--ds-fs-body);
+	color: var(--ds-ink);
 	letter-spacing: -0.02em;
 }
 
 .lims-scan-choice .lims-scan-choice-sub {
-	font-size: 12px;
-	color: #868e96;
+	font-size: var(--ds-fs-small);
+	color: var(--ds-ink-4);
 	letter-spacing: -0.02em;
 }
 
@@ -695,35 +695,35 @@
    ------------------------------------------------------------------ */
 .lims-summary-row {
 	display: flex;
-	gap: 12px;
+	gap: var(--ds-3);
 	flex-wrap: wrap;
 }
 
 .lims-summary-row .lims-summary-card {
 	flex: 1 1 160px;
 	min-width: 160px;
-	padding: 14px 16px;
-	border: 1px solid #dee2e6;
-	border-radius: 10px;
-	background-color: #fff;
+	padding: 14px var(--ds-4);
+	border: 1px solid var(--ds-line-2);
+	border-radius: var(--ds-radius);
+	background-color: var(--ds-surface);
 }
 
 .lims-summary-row .lims-summary-label {
-	font-size: 12px;
-	color: #868e96;
+	font-size: var(--ds-fs-small);
+	color: var(--ds-ink-4);
 	letter-spacing: -0.02em;
 }
 
 .lims-summary-row .lims-summary-value {
-	font-size: 24px;
+	font-size: var(--ds-fs-metric);
 	font-weight: 500;
-	color: #212529;
+	color: var(--ds-ink);
 	line-height: 1.3;
 }
 
 .lims-summary-row .lims-summary-value.warn { color: #f59f00; }
-.lims-summary-row .lims-summary-value.danger { color: #ee5139; }
-.lims-summary-row .lims-summary-value.primary { color: #1761de; }
+.lims-summary-row .lims-summary-value.danger { color: var(--ds-danger); }
+.lims-summary-row .lims-summary-value.primary { color: var(--ds-primary); }
 
 /* 물성 패널을 요약 용도로 빌려 쓴 화면이 좁을 때 넘치던 문제 — 줄바꿈을 허용한다. */
 .lims-prop-bar {
@@ -762,7 +762,7 @@
 .target-info-tab.lims-filter .search-box .select-wrap {
 	display: flex;
 	align-items: center;
-	gap: 6px;
+	gap: calc(var(--ds-unit) * 1.5);
 }
 
 /*
@@ -859,7 +859,7 @@
 	display: flex;
 	align-items: center;
 	min-height: var(--shell-nav-h);
-	margin: 2px 0;
+	margin: calc(var(--ds-unit) / 2) 0;
 	padding: 0 0 0 calc(var(--shell-unit) * 9.5);
 	background-position: calc(var(--shell-unit) * 2.5);
 	background-size: var(--shell-nav-icon) var(--shell-nav-icon);
