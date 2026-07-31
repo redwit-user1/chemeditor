@@ -159,23 +159,15 @@
        라틴 전용(200KB)이라 한글은 OS 기본(맑은 고딕 등)으로 떨어진다.
    결과적으로 같은 표에서 머리행 한글과 데이터 셀 한글이 다른 서체로 그려진다.
 
-   그래서 스택을 하나로 고정한다. 라틴은 제품 나머지와 같은 'Noto Sans',
-   한글은 이미 로드돼 있는 'Noto Sans KR' 로 확정한다 — OS 에 맡기지 않는다.
+   그래서 스택을 하나로 고정한다 — 였는데, 그 뒤 서체가 Pretendard 로 통일되면서
+   이 자리는 pretendard.css 로 옮겨갔다. 여기 남겨 두면 같은 !important 끼리
+   순서로만 갈리는 싸움이 되어, 어느 쪽이 이기는지 파일 순서를 봐야 알 수 있다.
+   서체의 출처는 pretendard.css 하나여야 한다. 그래서 지운다.
 
-   `!important` 는 이 파일에서 여기 두 줄뿐이다. 서로 다른 세 벤더가 각자 더
-   높은 우선순위로 박아 둔 값이라, 우선순위 사다리를 쌓아 이기는 방식은 다음
-   사람이 화면을 하나 추가하는 순간 조용히 무너진다. 여기서 한 번에 끊는다.
-   아이콘 폰트(fa-*, bi-*)는 서체가 곧 글리프라 반드시 제외한다.
-
-   자간도 같은 규칙이다. 지금은 -0.01 / -0.02 / -0.03 / -0.04em 이 요소마다
-   달라 한글 낱자 간격이 줄마다 흔들린다. `.lims-page` 에 한 번만 건다.
+   자간도 같이 지운다. -0.02em 은 lims-theme.css 의 :where(body, …) 가 이미
+   상속으로 주고 있다. 여기 !important 로 한 번 더 박아 두면 값이 우연히 같을
+   때만 조용하고, 눈금(--ds-ls)을 바꾸는 순간 `.lims-page` 안쪽만 안 따라온다.
 --------------------------------------------------------------------------- */
-.lims-page,
-.lims-page *:not([class*="fa-"]):not([class*="bi-"]),
-.modal[id^="modal-lims-"] *:not([class*="fa-"]):not([class*="bi-"]) {
-	font-family: 'Noto Sans', 'Noto Sans KR', 'Malgun Gothic', Dotum, Helvetica, 'Apple SD Gothic Neo', sans-serif !important;
-	letter-spacing: -0.02em !important;
-}
 
 /* 숫자는 전부 자리를 맞춘다. LIMS 는 수량·분자량·농도를 위아래로 비교하는
    화면이라 자릿수가 흔들리면 큰 값과 작은 값이 뒤바뀌어 보인다. */
@@ -614,6 +606,8 @@
 }
 
 /* 삭제 — 되돌릴 수 없는 조작만 휴지통을 준다 */
+.lims-page button.is-danger::before,
+.lims-page a.is-danger::before,
 .lims-page [onclick^="openModalSampleDelete"]::before,
 .lims-page [onclick^="openModalLocationDelete"]::before,
 .lims-page [onclick^="removeItemRow"]::before {
@@ -1029,9 +1023,13 @@
 */
 .lims-page .lims-scan-box .button-blue-full-sty01,
 .lims-page .lims-scan-box .button-gray-line-sty01 {
-	height: 48px;
-	padding: 0 var(--lims-gap-5);
-	font-size: var(--lims-fs-strong);
+	/* 스캔 상자는 사다리 밖의 한 단(xl)이다 — 바코드 총을 들고 서서 쓰는
+	   화면이라 입력칸을 56 으로 키웠고, 버튼은 거기에 맞춘다. 눈금 밖 숫자를
+	   손으로 적지는 않는다: 둘 다 4px 배수로 파생시킨다. */
+	height: calc(var(--ds-unit) * 12);   /* 48 */
+	padding: 0 var(--ds-5);
+	font-size: var(--ds-fs-body);
+	border-radius: var(--ds-radius);
 }
 
 .lims-page .lims-scan-box .button-blue-full-sty01::before,
@@ -1696,7 +1694,7 @@
 	background: var(--lims-primary-weak);
 	color: var(--lims-primary-dark);
 	font-size: var(--lims-fs-micro);
-	font-weight: 600;
+	font-weight: 700;   /* 600 은 Pretendard 서브셋에 실물이 없어 브라우저가 700 을 합성한다 */
 }
 
 /* --- 좌측 정보 패널 --- */
@@ -2245,8 +2243,8 @@
 }
 
 .lims-page .lims-scan-box .lims-scan-input {
-	height: 56px;
-	padding: 0 var(--lims-gap-4);
+	height: calc(var(--ds-unit) * 14);   /* 56 — 스캔 전용 xl */
+	padding: 0 var(--ds-4);
 	font-size: var(--lims-fs-metric);
 	font-weight: var(--lims-fw-bold);
 	line-height: 1;

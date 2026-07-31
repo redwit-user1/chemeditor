@@ -3166,7 +3166,10 @@
          시료 폐기 모달 (560) — 사유 필수
       --------------------------------------------------------------- */
       function openModalSampleDispose() {
+        /* 이 모달 껍데기는 셋이 나눠 쓴다. 폐기만 사유 입력이 있어 확인 규격
+           (460)으로는 좁다. 껍데기가 아니라 여는 쪽이 크기를 정한다. */
         $('#modal-lims-confirm')
+          .find('.modal-content').removeClass('is-confirm').end()
           .draggable({ handle: '.modal-header' })
           .modal('show')
           .find('.modal-content')
@@ -3245,6 +3248,7 @@
       /** 확인 모달 — prompt()/confirm() 대신 쓰는 Goono 모달 규격(560)이다. */
       function openConfirmModal(title, subTitle, guideHtml, onConfirm) {
         $('#modal-lims-confirm')
+          .find('.modal-content').addClass('is-confirm').end()
           .draggable({ handle: '.modal-header' })
           .modal('show')
           .find('.modal-content')

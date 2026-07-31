@@ -19,7 +19,7 @@
   padding: 2px 8px;
   border-radius: 3px;
   background: #2f6fed;
-  font-weight: 600;
+  font-weight: 700;
 }
 .lims-poc-banner span {
   color: #d0d5dd;
@@ -41,7 +41,7 @@
   margin-right: 6px;
   color: #667085;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   white-space: nowrap;
 }
 .lims-poc-flow a,
@@ -63,7 +63,7 @@
   border-color: #2f6fed;
   background: #2f6fed;
   color: #fff;
-  font-weight: 600;
+  font-weight: 700;
 }
 /* 단계 구분 화살표. 1.41:1 이면 흐름 자체가 안 읽힌다. */
 .lims-poc-flow .lims-poc-arrow {
@@ -137,7 +137,7 @@
   border-color: #1761de;
   background: #edf3fd;
   color: #1761de;
-  font-weight: 600;
+  font-weight: 700;
 }
 @media (max-width: 900px) {
   .lims-chem-stub { flex-direction: column; }
@@ -200,5 +200,5 @@
   border-color: #98a2b3;
   background: #f2f4f7;
   color: #475467;
-  font-weight: 600;
+  font-weight: 700;
 }

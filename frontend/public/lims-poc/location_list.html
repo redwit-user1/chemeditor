@@ -2646,13 +2646,19 @@
          위치 삭제 — 하위 위치/보관 재고가 있으면 서버에서 차단
       --------------------------------------------------------------- */
       function openModalLocationDelete(locationMno, locationNm) {
+        /* 이 모달만 머리글도 드래그 손잡이도 없었다 — 나머지 44개는 다 있다.
+           같은 자리에서 같은 방식으로 닫히고 움직여야 한다. */
         $('#modal-lims-location-confirm')
+          .draggable({ handle: '.modal-header' })
           .modal('show')
           .find('.modal-content')
           .html(`
+            <div class="modal-header cursor-move">
+              <p class="modal-title">보관위치 삭제</p>
+              <span class="modal-sub" title="${locationNm}">${locationNm}</span>
+            </div>
             <div class="modal-body">
               <p class="modal-cont-tit">보관위치를 삭제하시겠습니까?</p>
-              <p class="modal-cont-txt">${locationNm}</p>
               <div class="flex-sty04 ma-t10">
                 <div class="guidetext-sty01">하위 위치나 보관 중인 재고가 있으면 삭제되지 않습니다.</div>
               </div>
@@ -5860,7 +5866,7 @@
            data-bs-backdrop="static"
            data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-pop modal-wrap-sty03 modal-content"></div>
+          <div class="modal-pop modal-wrap-sty03 modal-content is-confirm"></div>
         </div>
       </div>
 
