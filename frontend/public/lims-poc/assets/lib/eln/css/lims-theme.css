@@ -1210,7 +1210,8 @@ a.note-card-title {
 	margin: var(--ds-6) auto;
 }
 
-/* 크기는 세 단계. vw/vh 를 섞어 좁은 화면에서도 화면을 넘지 않는다. */
+/* 크기는 "안에 무엇이 들어가는가"로 정한다. 폼·확인은 좁게, 표는 넓게.
+   기본값을 920 으로 두면 확인 대화상자까지 920 이 되어 텅 빈 상자가 된다. */
 .modal .modal-wrap-sty01,
 .modal .modal-wrap-sty02,
 .modal .modal-wrap-sty03,
@@ -1218,14 +1219,21 @@ a.note-card-title {
 .modal .modal-pop {
 	display: flex;
 	flex-direction: column;
-	width: min(920px, 94vw);
+	width: min(560px, 92vw);   /* 기본 = 폼 한 줄이 편한 폭 */
 	height: auto;
-	max-height: min(86vh, 760px);
+	max-height: min(86vh, 780px);
 	border: 1px solid var(--ds-line);
 	border-radius: var(--ds-radius-lg);
 	background: var(--ds-surface);
 	box-shadow: var(--ds-shadow-pop);
 	overflow: hidden;
+}
+
+/* 표가 들어가는 것들 — 열이 6~9개라 좁으면 가로로 구른다 */
+.modal .modal-wrap-sty01,
+.modal .modal-pop:has(.modal-body table),
+.modal .modal-pop:has(.modal-body .core-table) {
+	width: min(860px, 92vw);
 }
 
 .modal .modal-wrap-sty01.long {
@@ -1234,18 +1242,150 @@ a.note-card-title {
 
 .modal .modal-wrap-sty02:not(.preview),
 .modal .modal-wrap-sty03 {
-	width: min(600px, 94vw);
-	max-height: min(80vh, 660px);
+	width: min(560px, 92vw);
+	max-height: min(84vh, 700px);
 }
 
 .modal .modal-wrap-sty02.preview {
-	width: min(720px, 94vw);
-	max-height: min(86vh, 760px);
+	width: min(720px, 92vw);
 }
 
+/* 확인·경고 — 문장 두 줄과 버튼 둘이 전부다 */
 .modal .modal-wrap-sty04 {
-	width: min(480px, 94vw);
-	max-height: min(70vh, 480px);
+	width: min(440px, 92vw);
+	max-height: min(70vh, 460px);
+}
+
+/* ---------------------------------------------------------------------------
+   12-1) 드롭다운 메뉴
+
+   "연구노트 생성" 을 누르면 나오는 메뉴가 파란 면에 흰 글자였다. 버튼과
+   같은 색이라 버튼이 아래로 늘어난 것처럼 보이고, 그림자가 없어 화면 위에
+   떠 있다는 신호도 없었다. 메뉴는 버튼이 아니라 겹쳐 뜬 판이다.
+--------------------------------------------------------------------------- */
+.dropdown-menu {
+	min-width: var(--ds-shell);
+	padding: var(--ds-1);
+	border: 1px solid var(--ds-line);
+	border-radius: var(--ds-radius);
+	background-color: var(--ds-surface) !important;
+	box-shadow: var(--ds-shadow-pop);
+	font-size: var(--ds-fs-body);
+}
+
+.dropdown-menu .dropdown-item,
+.dropdown-menu > li > a,
+.dropdown-menu > a {
+	display: flex;
+	align-items: center;
+	gap: var(--ds-2);
+	min-height: var(--ds-control);
+	padding: 0 var(--ds-3);
+	border-radius: calc(var(--ds-radius) - 4px);
+	background-color: transparent !important;
+	color: var(--ds-ink-2) !important;
+	font-size: var(--ds-fs-body);
+	font-weight: 400;
+	line-height: 1;
+	white-space: nowrap;
+}
+
+.dropdown-menu .dropdown-item:hover,
+.dropdown-menu .dropdown-item:focus,
+.dropdown-menu > li > a:hover,
+.dropdown-menu > a:hover {
+	background-color: var(--ds-hover) !important;
+	color: var(--ds-ink) !important;
+}
+
+.dropdown-menu .dropdown-item.active,
+.dropdown-menu > li > a.active {
+	background-color: var(--ds-primary-weak) !important;
+	color: var(--ds-primary-dark) !important;
+	font-weight: 500;
+}
+
+.dropdown-menu .dropdown-divider {
+	margin: var(--ds-1) 0;
+	border-top-color: var(--ds-line);
+}
+
+/* 아이콘 자리(padding-left 40px)를 비워 둔 항목들 — 아이콘이 없으면 여백만
+   남아 글자가 가운데에 뜬 것처럼 보인다. 아이콘이 있을 때만 자리를 준다. */
+.dropdown-menu .dropdown-item {
+	padding-left: var(--ds-3);
+	background-position: left var(--ds-2) center;
+	background-size: 16px 16px;
+}
+
+.dropdown-menu .dropdown-item[style*='background-image'],
+.dropdown-menu .dropdown-item.has-icon {
+	padding-left: calc(var(--ds-3) + var(--ds-5));
+}
+
+/* 사이드바 "연구노트 생성" 메뉴는 id 로 파란 면·흰 글자를 박아 두었다.
+   같은 무게(id + class)로 되돌린다. */
+#nav-dropdown-menu.dropdown-menu,
+#nav-dropdown-sidebar-editor-tp.dropdown-menu {
+	width: auto;
+	min-width: var(--ds-shell);
+	padding: var(--ds-1);
+	margin: var(--ds-1) 0 0 !important;
+	border: 1px solid var(--ds-line);
+	border-radius: var(--ds-radius);
+	background-color: var(--ds-surface);
+	box-shadow: var(--ds-shadow-pop);
+	line-height: var(--ds-lh);
+}
+
+#nav-dropdown-menu.dropdown-menu a,
+#nav-dropdown-sidebar-editor-tp.dropdown-menu a {
+	display: flex;
+	align-items: center;
+	min-height: var(--ds-control);
+	padding: 0 var(--ds-3);
+	border-radius: calc(var(--ds-radius) - 4px);
+	color: var(--ds-ink-2) !important;
+	font-size: var(--ds-fs-body);
+	font-weight: 400;
+}
+
+#nav-dropdown-menu.dropdown-menu a:focus,
+#nav-dropdown-menu.dropdown-menu a:hover,
+#nav-dropdown-sidebar-editor-tp.dropdown-menu a:focus,
+#nav-dropdown-sidebar-editor-tp.dropdown-menu a:hover {
+	border-radius: calc(var(--ds-radius) - 4px);
+	background-color: var(--ds-hover);
+	background-image: none;   /* 홀버 때 체크 표시가 붙던 것 — 고른 것도 아닌데 체크는 거짓말이다 */
+	color: var(--ds-ink) !important;
+}
+
+/* ---------------------------------------------------------------------------
+   12-2) 상단 헤더
+
+   검색창이 margin-left: 110px 로 밀려 있어 왼쪽이 비고, 오른쪽 묶음은
+   ms-auto 로 끝에 붙어 가운데가 통째로 비었다. 검색은 본문과 같은 선에서
+   시작하게 두고, 오른쪽 묶음만 끝에 붙인다.
+--------------------------------------------------------------------------- */
+.sticky-sty-01 .navbar-collapse {
+	display: flex;
+	align-items: center;
+	gap: var(--ds-4);
+}
+
+.sticky-sty-01 .search-box-write {
+	flex: 0 1 clamp(240px, 32vw, 420px);
+	margin-left: 0 !important;
+}
+
+.sticky-sty-01 .wrap_info {
+	margin-left: auto !important;
+	gap: var(--ds-3);
+}
+
+.sticky-sty-01 .wrap_info .py-3 {
+	padding-top: 0 !important;
+	padding-bottom: 0 !important;
 }
 
 /* --- 머리글 ---
@@ -1356,6 +1496,44 @@ a.note-card-title {
 	box-shadow: inset 0 -1px 0 var(--ds-line);
 }
 
+/* 화학량론 요약 — 라벨과 값이 같은 색·같은 크기로 흘러 "한계시약 미정
+   한계시약 몰수 계산 불가" 가 한 문장처럼 읽혔다. 항목마다 칸을 준다. */
+.modal .modal-pop .modal-body .lims-stoich-summary,
+.lims-stoich-summary {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--ds-2);
+	padding: 0;
+	background: transparent;
+}
+
+.lims-stoich-summary .stoich-item {
+	display: flex;
+	align-items: baseline;
+	gap: var(--ds-2);
+	padding: var(--ds-2) var(--ds-3);
+	border: 1px solid var(--ds-line);
+	border-radius: var(--ds-radius);
+	background: var(--ds-canvas);
+}
+
+.lims-stoich-summary .stoich-label {
+	font-size: var(--ds-fs-small);
+	color: var(--ds-ink-4);
+}
+
+.lims-stoich-summary .stoich-value {
+	font-size: var(--ds-fs-body);
+	font-weight: 700;
+	color: var(--ds-ink);
+}
+
+.lims-stoich-summary .stoich-value.empty {
+	font-size: var(--ds-fs-body);
+	font-weight: 400;
+	color: var(--ds-ink-4);
+}
+
 /* 모달 안 구획 제목 — 화학량론 모달이 "생성물 (수율 계산)" 을 본문 글자와
    같은 크기로 흘려 두어 구획이 시작된 줄 몰랐다. */
 .modal .modal-pop .modal-body h3,
@@ -1384,8 +1562,24 @@ a.note-card-title {
    (블록 두 개면 넘는다) 아래쪽에 닿을 방법이 없었다. 문서 스크롤도 안 된다 —
    body 가 72px 밖에 안 되기 때문이다.
 --------------------------------------------------------------------------- */
-#main-body #main-body-left,
 #main-body #main-body-right {
+	overflow-y: auto;
+	overflow-x: hidden;
+	overscroll-behavior: contain;
+}
+
+/* 왼쪽 패널은 안쪽 래퍼만 구른다. 패널 자체에 overflow 를 걸면 밖으로
+   나와 있는 열기 손잡이(right: -41px)가 잘려, 좁은 화면에서 패널을 다시
+   열 방법이 사라진다 — 태블릿에서 실제로 그렇게 됐다. */
+#main-body #main-body-left {
+	overflow: visible;
+	display: flex;
+	flex-direction: column;
+}
+
+#main-body #main-body-left > .note-side-scroll {
+	flex: 1 1 auto;
+	min-height: 0;
 	overflow-y: auto;
 	overflow-x: hidden;
 	overscroll-behavior: contain;
@@ -1758,7 +1952,351 @@ a.note-card-title {
 }
 
 /* ---------------------------------------------------------------------------
-   15) 좁은 화면
+   15) 손가락으로 쓰는 화면
+
+   태블릿에서 실측하니 두 가지가 걸렸다.
+
+   1) 홀버로만 나타나는 것 — 블록 조작, 넣기 자리, 서식 도구줄. 손가락에는
+      홀버가 없으므로 영영 볼 수 없다.
+   2) 조작 요소가 전부 36px 이하 — iOS HIG 44pt, Material 48dp 둘 다 못 미친다.
+      사이드바 메뉴 167×36, 표 안 버튼 28.
+
+   화면 폭이 아니라 "무엇으로 가리키는가"로 나눈다. 폭으로 나누면 터치가
+   되는 큰 화면(iPad Pro 가로 1366)이 마우스 취급을 받는다.
+--------------------------------------------------------------------------- */
+
+/* 굵은 포인터 = 손가락·펜. 뿌리 값만 올리면 나머지가 따라온다. */
+@media (pointer: coarse) {
+	:root {
+		--ds-control: 44px;
+		/* 표 안에 9열이 들어가는 화면이 있어 작은 규격까지 44 로 올리면 행이
+		   무너진다. 40 은 Material 의 "조밀하지만 누를 수 있는" 하한이다. */
+		--ds-control-sm: 40px;
+		--shell-nav-h: 44px;
+	}
+
+	/* 목록 안 버튼도 손끝이 닿아야 한다 */
+	.core-table td .button-gray-line-sty01,
+	.core-table td .button-blue-line-sty01,
+	.lims-actions-cell .button-gray-line-sty01,
+	.lims-actions-cell .button-blue-line-sty01,
+	.btn-xs {
+		min-height: var(--ds-control-sm);
+		height: var(--ds-control-sm);
+		padding: 0 var(--ds-3);
+	}
+
+	/* 아이콘만 있는 것들.
+
+	   처음엔 min-width 로 44 를 줬는데, 헤더 오른쪽 끝에 절대배치된
+	   .icon-option 이 화면 밖으로 10px 밀려나 가로 스크롤이 생겼다.
+	   보이는 크기는 그대로 두고 닿는 범위만 넓힌다 — 배치를 건드리지 않는다. */
+	.icon-option,
+	.btn_back,
+	.sticky-sty-01 .icon_alarm,
+	.sticky-sty-01 .alarm_icon,
+	.sticky-sty-01 .profile_expand,
+	.sticky-sty-01 .search_btn,
+	.search-box-write .search_btn,
+	.lims-icon-btn {
+		position: relative;
+	}
+
+	.icon-option::after,
+	.btn_back::after,
+	.sticky-sty-01 .icon_alarm::after,
+	.sticky-sty-01 .alarm_icon::after,
+	.sticky-sty-01 .profile_expand::after,
+	.sticky-sty-01 .search_btn::after,
+	.search-box-write .search_btn::after,
+	.lims-icon-btn::after {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: var(--ds-control);
+		height: var(--ds-control);
+		transform: translate(-50%, -50%);
+	}
+
+	/* 사이드바 프로젝트·노트 목록 — 33px 이라 손끝이 옆줄을 짚는다 */
+	.sidenav2 .nav-list-wrap a,
+	.sidenav2 .nav-list-wrap .projectList,
+	.sidenav2 .nav-list-wrap .noteList {
+		min-height: var(--ds-control);
+		padding-top: var(--ds-2);
+		padding-bottom: var(--ds-2);
+	}
+
+	/* "더보기" 류 글자 링크 — 높이가 13~16px 뿐이라 사실상 못 누른다 */
+	a.button-more-sty01,
+	a.button-more-sty02,
+	.button-gray-txt-sty01,
+	.nav-list-top .nav-list-all,
+	.breadcrumb a,
+	.lims-crumb a,
+	.auth_time a,
+	.memberBtn {
+		display: inline-flex;
+		align-items: center;
+		min-height: var(--ds-control);
+	}
+
+	/* 쪽 번호 — 28px 정사각이라 옆 번호를 자주 짚는다 */
+	.pagination .paginate_button > a,
+	.pagination > li > a,
+	.pagination a,
+	.paging a,
+	.lims-paging a {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: var(--ds-control-sm);
+		min-height: var(--ds-control-sm);
+	}
+
+	/* 목록/카드 보기 전환 — 38px 정사각이 둘 붙어 있어 옆 것을 자주 짚는다 */
+	.list-btn-box,
+	.block-btn-box,
+	.view-toggle > .btn {
+		width: var(--ds-control) !important;
+		height: var(--ds-control) !important;
+	}
+
+	/* 화면 안 작은 탭(전체·점검·공유·진도관리) — 32px */
+	.tab-item,
+	.tab-list .tab-item,
+	.lims-seg > * {
+		min-height: var(--ds-control-sm);
+		padding-top: 0;
+		padding-bottom: 0;
+	}
+
+	/* 체크상자·라디오 — 15px 은 손끝으로 못 짚는다.
+	   .btn.form-check-input 처럼 두 클래스를 겹쳐 쓰는 곳이 있어 같은
+	   무게로 적는다. */
+	.form-check-input,
+	.btn.form-check-input,
+	input[type='checkbox'],
+	input[type='radio'] {
+		position: relative;
+		width: var(--ds-5) !important;
+		height: var(--ds-5) !important;
+	}
+
+	.form-check-input::after,
+	.btn.form-check-input::after,
+	input[type='checkbox']::after,
+	input[type='radio']::after {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: var(--ds-control);
+		height: var(--ds-control);
+		transform: translate(-50%, -50%);
+	}
+
+	/* 글자만 있는 작은 클릭 요소 — 15px 짜리 줄은 짚을 수 없다 */
+	.c-pointer:not(td):not(tr):not(div) {
+		display: inline-flex;
+		align-items: center;
+		min-height: var(--ds-control-sm);
+	}
+
+	.form-check-label,
+	label:has(> input[type='checkbox']),
+	label:has(> input[type='radio']) {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--ds-2);
+		min-height: var(--ds-control-sm);
+	}
+
+	/* 에디터 도구줄 — 번들이 높이를 직접 그리므로 min-height 로는 안 밀린다 */
+	.lims-page .lims-note-editor .toolbar select,
+	.lims-page .lims-note-editor .toolbar .mini-dd,
+	.lims-page .lims-note-editor .toolbar button,
+	.lims-page .lims-note-editor .toolbar label {
+		height: var(--ds-control-sm) !important;
+		min-height: var(--ds-control-sm);
+		min-width: var(--ds-control-sm);
+	}
+
+	/* 목록·표 안의 글자 링크(시료번호, 시험번호 …) */
+	.core-table tbody td > a,
+	.core-table tbody td > .c-pointer {
+		display: inline-flex;
+		align-items: center;
+		min-height: var(--ds-control-sm);
+	}
+
+	/* 표 행 — 손끝으로 누르는 행이라 조금 높인다 */
+	.core-table tbody td {
+		padding-top: var(--ds-3);
+		padding-bottom: var(--ds-3);
+	}
+
+	/* 고정 배치 칸의 관성 스크롤 (iOS Safari) */
+	#main-body #main-body-left,
+	#main-body #main-body-right,
+	.modal .modal-pop .modal-body {
+		-webkit-overflow-scrolling: touch;
+	}
+
+	/* 누를 때 파란 사각형이 번쩍이지 않게 */
+	button,
+	a,
+	[role='button'] {
+		-webkit-tap-highlight-color: rgba(47, 91, 245, 0.12);
+	}
+}
+
+/* --- 홀버가 있는 기기: 지금까지의 동작 그대로 --- */
+@media (hover: hover) and (pointer: fine) {
+	.lims-page .lims-note-insert-toggle,
+	.lims-page .lims-note-block-more {
+		display: none;
+	}
+}
+
+/* --- 홀버가 없는 기기: 눌러서 연다 --- */
+@media (hover: none), (pointer: coarse) {
+	/* 블록 손잡이 ⋯ */
+	.lims-page .lims-note-block-more {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: var(--ds-control);
+		height: var(--ds-control);
+		margin-left: auto;
+		border: 0;
+		border-radius: var(--ds-radius);
+		background: transparent;
+		color: var(--ds-ink-4);
+		font-size: var(--ds-fs-lead);
+		line-height: 1;
+		cursor: pointer;
+	}
+
+	.lims-page .lims-note-block-more:focus-visible {
+		outline: none;
+		box-shadow: var(--ds-ring);
+	}
+
+	/* 손잡이를 누르면(=초점이 들어오면) 도구가 나온다. 다른 곳을 누르면 닫힌다. */
+	.lims-page .lims-note-block.is-open .lims-note-block-more,
+	.lims-page .lims-note-block-head:focus-within .lims-note-block-more {
+		display: none;
+	}
+
+	.lims-page .lims-note-block-head:focus-within .lims-note-block-tools,
+	.lims-page .lims-note-block:focus-within .lims-note-block-tools {
+		opacity: 1;
+		transform: none;
+		pointer-events: auto;
+	}
+
+	/* 숨은 도구줄이 opacity 0 인 채로 자리를 200px 씩 먹고 있어, 그 앞의
+	   손잡이가 오른쪽 끝까지 못 가고 가운데에 떠 있었다. 손잡이가 따로
+	   있으므로 여기서는 아예 자리를 비운다. */
+	.lims-page .lims-note-block-tools {
+		display: none;
+		margin-left: 0;
+	}
+
+	.lims-page .lims-note-block.is-open .lims-note-block-tools,
+	.lims-page .lims-note-block-head:focus-within .lims-note-block-tools,
+	.lims-page .lims-note-block:focus-within .lims-note-block-tools {
+		display: flex;
+		margin-left: auto;
+		opacity: 1;
+		transform: none;
+		pointer-events: auto;
+	}
+
+	.lims-page .lims-note-block-tools > * {
+		min-height: var(--ds-control-sm);
+		height: var(--ds-control-sm);
+		padding: 0 var(--ds-3);
+		font-size: var(--ds-fs-small);
+	}
+
+	/* 패널 손잡이도 손끝 크기로 */
+	.note-detail #note-open-btn,
+	.note-detail #note-close-btn {
+		width: var(--ds-control);
+		height: var(--ds-control);
+		right: calc(var(--ds-control) * -1 - 1px);
+	}
+
+	/* 넣기 자리의 + */
+	.lims-page .lims-note-insert {
+		height: var(--ds-control);
+	}
+
+	.lims-page .lims-note-insert-toggle {
+		position: relative;
+		z-index: 1;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: calc(var(--ds-unit) * 7);   /* 28 — 원형 손잡이 */
+		height: calc(var(--ds-unit) * 7);
+		border: 1px solid var(--ds-line-2);
+		border-radius: var(--ds-pill);
+		background: var(--ds-surface);
+		color: var(--ds-ink-4);
+		font-size: var(--ds-fs-body);
+		line-height: 1;
+		cursor: pointer;
+	}
+
+	/* 손끝이 닿는 범위는 보이는 것보다 넓게 — 원은 28 이지만 44 를 먹는다 */
+	.lims-page .lims-note-insert-toggle::after {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: var(--ds-control);
+		height: var(--ds-control);
+		transform: translate(-50%, -50%);
+	}
+
+	.lims-page .lims-note-insert.is-open .lims-note-insert-toggle,
+	.lims-page .lims-note-insert:focus-within .lims-note-insert-toggle {
+		display: none;
+	}
+
+	.lims-page .lims-note-insert.is-open .lims-note-insert-actions,
+	.lims-page .lims-note-insert:focus-within .lims-note-insert-actions {
+		opacity: 1;
+		transform: none;
+		pointer-events: auto;
+	}
+
+	.lims-page .lims-note-insert-btn {
+		height: var(--ds-control-sm);
+		padding: 0 var(--ds-4);
+		font-size: var(--ds-fs-small);
+	}
+
+	/* 서식 도구줄은 그대로 — 글을 쓰려고 탭하면 초점이 들어오므로 열린다.
+	   다만 손끝으로 누를 크기는 되어야 한다. */
+	.lims-page .lims-note-block:focus-within .lims-note-editor .toolbar {
+		max-height: calc(var(--ds-unit) * 13);   /* 52 */
+	}
+
+	.lims-page .lims-note-editor .toolbar button,
+	.lims-page .lims-note-editor .toolbar select,
+	.lims-page .lims-note-editor .toolbar label {
+		min-width: calc(var(--ds-unit) * 9);
+		min-height: calc(var(--ds-unit) * 9);
+	}
+}
+
+/* ---------------------------------------------------------------------------
+   16) 좁은 화면
 --------------------------------------------------------------------------- */
 @media (max-width: 1200px) {
 	.sticky-sty-01 .search-box-write {
@@ -1767,8 +2305,75 @@ a.note-card-title {
 	}
 }
 
-@media (max-width: 760px) {
+/* 태블릿 세로(768)에서 헤더가 두 줄로 접히면서 오른쪽 묶음이 페이지 제목
+   위로 내려앉았다(실측: 헤더 상자는 48px 인데 내용이 95px 까지 흘렀다).
+   한 줄을 지키게 하고, 자리를 못 만들면 부가 정보부터 내린다. */
+@media (max-width: 900px) {
+	.sticky-sty-01 .navbar-collapse {
+		flex-wrap: nowrap;
+		gap: var(--ds-2);
+	}
+
+	.sticky-sty-01 .search-box-write {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+
+	.sticky-sty-01 .wrap_info {
+		flex: 0 0 auto;
+		flex-wrap: nowrap;
+	}
+
+	/* 세션 타이머는 데모에서 읽을 일이 없다. 폭을 양보한다. */
 	.sticky-sty-01 .auth_time {
 		display: none;
 	}
+
+	.sticky-sty-01 .wrap_info .user_name,
+	.sticky-sty-01 .wrap_info .authGrpTxt {
+		display: none;
+	}
+
+	/* 사이드바를 여는 손잡이가 본문 위(top: 50px)에 겹쳐 페이지 제목을 덮었다.
+	   헤더 아래로 내리고 본문은 그만큼 왼쪽을 비운다. */
+	.sidenav2 #openbtn {
+		top: calc(var(--ds-header) + var(--ds-2));
+		right: calc(var(--ds-control) * -1);
+		width: var(--ds-control);
+		height: var(--ds-control);
+		background-position: center;
+		background-size: 16px 16px;
+	}
+
+	#main,
+	.content-wrapper > #main,
+	.lims-page {
+		padding-left: calc(var(--ds-control) + var(--ds-2));
+	}
+}
+
+/* "전체 연구노트 ›" — 높이 16px 에 화살표를 top 2px 로 붙여 두어, 글자 위에
+   화살표만 따로 떠 있었다. button-more-sty01 과 같은 규격으로 모은다. */
+a.button-more-sty02,
+.button-more-sty02 {
+	display: inline-flex;
+	align-items: center;
+	width: auto;
+	height: auto;
+	min-height: 0;
+	padding: 0 calc(var(--ds-3) + 6px) 0 0;
+	background-position: right center;
+	background-size: 12px 12px;
+	font-size: var(--ds-fs-small);
+	font-weight: 500;
+	line-height: var(--ds-lh);
+}
+
+/* 참여자 수 칩 — 손끝 크기로 키웠더니 상자만 커지고 숫자는 위에 붙었다 */
+.memberBtn,
+.memberBtn.memberCnt {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--ds-1);
 }

@@ -92,6 +92,11 @@
       href="assets/lib/eln/css/lims-ui.css"
     />
     
+    
+    <link
+      rel="stylesheet"
+      href="assets/lib/eln/css/pretendard.css"
+    />
     <link
       rel="stylesheet"
       href="assets/lib/eln/css/lims-theme.css"
@@ -2775,6 +2780,14 @@
           return ''
             + '<div class="lims-note-insert" data-at="' + at + '">'
             + '  <span class="lims-note-insert-line"></span>'
+            /*
+              손가락에는 홀버가 없다. 터치 기기에서는 이 "+" 를 눌러야 선택지가
+              열린다. 마우스 기기에서는 CSS 가 이 버튼을 감추고 홀버로 연다.
+              JS 를 쓰지 않는 이유 — :focus-within 이 탭에도 걸리므로 상태를
+              따로 들고 있을 필요가 없다.
+            */
+            + '  <button type="button" class="lims-note-insert-toggle"'
+            + '          aria-label="여기에 블록 넣기">+</button>'
             + '  <span class="lims-note-insert-actions">'
             + '    <button type="button" class="lims-note-insert-btn"'
             + '            onclick="insertBlockAt(' + at + ', \'TEXT\');">텍스트</button>'
@@ -2947,6 +2960,56 @@
         renderBlocks();
       }
       window.insertBlockAt = insertBlockAt;
+
+      /*
+        터치 기기에서 손잡이(⋯ · +)를 눌러 여는 처리.
+
+        처음에는 CSS 의 :focus-within 만으로 하려 했다. 그런데 iOS Safari 는
+        <button> 을 탭해도 초점을 주지 않는다(클릭 이벤트만 온다). 그래서
+        마우스에서는 되고 아이패드에서는 안 되는, 재현이 까다로운 상태가
+        만들어진다. 열림 상태를 클래스로 직접 들고 있는다.
+
+        홀버가 되는 기기에서는 CSS 가 홀버로 열므로 이 클래스는 쓰이지 않는다.
+      */
+      (function bindTouchHandles() {
+        const OPEN = 'is-open';
+
+        function closeAll(except) {
+          document.querySelectorAll('.lims-note-block.' + OPEN + ', .lims-note-insert.' + OPEN)
+            .forEach(function (el) {
+              if (el !== except) { el.classList.remove(OPEN); }
+            });
+        }
+
+        document.addEventListener('click', function (ev) {
+          const more = ev.target.closest('.lims-note-block-more');
+          if (more) {
+            const blk = more.closest('.lims-note-block');
+            closeAll(blk);
+            blk.classList.toggle(OPEN);
+            ev.preventDefault();
+            return;
+          }
+
+          const plus = ev.target.closest('.lims-note-insert-toggle');
+          if (plus) {
+            const row = plus.closest('.lims-note-insert');
+            closeAll(row);
+            row.classList.toggle(OPEN);
+            ev.preventDefault();
+            return;
+          }
+
+          /* 열어 둔 것 안을 누른 것이면 그대로 둔다 — 누른 버튼이 동작해야 한다 */
+          if (ev.target.closest('.lims-note-block.' + OPEN + ', .lims-note-insert.' + OPEN)) { return; }
+          closeAll(null);
+        });
+
+        /* 키보드 사용자 — Esc 로 닫는다 */
+        document.addEventListener('keydown', function (ev) {
+          if (ev.key === 'Escape') { closeAll(null); }
+        });
+      })();
 
       function removeBlock(blockId) {
         if (gBlocks.length <= 1) {
@@ -5981,6 +6044,8 @@
           id="main-body-left"
           class="EDITOR"
         >
+          
+          <div class="note-side-scroll">
           <div class="note-info-box">
             <div
               class="title"
@@ -6132,6 +6197,7 @@
             
             
           </div>
+          </div>
 
           <div>
             <a
@@ -6214,6 +6280,8 @@
           <div class="lims-note-block-head">
             <span class="lims-note-block-ord">{{=ordDisp}}</span>
             <span class="lims-note-block-kind">텍스트</span>
+            
+            <button type="button" class="lims-note-block-more" aria-label="블록 조작 열기">⋯</button>
             <div class="lims-note-block-tools">
               <button class="button-gray-line-sty01" onclick="moveBlock('{{=blockId}}', -1);"><span>위로</span></button>
               <button class="button-gray-line-sty01" onclick="moveBlock('{{=blockId}}', 1);"><span>아래로</span></button>
@@ -6233,6 +6301,8 @@
           <div class="lims-note-block-head">
             <span class="lims-note-block-ord">{{=ordDisp}}</span>
             <span class="lims-note-block-kind is-struct">구조</span>
+            
+            <button type="button" class="lims-note-block-more" aria-label="블록 조작 열기">⋯</button>
             <div class="lims-note-block-tools">
               <button class="button-blue-full-sty01" id="editor-btn-{{=blockId}}" onclick="openStructEditor('{{=blockId}}');"><span>구조 입력기</span></button>
               <button class="button-gray-line-sty01" onclick="moveBlock('{{=blockId}}', -1);"><span>위로</span></button>
@@ -6283,6 +6353,8 @@
           <div class="lims-note-block-head">
             <span class="lims-note-block-ord">{{=ordDisp}}</span>
             <span class="lims-note-block-kind">표 · 반응 시약</span>
+            
+            <button type="button" class="lims-note-block-more" aria-label="블록 조작 열기">⋯</button>
             <div class="lims-note-block-tools">
               <button class="button-blue-line-sty01" onclick="openModalReagentPick('{{=blockId}}');"><span>시약 넣기</span></button>
               <button class="button-gray-line-sty01" onclick="moveBlock('{{=blockId}}', -1);"><span>위로</span></button>

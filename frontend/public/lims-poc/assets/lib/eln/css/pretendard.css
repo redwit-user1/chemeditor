@@ -1,0 +1,99 @@
+@charset "UTF-8";
+/* ============================================================================
+   Pretendard — 이 앱의 유일한 글꼴
+
+   그동안 화면마다 다른 글꼴 스택이 돌고 있었다.
+
+     style.css        'Noto Sans KR', 'Malgun Gothic', Dotum …
+     lims-ui.css      'Noto Sans', 'Noto Sans KR' … !important
+     AdminLTE         'Source Sans Pro'
+     editor-ai        시스템 기본
+
+   같은 글자가 화면마다 다른 모양으로 그려진다. 하나로 모은다.
+
+   ── 왜 자체 호스팅인가 ─────────────────────────────────────────────────────
+   재단은 폐쇄망 납품을 전제로 한다. CDN 링크는 그 환경에서 그냥 깨진다.
+   woff2 를 저장소에 넣고 상대 경로로만 참조한다.
+
+   ── 왜 subset 인가 ────────────────────────────────────────────────────────
+   전체본은 굵기당 ~790KB, subset(KS X 1001 + 라틴)은 ~270KB 다. 이 앱이
+   쓰는 글자는 한글 상용 + 화학식(라틴·숫자·그리스 일부)뿐이라 subset 으로
+   충분하다. 세 굵기 합쳐 800KB.
+
+   굵기는 셋만 싣는다 — 400(본문) · 500(라벨·버튼) · 700(제목).
+   600 은 싣지 않는다. 실물이 없으면 브라우저가 700 으로 올려 그리므로,
+   "가볍게 600" 이라고 적어 둔 것이 전부 Bold 로 나오는 함정이 생긴다.
+=============================================================================*/
+
+@font-face {
+	font-family: 'Pretendard';
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url('../fonts/pretendard/Pretendard-Regular.subset.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Pretendard';
+	font-style: normal;
+	font-weight: 500;
+	font-display: swap;
+	src: url('../fonts/pretendard/Pretendard-Medium.subset.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Pretendard';
+	font-style: normal;
+	font-weight: 700;
+	font-display: swap;
+	src: url('../fonts/pretendard/Pretendard-Bold.subset.woff2') format('woff2');
+}
+
+:root {
+	/* 뒤따르는 것들은 Pretendard 가 못 뜰 때만 쓰인다(폐쇄망 초기 로딩 등).
+	   각 OS 의 본문 글꼴이라 자간·높이가 크게 튀지 않는다. */
+	--ds-font: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo',
+		'Segoe UI', 'Malgun Gothic', system-ui, sans-serif;
+
+	/* 분자식·CAS·수치는 자릿수가 맞아야 위아래로 비교된다.
+	   Pretendard 는 tabular-nums 를 갖고 있으므로 같은 글꼴을 쓴다. */
+	--ds-font-mono: 'Pretendard', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/*
+  아이콘 글꼴은 건드리지 않는다 — fa-*, bi-*, flag-icon 은 글리프가 곧 그림이라
+  글꼴을 바꾸면 아이콘이 네모로 깨진다.
+*/
+html,
+body,
+button,
+input,
+select,
+textarea,
+optgroup,
+.content-wrapper,
+.content_wrap,
+#main,
+.lims-page,
+.modal,
+.dropdown-menu,
+.tooltip,
+.toast,
+.rw-editor-ai {
+	font-family: var(--ds-font);
+}
+
+/* lims-ui.css 가 !important 로 Noto 를 박아 두었다. 같은 무게로 되돌린다. */
+.lims-page *:not([class*='fa-']):not([class*='bi-']):not([class*='flag-icon']),
+.modal[id^='modal-lims-'] *:not([class*='fa-']):not([class*='bi-']):not([class*='flag-icon']) {
+	font-family: var(--ds-font) !important;
+}
+
+/* 에디터 번들도 같은 글꼴로 — 본문을 쓰는 곳이 다른 글꼴이면 제일 티가 난다 */
+.rw-editor-ai,
+.rw-editor-content,
+.rw-editor-content .tiptap,
+.rw-editor-ai .toolbar,
+.rw-editor-ai .menubar {
+	font-family: var(--ds-font) !important;
+}
