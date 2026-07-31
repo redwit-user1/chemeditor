@@ -463,12 +463,14 @@ body,
 }
 
 .sidenav2 a.button-sty001 {
+	position: relative;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	gap: var(--ds-2);
 	height: var(--ds-10);
-	padding: 0 var(--ds-2);
+	/* 오른쪽은 펼침 표시 자리를 비운다 — 글자가 그 밑으로 들어가지 않게 */
+	padding: 0 var(--ds-7) 0 var(--ds-3);
 	border-radius: var(--ds-radius);
 	background: var(--ds-primary) !important;
 	background-image: none !important;
@@ -491,6 +493,34 @@ body,
 	background-color: currentColor;
 	-webkit-mask: url(../img/lucide/plus.svg) center / contain no-repeat;
 	mask: url(../img/lucide/plus.svg) center / contain no-repeat;
+}
+
+/*
+  style.css 가 이 버튼에 ::after 로 border-left 1px #598fee 를 right:47px 에
+  세워 두었다. 원래는 폭 246px 짜리 버튼에서 오른쪽 끝 펼침 화살표를 갈라주는
+  칸막이였는데, 사이드바가 좁아져 버튼이 183px 이 되면서 선만 글자 한가운데를
+  가로지르고 화살표는 내가 background-image 를 지우며 같이 사라졌다.
+  나눌 것이 없으면 나누는 선도 없어야 한다. 칸막이를 지우고 그 자리에
+  실제 펼침 표시를 놓는다.
+*/
+.sidenav2 a.button-sty001::after {
+	content: '';
+	position: absolute;
+	top: 50%;
+	right: var(--ds-3);
+	left: auto;
+	width: 14px;
+	height: 14px;
+	transform: translateY(-50%);
+	border: 0;
+	background-color: currentColor;
+	-webkit-mask: url(../img/lucide/chevron-down-d.svg) center / contain no-repeat;
+	mask: url(../img/lucide/chevron-down-d.svg) center / contain no-repeat;
+	transition: transform .15s ease;
+}
+
+.sidenav2 a.button-sty001[aria-expanded="true"]::after {
+	transform: translateY(-50%) rotate(180deg);
 }
 
 .sidenav2 a.button-sty001:hover {
@@ -620,9 +650,33 @@ body,
 
 /* ---------------------------------------------------------------------------
    5) 셸 — 헤더
+
+   본문 칸(#main)은 부트스트랩 .container 라 max-width 가 걸려 있다. 1920 에서
+   머리띠는 232→1920 을 다 쓰는데 본문은 428→1724 로 가운데 몰려, 검색창과
+   페이지 제목이 172px 어긋났다. 왼쪽 끝은 위아래가 같아야 한다 —
+   머리띠의 좌우 여백(--ds-6)과 같은 값으로 맞춰 통째로 펼친다.
 --------------------------------------------------------------------------- */
+#main,
+.content-wrapper > #main {
+	width: 100%;
+	max-width: none !important;   /* layout.css 가 !important 로 1296px 을 박아 두었다 */
+	margin-left: 0;
+	margin-right: 0;
+	padding-left: var(--ds-6);
+	padding-right: var(--ds-6);
+}
+
+/*
+  layout.css 가 이 머리띠에 padding-top: 8px 을 얹어 두었다. 나는 높이만 56 으로
+  줄였을 뿐 그 여백은 그대로여서, 안쪽 줄이 8px 아래에서 시작해 아래 테두리를
+  2px 밀고 나갔다. 로고는 사이드바 쪽에서 56 안에 제대로 가운데 놓였는데
+  검색창만 8px 내려앉아 윗줄이 어긋나 보인 원인이 이것이다.
+  높이를 정했으면 여백도 같이 정해야 한다.
+*/
 .sticky-sty-01 {
 	height: var(--ds-header);
+	min-height: var(--ds-header);
+	padding: 0 !important;
 	background: var(--ds-surface) !important;
 	border-bottom: 1px solid var(--ds-line);
 	box-shadow: none;
@@ -631,7 +685,9 @@ body,
 .sticky-sty-01 .top-nav {
 	display: flex;
 	align-items: center;
-	height: var(--ds-header);
+	height: 100%;
+	min-height: 0;
+	margin: 0;
 	padding: 0 var(--ds-6) !important;
 }
 
@@ -639,6 +695,9 @@ body,
 	display: flex;
 	align-items: center;
 	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
 	gap: var(--ds-4);
 }
 
@@ -1061,6 +1120,18 @@ p.badge,
 	line-height: 1;
 }
 
+/*
+  카드 안의 .icon-status 는 글자가 없는 그림 딱지다 — 41×41 배경그림 하나뿐.
+  위 배지 규칙이 여기까지 걸려 파란 네모가 그림을 감쌌고, 넓은 화면(1900↑)
+  에서만 보이는 탓에 1440 과 1920 의 카드 모양이 달랐다.
+  진행/완료 여부는 바로 옆 글자 딱지가 이미 말하고 있다. 같은 말을 두 번 할
+  바에는 넓든 좁든 글자 딱지 하나로 통일한다.
+*/
+.project-card-board .project-card .project-card-cont .icon-status,
+.note-card-board .note-card .note-card-cont .icon-status {
+	display: none !important;
+}
+
 /* 원본 CSS 가 긴 선택자로 10px 을 박아 두었다. 배지 척도로 되돌린다. */
 .project-card-board .project-card .project-card-cont .txt-info .txt-info-cont .txt-info-icon,
 .note-card-board .note-card .note-card-cont .txt-info .txt-info-cont .txt-info-icon {
@@ -1448,10 +1519,16 @@ a.note-card-title {
 
 /* 사이드바 "연구노트 생성" 메뉴는 id 로 파란 면·흰 글자를 박아 두었다.
    같은 무게(id + class)로 되돌린다. */
+/*
+  펼침 목록의 너비를 사이드바 폭(--ds-shell)에서 잡고 있었다. 그런데 버튼은
+  좌우 여백 안쪽에 있어 183px 이고 목록은 216px — 33px 더 넓어 오른쪽으로
+  삐져나왔다. 펼침 목록의 너비 기준은 사이드바가 아니라 그것을 연 버튼이다.
+  감싸개(.button-sty001_wrap.dropdown)가 위치 기준이므로 100% 면 정확히 맞는다.
+*/
 #nav-dropdown-menu.dropdown-menu,
 #nav-dropdown-sidebar-editor-tp.dropdown-menu {
-	width: auto;
-	min-width: var(--ds-shell);
+	width: 100%;
+	min-width: 0;
 	padding: var(--ds-1);
 	margin: var(--ds-1) 0 0 !important;
 	border: 1px solid var(--ds-line);
@@ -2151,9 +2228,12 @@ a.note-card-title {
 		padding-bottom: var(--ds-2);
 	}
 
-	/* "더보기" 류 글자 링크 — 높이가 13~16px 뿐이라 사실상 못 누른다 */
+	/* "더보기" 류 글자 링크 — 높이가 13~16px 뿐이라 사실상 못 누른다.
+	   button-more-sty02 는 여기 넣어도 소용없다. 아래(16장)에서 같은 특이도로
+	   min-height: 0 을 다시 주는데 그쪽이 뒤에 와서 이긴다. 그건 화살표를
+	   글자에 붙이려고 일부러 준 값이라 되돌릴 수 없으니, 저 링크만은
+	   ::after 로 닿는 범위를 넓히는 쪽으로 따로 처리한다. */
 	a.button-more-sty01,
-	a.button-more-sty02,
 	.button-gray-txt-sty01,
 	.nav-list-top .nav-list-all,
 	.breadcrumb a,
@@ -2413,8 +2493,32 @@ a.note-card-title {
 	.lims-page .lims-note-editor .toolbar button,
 	.lims-page .lims-note-editor .toolbar select,
 	.lims-page .lims-note-editor .toolbar label {
-		min-width: calc(var(--ds-unit) * 9);
-		min-height: calc(var(--ds-unit) * 9);
+		min-width: var(--ds-control);    /* 손끝 기준 44 — 36 은 아직 작다 */
+		min-height: var(--ds-control);
+	}
+
+	/* 구조 고르기 목록의 한 줄이 39.5px 였다. 반올림하면 40 이라 눈에 안 띄지만
+	   손끝 기준(44)에는 못 미친다. 눈금이 아니라 실측으로 잡는다. */
+	.lims-chem-stub-item {
+		min-height: var(--ds-control);
+	}
+
+	/* "전체 연구노트 ›" 는 글줄 높이 그대로라 16.5px 다. 보이는 크기는 그대로
+	   두고 닿는 범위만 넓힌다 — 제목 옆에 붙은 링크라 키우면 줄이 어긋난다. */
+	a.button-more-sty02,
+	.button-more-sty02 {
+		position: relative;
+	}
+
+	a.button-more-sty02::after,
+	.button-more-sty02::after {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		width: 100%;
+		height: var(--ds-control);
+		transform: translate(-50%, -50%);
 	}
 }
 
