@@ -2550,15 +2550,52 @@
       let gPickRows = {};
       /* 구조 렌더링 서비스 상태: '' (미확인) | 'OK' | 'DOWN' */
       let gDepictState = '';
+      /* 저장 상태. var 로 둔다 — 이 둘은 함수 선언(markDirty)에서 참조하는데,
+         let 이면 선언 줄에 닿기 전에 부르는 순간 TDZ 로 터진다. */
+      var gDirty = false;
+      var gLastSavedAt = null;
 
       /* ---------------------------------------------------------------
          진입점
       --------------------------------------------------------------- */
       function initPage() {
+        bindSaveState();
         /* reqAjax 는 동시 요청을 조용히 버린다. 노트 → 시약 사용 이력 순서로 이어붙인다. */
         loadNoteDetail(function () {
           loadReagentUsage();
         });
+      }
+
+      /*
+        저장 관련 바인딩. 최상위에 두면 안 된다 — 이 화면의 스크립트는 jQuery 보다
+        먼저 파싱되는 자리가 있어, 최상위 $(…) 한 줄이 던지면 그 아래 초기화가
+        통째로 죽는다(실제로 그렇게 한 번 죽였다).
+      */
+      function bindSaveState() {
+        /* 본문·표·캡션은 사용자가 직접 타자를 친다. 편집 영역 안의 입력을 한 번에 잡는다. */
+        $(document).on('input',
+          '.lims-note-blocks input, .lims-note-blocks textarea, .lims-note-blocks [contenteditable="true"]',
+          function () { markDirty(); });
+        $(document).on('change', '.lims-note-blocks select', function () { markDirty(); });
+
+        /* 본문 편집기 상태줄이 "Ctrl+S 저장" 이라고 약속해 놓고 실제로는 아무
+           반응이 없었다. 약속한 대로 되게 한다. */
+        $(document).on('keydown', function (ev) {
+          if ((ev.ctrlKey || ev.metaKey) && String(ev.key).toLowerCase() === 's') {
+            ev.preventDefault();
+            saveNote('N');
+          }
+        });
+
+        /* 브라우저가 막아 주는 유일한 안전망이다. 문구는 브라우저가 정한다 —
+           returnValue 에 무엇을 넣든 크롬은 자기 문장을 보여 준다. */
+        window.addEventListener('beforeunload', function (ev) {
+          if (!gDirty) return;
+          ev.preventDefault();
+          ev.returnValue = '';
+        });
+
+        paintSaveState();
       }
 
       /*
@@ -2928,6 +2965,7 @@
       function addBlock(blockTpCcd) {
         syncTextBlocks();
         gBlocks.push(toBlock({ blockTpCcd: blockTpCcd }));
+        markDirty();
         renderBlocks();
       }
 
@@ -2945,6 +2983,7 @@
         syncTextBlocks();
         const at = Math.max(0, Math.min(Number(idx) || 0, gBlocks.length));
         gBlocks.splice(at, 0, toBlock({ blockTpCcd: blockTpCcd }));
+        markDirty();
         renderBlocks();
       }
       window.insertBlockAt = insertBlockAt;
@@ -3000,6 +3039,7 @@
       })();
 
       function removeBlock(blockId) {
+        markDirty();
         if (gBlocks.length <= 1) {
           S2Util.toasts('마지막 블록은 지울 수 없습니다.', { class: 'Toast-bottom-web' });
           return;
@@ -3022,6 +3062,7 @@
         }
         const moved = gBlocks.splice(idx, 1)[0];
         gBlocks.splice(next, 0, moved);
+        markDirty();
         renderBlocks();
       }
 
@@ -3315,6 +3356,7 @@
           return;
         }
 
+        markDirty();
         b.molblock = structure;
         b.molFormula = '';
         b.molWt = null;
@@ -3929,6 +3971,35 @@
          블록마다 한 번씩 saveBlock 을 부른다. reqAjax 는 동시 요청을 조용히 버리므로
          절대 for 문 안에서 연달아 쏘지 않는다 — 앞 요청의 콜백에서 다음 요청을 태운다.
          =============================================================== */
+      /* ===============================================================
+         저장 상태 — 쓴 것이 남았는지 사용자가 알 수 있어야 한다
+
+         이 화면에는 저장 조작 자체가 없었다. 그래서 "저장했나?"를 물을 수도
+         없었다. 조작을 만든 김에 세 가지를 같이 세운다.
+           1) 고친 뒤에는 "저장 안 됨" 이라고 말한다
+           2) 저장하면 언제 저장했는지 남긴다
+           3) 안 저장한 채 나가려 하면 브라우저가 막는다
+         =============================================================== */
+
+      function markDirty() {
+        if (gDirty) return;
+        gDirty = true;
+        paintSaveState();
+      }
+
+      function paintSaveState(savedAt) {
+        const $s = $('#noteSaveState');
+        if (!$s.length) return;
+        if (gDirty) {
+          $s.text('저장 안 됨').removeClass('is-saved').addClass('is-dirty');
+          return;
+        }
+        const t = savedAt || gLastSavedAt;
+        $s.text(t ? '저장됨 · ' + t : '변경 없음')
+          .removeClass('is-dirty').addClass('is-saved');
+      }
+
+
       function saveNote(submitYn) {
         syncTextBlocks();
 
@@ -3952,6 +4023,9 @@
           } else {
             S2Util.toasts(savedCnt + '개 블록을 임시저장했습니다.', { class: 'Toast-bottom-web' });
           }
+          gDirty = false;
+          gLastSavedAt = new Date().toTimeString().slice(0, 5);
+          paintSaveState(gLastSavedAt);
           /* 저장이 끝난 뒤에야 사용 이력을 다시 읽는다. 같이 쏘면 버려진다. */
           loadReagentUsage();
           return;
@@ -6128,6 +6202,21 @@
                   </span>
                 </div>
               </div>
+              
+              <div class="flex-sty06 ma-t8">
+                <div class="icon_box">
+                  <img
+                    src="assets/lib/eln/img/icon_project_s.png"
+                    alt="시료 아이콘"
+                    style="width: 10px" />
+                </div>
+                <div class="txt-info-txt ma-l5 txt_ellipsis">대상 시료</div>
+                <div class="txt-info-cont txt_ellipsis"
+                     title="KM00003710 합성 원료 (batch A)">
+                  <a href="#">SMP-20260712-001</a>
+                </div>
+              </div>
+
               <!-- s2:todo 노트 공유 받은 사람은 안보이게 -->
               <div class="flex-sty06 ma-t8">
                 <div class="icon_box">
@@ -6231,6 +6320,13 @@
                         onclick="addBlock('STRUCTURE');"><span>구조 블록</span></button>
                 <button class="button-gray-line-sty01"
                         onclick="addBlock('TABLE');"><span>표 블록</span></button>
+                
+                <span id="noteSaveState"
+                      class="lims-note-savestate"
+                      aria-live="polite">저장 안 됨</span>
+                <button class="button-blue-full-sty01"
+                        id="limsNoteSaveBtn"
+                        onclick="saveNote('N');"><span>저장</span></button>
               </div>
             </div>
             <div class="lims-card-body">

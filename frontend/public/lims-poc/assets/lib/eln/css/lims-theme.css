@@ -3411,3 +3411,28 @@ select.select-xs,
 	height: calc(var(--ds-unit) * 14);   /* 56 — 입력칸과 같게 */
 }
 
+
+/* 저장 상태 — 본문 머리에 붙는 한 마디. 배지처럼 보이되 누르는 것이 아니므로
+   테두리 없이 색만 쓴다. 고친 뒤 "저장 안 됨"이 눈에 걸려야 한다. */
+.lims-note-savestate {
+	display: inline-flex;
+	align-items: center;
+	height: var(--ds-5);
+	margin-right: var(--ds-2);
+	padding: 0 var(--ds-2);
+	border-radius: calc(var(--ds-radius) - 4px);
+	font-size: var(--ds-fs-micro);
+	font-weight: var(--ds-fw-medium);
+	line-height: var(--ds-lh-none);
+	white-space: nowrap;
+}
+
+.lims-note-savestate.is-dirty {
+	background: var(--ds-warn-weak);
+	color: var(--ds-warn);
+}
+
+.lims-note-savestate.is-saved {
+	background: var(--ds-hover);
+	color: var(--ds-ink-4);
+}

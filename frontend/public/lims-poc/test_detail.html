@@ -2647,6 +2647,12 @@
             html += '<button class="button-blue-line-sty01" onclick="startTestItem(\'' + mno + '\', \'' + nm + '\');"><span>착수</span></button> ';
           }
         }
+        /* 착수한 항목에서 결과를 넣으러 갈 길이 없었다. 배정·착수·완료선언은
+           여기서 다 되는데 정작 값을 적는 화면으로는 목록을 거쳐 돌아가야 했다.
+           수행 중인 사람이 다음에 할 일이 결과 입력이다 — 그 자리에 둔다. */
+        if (status === 'IN_PROGRESS' || status === 'OOS_HOLD') {
+          html += '<button class="button-blue-line-sty01" onclick="goResultEntry(\'' + mno + '\');"><span>결과 입력</span></button> ';
+        }
         if ((status === 'IN_PROGRESS' || status === 'OOS_HOLD') && isCharge) {
           html += '<button class="button-blue-line-sty01" onclick="confirmCompleteTestItem(\'' + mno + '\', \'' + nm + '\', \'' + item.resultCntDisp + '\');"><span>시험 완료 선언</span></button> ';
         }
@@ -2654,6 +2660,11 @@
           html += '<button class="button-gray-line-sty01" onclick="cancelTestItem(\'' + mno + '\', \'' + nm + '\');"><span>항목 취소</span></button>';
         }
         return html || '-';
+      }
+
+      /* 결과 입력 화면으로. 다른 화면(oos_list, sample_detail)이 쓰는 것과 같은 길이다. */
+      function goResultEntry(testItemMno) {
+        coreCommon.href('/lims/result/resultEntry?testItemMno=' + testItemMno);
       }
 
       /* ---------------------------------------------------------------
