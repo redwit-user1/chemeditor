@@ -91,6 +91,15 @@
 	--ds-warn: #8a6208;
 	--ds-ok: #0f766e;
 
+	/* 뜻 색의 옅은 짝. 이게 없어서 #fdecea 가 세 파일에 5벌, #fff6e0 이 3벌
+	   흩어져 있었다. 테두리는 본색에서 파생시킨다 — 전에는 --ds-warn(#8a6208)
+	   과 아무 관계 없는 rgba(161,115,10) 이 쓰이고 있었다. */
+	--ds-danger-weak: #fdecea;
+	--ds-danger-line: rgba(201, 42, 17, 0.24);
+	--ds-warn-weak: #fff6e0;
+	--ds-warn-line: rgba(138, 98, 8, 0.24);
+	--ds-primary-line: rgba(47, 91, 245, 0.22);
+
 	--ds-radius: 10px;
 	--ds-radius-lg: 14px;
 	--ds-pill: 999px;
@@ -154,7 +163,7 @@
 	font-size: var(--ds-fs-body);
 	line-height: var(--ds-lh);
 	color: var(--ds-ink-2);
-	letter-spacing: -0.02em;
+	letter-spacing: var(--ds-ls);
 }
 
 /* lims-ui.css 는 --lims-* 를 `.lims-page { … }` 안에서만 정의한다. 그런데
@@ -184,9 +193,9 @@
 	--lims-fs-lead: var(--ds-fs-lead);
 	--lims-fs-title: var(--ds-fs-title);
 	--lims-fs-metric: var(--ds-fs-metric);
-	--lims-fw-normal: 400;
-	--lims-fw-medium: 500;
-	--lims-fw-bold: 700;
+	--lims-fw-normal: var(--ds-fw-normal);
+	--lims-fw-medium: var(--ds-fw-medium);
+	--lims-fw-bold: var(--ds-fw-bold);
 	--lims-lh-tight: var(--ds-lh-tight);
 	--lims-lh-snug: 1.4;
 	--lims-lh-base: var(--ds-lh);
@@ -692,10 +701,12 @@ body,
   검색창만 8px 내려앉아 윗줄이 어긋나 보인 원인이 이것이다.
   높이를 정했으면 여백도 같이 정해야 한다.
 */
+/* layout.css:119 의 padding-top: 8px 는 !important 가 아니고 앞선 파일이라
+   순서만으로 이긴다 — 이쪽에 !important 를 쌓을 이유가 없다. */
 .sticky-sty-01 {
 	height: var(--ds-header);
 	min-height: var(--ds-header);
-	padding: 0 !important;
+	padding: 0;
 	background: var(--ds-surface) !important;
 	border-bottom: 1px solid var(--ds-line);
 	box-shadow: none;
@@ -786,28 +797,21 @@ body,
 	display: inline-flex;
 	align-items: center;
 	gap: var(--ds-2);
-	line-height: 1;
-}
-
-/* 원본이 시간값에 직접 붙여 둔 좌우 여백 — 위 gap 과 겹쳐 좌우가 어긋난다 */
-.sticky-sty-01 .auth_time .ml-2,
-.sticky-sty-01 .auth_time .mr-2 {
-	margin-left: 0 !important;
-	margin-right: 0 !important;
+	line-height: var(--ds-lh-none);
 }
 
 .sticky-sty-01 .auth_time a,
 .sticky-sty-01 .auth_time span {
 	color: var(--ds-ink-4) !important;
 	font-size: var(--ds-fs-small);
-	line-height: 1;
+	line-height: var(--ds-lh-none);
 }
 
 /* 초가 줄어들 때마다 폭이 흔들리지 않게 */
 .sticky-sty-01 .auth_time #leftTimeInfoEgovUnitTop {
 	font-variant-numeric: tabular-nums;
 	color: var(--ds-ink-2) !important;
-	font-weight: 500;
+	font-weight: var(--ds-fw-medium);
 }
 
 .sticky-sty-01 .wrap_info {
@@ -1090,12 +1094,19 @@ a.button-more-sty01 {
 	border-radius: calc(var(--ds-radius) - 2px);
 }
 
+/* 모달 바닥줄은 lg 한 단이다. 여기가 그 주인이다 — 나중에 §19 에 같은 값을
+   다른 선택자 목록으로 한 번 더 적어 두 곳이 됐었다. 목록을 여기로 합쳤다. */
 .modal-footer .button-cnfm-sty01,
 .modal-footer .button-cncl-sty01,
-.modal-footer .button-remove-sty01 {
+.modal-footer .button-remove-sty01,
+.modal-footer .button-gray-line-sty01,
+.modal-footer .button-blue-line-sty01,
+.modal-footer .button-blue-full-sty01,
+.modal-footer .btn {
 	min-height: var(--ds-10);
 	height: var(--ds-10);
 	padding: 0 var(--ds-5);
+	border-radius: var(--ds-radius);
 	font-size: var(--ds-fs-body);
 }
 
@@ -1126,7 +1137,9 @@ a.button-more-sty01 {
 	pointer-events: none;
 }
 
-/* 버튼 줄 — 원본 button-wrap* 은 정렬만 있고 사이 간격이 없어 서로 붙었다 */
+/* 버튼 줄 래퍼 — 원본은 정렬만 있고 사이 간격이 없어 서로 붙었다. 그리고
+   래퍼가 40px 높이와 16px 글자를 들고 있어 "조용한 버튼" 군집의 높이 15종·
+   글자 7종을 혼자 만들고 있었다. 래퍼는 버튼이 아니다. */
 .button-wrap,
 .button-wrap02,
 .button-wrap03,
@@ -1135,6 +1148,10 @@ a.button-more-sty01 {
 	display: flex;
 	align-items: center;
 	gap: var(--ds-2);
+	height: auto;
+	min-height: 0;
+	font-size: var(--ds-fs-body);
+	line-height: var(--ds-lh);
 }
 
 /* 아이콘을 배경으로 그리는 것들. 원본은 padding-left 37px 로 자리를 비워
@@ -1210,22 +1227,17 @@ a.button-more-sty01 {
    원래는 진한 배경 위 흰 글자였는데 하늘색·민트 계열이라 2.6~3.0:1 로 읽히지
    않았다. 색 계열(파랑/초록/노랑/빨강)은 그대로 두고 명암을 뒤집는다.
 --------------------------------------------------------------------------- */
+/* 여기는 색만 갖는다. 골격(높이·여백·모서리·글자)은 §18 이 doubled-class 로
+   울타리 밖까지 들고 나가므로, 여기 다시 적으면 22px·6px 리터럴이 죽은 채
+   남아 다음 사람을 속인다. */
 .icon-status,
 .icon-grade,
 .note-type,
 .txt-info-icon,
 p.badge,
 .badge {
-	display: inline-flex;
-	align-items: center;
-	height: 22px;
-	padding: 0 var(--ds-2);
-	border-radius: 6px;
 	background-color: var(--ds-primary-weak) !important;
 	color: var(--ds-primary-dark) !important;
-	font-size: var(--ds-fs-micro);
-	font-weight: 500;
-	line-height: 1;
 }
 
 /*
@@ -1240,24 +1252,18 @@ p.badge,
 	display: none !important;
 }
 
-/* 원본 CSS 가 긴 선택자로 10px 을 박아 두었다. 배지 척도로 되돌린다. */
-.project-card-board .project-card .project-card-cont .txt-info .txt-info-cont .txt-info-icon,
-.note-card-board .note-card .note-card-cont .txt-info .txt-info-cont .txt-info-icon {
-	font-size: var(--ds-fs-micro);
-}
-
 .icon-status.write-status-COMPLETE {
 	background-color: #e6f4ea !important;
 	color: var(--ds-ok) !important;
 }
 
 .icon-status.write-status-INSPECTION {
-	background-color: #fff6e0 !important;
+	background-color: var(--ds-warn-weak) !important;
 	color: var(--ds-warn) !important;
 }
 
 .icon-status.write-status-REJECT {
-	background-color: #fdecea !important;
+	background-color: var(--ds-danger-weak) !important;
 	color: var(--ds-danger) !important;
 }
 
@@ -1403,11 +1409,10 @@ a.note-card-title {
    주인은 이 파일 하나다(lims.css 의 짝 규칙은 지웠다).
 --------------------------------------------------------------------------- */
 
-/* 토큰은 :root · .lims-page · .modal 세 곳에 둔다. 부트스트랩이 모달을 body 로
-   옮기므로 .lims-page 에만 두면 모달 안에서 var() 가 통째로 안 풀린다. */
-:root,
-.lims-page,
-.modal {
+/* 커스텀 프로퍼티는 :root 에서 전역으로 상속된다 — 모달이 body 직속으로
+   옮겨져도 <html> 에서 받는다. 세 곳에 적을 이유가 없다.
+   (.lims-page 에만 적으면 안 되는 것은 맞다. 그건 :root 가 아니어서였다) */
+:root {
 	--modal-w-sm: min(460px, 92vw);   /* 확인·경고 — 문장 몇 줄과 버튼 둘 */
 	--modal-h-sm: min(60vh, 400px);
 	--modal-w-md: min(560px, 92vw);   /* 폼 — 라벨+입력 한 열이 편한 폭 */
@@ -1471,8 +1476,9 @@ a.note-card-title {
    markup 의 sty01, 또는 .is-table 을 단 것, 또는 본문에 실제로 표가 있는 것.
    :has() 를 남겨 두는 이유는 새 화면이 표를 넣었을 때 폭이 자동으로 따라오게
    하기 위해서다. 대신 표가 없는데 sty01 인 것들은 markup 에서 내렸다. */
+/* .is-table 은 지웠다 — 저장소 전체에서 0회다. :has() 가 이미 같은 일을
+   하고, 못 잡는 실제 사례가 나오면 그때 넣는 편이 싸다. */
 .modal .modal-wrap-sty01,
-.modal .modal-pop.is-table,
 .modal .modal-pop:has(.modal-body table),
 .modal .modal-pop:has(.modal-body .core-table) {
 	width: var(--modal-w-lg);
@@ -1497,23 +1503,8 @@ a.note-card-title {
 	max-height: var(--modal-h-sm);
 }
 
-/* --- .mh-800 되받기 ---
-   상대(style.css:241)가 !important 라 특이도만으로는 못 이긴다. 같은 무기를
-   쓰되 값은 뷰포트에 묶는다.
-     .modal .modal-pop.mh-800              = (0,3,0)  > style.css (0,1,0)
-     .is-table / .is-confirm 을 얹은 것    = (0,4,0)  로 한 단 더 높다 */
-.modal .modal-pop.mh-800 {
-	max-height: var(--modal-h-md) !important;
-}
-
-.modal .modal-pop.mh-800.is-table,
-.modal .modal-wrap-sty01.mh-800 {
-	max-height: var(--modal-h-lg) !important;
-}
-
-.modal .modal-pop.mh-800.is-confirm {
-	max-height: var(--modal-h-sm) !important;
-}
+/* .mh-800 되받기 세 덩이는 지웠다 — style.css 에서 그 한 줄을 없앴으니
+   이길 상대가 없다. !important 3개가 같이 사라진다. */
 
 /* ---------------------------------------------------------------------------
    12-0) 일괄 배정 마법사
@@ -2960,17 +2951,6 @@ sup {
 }
 
 /* --- 입력칸: 한 규격 --------------------------------------------------- */
-textarea.input-write-sty01-line,
-textarea.input-write-sty02-line,
-textarea.form-control {
-	/* 여러 줄 입력을 한 줄 규격에 넣으면 36px 한 줄짜리가 된다 —
-	   반려 사유 칸이 실제로 그랬다. 아래 여러 줄 규칙으로 보낸다. */
-	height: auto;
-	min-height: calc(var(--ds-control) * 2);
-	padding: var(--ds-2) var(--ds-3);
-	line-height: var(--ds-lh);
-}
-
 .input-write-sty01-line.input-write-sty01-line:not(textarea),
 .input-write-sty02-line.input-write-sty02-line:not(textarea),
 .select-sty02.select-sty02,
@@ -2986,11 +2966,6 @@ textarea.form-control {
 	font-weight: var(--ds-fw-normal);
 	line-height: calc(var(--ds-control) - 2px);
 	color: var(--ds-ink);
-}
-
-.select-sty02.select-sty02 {
-	padding-right: var(--ds-6);
-	background-position: right var(--ds-2) center;
 }
 
 /* 여러 줄 입력은 높이만 다르다. 나머지 축은 한 줄짜리와 같아야 한다. */
@@ -3061,7 +3036,6 @@ textarea.form-control {
    (0,5,0) 동률 + 나중 순서로 한 값으로 모은다. */
 .modal .modal-pop .modal-body .modal-cont-label.modal-cont-label,
 .modal-cont-label.modal-cont-label,
-.lims-field-label,
 .form-label {
 	display: block;
 	margin-bottom: var(--ds-1);
@@ -3093,10 +3067,10 @@ textarea.form-control {
    select-xs select-sty02">` 로 버튼 클래스를 달고 있어, 필터 줄에서 입력칸은
    36/r10/13px 인데 바로 옆 선택칸만 28/r8/12px 이 되었다(실측 23군데).
    버튼 규칙에서 select 를 뺀다 — 선택칸은 아래 입력칸 규격을 따른다. */
+/* .btn-primary 는 이 앱 템플릿에 없다(vendored 데모에만) — 팔을 뺀다 */
 .btn.btn-xs:not(select),
 .btn.btn-secondary:not(select),
-.btn.btn-outline-primary:not(select),
-.btn.btn-primary:not(select) {
+.btn.btn-outline-primary:not(select) {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -3113,8 +3087,7 @@ textarea.form-control {
 	color: var(--ds-ink-2);
 }
 
-.btn.btn-outline-primary,
-.btn.btn-primary {
+.btn.btn-outline-primary {
 	border-color: var(--ds-primary) !important;
 	background-color: var(--ds-primary) !important;
 	color: var(--ds-surface) !important;
@@ -3141,28 +3114,6 @@ textarea.form-control {
 	border-color: var(--ds-line-2);
 	background-color: var(--ds-surface);
 	color: var(--ds-ink-2);
-}
-
-/* 작은 버튼의 모서리 — 지금 8 과 10 이 섞여 있다. 크기가 sm 이면 모서리도 sm. */
-.btn-xs:not(select),
-.core-table td .button-gray-line-sty01,
-.core-table td .button-blue-line-sty01,
-.lims-actions-cell .button-gray-line-sty01,
-.lims-actions-cell .button-blue-line-sty01 {
-	border-radius: calc(var(--ds-radius) - 2px) !important;
-}
-
-/* 버튼 줄 래퍼는 버튼이 아니다. .button-wrap02 가 40px 높이와 16px 글자를
-   들고 있어 "조용한 버튼" 군집의 높이 15종·글자 7종을 혼자 만들고 있었다. */
-.button-wrap,
-.button-wrap02,
-.button-wrap03,
-.button-wrap-del,
-.button-wrap-po-a {
-	height: auto;
-	min-height: 0;
-	font-size: var(--ds-fs-body);
-	line-height: var(--ds-lh);
 }
 
 /* --- 배지: 한 규격 × 색 -------------------------------------------------
@@ -3195,19 +3146,20 @@ textarea.form-control {
 }
 
 .confirm-status.confirm-status.APPROVAL {
-	border-color: rgba(47, 91, 245, 0.22);
+	border-color: var(--ds-primary-line);
 	background: var(--ds-primary-weak) !important;
 	color: var(--ds-primary-dark) !important;
 }
 
 .confirm-status.confirm-status.REJECT {
-	border-color: rgba(201, 42, 17, 0.24);
-	background: #fdecea !important;
+	border-color: var(--ds-danger-line);
+	background: var(--ds-danger-weak) !important;
 	color: var(--ds-danger) !important;
 }
 
 /* 카드 안 "진행/완료" 딱지 — style.css:5015 가 (0,6,0) 으로 40×16 / r4 / 10px 를
-   박아 두어 위 규격이 안 닿았다(높이 24종 · 모서리 4px 의 정체). 동형으로 적는다. */
+   박아 두어 위 규격이 안 닿았다(높이 24종 · 모서리 4px 의 정체). 동형으로 적는다.
+   §9 에도 같은 선택자에 font-size 만 주는 짝이 있었는데 지웠다 — 여기가 상위집합이다. */
 .project-card-board .project-card .project-card-cont .txt-info .txt-info-cont .txt-info-icon,
 .note-card-board .note-card .note-card-cont .txt-info .txt-info-cont .txt-info-icon {
 	display: inline-flex;
@@ -3271,26 +3223,27 @@ textarea.form-control {
 }
 
 .lims-notice.normal {
-	border-color: rgba(47, 91, 245, 0.22);
+	border-color: var(--ds-primary-line);
 	background: var(--ds-primary-weak);
 	color: var(--ds-primary-dark);
 }
 
 .lims-notice.soon {
-	border-color: rgba(161, 115, 10, 0.22);
-	background: #fff6e0;
+	border-color: var(--ds-warn-line);
+	background: var(--ds-warn-weak);
 	color: var(--ds-warn);
 }
 
 .lims-notice.expired {
-	border-color: rgba(201, 42, 17, 0.24);
-	background: #fdecea;
+	border-color: var(--ds-danger-line);
+	background: var(--ds-danger-weak);
 	color: var(--ds-danger);
 }
 
 /* 노트 카드의 보안등급 딱지 — style.css:4598 이 (0,4,0) 으로 49×24 / r4 / 12px
    를 박아 두어 18장 배지 규격이 안 닿았다. 동형으로 적어 순서로 이긴다. */
-.note-card-board .note-card .note-card-cont .icon-status,
+/* .icon-status 는 뺐다 — §9 가 같은 선택자를 display:none !important 로 이미
+   지운다. 한 부품을 한쪽에서 숨기고 다른 쪽에서 꾸미고 있었다. */
 .note-card-board .note-card .note-card-cont .icon-grade,
 .note-card-board .note-card .note-card-cont .icon-shared,
 .note-card-board .note-card .note-card-cont .icon-tsa {
@@ -3346,13 +3299,6 @@ textarea.form-control.form-control {
 	padding-bottom: 0;
 }
 
-/* 강조 부동작 버튼 넷만 글자가 primary-dark 였다(당량·수율 표 보기 등).
-   테두리는 primary 인데 글자만 한 단 어두우면 같은 버튼이 두 색이 된다. */
-.lims-page .button-blue-line-sty01,
-.lims-page .button-blue-line-sty02,
-.lims-page .button-blue-sty03 {
-	color: var(--ds-primary);
-}
 
 /* ---------------------------------------------------------------------------
    19) 같은 줄에 선 것은 같은 크기 — 나란히 놓고 재서 나온 것들
@@ -3465,14 +3411,3 @@ select.select-xs,
 	height: calc(var(--ds-unit) * 14);   /* 56 — 입력칸과 같게 */
 }
 
-/* 모달 바닥줄은 lg 한 단이다. 조사 모달만 그 줄에 md 버튼 하나가 섞여 있었다. */
-.modal-footer .button-gray-line-sty01,
-.modal-footer .button-blue-line-sty01,
-.modal-footer .button-blue-full-sty01,
-.modal-footer .btn {
-	height: var(--ds-10);
-	min-height: var(--ds-10);
-	padding: 0 var(--ds-5);
-	border-radius: var(--ds-radius);
-	font-size: var(--ds-fs-body);
-}

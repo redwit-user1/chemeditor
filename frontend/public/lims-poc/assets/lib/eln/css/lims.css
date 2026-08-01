@@ -73,12 +73,12 @@
 }
 
 .lims-state.expired {
-	background: #fdecea;
+	background: var(--ds-danger-weak);
 	color: var(--ds-danger);
 }
 
 .lims-state.soon {
-	background: #fff6e0;
+	background: var(--ds-warn-weak);
 	color: var(--ds-warn);
 }
 
@@ -805,13 +805,9 @@
    조작 대상(메뉴 항목)은 --shell-nav-h 로 따로 잡아 밀도를 줄여도 클릭 영역이
    같이 줄지 않게 한다.
 =========================================================================== */
+/* --shell-* 의 정의는 lims-theme.css §1 이 갖는다(--ds-* 에서 파생).
+   여기 있던 248px/52px 는 테마가 :root 에서 232/56 으로 덮어 죽은 값이었다. */
 :root {
-	--shell-w: 248px;
-	--shell-header-h: 52px;
-	--shell-unit: 4px;
-	--shell-nav-h: calc(var(--shell-unit) * 9);      /* 36px — 클릭 대상 최소치 위 */
-	--shell-nav-fs: 14px;
-	--shell-nav-icon: 18px;
 	--shell-collapse-at: 1200px;
 }
 

@@ -8,18 +8,15 @@
     <meta charset="utf-8" />
     <meta
       http-equiv="X-UA-Compatible"
-      content="IE=edge"
-    />
+      content="IE=edge" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1"
-    />
+      content="width=device-width, initial-scale=1" />
     
     <title>GoonoELN</title>
     <link
       rel="shortcut icon"
-      href="assets/ico/favicon.ico"
-    />
+      href="assets/ico/favicon.ico" />
     
 		<link rel="stylesheet" href="assets/webjars/AdminLTE/3.2.0/plugins/jquery-ui/jquery-ui.css">
 		<!-- Font Awesome -->
@@ -61,47 +58,38 @@
 
     <link
       rel="stylesheet"
-      href="assets/lib/eln/css/font-style.css"
-    />
+      href="assets/lib/eln/css/font-style.css" />
     <!-- Libraries Stylesheet -->
     <link
       rel="stylesheet"
-      href="assets/lib/eln/lib/animate/animate.min.css"
-    />
+      href="assets/lib/eln/lib/animate/animate.min.css" />
     <link
       rel="stylesheet"
-      href="assets/lib/eln/lib/owlcarousel/assets/owl.carousel.min.css"
-    />
+      href="assets/lib/eln/lib/owlcarousel/assets/owl.carousel.min.css" />
     <!-- Customized Bootstrap Stylesheet -->
     <link
       rel="stylesheet"
-      href="assets/lib/eln/css/bootstrap.min.css"
-    />
+      href="assets/lib/eln/css/bootstrap.min.css" />
     <!-- Stylesheet -->
     <link
       rel="stylesheet"
-      href="assets/lib/eln/css/layout.css"
-    />
+      href="assets/lib/eln/css/layout.css" />
     
     <link
       rel="stylesheet"
-      href="assets/lib/eln/css/lims.css"
-    />
+      href="assets/lib/eln/css/lims.css" />
     
     <link
       rel="stylesheet"
-      href="assets/lib/eln/css/lims-ui.css"
-    />
+      href="assets/lib/eln/css/lims-ui.css" />
     
     
     <link
       rel="stylesheet"
-      href="assets/lib/eln/css/pretendard.css"
-    />
+      href="assets/lib/eln/css/pretendard.css" />
     <link
       rel="stylesheet"
-      href="assets/lib/eln/css/lims-theme.css"
-    />
+      href="assets/lib/eln/css/lims-theme.css" />
 
     
 
@@ -2995,13 +2983,13 @@
       function wlGridHtml(id) {
         const c = gWl.cfg[id] || {};
         return '<div class="lims-wl-grid">'
-          + wlField('시험 항목', true, wlSelect('wl-test', id, catalogOptions(c.testItemNm)))
-          + wlField('시험법', true, wlSelect('wl-method', id, methodOptions(c.testItemNm, c.methodCd), !c.testItemNm))
-          + wlField('장비', false, wlSelect('wl-inst', id, instOptions(c.methodCd, c.instrumentNm), !c.methodCd))
-          + wlField('담당자', true, wlSelect('wl-user', id, userOptions(c.chargeUserNm)))
-          + wlField('우선순위', false, wlSelect('wl-pri', id, priOptions(c.priorityCcd)))
+          + wlField('시험 항목', true, wlSelect('wl-test', id, catalogOptions(c.testItemNm), false, '시험 항목'))
+          + wlField('시험법', true, wlSelect('wl-method', id, methodOptions(c.testItemNm, c.methodCd), !c.testItemNm, '시험법'))
+          + wlField('장비', false, wlSelect('wl-inst', id, instOptions(c.methodCd, c.instrumentNm), !c.methodCd, '장비'))
+          + wlField('담당자', true, wlSelect('wl-user', id, userOptions(c.chargeUserNm), false, '담당자'))
+          + wlField('우선순위', false, wlSelect('wl-pri', id, priOptions(c.priorityCcd), false, '우선순위'))
           + wlField('예정일', false, '<input type="date" class="input-write-sty02-line wl-date wp-100"'
-              + ' data-sample="' + id + '" value="' + (c.planDe || '2026-08-07') + '" />')
+              + ' title="예정일" data-sample="' + id + '" value="' + (c.planDe || '2026-08-07') + '" />')
           + '</div>';
       }
 
@@ -3010,9 +2998,12 @@
           + (required ? ' <span class="lims-req">*</span>' : '') + '</span>' + control + '</div>';
       }
 
-      function wlSelect(cls, id, options, disabled) {
+      /* 눈에 보이는 라벨 글자를 그대로 칸 이름으로 넘긴다. 마법사 안의
+         선택칸은 라벨과 떨어져 있어 이름 없이는 무엇을 고르는 칸인지 모른다. */
+      function wlSelect(cls, id, options, disabled, label) {
         return '<select class="btn btn-xs select-xs select-sty02 wp-100 ' + cls + '"'
-          + ' data-sample="' + id + '"' + (disabled ? ' disabled="disabled"' : '') + '>'
+          + ' data-sample="' + id + '"' + (label ? ' title="' + wlEsc(label) + '"' : '')
+          + (disabled ? ' disabled="disabled"' : '') + '>'
           + options + '</select>';
       }
 
@@ -3259,7 +3250,7 @@
                   <div class="flex-sty04"><div class="guidetext-sty01">기한을 약속으로 만들지 않습니다. 우선순위 참고용입니다. (선택)</div></div>
                 </div>
                 <div class="flex-sty05 ma-b20">
-                  <label class="modal-cont-label">긴급 여부</label>
+                  <label for="newUrgentYn" class="modal-cont-label">긴급 여부</label>
                   <div>
                     <input type="checkbox" class="btn form-check-input basic" id="newUrgentYn" />
                     <label for="newUrgentYn" class="form-check-label2">긴급 처리가 필요합니다.</label>
@@ -3275,12 +3266,12 @@
                   <table class="table table-sty01" id="tableNewItemList">
                     <thead>
                       <tr class="text-nowrap">
-                        <th class="text-left">시험 항목명</th>
-                        <th class="text-left">시험법 (버전)</th>
-                        <th class="text-left">판정기준 (버전)</th>
-                        <th class="text-left">담당자</th>
-                        <th class="text-left">예정일</th>
-                        <th class="text-center">삭제</th>
+                        <th scope="col" class="text-left">시험 항목명</th>
+                        <th scope="col" class="text-left">시험법 (버전)</th>
+                        <th scope="col" class="text-left">판정기준 (버전)</th>
+                        <th scope="col" class="text-left">담당자</th>
+                        <th scope="col" class="text-left">예정일</th>
+                        <th scope="col" class="text-center">삭제</th>
                       </tr>
                     </thead>
                     <tbody></tbody>
@@ -3453,7 +3444,7 @@
                      maxlength="10" placeholder="YYYY-MM-DD" title="예정일" />
             </td>
             <td class="text-center">
-              <button type="button" class="button-gray-line-sty01" onclick="removeItemRow(${seq});"><span>삭제</span></button>
+              <button type="button" class="button-gray-line-sty01 is-danger" onclick="removeItemRow(${seq});"><span>삭제</span></button>
             </td>
           </tr>`;
         $('#tableNewItemList tbody').append(rowHtml);
@@ -3547,7 +3538,7 @@
             <span class="modal-cont-title">{{=contTitle}}</span>&nbsp;
           </div>
           <div class="add-project-sty01 ma-t10 po-r">
-            <input type="text" id="setWord" maxlength="{{=maxlength}}" placeholder="{{=placeholder}}" value="{{=txtValue}}"
+            <input type="text" id="setWord" maxlength="{{=maxlength}}" placeholder="{{=placeholder}}" aria-label="{{=placeholder}}" value="{{=txtValue}}"
                 onKeyDown="coreCommon.inputLimitText('#setWord','.word-count',{{=maxlength}})"
                 onKeyUp="coreCommon.inputLimitText('#setWord','.word-count',{{=maxlength}})" class="input-write-sty01-line ">
           </div>
@@ -3733,7 +3724,7 @@
                             </div>
                             <div if="isProgress">
                               <div if="isOwner" class="icon-option-wrap dropdown">
-                                <a href="#" class="icon-option" id="dropdownOptionBtn${note.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
+                                <a href="#" class="icon-option" aria-label="더 보기" id="dropdownOptionBtn${note.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
                                 <div id="dropdown_option" class="dropdown-menu" aria-labelledby="dropdownOptionBtn${note.idx}">
                                   <div class="option_title">${'연구노트 옵션'}</div>
                                   <div class="option_list">
@@ -3745,7 +3736,7 @@
                                 </div>
                               </div>
                               <div if="isGnrlYn" else="isOwnerNm" class="icon-option-wrap dropdown">
-                                <a href="#" class="icon-option" id="dropdownOptionBtn${note.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
+                                <a href="#" class="icon-option" aria-label="더 보기" id="dropdownOptionBtn${note.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
                                 <div id="dropdown_option" class="dropdown-menu" aria-labelledby="dropdownOptionBtn${note.idx}">
                                   <div class="option_title">${'연구노트 옵션'}</div>
                                   <div class="option_list">
@@ -3893,7 +3884,7 @@
                           <div class="note_cnt">${folder.noteCnt}</div>
                         </div>
                         <div if="isGnrlAuthYn" class="icon-option-wrap dropdown">
-                          <a href="#" class="icon-option" id="dropdownOptionBtn" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ></a>
+                          <a href="#" class="icon-option" aria-label="더 보기" id="dropdownOptionBtn" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ></a>
                           <div id="dropdown_option" class="dropdown-menu" aria-labelledby="dropdownOptionBtn">
                             <div class="option_title">${'연구폴더 옵션'}</div>
                             <div class="option_list">
@@ -4035,7 +4026,7 @@
                               </div>
                             </div>
                             <div if="isGnrlAuthYn" class="icon-option-wrap dropdown">
-                              <a href="#" class="icon-option" id="dropdownOptionBtn${project.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
+                              <a href="#" class="icon-option" aria-label="더 보기" id="dropdownOptionBtn${project.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
                               <div id="dropdown_option" class="dropdown-menu" aria-labelledby="dropdownOptionBtn${project.idx}">
                                 <div class="option_title">${'프로젝트 옵션'}</div>
                                 <div class="option_list">
@@ -4047,7 +4038,7 @@
                               </div>
                             </div>
                             <div class="icon-option-wrap dropdown">
-                              <a if="isAdmin" href="#" class="icon-option" id="dropdownOptionBtn${project.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
+                              <a if="isAdmin" href="#" class="icon-option" aria-label="더 보기" id="dropdownOptionBtn${project.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
                               <div id="dropdown_option" class="dropdown-menu" aria-labelledby="dropdownOptionBtn${project.idx}">
                                 <div class="option_title">${'프로젝트 옵션'}</div>
                                 <div class="option_list">
@@ -6112,13 +6103,11 @@
     <input
       type="hidden"
       id="gPrevMethod"
-      value=""
-    />
+      value="" />
     <input
       type="hidden"
       id="gPrevQueryString"
-      value=""
-    />
+      value="" />
     <div class="wrapper">
       <div class="content_wrap">
         <!-- Main Sidebar Container -->
@@ -6501,9 +6490,11 @@
           <div class="search-box-write pa-l0 ma-l0">
             <input type="text"
                    placeholder="검색어를 입력해주세요."
+                   aria-label="전체 검색"
                    class="search_write ce-search-note">
             <button type="button"
-                    class="search_btn"></button>
+                    class="search_btn"
+                    aria-label="검색"></button>
             <!-- <a class="search_btn" th:href="@{'/eln/search'}"></a> -->
           </div>
           <div class="wrap_info flex-sty04 ms-auto">
@@ -6513,7 +6504,7 @@
                    onclick="javascript:eGovUnitTop.reqTimeAjax();return false;">
                 <a href="#">
                   <span class="session_txt">세션만료 남은시간</span> <span id="leftTimeInfoEgovUnitTop"
-                        class="ml-2 mr-2">00:00:00</span>
+                        >00:00:00</span>
                 </a>
               </div>
             </div>
@@ -6526,6 +6517,7 @@
                        onclick="header_getNotiList();"
                        class="alarm_icon"
                        id="dropdownAlarmBtn"
+                       aria-label="알림 목록 열기"
                        data-bs-toggle="dropdown"
                        data-bs-auto-close="outside"
                        aria-haspopup="true"
@@ -6577,6 +6569,7 @@
                       <a href="#"
                          class="profile_expand"
                          id="dropdownProfileBtn"
+                         aria-label="내 계정 메뉴 열기"
                          data-bs-toggle="dropdown"
                          aria-haspopup="true"
                          aria-expanded="false"></a>
@@ -6711,7 +6704,7 @@
         <div class="target-info-tab lims-filter flex-sty04 ma-t20">
           <div class="tabs-box"></div>
           <div class="flex-sty02 search-box">
-            <select id="schUrgentYn"
+            <select aria-label="전체" id="schUrgentYn"
                     class="btn btn-xs select-xs select-sty02 w-120 ma-r10"
                     onchange="searchCurrentTab();">
               <option value="">전체</option>
@@ -6720,6 +6713,7 @@
             </select>
             <div class="sch-item-status-wrap">
               <select id="schTestItemStatusCcd"
+                      aria-label="담당 진행 전체"
                       class="btn btn-xs select-xs select-sty02 w-150 ma-r10"
                       onchange="searchCurrentTab();">
                 <option value="">담당 진행 전체</option>
@@ -6730,7 +6724,7 @@
               </select>
             </div>
             <div class="sch-reqst-status-wrap d-none">
-              <select id="schTestReqstStatusCcd"
+              <select aria-label="전체 상태" id="schTestReqstStatusCcd"
                       class="btn btn-xs select-xs select-sty02 w-150 ma-r10"
                       onchange="searchCurrentTab();">
                 <option value="">전체 상태</option>
@@ -6746,9 +6740,9 @@
                      maxlength="255"
                      sch-enter="searchCurrentTab"
                      placeholder="요청번호 · 시료 · 항목명"
-                     class="input-write-sty02-line w-250" />
+                     class="input-write-sty02-line w-250" aria-label="요청번호 · 시료 · 항목명" />
               <a href="#"
-                 class="c-pointer"
+                 class="c-pointer" aria-label="검색"
                  onclick="searchCurrentTab(); return false;">
                 <i class="fa far fa-m fa-search small"></i>
               </a>
@@ -6768,14 +6762,14 @@
                              id="tableWorklist">
                         <thead>
                           <tr class="text-nowrap">
-                            <th class="text-left">요청번호</th>
-                            <th class="text-left">시료</th>
-                            <th class="text-left">시험 항목</th>
-                            <th class="text-left">시험법</th>
-                            <th class="text-left">예정일</th>
-                            <th class="lims-num">결과</th>
-                            <th class="text-left">상태</th>
-                            <th class="text-right">조작</th>
+                            <th scope="col" class="text-left">요청번호</th>
+                            <th scope="col" class="text-left">시료</th>
+                            <th scope="col" class="text-left">시험 항목</th>
+                            <th scope="col" class="text-left">시험법</th>
+                            <th scope="col" class="text-left">예정일</th>
+                            <th scope="col" class="lims-num">결과</th>
+                            <th scope="col" class="text-left">상태</th>
+                            <th scope="col" class="text-right">조작</th>
                           </tr>
                         </thead>
                         <tbody></tbody>
@@ -6801,14 +6795,14 @@
                              id="tableRequestList">
                         <thead>
                           <tr class="text-nowrap">
-                            <th class="text-left">요청번호</th>
-                            <th class="text-left">시료</th>
-                            <th class="text-left">시험 목적</th>
-                            <th class="text-left">요청자</th>
-                            <th class="text-left">진행 (완료/전체)</th>
-                            <th class="text-left">희망 완료일</th>
-                            <th class="text-left">상태</th>
-                            <th class="text-center">상세</th>
+                            <th scope="col" class="text-left">요청번호</th>
+                            <th scope="col" class="text-left">시료</th>
+                            <th scope="col" class="text-left">시험 목적</th>
+                            <th scope="col" class="text-left">요청자</th>
+                            <th scope="col" class="text-left">진행 (완료/전체)</th>
+                            <th scope="col" class="text-left">희망 완료일</th>
+                            <th scope="col" class="text-left">상태</th>
+                            <th scope="col" class="text-center">상세</th>
                           </tr>
                         </thead>
                         <tbody></tbody>
@@ -7210,7 +7204,7 @@
       <div class="modal-header cursor-move">
         <p class="modal-title">연구노트 이동</p>
         <div class="flex-sty07 ma-t10 wp-100">
-          <input type="text" id="schFolder" sch-enter="gfn_getModalMoveNoteFolderList" maxlength="255" placeholder="폴더명으로 검색해주세요." class="input-write-sty02-line"/>
+          <input type="text" id="schFolder" sch-enter="gfn_getModalMoveNoteFolderList" maxlength="255" placeholder="폴더명으로 검색해주세요." class="input-write-sty02-line" />
           <a href="#" onclick="gfn_getModalMoveNoteFolderList()" style="cursor: pointer;">
             <i class="fa far fa-m fa-search small"></i>
           </a>
@@ -7298,7 +7292,7 @@
             <span class="txt-red">연구노트 삭제 시 복구가 불가능합니다.</span>
           </p>
           <p class="modal-cont-txt3 ma-b10 fw-500">이에 동의하시면 &quot;동의&quot;를 입력해주세요.</p>
-          <input type="text" class="chkWord input-write-sty02-line text-center mw-80" placeholder="동의"/>
+          <input type="text" class="chkWord input-write-sty02-line text-center mw-80" placeholder="동의" />
         </div>
       </div>
       <div class="modal-footer">
@@ -7353,7 +7347,7 @@
             <span>합니다.</span>
           </p>
           <p class="modal-cont-txt3 ma-b10 fw-500">이에 동의하시면 &quot;동의&quot;를 입력해주세요.</p>
-          <input type="text" class="chkWord input-write-sty02-line text-center mw-80" placeholder="동의"/>
+          <input type="text" class="chkWord input-write-sty02-line text-center mw-80" placeholder="동의" />
         </div>
       </div>
       <div class="modal-footer">
@@ -7382,7 +7376,7 @@
           <input type="hidden" name="writeModeCcd" value="EDITOR"/>
           <input type="hidden" name="editorTpCcd" value="{{=editorTpCcd}}" title="파일 형식"/>
           <div class="flex-sty05 ma-b20">
-            <label class="modal-cont-label">연구노트명</label>
+            <label for="sidebarNoteEditorNm" class="modal-cont-label">연구노트명</label>
             <input type="text" id="sidebarNoteEditorNm" name="noteNm" maxlength="50"
                     placeholder="연구노트명을 입력해주세요." title="연구노트명"
                     onKeyDown="coreCommon.inputLimitText('#sidebarNoteEditorNm', '.sidebarNoteEditorNm-count', 50);"
@@ -7424,7 +7418,7 @@
             </div>
           </div>
           <div class="flex-sty05 ma-b20">
-            <label class="modal-cont-label">연구노트 요약</label>
+            <label for="sidebarNoteEditorDesc" class="modal-cont-label">연구노트 요약</label>
             <input type="text" id="sidebarNoteEditorDesc" name="desc" maxlength="200"
                     placeholder="내용을 입력해주세요." title="연구노트 요약"
                     onKeyDown="coreCommon.inputLimitText('#sidebarNoteEditorDesc', '.sidebarNoteEditorDesc-count', 200);"
@@ -7472,7 +7466,7 @@
         <form method="post" role="form" id="createSidebarNoteFileForm">
           <input type="hidden" name="writeModeCcd" value="FILE"/>
           <div class="flex-sty05 ma-b20">
-            <label class="modal-cont-label">연구노트명</label>
+            <label for="sidebarNoteFileNm" class="modal-cont-label">연구노트명</label>
             <input type="text" id="sidebarNoteFileNm" name="noteNm" maxlength="50"
                     placeholder="연구노트명을 입력해주세요." title="연구노트명"
                     onKeyDown="coreCommon.inputLimitText('#sidebarNoteFileNm', '.sidebarNoteFileNm-count', 50);"
@@ -7514,7 +7508,7 @@
             </div>
           </div>
           <div class="flex-sty05 ma-b20">
-            <label class="modal-cont-label">연구노트 요약</label>
+            <label for="sidebarNoteFileDesc" class="modal-cont-label">연구노트 요약</label>
             <input type="text" id="sidebarNoteFileDesc" name="desc" maxlength="200"
                     placeholder="내용을 입력해주세요." title="연구노트 요약"
                     onKeyDown="coreCommon.inputLimitText('#sidebarNoteFileDesc', '.sidebarNoteFileDesc-count', 200);"

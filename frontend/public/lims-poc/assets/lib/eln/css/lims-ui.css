@@ -76,72 +76,10 @@
 	  단위 하나만 건드리면 여백·조작 요소 높이가 함께 따라온다. 전에는 스케일을
 	  만들어 놓고도 값이 상수라, 하나를 줄이면 나머지가 따라오지 않아 다시 어긋났다.
 	*/
-	--lims-unit: 4px;
-	--lims-gap-1: var(--lims-unit);
-	--lims-gap-2: calc(var(--lims-unit) * 2);
-	--lims-gap-3: calc(var(--lims-unit) * 3);
-	--lims-gap-4: calc(var(--lims-unit) * 4);
-	--lims-gap-5: calc(var(--lims-unit) * 5);
-	--lims-gap-6: calc(var(--lims-unit) * 6);
-	--lims-gap-8: calc(var(--lims-unit) * 8);
-
-	/*
-	  타이포 스케일 — 크기가 아니라 역할로 부른다.
-	  "13px 로 해달라" 가 아니라 "표 셀이다" 로 말하게 하려는 것이다. 크기로
-	  부르면 같은 뜻의 요소가 화면마다 다른 값을 갖게 되고(카드 제목이 어디선
-	  15px, 어디선 16px), 그게 지금 이 화면의 상태였다.
-
-	    micro   11 — 배지, 두 줄 셀의 보조행
-	    caption 12 — 표 머리행, 라벨, 안내 문구
-	    body    13 — 본문, 표 데이터 셀, 버튼·입력 글자
-	    strong  14 — 카드 제목, 소제목
-	    lead    18 — 모달 제목, 물성 값
-	    title   20 — 페이지 제목
-	    metric  24 — KPI 숫자, 바코드 입력
-
-	  크기도 기준 하나(--lims-fs-body)에서 더하고 뺀다. 본문을 1px 키우면
-	  라벨·제목·KPI 가 같은 간격을 유지한 채 함께 커진다.
-	*/
-	--lims-fs-body: 13px;
-	--lims-fs-micro: calc(var(--lims-fs-body) - 2px);
-	--lims-fs-caption: calc(var(--lims-fs-body) - 1px);
-	--lims-fs-strong: calc(var(--lims-fs-body) + 1px);
-	--lims-fs-lead: calc(var(--lims-fs-body) + 5px);
-	--lims-fs-title: calc(var(--lims-fs-body) + 7px);
-	--lims-fs-metric: calc(var(--lims-fs-body) + 11px);
-
-	/*
-	  굵기는 셋뿐이다. 600 을 뺀 이유가 있다 — Noto Sans / Noto Sans KR 은
-	  100/300/400/500/700/900 만 로드된다. 600 은 실물이 없어 브라우저가 700 으로
-	  올려 그린다. 즉 지금까지 "가볍게 600" 이라고 적어 둔 표 머리행·배지는
-	  전부 Bold 로 그려지고 있었고, 본문(400)보다 무겁다는 원래 문제가 그대로
-	  남아 있었다. 500 으로 내려야 의도한 위계가 실제로 나온다.
-	*/
-	--lims-fw-normal: 400;
-	--lims-fw-medium: 500;
-	--lims-fw-bold: 700;
-
-	/*
-	  행간은 네 단계이고, 어느 단계를 쓸지는 글자 크기가 정한다 — 규칙 하나다.
-	    11 / 14px → snug   (짧은 한 줄: 배지, 카드 제목)
-	    12 / 13px → base   (읽는 글: 본문, 표 셀, 라벨, 안내)
-	    18 / 20 / 24px → tight (제목·숫자)
-	  이렇게 묶어야 "같은 크기인데 줄 간격이 다른 글자"가 안 생긴다. 지금 화면에는
-	  12~35px 사이 행간이 스무 가지쯤 섞여 있었고, 그 대부분은 부모에게서
-	  절대값(24px, 30px)을 물려받은 결과라 크기와 무관하게 결정돼 있었다.
-	  세로로 가운데 정렬하는 조작 요소(버튼·페이징·순번 배지)만 line-height:1 로 뺀다.
-	*/
-	--lims-lh-tight: 1.25;
-	--lims-lh-snug: 1.4;
-	--lims-lh-base: 1.5;
-	--lims-lh-loose: 1.7;    /* 긴 입력(노트 본문)만 */
-
-	/* 조작 요소 공통 규격 — 버튼/입력/셀렉트가 한 줄에 서면 높이가 같아야 한다.
-	   32px 은 4px 배수이면서 클릭 대상 최소치(28px)를 넘긴다. */
-	--lims-control-h: calc(var(--lims-unit) * 8);
-	--lims-control-h-sm: calc(var(--lims-unit) * 7);
-	--lims-radius: calc(var(--lims-unit) * 2);
-	--lims-ring: 0 0 0 3px rgba(23, 97, 222, 0.18);
+	/* 값의 정의는 lims-theme.css §2 가 갖는다 — 여기서 다시 정의하면 같은
+	   이름에 두 값이 생긴다. 실제로 --lims-control-h 가 32(여기) 대 36(테마),
+	   --lims-radius 가 8 대 10 으로 갈려 있었고, 뒤에 오는 테마가 이겨서
+	   이 66줄은 통째로 그림자였다. 파일을 읽는 사람만 32/8 을 믿게 된다. */
 
 	font-size: var(--lims-fs-body);
 	line-height: var(--lims-lh-base);
@@ -606,11 +544,9 @@
 }
 
 /* 삭제 — 되돌릴 수 없는 조작만 휴지통을 준다 */
-.lims-page button.is-danger::before,
-.lims-page a.is-danger::before,
-.lims-page [onclick^="openModalSampleDelete"]::before,
-.lims-page [onclick^="openModalLocationDelete"]::before,
-.lims-page [onclick^="removeItemRow"]::before {
+/* 삭제 세 자리는 .is-danger 로 옮겼다 — 스타일이 JS 함수 이름에 묶여 있으면
+   이름을 바꾸는 순간 조용히 사라진다. 남은 46종은 아직 [onclick^=] 이다. */
+.lims-page .is-danger::before {
 	content: '';
 	-webkit-mask-image: url(../img/lucide/trash-2.svg);
 	mask-image: url(../img/lucide/trash-2.svg);
@@ -635,7 +571,7 @@
 .lims-page [onclick^="openModalLocationDelete"]:hover,
 .lims-page [onclick^="removeItemRow"]:hover {
 	border-color: var(--lims-danger) !important;
-	background-color: #fdecea !important;
+	background-color: var(--ds-danger-weak) !important;
 	color: var(--lims-danger-ink) !important;
 }
 
@@ -1023,10 +959,9 @@
 */
 .lims-page .lims-scan-box .button-blue-full-sty01,
 .lims-page .lims-scan-box .button-gray-line-sty01 {
-	/* 스캔 상자는 사다리 밖의 한 단(xl)이다 — 바코드 총을 들고 서서 쓰는
-	   화면이라 입력칸을 56 으로 키웠고, 버튼은 거기에 맞춘다. 눈금 밖 숫자를
-	   손으로 적지는 않는다: 둘 다 4px 배수로 파생시킨다. */
-	height: calc(var(--ds-unit) * 12);   /* 48 */
+	/* 높이는 lims-theme.css §19 가 갖는다 — 입력칸과 같은 56.
+	   여기 48 을 적어 뒀었는데 같은 선택자를 뒤 파일이 56 으로 덮어 죽은 값이었고,
+	   바로 위 주석("버튼을 입력 높이에 맞춘다")과도 어긋나 있었다. */
 	padding: 0 var(--ds-5);
 	font-size: var(--ds-fs-body);
 	border-radius: var(--ds-radius);
@@ -1479,8 +1414,8 @@
 	white-space: nowrap;
 }
 
-.lims-page .lims-state.normal { border-color: rgba(23, 97, 222, 0.22); }
-.lims-page .lims-state.soon { border-color: rgba(161, 115, 10, 0.22); }
+.lims-page .lims-state.normal { border-color: var(--ds-primary-line); }
+.lims-page .lims-state.soon { border-color: var(--ds-warn-line); }
 .lims-page .lims-state.expired { border-color: rgba(238, 81, 57, 0.24); }
 .lims-page .lims-state.done { border-color: rgba(30, 126, 70, 0.22); }
 .lims-page .lims-state.muted { border-color: var(--lims-line-strong); }
@@ -1694,7 +1629,7 @@
 	background: var(--lims-primary-weak);
 	color: var(--lims-primary-dark);
 	font-size: var(--lims-fs-micro);
-	font-weight: 700;   /* 600 은 Pretendard 서브셋에 실물이 없어 브라우저가 700 을 합성한다 */
+	font-weight: var(--ds-fw-bold);   /* 600 은 Pretendard 서브셋에 실물이 없어 합성된다 */
 }
 
 /* --- 좌측 정보 패널 --- */

@@ -238,9 +238,11 @@ label.form-check-label2 {
     max-width: 700px;
 }
 
-.mh-800 {
-    max-height: 800px !important;
-}
+/* .mh-800 은 지웠다. 이름은 전역 유틸리티인데 35개 사용처가 전부
+   .modal-content 위였다 — 모달 전용 상수가 유틸리티 자리에 있었던 것이다.
+   게다가 뷰포트와 무관한 고정값이라 1280x800 에서 모달 바닥이 23px,
+   1024x768 에서 55px 잘렸다. 모달 최대 높이는 lims-theme.css §12 가
+   뷰포트에 묶어 갖는다. */
 .h-30 {
     height: 30px !important;
 }

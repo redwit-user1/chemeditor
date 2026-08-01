@@ -7,18 +7,15 @@
     <meta charset="utf-8" />
     <meta
       http-equiv="X-UA-Compatible"
-      content="IE=edge"
-    />
+      content="IE=edge" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1"
-    />
+      content="width=device-width, initial-scale=1" />
     
     <title>GoonoELN</title>
     <link
       rel="shortcut icon"
-      href="assets/ico/favicon.ico"
-    />
+      href="assets/ico/favicon.ico" />
     
 		<link rel="stylesheet" href="assets/webjars/AdminLTE/3.2.0/plugins/jquery-ui/jquery-ui.css">
 		<!-- Font Awesome -->
@@ -60,47 +57,38 @@
 
     <link
       rel="stylesheet"
-      href="assets/lib/eln/css/font-style.css"
-    />
+      href="assets/lib/eln/css/font-style.css" />
     <!-- Libraries Stylesheet -->
     <link
       rel="stylesheet"
-      href="assets/lib/eln/lib/animate/animate.min.css"
-    />
+      href="assets/lib/eln/lib/animate/animate.min.css" />
     <link
       rel="stylesheet"
-      href="assets/lib/eln/lib/owlcarousel/assets/owl.carousel.min.css"
-    />
+      href="assets/lib/eln/lib/owlcarousel/assets/owl.carousel.min.css" />
     <!-- Customized Bootstrap Stylesheet -->
     <link
       rel="stylesheet"
-      href="assets/lib/eln/css/bootstrap.min.css"
-    />
+      href="assets/lib/eln/css/bootstrap.min.css" />
     <!-- Stylesheet -->
     <link
       rel="stylesheet"
-      href="assets/lib/eln/css/layout.css"
-    />
+      href="assets/lib/eln/css/layout.css" />
     
     <link
       rel="stylesheet"
-      href="assets/lib/eln/css/lims.css"
-    />
+      href="assets/lib/eln/css/lims.css" />
     
     <link
       rel="stylesheet"
-      href="assets/lib/eln/css/lims-ui.css"
-    />
+      href="assets/lib/eln/css/lims-ui.css" />
     
     
     <link
       rel="stylesheet"
-      href="assets/lib/eln/css/pretendard.css"
-    />
+      href="assets/lib/eln/css/pretendard.css" />
     <link
       rel="stylesheet"
-      href="assets/lib/eln/css/lims-theme.css"
-    />
+      href="assets/lib/eln/css/lims-theme.css" />
 
     
 
@@ -3748,11 +3736,11 @@
             <div class="modal-body">
               <div class="flex-sty02 search-box">
                 <input type="text" id="pickCasNo" maxlength="50" placeholder="CAS 번호"
-                       class="input-write-sty02-line w-150 ma-r10" />
+                       class="input-write-sty02-line w-150 ma-r10" aria-label="CAS 번호" />
                 <div class="select-wrap">
                   <input type="text" id="pickKeyword" maxlength="255" placeholder="시약명 · 분자식"
-                         class="input-write-sty02-line w-250" />
-                  <a href="#" class="c-pointer" onclick="searchPickReagent(); return false;">
+                         class="input-write-sty02-line w-250" aria-label="시약명 · 분자식" />
+                  <a href="#" class="c-pointer" aria-label="검색" onclick="searchPickReagent(); return false;">
                     <i class="fa far fa-m fa-search small"></i>
                   </a>
                 </div>
@@ -3767,13 +3755,13 @@
                   <table class="table table-hover table-sty01">
                     <thead>
                       <tr class="text-nowrap">
-                        <th class="text-left">시약명</th>
-                        <th class="text-left">CAS</th>
-                        <th class="text-left">분자식</th>
-                        <th class="lims-num">분자량</th>
-                        <th class="lims-num">밀도</th>
-                        <th class="text-left">재고</th>
-                        <th class="text-right">선택</th>
+                        <th scope="col" class="text-left">시약명</th>
+                        <th scope="col" class="text-left">CAS</th>
+                        <th scope="col" class="text-left">분자식</th>
+                        <th scope="col" class="lims-num">분자량</th>
+                        <th scope="col" class="lims-num">밀도</th>
+                        <th scope="col" class="text-left">재고</th>
+                        <th scope="col" class="text-right">선택</th>
                       </tr>
                     </thead>
                     <tbody id="pickReagentBody"></tbody>
@@ -5843,8 +5831,7 @@
                 <img
                   src="assets/calc/calc.png"
                   alt="계산기 아이콘"
-                  style="width: 15px; height: 20px"
-                />
+                  style="width: 15px; height: 20px" />
                 수학수식 입력기
               </button>
               
@@ -5949,8 +5936,7 @@
                                   name="beginDe"
                                   placeholder="시작일"
                                   class="input-xs input-write-date3"
-                                  readonly="readonly"
-                                />
+                                  readonly="readonly" />
                               </div>
                               <div class="ma-r5">~</div>
                               <div class="date-cont">
@@ -5960,8 +5946,7 @@
                                   name="endDe"
                                   placeholder="종료일"
                                   class="input-xs input-write-date3"
-                                  readonly="readonly"
-                                />
+                                  readonly="readonly" />
                               </div>
                             </div>
                           </li>
@@ -6016,7 +6001,7 @@
             <div class="icon-option-wrap dropdown">
               <a
                 href="#"
-                class="icon-option"
+                class="icon-option" aria-label="더 보기"
                 id="dropdownOptionBtn{{=idx}}"
                 data-bs-toggle="dropdown"
                 aria-haspopup="true"
@@ -6060,8 +6045,7 @@
                     <img
                       src="assets/lib/eln/img/icon_project_s.png"
                       alt="프로젝트 아이콘"
-                      style="width: 10px"
-                    />
+                      style="width: 10px" />
                   </div>
                   <div
                     class="txt-info-txt ma-l5 txt_ellipsis"
@@ -6081,8 +6065,7 @@
                 <div class="icon_box">
                   <img
                     src="assets/lib/eln/img/icon_lock_grade.png"
-                    alt="보안등급 아이콘"
-                  />
+                    alt="보안등급 아이콘" />
                 </div>
                 <div
                   class="txt-info-txt ma-l5 txt_ellipsis"
@@ -6095,8 +6078,7 @@
                 <div class="icon_box">
                   <img
                     src="assets/lib/eln/img/icon_person.png"
-                    alt="작성자 아이콘"
-                  />
+                    alt="작성자 아이콘" />
                 </div>
                 <div
                   class="txt-info-txt ma-l5 txt_ellipsis"
@@ -6118,8 +6100,7 @@
                 <div class="icon_box">
                   <img
                     src="assets/lib/eln/img/icon_note_date.png"
-                    alt="생성일자 아이콘"
-                  />
+                    alt="생성일자 아이콘" />
                 </div>
                 <div
                   class="txt-info-txt ma-l5 txt_ellipsis"
@@ -6133,8 +6114,7 @@
                 <div class="icon_box">
                   <img
                     src="assets/lib/eln/img/icon_note_write.png"
-                    alt="작성방식 아이콘"
-                  />
+                    alt="작성방식 아이콘" />
                 </div>
                 <div
                   class="txt-info-txt ma-l5 txt_ellipsis"
@@ -6153,8 +6133,7 @@
                 <div class="icon_box">
                   <img
                     src="assets/lib/eln/img/icon_note_status.png"
-                    alt="노트상태 아이콘"
-                  />
+                    alt="노트상태 아이콘" />
                 </div>
                 <div
                   class="txt-info-txt ma-l5 txt_ellipsis"
@@ -6202,12 +6181,12 @@
           <div>
             <a
               href="javascript:void(0)"
-              id="note-open-btn"
+              id="note-open-btn" aria-label="연구노트 정보 패널 열기"
               onclick="note_openNav()"
             ></a>
             <a
               href="javascript:void(0)"
-              id="note-close-btn"
+              id="note-close-btn" aria-label="연구노트 정보 패널 닫기"
               onclick="note_closeNav()"
             ></a>
           </div>
@@ -6340,7 +6319,7 @@
                 <div class="guidetext-sty01 lims-note-editor-guide">구조 입력기(Ketcher)에서 그린 뒤 "이 구조로 검색"을 누르면 이 블록으로 들어옵니다. ChemDraw 바이너리(.cdx)는 읽지 않고, 클립보드의 SMILES/MOL 텍스트만 씁니다.</div>
                 <input type="text" id="caption-{{=blockId}}" maxlength="200"
                        class="input-write-sty02-line wp-100 ma-t10"
-                       placeholder="구조 설명 (선택) 예) 목적화합물 KM00003710" value="{{=captionVal}}" />
+                       placeholder="구조 설명 (선택) 예) 목적화합물 KM00003710" value="{{=captionVal}}" aria-label="구조 설명 (선택) 예) 목적화합물 KM00003710" />
               </div>
             </div>
           </div>
@@ -6369,15 +6348,15 @@
                 <table class="table table-sty01">
                   <thead>
                     <tr class="text-nowrap">
-                      <th class="text-left">역할</th>
-                      <th class="text-left">시약</th>
-                      <th class="text-left">CAS</th>
-                      <th class="text-left">분자식</th>
-                      <th class="lims-num">분자량</th>
-                      <th class="text-left">사용량</th>
-                      <th class="lims-num">mmol</th>
-                      <th class="lims-num">당량</th>
-                      <th class="text-right">관리</th>
+                      <th scope="col" class="text-left">역할</th>
+                      <th scope="col" class="text-left">시약</th>
+                      <th scope="col" class="text-left">CAS</th>
+                      <th scope="col" class="text-left">분자식</th>
+                      <th scope="col" class="lims-num">분자량</th>
+                      <th scope="col" class="text-left">사용량</th>
+                      <th scope="col" class="lims-num">mmol</th>
+                      <th scope="col" class="lims-num">당량</th>
+                      <th scope="col" class="text-right">관리</th>
                     </tr>
                   </thead>
                   <tbody id="eq-body-{{=blockId}}"></tbody>
@@ -6389,7 +6368,7 @@
             </div>
             <input type="text" id="caption-{{=blockId}}" maxlength="200"
                    class="input-write-sty02-line wp-100 ma-t10"
-                   placeholder="표 설명 (선택) 예) 1차 아실화 반응 조건" value="{{=captionVal}}" />
+                   placeholder="표 설명 (선택) 예) 1차 아실화 반응 조건" value="{{=captionVal}}" aria-label="표 설명 (선택) 예) 1차 아실화 반응 조건" />
           </div>
         </section>
       </script>
@@ -6399,6 +6378,7 @@
         <tr class="{{=rowClass}}">
           <td class="text-left">
             <select class="btn btn-xs select-xs select-sty02 lims-stoich-role-sel"
+                    title="역할"
                     onchange="onEqChange('{{=blockId}}', '{{=rowId}}', 'roleCcd', this.value);">{{=roleOptions}}</select>
           </td>
           <td class="text-left"><b>{{=reagentNmDisp}}</b>{{=limitingMark}}</td>
@@ -6411,6 +6391,7 @@
                    title="사용량"
                    onchange="onEqChange('{{=blockId}}', '{{=rowId}}', 'amount', this.value);" />
             <select class="btn btn-xs select-xs select-sty02 lims-stoich-unit-sel"
+                    title="단위"
                     onchange="onEqChange('{{=blockId}}', '{{=rowId}}', 'unitCcd', this.value);">{{=unitOptions}}</select>
           </td>
           <td class="lims-num">{{=mmolDisp}}</td>
@@ -7530,7 +7511,7 @@
             <span class="txt-red">연구노트 삭제 시 복구가 불가능합니다.</span>
           </p>
           <p class="modal-cont-txt3 ma-b10 fw-500">이에 동의하시면 &quot;동의&quot;를 입력해주세요.</p>
-          <input type="text" id="chkWord" class="input-write-sty02-line text-center mw-80" placeholder="동의"/>
+          <input type="text" id="chkWord" class="input-write-sty02-line text-center mw-80" placeholder="동의" />
         </div>
       </div>
       <div class="modal-footer">

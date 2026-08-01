@@ -8,18 +8,15 @@
     <meta charset="utf-8" />
     <meta
       http-equiv="X-UA-Compatible"
-      content="IE=edge"
-    />
+      content="IE=edge" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1"
-    />
+      content="width=device-width, initial-scale=1" />
     
     <title>GoonoELN</title>
     <link
       rel="shortcut icon"
-      href="assets/ico/favicon.ico"
-    />
+      href="assets/ico/favicon.ico" />
     
 		<link rel="stylesheet" href="assets/webjars/AdminLTE/3.2.0/plugins/jquery-ui/jquery-ui.css">
 		<!-- Font Awesome -->
@@ -61,47 +58,38 @@
 
     <link
       rel="stylesheet"
-      href="assets/lib/eln/css/font-style.css"
-    />
+      href="assets/lib/eln/css/font-style.css" />
     <!-- Libraries Stylesheet -->
     <link
       rel="stylesheet"
-      href="assets/lib/eln/lib/animate/animate.min.css"
-    />
+      href="assets/lib/eln/lib/animate/animate.min.css" />
     <link
       rel="stylesheet"
-      href="assets/lib/eln/lib/owlcarousel/assets/owl.carousel.min.css"
-    />
+      href="assets/lib/eln/lib/owlcarousel/assets/owl.carousel.min.css" />
     <!-- Customized Bootstrap Stylesheet -->
     <link
       rel="stylesheet"
-      href="assets/lib/eln/css/bootstrap.min.css"
-    />
+      href="assets/lib/eln/css/bootstrap.min.css" />
     <!-- Stylesheet -->
     <link
       rel="stylesheet"
-      href="assets/lib/eln/css/layout.css"
-    />
+      href="assets/lib/eln/css/layout.css" />
     
     <link
       rel="stylesheet"
-      href="assets/lib/eln/css/lims.css"
-    />
+      href="assets/lib/eln/css/lims.css" />
     
     <link
       rel="stylesheet"
-      href="assets/lib/eln/css/lims-ui.css"
-    />
+      href="assets/lib/eln/css/lims-ui.css" />
     
     
     <link
       rel="stylesheet"
-      href="assets/lib/eln/css/pretendard.css"
-    />
+      href="assets/lib/eln/css/pretendard.css" />
     <link
       rel="stylesheet"
-      href="assets/lib/eln/css/lims-theme.css"
-    />
+      href="assets/lib/eln/css/lims-theme.css" />
 
     
 
@@ -3575,7 +3563,7 @@
                         <td><div class="icon-note-status write-status-${note['writeStatusCcd']}">${note.writeStatusCcdNm}</div></td>
                         <td class="text-right">
                             <div class="icon-option-wrap btn-group dropdown dropend">
-                                <a href="#" class="icon-option" id="dropdownOptionBtn_col${note.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
+                                <a href="#" class="icon-option" aria-label="더 보기" id="dropdownOptionBtn_col${note.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
                                 <div id="dropdown_option" class="dropdown-menu" aria-labelledby="dropdownOptionBtn_col${note.idx}">
                                     <div class="option_title">${'연구노트 옵션'}</div>
                                     <div class="option_list">
@@ -3637,7 +3625,7 @@
             <span class="modal-cont-title">{{=contTitle}}</span>&nbsp;
           </div>
           <div class="add-project-sty01 ma-t10 po-r">
-            <input type="text" id="setWord" maxlength="{{=maxlength}}" placeholder="{{=placeholder}}" value="{{=txtValue}}"
+            <input type="text" id="setWord" maxlength="{{=maxlength}}" placeholder="{{=placeholder}}" aria-label="{{=placeholder}}" value="{{=txtValue}}"
                 onKeyDown="coreCommon.inputLimitText('#setWord','.word-count',{{=maxlength}})"
                 onKeyUp="coreCommon.inputLimitText('#setWord','.word-count',{{=maxlength}})" class="input-write-sty01-line ">
           </div>
@@ -3823,7 +3811,7 @@
                             </div>
                             <div if="isProgress">
                               <div if="isOwner" class="icon-option-wrap dropdown">
-                                <a href="#" class="icon-option" id="dropdownOptionBtn${note.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
+                                <a href="#" class="icon-option" aria-label="더 보기" id="dropdownOptionBtn${note.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
                                 <div id="dropdown_option" class="dropdown-menu" aria-labelledby="dropdownOptionBtn${note.idx}">
                                   <div class="option_title">${'연구노트 옵션'}</div>
                                   <div class="option_list">
@@ -3835,7 +3823,7 @@
                                 </div>
                               </div>
                               <div if="isGnrlYn" else="isOwnerNm" class="icon-option-wrap dropdown">
-                                <a href="#" class="icon-option" id="dropdownOptionBtn${note.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
+                                <a href="#" class="icon-option" aria-label="더 보기" id="dropdownOptionBtn${note.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
                                 <div id="dropdown_option" class="dropdown-menu" aria-labelledby="dropdownOptionBtn${note.idx}">
                                   <div class="option_title">${'연구노트 옵션'}</div>
                                   <div class="option_list">
@@ -3983,7 +3971,7 @@
                           <div class="note_cnt">${folder.noteCnt}</div>
                         </div>
                         <div if="isGnrlAuthYn" class="icon-option-wrap dropdown">
-                          <a href="#" class="icon-option" id="dropdownOptionBtn" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ></a>
+                          <a href="#" class="icon-option" aria-label="더 보기" id="dropdownOptionBtn" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ></a>
                           <div id="dropdown_option" class="dropdown-menu" aria-labelledby="dropdownOptionBtn">
                             <div class="option_title">${'연구폴더 옵션'}</div>
                             <div class="option_list">
@@ -4125,7 +4113,7 @@
                               </div>
                             </div>
                             <div if="isGnrlAuthYn" class="icon-option-wrap dropdown">
-                              <a href="#" class="icon-option" id="dropdownOptionBtn${project.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
+                              <a href="#" class="icon-option" aria-label="더 보기" id="dropdownOptionBtn${project.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
                               <div id="dropdown_option" class="dropdown-menu" aria-labelledby="dropdownOptionBtn${project.idx}">
                                 <div class="option_title">${'프로젝트 옵션'}</div>
                                 <div class="option_list">
@@ -4137,7 +4125,7 @@
                               </div>
                             </div>
                             <div class="icon-option-wrap dropdown">
-                              <a if="isAdmin" href="#" class="icon-option" id="dropdownOptionBtn${project.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
+                              <a if="isAdmin" href="#" class="icon-option" aria-label="더 보기" id="dropdownOptionBtn${project.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
                               <div id="dropdown_option" class="dropdown-menu" aria-labelledby="dropdownOptionBtn${project.idx}">
                                 <div class="option_title">${'프로젝트 옵션'}</div>
                                 <div class="option_list">
@@ -6202,13 +6190,11 @@
     <input
       type="hidden"
       id="gPrevMethod"
-      value=""
-    />
+      value="" />
     <input
       type="hidden"
       id="gPrevQueryString"
-      value=""
-    />
+      value="" />
     <div class="wrapper">
       <div class="content_wrap">
         <!-- Main Sidebar Container -->
@@ -6591,9 +6577,11 @@
           <div class="search-box-write pa-l0 ma-l0">
             <input type="text"
                    placeholder="검색어를 입력해주세요."
+                   aria-label="전체 검색"
                    class="search_write ce-search-note">
             <button type="button"
-                    class="search_btn"></button>
+                    class="search_btn"
+                    aria-label="검색"></button>
             <!-- <a class="search_btn" th:href="@{'/eln/search'}"></a> -->
           </div>
           <div class="wrap_info flex-sty04 ms-auto">
@@ -6603,7 +6591,7 @@
                    onclick="javascript:eGovUnitTop.reqTimeAjax();return false;">
                 <a href="#">
                   <span class="session_txt">세션만료 남은시간</span> <span id="leftTimeInfoEgovUnitTop"
-                        class="ml-2 mr-2">00:00:00</span>
+                        >00:00:00</span>
                 </a>
               </div>
             </div>
@@ -6616,6 +6604,7 @@
                        onclick="header_getNotiList();"
                        class="alarm_icon"
                        id="dropdownAlarmBtn"
+                       aria-label="알림 목록 열기"
                        data-bs-toggle="dropdown"
                        data-bs-auto-close="outside"
                        aria-haspopup="true"
@@ -6667,6 +6656,7 @@
                       <a href="#"
                          class="profile_expand"
                          id="dropdownProfileBtn"
+                         aria-label="내 계정 메뉴 열기"
                          data-bs-toggle="dropdown"
                          aria-haspopup="true"
                          aria-expanded="false"></a>
@@ -6830,7 +6820,7 @@
             <div class="icon-option-wrap dropdown pa-l10"
                  style="top: 16px; right: 0;">
               <a href="#"
-                 class="icon-option"
+                 class="icon-option" aria-label="더 보기"
                  id="dropdownOptionBtn{{=idx}}"
                  data-bs-toggle="dropdown"
                  aria-haspopup="true"
@@ -6925,7 +6915,7 @@
               <div>
                 <a
                   href="#"
-                  class="icon_filter"
+                  class="icon_filter" aria-label="검색 조건 열기"
                   id="dropdownSearchbox"
                   onclick="openSearchbox();"
                   data-bs-toggle="dropdown"
@@ -6999,8 +6989,7 @@
                                       id="filterWriteStatusCcdArr-DRAFT"
                                       autocomplete="off"
                                       value="DRAFT"
-                                      onchange="changeSearchboxChk(this);"
-                                    />
+                                      onchange="changeSearchboxChk(this);" />
                                   </div>
                                   <label
                                     class="po-a"
@@ -7023,8 +7012,7 @@
                                       id="filterWriteStatusCcdArr-WRITING"
                                       autocomplete="off"
                                       value="WRITING"
-                                      onchange="changeSearchboxChk(this);"
-                                    />
+                                      onchange="changeSearchboxChk(this);" />
                                   </div>
                                   <label
                                     class="po-a"
@@ -7047,8 +7035,7 @@
                                       id="filterWriteStatusCcdArr-INSPECTION"
                                       autocomplete="off"
                                       value="INSPECTION"
-                                      onchange="changeSearchboxChk(this);"
-                                    />
+                                      onchange="changeSearchboxChk(this);" />
                                   </div>
                                   <label
                                     class="po-a"
@@ -7071,8 +7058,7 @@
                                       id="filterWriteStatusCcdArr-REJECT"
                                       autocomplete="off"
                                       value="REJECT"
-                                      onchange="changeSearchboxChk(this);"
-                                    />
+                                      onchange="changeSearchboxChk(this);" />
                                   </div>
                                   <label
                                     class="po-a"
@@ -7095,8 +7081,7 @@
                                       id="filterWriteStatusCcdArr-COMPLETE"
                                       autocomplete="off"
                                       value="COMPLETE"
-                                      onchange="changeSearchboxChk(this);"
-                                    />
+                                      onchange="changeSearchboxChk(this);" />
                                   </div>
                                   <label
                                     class="po-a"
@@ -7151,8 +7136,7 @@
                                 maxlength="255"
                                 placeholder="이름, 이메일로 검색해주세요."
                                 class="input-write-sty02-line"
-                                sch-enter="getSearchMemberList"
-                              />
+                                sch-enter="getSearchMemberList" />
                               <a
                                 href="#"
                                 onclick="
@@ -7252,8 +7236,7 @@
                                       id="filterProcessMnoArr-1"
                                       autocomplete="off"
                                       value="1"
-                                      onchange="changeSearchboxChk(this);"
-                                    />
+                                      onchange="changeSearchboxChk(this);" />
                                   </div>
                                   <label
                                     class="po-a"
@@ -7273,8 +7256,7 @@
                                       id="filterProcessMnoArr-2"
                                       autocomplete="off"
                                       value="2"
-                                      onchange="changeSearchboxChk(this);"
-                                    />
+                                      onchange="changeSearchboxChk(this);" />
                                   </div>
                                   <label
                                     class="po-a"
@@ -7294,8 +7276,7 @@
                                       id="filterProcessMnoArr-3"
                                       autocomplete="off"
                                       value="3"
-                                      onchange="changeSearchboxChk(this);"
-                                    />
+                                      onchange="changeSearchboxChk(this);" />
                                   </div>
                                   <label
                                     class="po-a"
@@ -7375,8 +7356,7 @@
                       type="checkbox"
                       class="folderCheckbox basic form-check-input check c-pointer"
                       id="downloadFolderArr_0"
-                      style="z-index: 1"
-                    />
+                      style="z-index: 1" />
                     <div class="flex-sty03 folder-info">
                       <span
                         class="folder_name"
@@ -7431,7 +7411,7 @@
                       role="tablist"
                     >
                       <button
-                        class="list-btn-box btn"
+                        class="list-btn-box btn" aria-label="목록으로 보기"
                         onclick="getNoteList()"
                         id="list-box"
                         data-bs-toggle="tab"
@@ -7442,7 +7422,7 @@
                         aria-selected="true"
                       ></button>
                       <button
-                        class="block-btn-box btn active"
+                        class="block-btn-box btn active" aria-label="바둑판으로 보기"
                         id="block-box"
                         data-bs-toggle="tab"
                         data-bs-target="#nav-block-box"
@@ -7485,7 +7465,7 @@
                               </colgroup>
                               <thead>
                                 <tr class="text-nowrap">
-                                  <th class="text-left c-pointer">
+                                  <th scope="col" class="text-left c-pointer">
                                     <span
                                       sort-fn-nm="changeSort"
                                       sort-nm="NOTE_NM"
@@ -7493,7 +7473,7 @@
                                       연구노트
                                     </span>
                                   </th>
-                                  <th class="text-left c-pointer">
+                                  <th scope="col" class="text-left c-pointer">
                                     <span
                                       sort-fn-nm="changeSort"
                                       sort-nm="MODIFY_USER_NM"
@@ -7501,7 +7481,7 @@
                                       작성자
                                     </span>
                                   </th>
-                                  <th class="text-left c-pointer">
+                                  <th scope="col" class="text-left c-pointer">
                                     <span
                                       sort-fn-nm="changeSort"
                                       sort-nm="MODIFY_DT"
@@ -7509,12 +7489,12 @@
                                       최근작성일
                                     </span>
                                   </th>
-                                  <th class="text-left c-pointer">
+                                  <th scope="col" class="text-left c-pointer">
                                     <span>
                                       상태
                                     </span>
                                   </th>
-                                  <th class="text-left c-pointer"></th>
+                                  <th scope="col" class="text-left c-pointer"></th>
                                 </tr>
                               </thead>
                               <tbody></tbody>
@@ -8327,7 +8307,7 @@
       <div class="modal-header cursor-move">
         <p class="modal-title">연구노트 이동</p>
         <div class="flex-sty07 ma-t10 wp-100">
-          <input type="text" id="schFolder" sch-enter="gfn_getModalMoveNoteFolderList" maxlength="255" placeholder="폴더명으로 검색해주세요." class="input-write-sty02-line"/>
+          <input type="text" id="schFolder" sch-enter="gfn_getModalMoveNoteFolderList" maxlength="255" placeholder="폴더명으로 검색해주세요." class="input-write-sty02-line" />
           <a href="#" onclick="gfn_getModalMoveNoteFolderList()" style="cursor: pointer;">
             <i class="fa far fa-m fa-search small"></i>
           </a>
@@ -8415,7 +8395,7 @@
             <span class="txt-red">연구노트 삭제 시 복구가 불가능합니다.</span>
           </p>
           <p class="modal-cont-txt3 ma-b10 fw-500">이에 동의하시면 &quot;동의&quot;를 입력해주세요.</p>
-          <input type="text" class="chkWord input-write-sty02-line text-center mw-80" placeholder="동의"/>
+          <input type="text" class="chkWord input-write-sty02-line text-center mw-80" placeholder="동의" />
         </div>
       </div>
       <div class="modal-footer">
@@ -8470,7 +8450,7 @@
             <span>합니다.</span>
           </p>
           <p class="modal-cont-txt3 ma-b10 fw-500">이에 동의하시면 &quot;동의&quot;를 입력해주세요.</p>
-          <input type="text" class="chkWord input-write-sty02-line text-center mw-80" placeholder="동의"/>
+          <input type="text" class="chkWord input-write-sty02-line text-center mw-80" placeholder="동의" />
         </div>
       </div>
       <div class="modal-footer">
@@ -8499,7 +8479,7 @@
           <input type="hidden" name="writeModeCcd" value="EDITOR"/>
           <input type="hidden" name="editorTpCcd" value="{{=editorTpCcd}}" title="파일 형식"/>
           <div class="flex-sty05 ma-b20">
-            <label class="modal-cont-label">연구노트명</label>
+            <label for="sidebarNoteEditorNm" class="modal-cont-label">연구노트명</label>
             <input type="text" id="sidebarNoteEditorNm" name="noteNm" maxlength="50"
                     placeholder="연구노트명을 입력해주세요." title="연구노트명"
                     onKeyDown="coreCommon.inputLimitText('#sidebarNoteEditorNm', '.sidebarNoteEditorNm-count', 50);"
@@ -8541,7 +8521,7 @@
             </div>
           </div>
           <div class="flex-sty05 ma-b20">
-            <label class="modal-cont-label">연구노트 요약</label>
+            <label for="sidebarNoteEditorDesc" class="modal-cont-label">연구노트 요약</label>
             <input type="text" id="sidebarNoteEditorDesc" name="desc" maxlength="200"
                     placeholder="내용을 입력해주세요." title="연구노트 요약"
                     onKeyDown="coreCommon.inputLimitText('#sidebarNoteEditorDesc', '.sidebarNoteEditorDesc-count', 200);"
@@ -8589,7 +8569,7 @@
         <form method="post" role="form" id="createSidebarNoteFileForm">
           <input type="hidden" name="writeModeCcd" value="FILE"/>
           <div class="flex-sty05 ma-b20">
-            <label class="modal-cont-label">연구노트명</label>
+            <label for="sidebarNoteFileNm" class="modal-cont-label">연구노트명</label>
             <input type="text" id="sidebarNoteFileNm" name="noteNm" maxlength="50"
                     placeholder="연구노트명을 입력해주세요." title="연구노트명"
                     onKeyDown="coreCommon.inputLimitText('#sidebarNoteFileNm', '.sidebarNoteFileNm-count', 50);"
@@ -8631,7 +8611,7 @@
             </div>
           </div>
           <div class="flex-sty05 ma-b20">
-            <label class="modal-cont-label">연구노트 요약</label>
+            <label for="sidebarNoteFileDesc" class="modal-cont-label">연구노트 요약</label>
             <input type="text" id="sidebarNoteFileDesc" name="desc" maxlength="200"
                     placeholder="내용을 입력해주세요." title="연구노트 요약"
                     onKeyDown="coreCommon.inputLimitText('#sidebarNoteFileDesc', '.sidebarNoteFileDesc-count', 200);"
