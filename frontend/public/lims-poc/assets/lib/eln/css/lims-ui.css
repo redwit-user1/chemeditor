@@ -2060,7 +2060,9 @@
 	min-width: 88px;
 	height: var(--lims-control-h-sm);
 	padding: 0 var(--lims-gap-5) 0 var(--lims-gap-2);
-	font-size: var(--lims-fs-caption);
+	/* 바로 옆 사용량 입력칸이 13px 이다. 나란히 선 것은 같은 크기여야 한다 —
+	   여기만 12px(caption)이라 한 줄 안에서 글자가 어긋났다. */
+	font-size: var(--lims-fs-body);
 }
 
 .lims-page .lims-note-block .lims-stoich-unit-sel {
@@ -2069,7 +2071,7 @@
 	height: var(--lims-control-h-sm);
 	margin-left: var(--lims-gap-1);
 	padding: 0 var(--lims-gap-5) 0 var(--lims-gap-2);
-	font-size: var(--lims-fs-caption);
+	font-size: var(--lims-fs-body);   /* 옆 사용량 입력칸과 같은 크기 */
 	vertical-align: middle;
 }
 

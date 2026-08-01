@@ -1078,7 +1078,7 @@ a.button-more-sty01 {
 /* --- 크기 --- */
 .button-blue-full-sty01.small,
 .button-blue-line-sty04,
-.btn-xs,
+.btn-xs:not(select),
 .core-table td .button-gray-line-sty01,
 .core-table td .button-blue-line-sty01,
 .lims-actions-cell .button-gray-line-sty01,
@@ -3089,10 +3089,14 @@ textarea.form-control {
 /* --- 버튼: 부트스트랩 계열을 뜻 위에 얹는다 -----------------------------
    .btn.btn-xs.btn-outline-primary 155개가 #1761de / r8 로 따로 놀았다 —
    한 화면 안에 주 파랑이 두 가지 있었다는 뜻이다. */
-.btn.btn-xs,
-.btn.btn-secondary,
-.btn.btn-outline-primary,
-.btn.btn-primary {
+/* `select` 는 버튼이 아니다. 그런데 markup 이 `<select class="btn btn-xs
+   select-xs select-sty02">` 로 버튼 클래스를 달고 있어, 필터 줄에서 입력칸은
+   36/r10/13px 인데 바로 옆 선택칸만 28/r8/12px 이 되었다(실측 23군데).
+   버튼 규칙에서 select 를 뺀다 — 선택칸은 아래 입력칸 규격을 따른다. */
+.btn.btn-xs:not(select),
+.btn.btn-secondary:not(select),
+.btn.btn-outline-primary:not(select),
+.btn.btn-primary:not(select) {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -3140,7 +3144,7 @@ textarea.form-control {
 }
 
 /* 작은 버튼의 모서리 — 지금 8 과 10 이 섞여 있다. 크기가 sm 이면 모서리도 sm. */
-.btn-xs,
+.btn-xs:not(select),
 .core-table td .button-gray-line-sty01,
 .core-table td .button-blue-line-sty01,
 .lims-actions-cell .button-gray-line-sty01,
@@ -3348,4 +3352,127 @@ textarea.form-control.form-control {
 .lims-page .button-blue-line-sty02,
 .lims-page .button-blue-sty03 {
 	color: var(--ds-primary);
+}
+
+/* ---------------------------------------------------------------------------
+   19) 같은 줄에 선 것은 같은 크기 — 나란히 놓고 재서 나온 것들
+
+   화면·모달을 열어 "한 줄 안에 있는 조작 요소들"을 묶어 비교했다.
+   눈에 가장 먼저 걸리는 통일성 결함은 옆에 있는데 다른 것이다.
+--------------------------------------------------------------------------- */
+
+/* 선택칸은 입력칸과 같은 규격이다. markup 이 버튼 클래스를 달아 두어 필터 줄
+   에서 입력 36 옆에 선택 28 이 서 있었다(23군데). 위에서 버튼 규칙을 비켰고,
+   여기서 선택칸 규격을 못 박는다 — 표 안 인라인만 28 로 내려간다. */
+select.btn,
+select.btn-xs,
+select.select-xs,
+.select-sty02.select-sty02 {
+	height: var(--ds-control);
+	min-height: var(--ds-control);
+	padding: 0 var(--ds-6) 0 var(--ds-3);
+	border: 1px solid var(--ds-line-2);
+	border-radius: var(--ds-radius);
+	background-color: var(--ds-surface);
+	background-position: right var(--ds-2) center;
+	font-size: var(--ds-fs-cell);
+	font-weight: var(--ds-fw-normal);
+	line-height: calc(var(--ds-control) - 2px);
+	color: var(--ds-ink);
+}
+
+.core-table td select.btn,
+.core-table td select.btn-xs,
+.core-table td .select-sty02.select-sty02,
+.lims-actions-cell select.btn,
+.lims-actions-cell select.btn-xs,
+.lims-actions-cell .select-sty02.select-sty02 {
+	height: var(--ds-control-sm);
+	min-height: var(--ds-control-sm);
+	padding: 0 var(--ds-5) 0 var(--ds-2);
+	border-radius: calc(var(--ds-radius) - 2px);
+	line-height: calc(var(--ds-control-sm) - 2px);
+}
+
+/*
+  기간 입력 두 칸이 왼쪽만 둥글고 오른쪽은 각졌다(실측 r10 과 r0 이 나란히).
+  한 덩어리로 쓰는 칸이면 바깥쪽만 둥글고 맞닿는 안쪽은 각져야 한다.
+*/
+.form_date .input-write-date2:first-child,
+.form_date .input-write-date:first-child,
+.input-group.form_date > .form-control:first-of-type {
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+	border-right-width: 0;
+}
+
+.form_date .input-write-date2:last-child,
+.form_date .input-write-date:last-child,
+.input-group.form_date > .form-control:last-of-type {
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
+}
+
+/*
+  목록/바둑판 보기 전환 — 감싸개가 81x40 인데 안쪽 두 칸은 38x38 이고 사이에
+  margin-left: 3px 이 있었다. 한 덩어리로 보이는 물건에 세 가지 치수가 들어
+  있었던 셈이다. 테두리와 모서리는 감싸개가 갖고, 안쪽 두 칸은 맞붙인다.
+*/
+.list-block-btn-box {
+	display: inline-flex;
+	align-items: center;
+	width: auto;
+	height: var(--ds-control);
+	border: 1px solid var(--ds-line-2);
+	border-radius: var(--ds-radius);
+	background-color: var(--ds-surface);
+	overflow: hidden;
+}
+
+.list-block-btn-box .nav-tabs {
+	display: flex;
+	min-width: 0;
+	gap: 0;
+}
+
+.list-block-btn-box .btn.list-btn-box,
+.list-block-btn-box .btn.block-btn-box {
+	width: var(--ds-10);
+	height: var(--ds-control);
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	background-color: transparent;
+	background-position: center;
+	background-size: 18px 18px;
+	font-size: var(--ds-fs-cell);
+	line-height: var(--ds-lh-none);
+}
+
+.list-block-btn-box .btn.list-btn-box.active,
+.list-block-btn-box .btn.block-btn-box.active {
+	border-radius: 0;
+	background-color: var(--ds-hover);
+	background-position: center;
+	background-size: 18px 18px;
+}
+
+/* 스캔 상자 — 입력 56 옆에 버튼 48 이 서 있었다. 주석에는 "버튼을 입력
+   높이에 맞춘다"고 적어 두고 값은 안 맞춰 놓았다. 맞춘다. */
+.lims-page .lims-scan-box .button-blue-full-sty01,
+.lims-page .lims-scan-box .button-gray-line-sty01 {
+	height: calc(var(--ds-unit) * 14);   /* 56 — 입력칸과 같게 */
+}
+
+/* 모달 바닥줄은 lg 한 단이다. 조사 모달만 그 줄에 md 버튼 하나가 섞여 있었다. */
+.modal-footer .button-gray-line-sty01,
+.modal-footer .button-blue-line-sty01,
+.modal-footer .button-blue-full-sty01,
+.modal-footer .btn {
+	height: var(--ds-10);
+	min-height: var(--ds-10);
+	padding: 0 var(--ds-5);
+	border-radius: var(--ds-radius);
+	font-size: var(--ds-fs-body);
 }
