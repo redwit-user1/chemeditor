@@ -1079,14 +1079,18 @@ a.button-more-sty01 {
 	color: #fff !important;
 }
 
-/* --- 크기 --- */
+/* --- 크기 ---
+   표 칸 안의 버튼은 클래스가 무엇이든 작은 단이다. 전에는 gray-line 과
+   blue-line 둘만 적어 두어, 검토 화면에서 승인(cnfm, 36)과 반려(gray-line, 28)가
+   한 칸에 나란히 서면서 크기가 갈렸다. 클래스를 하나씩 늘리는 대신 "표 칸 안"
+   이라는 자리로 잡는다 — 다음에 넣는 버튼도 저절로 맞는다. */
 .button-blue-full-sty01.small,
 .button-blue-line-sty04,
 .btn-xs:not(select),
-.core-table td .button-gray-line-sty01,
-.core-table td .button-blue-line-sty01,
-.lims-actions-cell .button-gray-line-sty01,
-.lims-actions-cell .button-blue-line-sty01 {
+.core-table td button[class*="button-"],
+.core-table td a[class*="button-"],
+.lims-actions-cell button[class*="button-"],
+.lims-actions-cell a[class*="button-"] {
 	min-height: var(--ds-control-sm);
 	height: var(--ds-control-sm);
 	padding: 0 var(--ds-3);
@@ -2687,6 +2691,14 @@ a.note-card-title {
 		position: relative;
 	}
 
+	/* 노트 정보 패널의 시료 링크 — 값 줄에 섞인 글자라 높이가 16px 이다.
+	   보이는 크기는 그대로 두고 닿는 범위만 넓힌다(줄 높이를 키우면 패널의
+	   다른 값들과 줄 간격이 어긋난다). */
+	.note-info-box .txt-info-cont a {
+		position: relative;
+	}
+
+	.note-info-box .txt-info-cont a::after,
 	a.button-more-sty02::after,
 	.button-more-sty02::after {
 		content: '';
@@ -2871,8 +2883,21 @@ sup {
 	font-size: var(--ds-fs-micro);
 }
 
+/* 에디터 번들이 도구줄 단추에 padding: 0 10px 를 줘서 안쪽 폭이 10px 밖에
+   안 남는다. x² 와 <> 는 글자가 15~16px 이라 잘린다(실측 1280·1600·1920).
+   여백을 눈금으로 낮추고 최소 폭을 준다. */
 .lims-page .rw-editor-ai .toolbar button {
+	min-width: calc(var(--ds-unit) * 9);
+	padding: 0 var(--ds-2);
 	font-size: var(--ds-fs-cell);
+}
+
+/* 위 규칙이 15장의 손끝 규격(44)과 같은 특이도인데 뒤에 와서 이겨 버렸다.
+   손끝 크기는 폭에 상관없이 지켜야 하므로 여기서 다시 세운다. */
+@media (pointer: coarse) {
+	.lims-page .rw-editor-ai .toolbar button {
+		min-width: var(--ds-control);
+	}
 }
 
 /* ---------------------------------------------------------------------------
@@ -3434,5 +3459,35 @@ select.select-xs,
 
 .lims-note-savestate.is-saved {
 	background: var(--ds-hover);
+	/* ink-4 는 이 회색 바탕(#f3f4f6) 위에서 4.39:1 로 기준(4.5)에 못 미친다.
+	   같은 자리에서 전에도 한 번 걸렸던 조합이다. 한 단 어둡게 간다. */
+	color: var(--ds-ink-3);
+}
+
+/* 잠긴 조작의 사유. title 에만 두면 마우스를 올린 사람만 안다 — 표 안에서
+   왜 못 누르는지는 그 자리에서 읽혀야 한다. 좁으면 줄여서 보여 주고
+   전체 문장은 title 이 갖는다. */
+.lims-lock-rsn {
+	display: inline-block;
+	max-width: 15em;
+	margin-right: var(--ds-2);
+	overflow: hidden;
+	font-size: var(--ds-fs-micro);
+	line-height: var(--ds-lh);
 	color: var(--ds-ink-4);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	vertical-align: middle;
+}
+
+/* 노트 정보 패널의 값 중 다른 화면으로 가는 것은 링크로 보여야 한다.
+   나머지 값과 똑같이 검은 글자면 누를 수 있다는 걸 알 길이 없다. */
+.note-info-box .txt-info-cont a {
+	color: var(--ds-primary);
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+
+.note-info-box .txt-info-cont a:hover {
+	color: var(--ds-primary-dark);
 }

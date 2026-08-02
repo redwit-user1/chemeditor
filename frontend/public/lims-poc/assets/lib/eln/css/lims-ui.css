@@ -544,9 +544,11 @@
 }
 
 /* 삭제 — 되돌릴 수 없는 조작만 휴지통을 준다 */
-/* 삭제 세 자리는 .is-danger 로 옮겼다 — 스타일이 JS 함수 이름에 묶여 있으면
-   이름을 바꾸는 순간 조용히 사라진다. 남은 46종은 아직 [onclick^=] 이다. */
-.lims-page .is-danger::before {
+/* 휴지통은 "지운다"는 뜻이지 "위험하다"는 뜻이 아니다. 반려는 되돌릴 수 있는
+   상태 전이인데 .is-danger 하나에 색과 아이콘을 같이 묶었더니 반려 버튼에도
+   휴지통이 붙었다. 색(.is-danger)과 뜻(.is-delete)을 나눈다. */
+.lims-page button.is-delete::before,
+.lims-page a.is-delete::before {
 	content: '';
 	-webkit-mask-image: url(../img/lucide/trash-2.svg);
 	mask-image: url(../img/lucide/trash-2.svg);

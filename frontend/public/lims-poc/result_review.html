@@ -2616,12 +2616,21 @@
             + ' title="' + esc(blockRsn) + '"><span>기준이탈 조사</span></button>';
         }
         const locked = !!blockRsn;
+        /*
+          한 줄에 채움 버튼은 하나만 둔다. 승인과 반려를 둘 다 채우면 어느 쪽이
+          주 동작인지 안 보이고, 반려가 빨강 채움이면 삭제와 같은 무게로 읽힌다.
+          반려는 되돌릴 수 없는 파괴가 아니라 상태 전이다 — 빨강 계열의 선으로.
+
+          그리고 잠긴 이유를 title 에만 두면 마우스를 올린 사람만 안다.
+          왜 못 누르는지는 그 자리에 적는다.
+        */
         return ''
           + '<div class="button-wrap02">'
+          + (locked ? '  <span class="lims-lock-rsn">' + esc(blockRsn) + '</span>' : '')
           + '  <button class="button-cnfm-sty01' + (locked ? ' disabled' : '') + '"'
           + (locked ? ' title="' + esc(blockRsn) + '"' : '')
           + '          onclick="openApprove(' + r.resultMno + ');"><span>승인</span></button>'
-          + '  <button class="button-remove-sty01"'
+          + '  <button class="button-gray-line-sty01 is-danger"'
           + '          onclick="openReject(' + r.resultMno + ');"><span>반려</span></button>'
           + '</div>';
       }

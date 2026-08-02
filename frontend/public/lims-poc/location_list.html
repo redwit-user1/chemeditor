@@ -5872,7 +5872,7 @@
           <td class="lims-actions-cell">
             <button class="button-blue-line-sty01" onclick="openModalLocation('create', null, '{{=locationMno}}', '{{=locationNm}}', '', 'BOX', '', '');"><span>하위 추가</span></button>
             <button class="button-blue-line-sty01 ma-l5" onclick="openModalLocation('modify', '{{=locationMno}}', null, null, '{{=locationNm}}', '{{=locationTpCcd}}', '{{=barcodePrefix}}', '{{=temperature}}');"><span>수정</span></button>
-            <button class="button-blue-line-sty01 is-danger ma-l5" onclick="openModalLocationDelete('{{=locationMno}}', '{{=locationNm}}');"><span>삭제</span></button>
+            <button class="button-blue-line-sty01 is-danger is-delete ma-l5" onclick="openModalLocationDelete('{{=locationMno}}', '{{=locationNm}}');"><span>삭제</span></button>
           </td>
         </tr>
       </script>
