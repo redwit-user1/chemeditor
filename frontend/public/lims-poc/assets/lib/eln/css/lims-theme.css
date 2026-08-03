@@ -3937,3 +3937,213 @@ span.folder_name:hover,
    inherit 으로 되돌리는 식의 규칙은 쓰지 않는다 — inherit 은 "원래 값"이
    아니라 "부모 값"이라 배경이 엉뚱하게 부모 것으로 바뀐다. 남아 있는
    비활성 홀버는 검사기가 짚어 주는 대로 그 규칙에서 직접 막는다. */
+
+/* ---------------------------------------------------------------------------
+   21) 시간과 층 — 두 개의 눈금
+
+   실측하니 전환 시간이 3종(0.12s 386개 · 0.3s 207개 · 0.15s 35개), 층이
+   92종이었다. 둘 다 "값이 여럿" 자체가 문제라기보다, **뜻과 무관하게**
+   흩어져 있다는 게 문제다. 같은 홀버인데 어떤 버튼은 0.12s 로 즉각
+   반응하고 옆 버튼은 0.3s 로 늘어지면, 느린 쪽이 고장난 것처럼 보인다.
+
+   시간은 두 단만 둔다.
+     --ds-dur     120ms — 제자리에서 색이 바뀌는 것(홀버·초점·선택)
+     --ds-dur-lg  200ms — 없던 면이 생기거나 사라지는 것(모달·펼침·패널)
+   사람이 "즉각"으로 느끼는 상한이 100ms 근처고, 면이 들고 나는 것은
+   그보다 조금 길어야 어디서 왔는지 눈이 따라간다. 그 사이에 값이 더
+   필요할 일은 이 화면들에 없다.
+
+   층은 쓰임새로 이름을 붙인다. 숫자를 직접 적으면 "1060 은 왜 1060 인가"
+   를 아무도 모르고, 새 것이 생길 때마다 +1 씩 올라간다.
+--------------------------------------------------------------------------- */
+:root {
+	--ds-dur: 120ms;
+	--ds-dur-lg: 200ms;
+	--ds-ease: ease;
+
+	--z-sticky: 900;    /* 상단 헤더 */
+	--z-shell: 950;     /* 사이드바 */
+	--z-pop: 1000;      /* 펼침 목록 · 떠 있는 보조 버튼 */
+	--z-panel: 1020;    /* 오른쪽 패널(활동내역·노트 이력) */
+	--z-backdrop: 1050; /* 모달 뒷막 */
+	--z-modal: 1060;
+	--z-toast: 1080;    /* 알림 — 모달 위에서도 보여야 한다 */
+	--z-overlay: 1090;  /* 로딩 가림막 — 조작을 막는 것이니 맨 위 */
+}
+
+/* 제자리 반응 */
+.btn,
+button,
+a,
+input,
+select,
+textarea,
+.dropdown-item,
+.core-table tbody tr,
+.sidenav2 a,
+.nav-link,
+.tab-item {
+	transition-duration: var(--ds-dur);
+	transition-timing-function: var(--ds-ease);
+}
+
+/* 들고 나는 면 */
+.modal.fade .modal-dialog,
+.modal.fade,
+.dropdown-menu,
+.toast,
+[class*='card'] {
+	transition-duration: var(--ds-dur-lg);
+	transition-timing-function: var(--ds-ease);
+}
+
+/*
+  "움직임 줄이기" 를 켠 사용자에게는 전환을 없앤다. 어지럼증·전정기관
+  문제로 이 설정을 켜는 사람이 있고, 운영체제가 알려 주는 값이다.
+*/
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		transition-duration: 1ms !important;
+		animation-duration: 1ms !important;
+		animation-iteration-count: 1 !important;
+		scroll-behavior: auto !important;
+	}
+}
+
+/* --- 층 배정 --- */
+.sticky-sty-01,
+.sticky-top {
+	z-index: var(--z-sticky);
+}
+
+.sidenav2,
+#mySidenav {
+	z-index: var(--z-shell);
+}
+
+.dropdown-menu {
+	z-index: var(--z-pop);
+}
+
+/* 맨 위로 가는 단추가 10000 이었다 — 모달과 로딩 가림막보다 위였다.
+   창이 열려 있는데 그 위에 페이지 단추가 떠 있으면, 지금 무엇을
+   조작하는 중인지가 흐려진다. */
+.top {
+	z-index: var(--z-pop);
+}
+
+#dropdown_history.dropdown-menu,
+#dropdown_note_history.dropdown-menu {
+	z-index: var(--z-panel);
+}
+
+.modal-backdrop {
+	z-index: var(--z-backdrop);
+}
+
+.modal {
+	z-index: var(--z-modal);
+}
+
+.toast-top-right,
+.toast-bottom-right,
+.Toast-bottom-web,
+#toast-container {
+	z-index: var(--z-toast);
+}
+
+#page_progress_div,
+.loadingModal,
+.core-loading {
+	z-index: var(--z-overlay);
+}
+
+/* jQuery UI 달력은 열릴 때 z-index 를 인라인으로 999999999 로 박는다
+   ("무조건 맨 위" 전략이다). 모달 위에 떠야 하는 건 맞지만, 조작을 막으려고
+   깔아 둔 로딩 가림막 위에까지 떠 버린다. 인라인이라 !important 로만 잡힌다. */
+#ui-datepicker-div {
+	z-index: var(--z-toast) !important;
+}
+
+/* ---------------------------------------------------------------------------
+   22) 떠 있는 판 '안쪽' 글자
+
+   §12-1-b 에서 판의 크기는 체계에 넣었는데 글자는 넣지 않았다. 그래서
+   참여자 팝오버 하나 안에서 네 줄이 연달아 16 → 15 → 18 → 22px 로 뛴다.
+
+     프로젝트 참여자      16px w700     ← 판 제목
+     표적단백질 저해제 발굴  15px w400     ← 부제
+     전체 참여자           18px w700     ← 구획 제목  (제목보다 크다)
+     (4)                  22px w500     ← 개수      (그 라벨보다 또 크다)
+
+   위계가 거꾸로다. 제목보다 그 아래 구획이 크고, 구획 제목보다 괄호 안
+   숫자가 더 크다. 눈은 큰 글자를 먼저 읽으므로, 이 판을 열면 제일 먼저
+   보이는 것이 "(4)" 라는 괄호다.
+
+   16px 은 애초에 눈금(11·12·13·14·15·18·22·26)에 없는 값이다 — 판 안쪽이
+   체계 밖에 있었다는 증거고, 알림함·활동내역 패널도 같은 16px 을 쓴다.
+
+   판 안쪽의 위계는 세 단이면 충분하다.
+     판 제목   15px w700
+     구획·부제 14px w500 / w400
+     보조      12px w400
+--------------------------------------------------------------------------- */
+/* style.css 의 원본 선택자가 #id.dropdown-menu .부모 .자식((1,3,0)) 이라
+   (1,1,0) 으로는 닿지 않는다. 같은 자리에서 받는다. */
+#dropdown_member.dropdown-menu .member_top .member_title,
+#dropdown_alarm.dropdown-menu .alarm_title,
+#dropdown_history.dropdown-menu .dropdown_header .title,
+#dropdown_note_history.dropdown-menu .dropdown_header .title {
+	font-size: var(--ds-fs-card);
+	font-weight: var(--ds-fw-bold);
+	line-height: var(--ds-lh);
+}
+
+#dropdown_member.dropdown-menu .member_top .projectNm {
+	font-size: var(--ds-fs-body);
+	font-weight: 400;
+	line-height: var(--ds-lh);
+	color: var(--ds-ink-3);
+}
+
+/* 구획 제목과 그 옆 개수는 한 덩어리다 — 크기가 갈리면 두 개로 읽힌다 */
+#dropdown_member.dropdown-menu .member_cont .sub-title-sty02,
+#dropdown_member .member_cont .sub-title-sty02 span,
+#dropdown_member .member_cont .title_cnt,
+#dropdown_member .member_cont .memberCnt {
+	font-size: var(--ds-fs-body);
+	font-weight: var(--ds-fw-medium);
+	line-height: var(--ds-lh);
+}
+
+#dropdown_member .member_cont .title_cnt,
+#dropdown_member .member_cont .memberCnt {
+	color: var(--ds-ink-4);
+}
+
+/* 날짜 범위·건수 */
+#dropdown_history.dropdown-menu .dropdown_header .date_txt,
+#dropdown_history.dropdown-menu .dropdown_header .date_txt span,
+#dropdown_history.dropdown-menu .dropdown_header .sch_cnt,
+#dropdown_history.dropdown-menu .dropdown_header .sch_cnt span,
+#dropdown_note_history.dropdown-menu .dropdown_header .date_txt,
+#dropdown_note_history.dropdown-menu .dropdown_header .sch_cnt {
+	font-size: var(--ds-fs-body);
+	font-weight: var(--ds-fw-medium);
+	line-height: var(--ds-lh);
+}
+
+/* 비어 있을 때의 안내 — 판에서 가장 큰 글자일 이유가 없다 */
+#dropdown_member .no-data span,
+#dropdown_alarm .no-data span,
+#dropdown_history .no-data span,
+#dropdown_note_history .no-data span,
+#dropdown_alarm .alarm_cont .alarm_content > span,
+#dropdown_history .dropdown_content > span {
+	font-size: var(--ds-fs-body);
+	font-weight: 400;
+	line-height: var(--ds-lh);
+	color: var(--ds-ink-4);
+}

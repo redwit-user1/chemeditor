@@ -4185,10 +4185,10 @@
         if (!$('#dropdown_note_history #schHistStartDe').text()) {
           $('#dropdown_note_history')
             .find('#schHistStartDe')
-            .text(dayjs().subtract(6, 'days').format('YYYY.MM.DD'))
+            .text(dayjs().subtract(6, 'days').format('YYYY-MM-DD'))
             .end()
             .find('#schHistEndDe')
-            .text(dayjs().format('YYYY.MM.DD'));
+            .text(dayjs().format('YYYY-MM-DD'));
         }
 
         $('#dropdown_note_history')
@@ -4214,10 +4214,10 @@
               case '1W':
                 $('#dropdown_note_history')
                   .find('#schHistStartDe')
-                  .text(dayjs().subtract(6, 'days').format('YYYY.MM.DD'))
+                  .text(dayjs().subtract(6, 'days').format('YYYY-MM-DD'))
                   .end()
                   .find('#schHistEndDe')
-                  .text(dayjs().format('YYYY.MM.DD'))
+                  .text(dayjs().format('YYYY-MM-DD'))
                   .end()
                   .find('#dropdownSchPeriod .txt')
                   .text($target.find('.txt').text())
@@ -4228,10 +4228,10 @@
               case '1M':
                 $('#dropdown_note_history')
                   .find('#schHistStartDe')
-                  .text(dayjs().subtract(1, 'month').add(1, 'days').format('YYYY.MM.DD'))
+                  .text(dayjs().subtract(1, 'month').add(1, 'days').format('YYYY-MM-DD'))
                   .end()
                   .find('#schHistEndDe')
-                  .text(dayjs().format('YYYY.MM.DD'))
+                  .text(dayjs().format('YYYY-MM-DD'))
                   .end()
                   .find('#dropdownSchPeriod .txt')
                   .text($target.find('.txt').text())
@@ -4242,10 +4242,10 @@
               case '3M':
                 $('#dropdown_note_history')
                   .find('#schHistStartDe')
-                  .text(dayjs().subtract(3, 'month').add(1, 'days').format('YYYY.MM.DD'))
+                  .text(dayjs().subtract(3, 'month').add(1, 'days').format('YYYY-MM-DD'))
                   .end()
                   .find('#schHistEndDe')
-                  .text(dayjs().format('YYYY.MM.DD'))
+                  .text(dayjs().format('YYYY-MM-DD'))
                   .end()
                   .find('#dropdownSchPeriod .txt')
                   .text($target.find('.txt').text())
@@ -4271,10 +4271,10 @@
                 }
                 $('#dropdown_note_history')
                   .find('#schHistStartDe')
-                  .text(dayjs(beginDe).format('YYYY.MM.DD'))
+                  .text(dayjs(beginDe).format('YYYY-MM-DD'))
                   .end()
                   .find('#schHistEndDe')
-                  .text(dayjs(endDe).format('YYYY.MM.DD'))
+                  .text(dayjs(endDe).format('YYYY-MM-DD'))
                   .end()
                   .find('#dropdownSchPeriod .txt')
                   .text($target.find('.txt').text())
@@ -6168,7 +6168,7 @@
                 >생성일자</div>
                 <div
                   class="txt-info-cont"
-                >2026.07.12</div>
+                >2026-07-12</div>
                 
               </div>
               <div class="flex-sty06 ma-t8">
@@ -7174,6 +7174,9 @@
         <script src="assets/core/lib/dayjs.min.js"></script>
 
         <script src="assets/core/js/s2.util.js"></script>
+
+        <!-- 모달 키보드 조작 — tabindex/초점/Esc/창 이름. 부트스트랩 뒤에 와야 한다 -->
+        <script src="assets/lib/eln/js/lims-modal-a11y.js"></script>
 
         <script type="text/javascript">
             /*<![CDATA[*/

@@ -315,9 +315,9 @@
                 let project = res.projectListInfo.dataList[idx];
                 project['memberCntStr'] = S2Util.comma(project.memberCnt);
                 project['noteCntStr'] = S2Util.comma(project.noteCnt);
-                project['beginDe'] = S2Util.dateFormat(project.beginDe, '.');
-                project['endDe'] = S2Util.dateFormat(project.endDe, '.');
-                project['cmpltnDe'] = S2Util.dateFormat(project.cmpltnDe, '.');
+                project['beginDe'] = S2Util.dateFormat(project.beginDe, '-');
+                project['endDe'] = S2Util.dateFormat(project.endDe, '-');
+                project['cmpltnDe'] = S2Util.dateFormat(project.cmpltnDe, '-');
 
                 $target.append(
                   S2Util.s2Template(
@@ -902,7 +902,7 @@
 
                 if (note['sharedYn'] === 'Y') {
                   dateNm = '열람기간'; // 열람기간
-                  dateStr = `${S2Util.dateFormat(note['shareBeginDe'], '.')} - ${S2Util.dateFormat(note['shareEndDe'], '.')}`;
+                  dateStr = `${S2Util.dateFormat(note['shareBeginDe'], '-')} - ${S2Util.dateFormat(note['shareEndDe'], '-')}`;
                 } else {
                   switch (note['writeStatusCcd']) {
                     case 'COMPLETE':
@@ -1214,8 +1214,8 @@
                 project['completeNoteCntStr'] = S2Util.comma(project.completeNoteCnt);
                 project['categoryNm'] = project.categoryNm ? project.categoryNm : '정보없음';
                 project['crrntProcessNm'] = project.crrntProcessNm ? project.crrntProcessNm : '정보없음';
-                project['beginDe'] = S2Util.dateFormat(project.beginDe, '.');
-                project['endDe'] = S2Util.dateFormat(project.endDe, '.');
+                project['beginDe'] = S2Util.dateFormat(project.beginDe, '-');
+                project['endDe'] = S2Util.dateFormat(project.endDe, '-');
                 project['keywords'] = project.keywords ? project.keywords : '';
 
                 projectObject.target.find('.project-card ul').append(
@@ -4564,6 +4564,9 @@
         <script src="assets/core/lib/dayjs.min.js"></script>
 
         <script src="assets/core/js/s2.util.js"></script>
+
+        <!-- 모달 키보드 조작 — tabindex/초점/Esc/창 이름. 부트스트랩 뒤에 와야 한다 -->
+        <script src="assets/lib/eln/js/lims-modal-a11y.js"></script>
 
         <script type="text/javascript">
             /*<![CDATA[*/

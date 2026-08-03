@@ -2626,7 +2626,9 @@
         */
         return ''
           + '<div class="button-wrap02">'
-          + (locked ? '  <span class="lims-lock-rsn">' + esc(blockRsn) + '</span>' : '')
+          /* 사유는 15em 에서 잘린다 — 전문은 title 이 갖는다.
+             CSS 주석에 그렇게 적어 두고 정작 여기서 안 붙이고 있었다. */
+          + (locked ? '  <span class="lims-lock-rsn" title="' + esc(blockRsn) + '">' + esc(blockRsn) + '</span>' : '')
           + '  <button class="button-cnfm-sty01' + (locked ? ' disabled' : '') + '"'
           + (locked ? ' title="' + esc(blockRsn) + '"' : '')
           + '          onclick="openApprove(' + r.resultMno + ');"><span>승인</span></button>'
@@ -2939,7 +2941,7 @@
 
                 if (note['sharedYn'] === 'Y') {
                   dateNm = '열람기간'; // 열람기간
-                  dateStr = `${S2Util.dateFormat(note['shareBeginDe'], '.')} - ${S2Util.dateFormat(note['shareEndDe'], '.')}`;
+                  dateStr = `${S2Util.dateFormat(note['shareBeginDe'], '-')} - ${S2Util.dateFormat(note['shareEndDe'], '-')}`;
                 } else {
                   switch (note['writeStatusCcd']) {
                     case 'COMPLETE':
@@ -3251,8 +3253,8 @@
                 project['completeNoteCntStr'] = S2Util.comma(project.completeNoteCnt);
                 project['categoryNm'] = project.categoryNm ? project.categoryNm : '정보없음';
                 project['crrntProcessNm'] = project.crrntProcessNm ? project.crrntProcessNm : '정보없음';
-                project['beginDe'] = S2Util.dateFormat(project.beginDe, '.');
-                project['endDe'] = S2Util.dateFormat(project.endDe, '.');
+                project['beginDe'] = S2Util.dateFormat(project.beginDe, '-');
+                project['endDe'] = S2Util.dateFormat(project.endDe, '-');
                 project['keywords'] = project.keywords ? project.keywords : '';
 
                 projectObject.target.find('.project-card ul').append(
@@ -6272,6 +6274,9 @@
         <script src="assets/core/lib/dayjs.min.js"></script>
 
         <script src="assets/core/js/s2.util.js"></script>
+
+        <!-- 모달 키보드 조작 — tabindex/초점/Esc/창 이름. 부트스트랩 뒤에 와야 한다 -->
+        <script src="assets/lib/eln/js/lims-modal-a11y.js"></script>
 
         <script type="text/javascript">
             /*<![CDATA[*/

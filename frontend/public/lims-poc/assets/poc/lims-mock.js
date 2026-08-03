@@ -1104,8 +1104,16 @@
     '/api/eln/folder/projectFolderList': function () { return { folderList: [] }; },
     '/api/eln/folder/myFolderList': function () { return { folderList: [] }; },
     '/api/eln/project/projectFolderProcessList': function () { return { folderList: [], processList: [] }; },
+    /*
+      참여자는 프로젝트마다 다르다. 여기서 USERS 를 통째로 돌려주면 팝오버의
+      인원수가 카드 배지(ELN_PROJECTS[].memberCnt)와 어긋난다 — 같은 화면에서
+      같은 값이 둘로 갈리는 것이라, 보는 사람은 어느 쪽을 믿어야 할지 모른다.
+      배지가 곧 이 목록의 길이가 되게 프로젝트별로 잘라 준다.
+    */
     '/api/eln/member/projectMemberList': function (p) {
-      return { memberListInfo: page(USERS, p.pageNo, p.pageUnit) };
+      var mno = Number(p.schProjectMno || p.projectMno) || 301;
+      var rows = projectMembers(mno);
+      return { memberListInfo: page(rows, p.pageNo, p.pageUnit) };
     },
     /*
       에디터로 연구노트 만들기. 여기서 실제로 목록에 넣어야 "만들었는데 없다"가
@@ -1170,6 +1178,36 @@
   /* 사용자 선택 팝업 — 여러 화면이 같은 응답 키를 쓴다. */
   function userListResponse(p) {
     return { userListInfo: page(USERS, p.pageNo, p.pageUnit) };
+  }
+
+  /*
+    프로젝트 참여자. 카드가 보여 주는 memberCnt 만큼을 USERS 에서 돌려 뽑아
+    쓴다 — 두 숫자가 같은 곳에서 나와야 어긋나지 않는다.
+    첫 사람이 책임자(role1), 나머지는 연구원(role0)이다. 화면의
+    template_project_card_member 가 쓰는 필드를 그대로 채운다.
+  */
+  function projectMembers(projectMno) {
+    var project = null;
+    for (var i = 0; i < ELN_PROJECTS.length; i++) {
+      if (ELN_PROJECTS[i].projectMno === Number(projectMno)) { project = ELN_PROJECTS[i]; break; }
+    }
+    var n = project ? project.memberCnt : USERS.length;
+    var out = [];
+    for (var k = 0; k < n; k++) {
+      var u = USERS[k % USERS.length];
+      var lead = k === 0;
+      out.push({
+        userMno: u.userMno, userNm: u.userNm, orztNm: u.orztNm,
+        email: u.userNm === '김연구' ? 'kim@kmedihub.re.kr'
+          : u.userNm === '박연구' ? 'park@kmedihub.re.kr'
+          : u.userNm === '이연구' ? 'lee@kmedihub.re.kr' : 'qa@kmedihub.re.kr',
+        fileId: '',
+        projectMemberRoleCcd: lead ? '1' : '0',
+        projectMemberRoleCcdNm: lead ? '책임자' : '연구원',
+        authGrpNm: u.authGrpNm
+      });
+    }
+    return out;
   }
 
   /* 쓰기 계열은 성공만 돌려준다. 화면은 곧바로 목록을 다시 읽고, 값은 고정 데이터라 그대로다.
@@ -1329,10 +1367,20 @@
   }
 
   function respond(path, params) {
-    if (/userList|userOption|memberList/i.test(path)) {
-      return userListResponse(params);
-    }
+    /*
+      이 지름길이 /api/eln/member/projectMemberList 를 통째로 가로채고 있었다.
+      결과가 둘이었다.
+        1) userListResponse 는 봉투(envelope)를 안 거쳐서 status 가 없다 —
+           화면은 data.status.result 를 읽으므로 콜백이 터진다. 그래서
+           프로젝트 카드의 참여자 팝오버가 열려도 목록이 채워지지 않고
+           "전체 참여자 (0)" 로 남았다(카드 배지는 4 인데).
+        2) 밑에 있던 전용 핸들러는 한 번도 불리지 않는 죽은 코드였다.
+      전용 핸들러가 있으면 그쪽이 먼저다. 지름길은 못 찾았을 때만.
+    */
     var handler = HANDLERS[path];
+    if (!handler && /userList|userOption|memberList/i.test(path)) {
+      return envelope(userListResponse(params));
+    }
     var body;
     if (handler) {
       body = handler(params);
