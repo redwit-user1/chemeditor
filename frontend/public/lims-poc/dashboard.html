@@ -385,7 +385,7 @@
                             <div if="isProgress">
                               <div if="isOwner" class="icon-option-wrap dropdown">
                                 <a href="#" class="icon-option" aria-label="더 보기" id="dropdownOptionBtn${note.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
-                                <div id="dropdown_option" class="dropdown-menu" aria-labelledby="dropdownOptionBtn${note.idx}">
+                                <div id="dropdown_option" class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownOptionBtn${note.idx}">
                                   <div class="option_title">${'연구노트 옵션'}</div>
                                   <div class="option_list">
                                     <a else="isProject" href="#" onclick="gfn_openModalNoteProjectSelect(${note.noteMno}, this); return false;" class="dropdown-item">${'프로젝트 선택'}</a>
@@ -397,7 +397,7 @@
                               </div>
                               <div if="isGnrlYn" else="isOwnerNm" class="icon-option-wrap dropdown">
                                 <a href="#" class="icon-option" aria-label="더 보기" id="dropdownOptionBtn${note.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
-                                <div id="dropdown_option" class="dropdown-menu" aria-labelledby="dropdownOptionBtn${note.idx}">
+                                <div id="dropdown_option" class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownOptionBtn${note.idx}">
                                   <div class="option_title">${'연구노트 옵션'}</div>
                                   <div class="option_list">
                                     <a href="#" onclick="gfn_openModalNoteMemberMandate(${note.noteMno})" class="dropdown-item">${'연구노트 위임'}</a>
@@ -545,7 +545,7 @@
                         </div>
                         <div if="isGnrlAuthYn" class="icon-option-wrap dropdown">
                           <a href="#" class="icon-option" aria-label="더 보기" id="dropdownOptionBtn" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" ></a>
-                          <div id="dropdown_option" class="dropdown-menu" aria-labelledby="dropdownOptionBtn">
+                          <div id="dropdown_option" class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownOptionBtn">
                             <div class="option_title">${'연구폴더 옵션'}</div>
                             <div class="option_list">
                               <a href="#" onclick="gfn_openModalModifyFolder(this);" class="dropdown-item">${'폴더명 수정'}</a>
@@ -666,7 +666,7 @@
                               <div class="txt-box flex-sty02">
                                 <div class="txt-box1 dropdown ma-r10">
                                   <a href="#" onclick="gfn_getProjectCardMemberList(this); return false;" class="memberBtn memberCnt" id="dropdownMemberBtn${project.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" >${project.memberCntStr}</a>
-                                  <div id="dropdown_member" class="dropdown-menu" aria-labelledby="dropdownMemberBtn${project.idx}">
+                                  <div id="dropdown_member" class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMemberBtn${project.idx}">
                                     <div class="member_top">
                                       <div class="member_title">${'프로젝트 참여자'}</div>
                                       <div class="projectNm">${project.projectNm}</div>
@@ -687,7 +687,7 @@
                             </div>
                             <div if="isGnrlAuthYn" class="icon-option-wrap dropdown">
                               <a href="#" class="icon-option" aria-label="더 보기" id="dropdownOptionBtn${project.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
-                              <div id="dropdown_option" class="dropdown-menu" aria-labelledby="dropdownOptionBtn${project.idx}">
+                              <div id="dropdown_option" class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownOptionBtn${project.idx}">
                                 <div class="option_title">${'프로젝트 옵션'}</div>
                                 <div class="option_list">
                                   <a href="#" onclick="S2Util.goPage('/eln/project/modifyProject', {schProjectMno: ${project.projectMno}}); return false;" class="dropdown-item">${'프로젝트 수정'}</a>
@@ -699,7 +699,7 @@
                             </div>
                             <div class="icon-option-wrap dropdown">
                               <a if="isAdmin" href="#" class="icon-option" aria-label="더 보기" id="dropdownOptionBtn${project.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
-                              <div id="dropdown_option" class="dropdown-menu" aria-labelledby="dropdownOptionBtn${project.idx}">
+                              <div id="dropdown_option" class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownOptionBtn${project.idx}">
                                 <div class="option_title">${'프로젝트 옵션'}</div>
                                 <div class="option_list">
                                   <a if="isPerformanceRegistered" href="#" onclick="gfn_openModalProjectPerformanceUnregister(${project.projectMno}, '${project.projectNm}'); return false;" class="dropdown-item text-danger">${'진도관리프로젝트 제외'}</a>
@@ -3188,7 +3188,7 @@
                     </a>
 
                     <div id="dropdown_alarm"
-                         class="dropdown-menu"
+                         class="dropdown-menu dropdown-menu-end"
                          aria-labelledby="dropdownAlarmBtn">
                       <div class="alarm_title">알림</div>
                       <div class="alarm_cont">
@@ -3237,7 +3237,7 @@
                          aria-expanded="false"></a>
 
                       <div id="dropdown_profile"
-                           class="dropdown-menu"
+                           class="dropdown-menu dropdown-menu-end"
                            aria-labelledby="dropdownProfileBtn">
                         <div class="profile_info">
                           <div class="name">김연구</div>

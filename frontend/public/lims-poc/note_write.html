@@ -5869,7 +5869,9 @@
       <div id="main-header">
         <div class="flex-sty04 main-title-sty03 po-r">
           <div class="flex-sty02">
-            <a
+            
+            <button
+              type="button"
               class="btn_back c-pointer button-gray-line-sty01 go-main"
               onclick="note_prevPage()"
             >
@@ -5877,7 +5879,7 @@
               <span
                 class="ma-l5 go-main-txt"
               >이전 페이지</span>
-            </a>
+            </button>
             <div
               class="editor_type ma-l20 EDITOR"
             ></div>
@@ -5892,22 +5894,7 @@
           </div>
           <div class="flex-sty02">
             <div class="button-wrap pa-r20 pa-0">
-              <button
-                class="button-sty002 calc"
-                onclick="
-                  window.open(
-                    '/calc/calcul_design.html',
-                    'Calculator',
-                    'width=1000,height=650,location=no,status=no,scrollbars=yes'
-                  )
-                "
-              >
-                <img
-                  src="assets/calc/calc.png"
-                  alt="계산기 아이콘"
-                  style="width: 15px; height: 20px" />
-                수학수식 입력기
-              </button>
+              
               
               <div
                 id="dropdown_note_history"
@@ -6083,7 +6070,7 @@
               ></a>
               <div
                 id="dropdown_option"
-                class="dropdown-menu"
+                class="dropdown-menu dropdown-menu-end"
                 aria-labelledby="dropdownOptionBtn{{=idx}}"
               >
                 <div
