@@ -4844,3 +4844,10 @@ input.form-check-input.btn {
 .lims-page .lims-actions-cell a.c-pointer:hover {
 	color: var(--ds-primary-dark) !important;
 }
+
+/* 세션 연장 줄 — 누르면 연장되는데 홀버에 아무 반응이 없었다 */
+.auth_time > a:hover {
+	color: var(--ds-primary) !important;
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}

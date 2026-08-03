@@ -5678,10 +5678,12 @@
           </div>
           <div class="wrap_info flex-sty04 ms-auto">
             <div class="py-3">
+              
               <div class="auth_time"
-                   sec:authorize="isAuthenticated()"
+                   sec:authorize="isAuthenticated()">
+                <a href="#"
+                   title="세션 연장"
                    onclick="javascript:eGovUnitTop.reqTimeAjax();return false;">
-                <a href="#">
                   <span class="session_txt">세션만료 남은시간</span> <span id="leftTimeInfoEgovUnitTop"
                         >00:00:00</span>
                 </a>
