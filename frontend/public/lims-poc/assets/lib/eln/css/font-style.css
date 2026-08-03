@@ -109,12 +109,23 @@
 
 
 
+/*
+  이 세 줄이 화면 전체의 바닥값이었다.
+    line-height: 24px  — 고정 픽셀이라 글자 크기가 바뀌어도 안 따라온다
+    font-size: 16px    — ELN 옛 기준. lims-theme.css:162 가 :where(body,…) 로
+                         14px 을 주지만 :where() 는 특이도 0 이라 (0,0,1)짜리
+                         이 규칙에 진다. 고치려고 쓴 규칙이 닿지 않고 있었다
+    color: !important  — 뒤에 오는 어떤 규칙도 못 이긴다
+  눈금 위의 값으로 바꾸고 !important 를 뗀다.
+  font-family 는 pretendard.css 가 뒤에서 덮지만, 여기 남겨 두면 그 파일이
+  안 실리는 화면에서 되살아난다 — 출처를 하나로 모은다.
+*/
 body {
-    line-height: 24px;
-    font-family: 'Noto Sans', 'Malgun Gothic', Dotum, Helvetica, 'Apple SD Gothic Neo', Sans-serif;
+    line-height: var(--ds-lh);
+    font-family: var(--ds-font);
     font-weight: 400;
-    font-size:16px; 
-	color:#212529 !important;
+    font-size: var(--ds-fs-body);
+    color: var(--ds-ink);
     letter-spacing: -0.7px;
     word-break: normal;
     -webkit-text-size-adjust: none;

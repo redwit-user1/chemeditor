@@ -2685,6 +2685,23 @@
          onDone 은 성공/실패와 무관하게 정확히 한 번 호출된다 — 호출측이 다음 ajax 를
          안전하게 이어붙이기 위한 것이다.
       --------------------------------------------------------------- */
+      /*
+        대상 시료 줄. 값이 오면 그리고, 안 오면 줄 자체를 안 그린다.
+        경로는 /lims/sample/sampleDetails, 파라미터는 schSampleMno 다 —
+        화면 경로와 API 경로가 sampleDetail/sampleDetails 로 한 글자 차이라
+        틀리기 쉽다(LimsSampleController:80·121).
+      */
+      function paintNoteSample(note) {
+        const $row = $('#note-sample-row');
+        const $a = $('#note-sample-link');
+        if (!$row.length) return;
+        if (!note || !note.sampleMno || !note.sampleNo) { $row.hide(); return; }
+        $a.attr('href', '/lims/sample/sampleDetails?schSampleMno=' + encodeURIComponent(note.sampleMno))
+          .text(note.sampleNo)
+          .attr('title', note.sampleNm || note.sampleNo);
+        $row.show();
+      }
+
       function loadNoteDetail(onDone) {
         const done = typeof onDone === 'function' ? onDone : function () {};
 
@@ -2705,6 +2722,7 @@
             $('#noteWriteDt').text(note.writeDtStr || todayStr())
               .toggleClass('is-empty', false);
             $('#noteMnoDisp').text(gNoteMno ? gNoteMno : '(임시)');
+            paintNoteSample(note);
             /* 상태 라벨은 공통코드 어휘를 그대로 쓴다 — 화면마다 다른 말을 쓰지 않는다. */
             const STATUS_NM = {
               DRAFT: '임시저장', WRITING: '작성중', INSPECTION: '점검중',
@@ -4133,7 +4151,17 @@
           return;
         }
 
-        ajaxPost('/api/lims/project/noteReagentUsage', { schNoteMno: noteMno }, null, function (res) {
+        /*
+          ajaxPost 가 아니라 ajaxPostSingleton 이다.
+          core.request.js 의 reqAjax 는 isRequest 플래그로 동시 요청을 하나만
+          통과시키고 나머지를 조용히 버린다. 노트 화면은 열릴 때 세 개를 잇달아
+          부른다 — 이력 바인딩 · 시약 사용 · 화학량론 요약. 그래서 첫 번째만
+          살고 나머지 둘은 응답이 오기도 전에 사라졌고, 두 패널이 늘 비어 있었다.
+          (실측: .note-reagent-usage-list innerHTML 길이 0. 같은 호출을 손으로
+           다시 쏘면 3건이 온다 — 데이터가 없는 게 아니라 콜백이 안 불린 것이다)
+          읽기 전용 조회라 동시에 나가도 서로 간섭할 일이 없다.
+        */
+        ajaxPostSingleton('/api/lims/project/noteReagentUsage', { schNoteMno: noteMno }, null, function (res) {
           const $target = $box.find('.note-reagent-usage-list').empty();
 
           /*
@@ -6190,7 +6218,10 @@
                 </div>
               </div>
               
-              <div class="flex-sty06 ma-t8">
+              
+              <div id="note-sample-row"
+                   class="flex-sty06 ma-t8"
+                   style="display: none">
                 <div class="icon_box">
                   <img
                     src="assets/lib/eln/img/icon_project_s.png"
@@ -6198,9 +6229,9 @@
                     style="width: 10px" />
                 </div>
                 <div class="txt-info-txt ma-l5 txt_ellipsis">대상 시료</div>
-                <div class="txt-info-cont txt_ellipsis"
-                     title="KM00003710 합성 원료 (batch A)">
-                  <a href="#">SMP-20260712-001</a>
+                <div class="txt-info-cont txt_ellipsis">
+                  <a id="note-sample-link"
+                     href="#">SMP-00000000-000</a>
                 </div>
               </div>
 
@@ -6757,7 +6788,9 @@
           ? '/api/lims/stoich/projectStoich'
           : '/api/lims/stoich/noteStoich';
 
-        ajaxPost(url, buildParams(), loadingMsg, function (res) {
+        /* 노트 화면이 열릴 때 다른 조회와 동시에 나간다 — ajaxPost 는 그때
+           나중 것을 버린다(core.request.js 의 isRequest). 읽기라 동시 허용. */
+        ajaxPostSingleton(url, buildParams(), loadingMsg, function (res) {
           onDone(res.stoich || {});
         });
       }

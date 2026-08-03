@@ -519,10 +519,17 @@
      구조 하나와 반응 시약 표가 이미 들어 있는 노트를 연다 —
      분자식·분자량은 mkcompounds.py 가 RDKit 으로 계산한 값 그대로다.
   --------------------------------------------------------------- */
+  /*
+    sampleMno/sampleNo/sampleNm 은 아직 서버가 안 주는 값이다. 스키마에는
+    반대 방향(PL_LIMS_SAMPLE.NOTE_MNO — 시료를 만들어낸 노트)만 있고,
+    노트에서 시료로 가는 칸이 없다. 시연에서 그 왕복을 보여 주려고 여기에만
+    넣는다 — 화면은 값이 없으면 줄을 안 그리므로, 서버가 안 줘도 깨지지 않는다.
+  */
   var NOTE = {
     noteMno: 9101, noteNm: 'KM00003710 합성 — batch A',
     projectMno: 301, projectNm: '표적단백질 저해제 발굴',
-    writerNm: '이연구', writeDtStr: '2026-07-12 17:40', statusCcd: 'WRITING'
+    writerNm: '이연구', writeDtStr: '2026-07-12 17:40', statusCcd: 'WRITING',
+    sampleMno: 5001, sampleNo: 'SMP-20260712-001', sampleNm: 'KM00003710 합성 원료 (batch A)'
   };
 
   var NOTE_SEED = (window.LIMS_POC_COMPOUNDS || [])[0] || {};
@@ -623,11 +630,11 @@
   var nextNoteMno = 9110;
 
   var SAMPLE_NOTES = [
-    { noteMno: 9101, noteNm: 'KM00003710 합성 — batch A', projectNm: '표적단백질 저해제 발굴',
+    { noteMno: 9101, sampleMno: 5001, noteNm: 'KM00003710 합성 — batch A', projectNm: '표적단백질 저해제 발굴',
       createUserNm: '이연구', modifyDtStr: '2026-07-12 17:40', writeStatusCcd: 'COMPLETE' },
-    { noteMno: 9102, noteNm: 'HPLC 순도 분석 (M-HPLC-001 v3)', projectNm: '표적단백질 저해제 발굴',
+    { noteMno: 9102, sampleMno: 5001, noteNm: 'HPLC 순도 분석 (M-HPLC-001 v3)', projectNm: '표적단백질 저해제 발굴',
       createUserNm: '김연구', modifyDtStr: '2026-07-27 14:22', writeStatusCcd: 'INSPECTION' },
-    { noteMno: 9104, noteNm: '분주 A03 이동 기록', projectNm: '표적단백질 저해제 발굴',
+    { noteMno: 9104, sampleMno: 5002, noteNm: '분주 A03 이동 기록', projectNm: '표적단백질 저해제 발굴',
       createUserNm: '박연구', modifyDtStr: '2026-07-14 09:05', writeStatusCcd: 'WRITING' }
   ];
 
@@ -671,8 +678,16 @@
       띄웠다. 시연에서는 시료와 연구노트가 이어진다는 사실 자체가 보여야 하므로
       샘플을 넣는다. 실제 연동 시 이 핸들러만 지우면 된다.
     */
-    '/api/lims/sample/sampleNoteList': function () {
-      return { noteList: SAMPLE_NOTES };
+    '/api/lims/sample/sampleNoteList': function (p) {
+      /*
+        전에는 인자를 받지도 않고 늘 같은 세 건을 돌려줬다. 시료를 바꿔 열어도
+        연결 노트가 그대로라, 이 목록이 "이 시료의" 노트라는 사실 자체가
+        화면에서 부정됐다. 시료마다 다르게 준다.
+      */
+      var mno = Number(p && (p.schSampleMno || p.sampleMno)) || 0;
+      if (!mno) { return { noteList: SAMPLE_NOTES }; }
+      var byNote = SAMPLE_NOTES.filter(function (n) { return (n.sampleMno || 5001) === mno; });
+      return { noteList: byNote };
     },
     '/api/lims/sample/projectOptionList': function () {
       return { optionList: [

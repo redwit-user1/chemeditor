@@ -640,13 +640,13 @@ body,
 	width: auto;
 	min-width: 20px;
 	margin-left: 0;
-	padding: 0 6px;
+	padding: 0 var(--ds-2);
 	border-radius: var(--ds-pill);
 	background: var(--ds-hover);
 	color: var(--ds-ink-3) !important;
 	font-size: var(--ds-fs-micro);
-	font-weight: 500;
-	line-height: 18px;
+	font-weight: var(--ds-fw-medium);
+	line-height: var(--ds-5);
 }
 
 .nav-list-wrap .nav-list-top .nav-list-all {
@@ -660,11 +660,18 @@ body,
 	/* flex 로 두면 text-overflow 가 먹지 않아 글자가 그냥 잘린다. 블록으로 둔다. */
 	display: block;
 	min-height: var(--ds-8);
-	padding: calc((var(--ds-8) - 1em * 1.3) / 2) var(--ds-2);
+	/*
+	  전에는 padding: calc((var(--ds-8) - 1em * 1.3) / 2) 로 세로 가운데를
+	  맞췄다. 계산은 맞지만 나오는 값이 8.2px 이다 — 눈금에도 없고 4의 배수도
+	  아니라, 사이드바 한 줄이 사이트에서 가장 흔한 어긋난 여백이 됐다(322건).
+	  높이를 여백+줄높이로 직접 쌓으면 같은 32px 이 나오면서 값이 눈금 위에 선다.
+	    8 + 16 + 8 = 32 = --ds-8
+	*/
+	padding: var(--ds-2);
+	line-height: var(--ds-4);
 	border-radius: calc(var(--ds-radius) - 2px);
 	color: var(--ds-ink-3) !important;
 	font-size: var(--ds-fs-small);
-	line-height: var(--ds-lh-tight);
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -4146,4 +4153,199 @@ textarea,
 	font-weight: 400;
 	line-height: var(--ds-lh);
 	color: var(--ds-ink-4);
+}
+
+/* ---------------------------------------------------------------------------
+   23) 남은 여백을 4의 배수 위로
+
+   렌더된 픽셀 기준으로 안쪽 여백을 전수로 세니 1029건이 눈금 밖이었다.
+   글자 크기·굵기·글꼴은 이미 0인데 여백만 남은 이유가 있다 — 타이포는
+   눈에 띄어서 여러 번 훑었고, 여백은 "조금 다른" 정도라 그냥 지나갔다.
+   5·6·9·10·13·14·15·18·21·23·27·30·55·90 같은 값들이다.
+
+   기준은 하나다. **4의 배수인가.** 눈금(4·8·12·16·20·24·32·40)에 이름이
+   붙은 값이 있고, 28·36 처럼 이름은 없지만 아이콘 자리 같은 합성값으로
+   나오는 것들이 있다. 둘 다 4의 배수라 줄이 맞는다. 5px 은 그렇지 않다 —
+   옆 칸이 4px 이면 1px 이 어긋나고, 그 1px 이 표 한 줄에 여덟 번 쌓인다.
+
+   여기서는 원본 파일이 lims-theme 보다 앞서서 이기고 있는 자리만 되받는다.
+   (내 파일 안에서 난 것은 그 자리에서 고쳤다 — §4 사이드바 8.2px 등)
+--------------------------------------------------------------------------- */
+
+/* 사이드바 목록 감싸개 */
+.sidenav2 .nav-list-wrap {
+	padding: var(--ds-3) var(--ds-4);
+}
+
+.sidenav2 .nav-list {
+	padding: var(--ds-1) var(--ds-1);
+}
+
+/* 노트·프로젝트 카드 안쪽 — 5 / 6 / 18 / 23 이 섞여 있었다 */
+.note-card-board .note-card .note-card-cont .txt-title,
+.project-card-board .project-card .project-card-cont .txt-title {
+	padding-left: var(--ds-1);
+}
+
+.note-card-board .note-card .note-card-cont .wrap-note-cnt span,
+.project-card-board .project-card .project-card-cont .wrap-note-cnt span {
+	padding: 0 var(--ds-1);
+}
+
+.note-card-board .note-card .note-card-cont .txt-title .txt-note,
+.project-card-board .project-card .project-card-cont .txt-title .txt-project {
+	padding-left: var(--ds-5);
+}
+
+/* 탭 — 3px 위 / 10px 아래라 글자가 위로 붙어 있었다. 위아래를 같게 둔다. */
+.tab-board-sty02 .board-top .tab,
+.tab-board-sty03 .board-top .tab,
+.lims-page .tab-item,
+.tab-item {
+	padding-top: var(--ds-2);
+	padding-bottom: var(--ds-2);
+}
+
+/* 본문 칸 위아래 — 30px */
+#main,
+.content-wrapper > #main {
+	padding-top: var(--ds-6);
+	padding-bottom: var(--ds-6);
+}
+
+/* 노트 창 — 머리띠 30px, 왼쪽 판 18px */
+#main-header {
+	padding-left: var(--ds-6);
+	padding-right: var(--ds-6);
+}
+
+#main-body #main-body-left {
+	padding: var(--ds-4);
+}
+
+#main-body #main-body-left .note-info-box .cont {
+	padding-left: var(--ds-1);
+}
+
+/* 표 — 셀 좌우 21px, 페이지 번호 6/10 */
+.core-table .core-table-body .table > tbody > tr > td,
+.core-table .core-table-body .table > tbody > tr > th {
+	padding-left: var(--ds-5);
+	padding-right: var(--ds-5);
+}
+
+.pagination > li > a {
+	padding: var(--ds-2) var(--ds-3);
+}
+
+/* 그 밖에 한두 곳에서만 나오는 것들 */
+.guide_text {
+	padding-left: var(--ds-7);
+}
+
+.form-check-label2 {
+	padding-left: var(--ds-6);
+}
+
+.alert-primary {
+	padding: var(--ds-4) var(--ds-4) var(--ds-4) var(--ds-14, 56px);
+}
+
+.main-card02.notice_board .board-top {
+	padding-top: var(--ds-1);
+}
+
+.main-card02.notice_board .tab-content .tab-cont {
+	padding-left: var(--ds-8);
+	padding-right: var(--ds-8);
+}
+
+.top_title_wrap .top_title {
+	padding-top: var(--ds-8);
+}
+
+.button-wrap {
+	padding-bottom: var(--ds-8);
+}
+
+.project-info-note-box div.card-total,
+.project-info-note-box div.card-writing {
+	padding-left: calc(var(--ds-10) * 2 + var(--ds-2));   /* 88 — 그림 자리 */
+}
+
+.rw-editor-ai .toolbar select {
+	padding-left: var(--ds-2);
+	padding-right: var(--ds-2);
+}
+
+.dropdown-select-sty01 {
+	padding-left: var(--ds-4);
+	padding-right: var(--ds-4);
+}
+
+.tab-wrap.project-detail-note .tab-left .box01,
+.tab-wrap.project-detail-note .tab-left .box02 {
+	padding: var(--ds-3) var(--ds-4);
+}
+
+.tab-wrap .tab-left .box02 .folder-element .no-data,
+.tab-wrap.project-detail-note .tab-left .box02 .folder-element {
+	padding-left: var(--ds-1);
+	padding-right: var(--ds-1);
+}
+
+.fa-search.small {
+	padding: var(--ds-3);
+}
+
+/* --- 모서리 --- */
+/* 프로필 사진은 원이다. 50px 은 "충분히 크게" 라고 적은 값이지 원이라는
+   뜻이 아니다 — 사진이 커지면 모서리만 둥근 사각형이 된다. */
+.nav-profile .profile-info #myImg,
+.profileSmallImg,
+.rounded-circle {
+	border-radius: var(--ds-pill);
+}
+
+/* 부트스트랩 기본 3px 이 새어 나오던 자리 */
+button,
+.btn,
+.note-info-tab .tab-item {
+	border-radius: calc(var(--ds-radius) - 4px);
+}
+
+/* ---------------------------------------------------------------------------
+   24) 옛 팔레트를 토큰으로 — 한 화면에 파랑이 둘이었다
+
+   색을 실측하니 같은 화면에 두 벌이 살아 있었다.
+     파랑    #1761de 38곳  vs  --ds-primary #2f5bf5
+     잉크    #212529 218곳 vs  --ds-ink     #111827
+     보조잉크 #495057 790곳 vs  --ds-ink-3  #4b5563   ← 가장 흔했다
+     선      #dee2e6 102곳 vs  --ds-line    #e8eaef
+   눈으로는 "거의 같은 색"이라 지나쳤지만, 나란히 놓이면 한쪽이 때가 탄
+   것처럼 보인다. 옛 값 555곳을 토큰 참조로 바꿨다(style.css 551 · layout 3 ·
+   font-style 1). 리터럴을 다른 리터럴로 바꾼 게 아니라 var() 로 바꿨으니,
+   이제 색을 옮기려면 :root 한 곳만 고치면 된다.
+
+   남은 것은 부트스트랩·AdminLTE 가 자기 기본값으로 그리는 자리다. 벤더
+   파일은 건드리지 않고, 그쪽이 읽는 변수를 우리 토큰으로 이어 준다.
+--------------------------------------------------------------------------- */
+:root {
+	--bs-border-color: var(--ds-line);
+	--bs-border-color-translucent: var(--ds-line);
+	--bs-body-color: var(--ds-ink-2);
+	--bs-body-bg: var(--ds-surface);
+	--bs-primary: var(--ds-primary);
+	--bs-secondary: var(--ds-ink-4);
+	--bs-danger: var(--ds-danger);
+	--bs-link-color: var(--ds-primary);
+	--bs-link-hover-color: var(--ds-primary-dark);
+}
+
+/* 부트스트랩이 표 칸 테두리를 자기 회색(#dee2e6)으로 직접 그린다 —
+   변수를 안 거치는 자리라 여기서 받는다. */
+.table > :not(caption) > * > *,
+table td,
+table th {
+	border-color: var(--ds-line);
 }

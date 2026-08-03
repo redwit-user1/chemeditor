@@ -77,7 +77,7 @@
   gap: 20px;
   align-items: stretch;
   padding: 20px;
-  border: 1px solid #e9ecef;
+  border: 1px solid var(--ds-hover);
   border-radius: 10px;
   background: #fff;
 }
@@ -87,9 +87,9 @@
   justify-content: center;
   flex: 1 1 auto;
   min-height: 380px;
-  border: 1px dashed #dee2e6;
+  border: 1px dashed var(--ds-line);
   border-radius: 8px;
-  background: #f8f9fa;
+  background: var(--ds-canvas);
 }
 .lims-chem-stub-canvas svg {
   width: 100%;
@@ -105,12 +105,12 @@
 .lims-chem-stub-title {
   font-size: 14px;
   font-weight: 700;
-  color: #212529;
+  color: var(--ds-ink);
 }
 .lims-chem-stub-note {
   font-size: 12px;
   line-height: 1.65;
-  color: #868e96;
+  color: var(--ds-ink-4);
 }
 .lims-chem-stub-list {
   display: flex;
@@ -120,23 +120,23 @@
 }
 .lims-chem-stub-item {
   padding: 9px 12px;
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--ds-line);
   border-radius: 6px;
   background: #fff;
-  color: #495057;
+  color: var(--ds-ink-3);
   font-size: 13px;
   font-variant-numeric: tabular-nums;
   text-align: left;
   cursor: pointer;
 }
 .lims-chem-stub-item:hover {
-  border-color: #1761de;
-  color: #1761de;
+  border-color: var(--ds-primary);
+  color: var(--ds-primary);
 }
 .lims-chem-stub-item.on {
-  border-color: #1761de;
-  background: #edf3fd;
-  color: #1761de;
+  border-color: var(--ds-primary);
+  background: var(--ds-primary-weak);
+  color: var(--ds-primary);
   font-weight: 700;
 }
 @media (max-width: 900px) {

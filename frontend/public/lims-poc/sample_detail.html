@@ -2781,9 +2781,19 @@
               let rows = '';
               for (const idx in res.noteList) {
                 const n = res.noteList[idx];
+                /*
+                  noteMno 가 응답에 실려 오는데 화면은 이름만 글자로 찍고
+                  버리고 있었다. 시료에서 노트로 가는 길이 목록에는 보이는데
+                  누를 수가 없어서, 결국 사람이 노트 목록에서 이름을 다시
+                  찾아야 했다 — 편도 연결의 전형이다.
+                */
+                const nm = n.noteNm || '(제목 없음)';
+                const cell = n.noteMno
+                  ? `<a href="#" class="c-pointer" title="${nm}" onclick="goNote('${n.noteMno}'); return false;">${nm}</a>`
+                  : nm;
                 rows += `
                   <tr>
-                    <td class="text-left">${n.noteNm || '(제목 없음)'}</td>
+                    <td class="text-left">${cell}</td>
                     <td class="text-left">${n.projectNm || '-'}</td>
                     <td class="text-left">${n.createUserNm || '-'}</td>
                     <td class="text-left">${n.modifyDtStr || '-'}</td>
@@ -3324,6 +3334,11 @@
           done,
           done
         );
+      }
+
+      /* 시료 → 연구노트. 노트 상세는 ELN 쪽 경로다. */
+      function goNote(noteMno) {
+        coreCommon.href('/eln/note/noteDetails?schNoteMno=' + encodeURIComponent(noteMno));
       }
 
       function goSampleList() {
