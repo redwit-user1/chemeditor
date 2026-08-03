@@ -3455,7 +3455,7 @@ label.form-check-label2 {
 .tab-wrap .tab-left .box02 .folder-element .note_cnt {
     width: 30px;
     height: 20px;
-    padding: 0px 5px;
+    padding: 0px var(--ds-1);
     border-radius: 10px;
     font-size: 12px;
     background: var(--ds-line);
@@ -4746,7 +4746,7 @@ label.form-check-label2 {
 .note-card-board .note-card .note-card-cont .wrap-step .txt-keyword {
     height: 25px;
     line-height: 23px;
-    padding: 0 6px;
+    padding: 0 var(--ds-2);
     margin: var(--ds-2) 5px;
     border-radius: 4px;
     border: 1px solid var(--ds-line);

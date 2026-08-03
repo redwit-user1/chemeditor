@@ -5599,10 +5599,25 @@
 			/*]]*/
 		</script>
 
-    <!-- Back to Top -->
+    
     <a href="#top"
-       class="top"><img src="assets/lib/eln/img_old/icon_top.svg"
-           alt="top"></a>
+       class="top"
+       id="btnBackToTop"
+       aria-label="맨 위로"><img src="assets/lib/eln/img_old/icon_top.svg"
+           alt=""></a>
+    <script type="text/javascript">
+      (function () {
+        var btn = document.getElementById('btnBackToTop');
+        if (!btn) return;
+        var sync = function () {
+          var y = window.scrollY || document.documentElement.scrollTop || 0;
+          btn.classList.toggle('is-on', y > 240);
+        };
+        sync();
+        window.addEventListener('scroll', sync, { passive: true });
+        window.addEventListener('resize', sync, { passive: true });
+      })();
+    </script>
     <!-- Container Start -->
     <!-- Nav Start -->
     <div class="sticky-top sticky-sty-01 z-index1000">

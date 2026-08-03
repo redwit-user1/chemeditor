@@ -1215,7 +1215,9 @@ a.button-more-sty01 {
 	width: auto;   /* 원본은 45px 고정이라 "더보기" 가 화살표 밑에 깔렸다 */
 	height: auto;
 	min-height: 0;
-	padding: 0 calc(var(--ds-3) + 10px) 0 0;
+	/* 12 + 10 = 22 라 눈금을 벗어났다. 화살표(14px)가 오른쪽 가운데에
+	   앉으므로 24 면 충분하고 줄이 맞는다. */
+	padding: 0 var(--ds-6) 0 0;
 	background-repeat: no-repeat;
 	background-position: right center;
 	background-size: 14px 14px;
@@ -2998,7 +3000,7 @@ a.button-more-sty02,
 	width: auto;
 	height: auto;
 	min-height: 0;
-	padding: 0 calc(var(--ds-3) + 6px) 0 0;
+	padding: 0 var(--ds-5) 0 0;   /* 12+6=18 이었다 — 화살표 자리로 20 */
 	background-position: right center;
 	background-size: 12px 12px;
 	font-size: var(--ds-fs-small);
@@ -4348,4 +4350,128 @@ button,
 table td,
 table th {
 	border-color: var(--ds-line);
+}
+
+/* ---------------------------------------------------------------------------
+   25) 남은 여백·모서리 — 출처를 정확히 짚고 나서
+
+   §23 을 쓸 때는 검사기가 "마지막으로 일치한 규칙"을 승자로 적고 있었다.
+   lims-theme 이 맨 뒤에 실리니 늘 이 파일이 범인으로 찍혔고, 실제로는
+   style.css 의 더 구체적인 선택자가 이기고 있었다. 그래서 §23 의 규칙 몇
+   개는 애초에 닿지 않는 자리를 겨누고 있었다.
+   검사기가 !important → 특이도 → 순서로 승자를 고르게 고친 뒤, 남은
+   146건의 출처가 전부 드러났다. 여기서는 그 자리들만 정확히 받는다.
+--------------------------------------------------------------------------- */
+
+/* 검색 아이콘 단추 — mask 로 그린 18×18 이라 안쪽 여백이 필요 없다 */
+.sticky-sty-01 .search-box-write .search_btn {
+	padding: 0;
+}
+
+/* 키워드 칩 (46건) */
+.txt-keyword {
+	padding-left: var(--ds-2);
+	padding-right: var(--ds-2);
+}
+
+/* 카드 안쪽 — 아이콘 자리로 벌려 둔 23px, 오른쪽 6px */
+.project-card-board .project-card .project-card-cont .txt-title .txt-box3 {
+	padding-left: var(--ds-6);
+	padding-right: var(--ds-2);
+}
+
+.note-card-board .note-card .note-card-cont .txt-title .txt-box3,
+.note-card-board .note-card .note-card-cont .txt-box3 {
+	padding-left: var(--ds-6);
+	padding-right: var(--ds-2);
+}
+
+/* 더보기 단추의 화살표 자리는 §8 에서 직접 고쳤다(22→24, 18→20) */
+
+/* 폴더 이름(아이콘 자리) · 노트 수 알약 */
+.tab-wrap .tab-left .box02 .folder-element .folder_name,
+.folder-element .folder_name,
+.folder-element span.folder_name {
+	padding-left: var(--ds-7);
+}
+
+.folder-element .note_cnt,
+.note_cnt.no-folder {
+	padding-left: var(--ds-1);
+	padding-right: var(--ds-1);
+}
+
+/* 표 셀 — style.css 의 .core-table .core-table-body .table > tbody 가
+   14px 을 주고 있었다(내 .core-table tbody td 보다 구체적이다) */
+.core-table .core-table-body .table > tbody > tr > td,
+.core-table .core-table-body .table > tbody > tr > th {
+	padding-top: var(--ds-4);
+	padding-bottom: var(--ds-4);
+}
+
+/* 노트 정보 탭 */
+.note-info-tab .tab-item {
+	padding-top: var(--ds-2);
+	padding-bottom: var(--ds-2);
+}
+
+/* 편집기 도구줄 선택칸 — editor-ai/style.css(번들)가 6px 을 준다.
+   그 파일은 런타임에 주입되고 압축돼 있어 손대지 않는다. */
+.lims-page .rw-editor-ai .toolbar select,
+.rw-editor-ai .toolbar select.form-select,
+.rw-editor-ai .toolbar select {
+	padding-left: var(--ds-2);
+	padding-right: var(--ds-2);
+}
+
+/* 페이지 번호 — core.table.css 가 6/10 을 준다 */
+.core-table .core-table-body .pagination > li > a,
+.core-table .core-table-body .pagination > li > span {
+	padding: var(--ds-2) var(--ds-3);
+}
+
+/* 돋보기 아이콘 — style.css 가 !important 로 11px 을 준다 */
+.fa-search.small {
+	padding: var(--ds-3) !important;
+}
+
+/* 부트스트랩 경고 띠 — 15px 상하 · 55px 왼쪽(아이콘 자리).
+   .alert 끼리는 특이도가 같아 순서로 이겨야 하는데, 부트스트랩이
+   .alert-dismissible 등으로 한 단계 더 얹는 자리가 있어 이중 클래스로 받는다. */
+.alert.alert,
+.alert-primary.alert-primary {
+	padding: var(--ds-4) var(--ds-4) var(--ds-4) calc(var(--ds-unit) * 14);
+}
+
+/* 프로젝트 상세 왼쪽 판 */
+.tab-wrap.project-detail-note .tab-left .box02 .folder-element {
+	padding-left: var(--ds-7);
+}
+
+/* --- 모서리 --- */
+/* 부트스트랩 기본 3px 이 남던 자리 둘 */
+/* 부트스트랩의 .nav-tabs .nav-link((0,2,0))이 3px 을 준다 — .nav-link((0,1,0))
+   로는 안 닿는다. 같은 자리에서 받는다. */
+.nav-link.tab,
+.nav-link,
+.nav-tabs .nav-link,
+.nav-tabs .nav-link.active {
+	border-radius: calc(var(--ds-radius) - 4px);
+}
+
+.form-check-input[type='checkbox'] {
+	border-radius: var(--ds-1);
+}
+
+/* 맨 위로 — 올라갈 거리가 있을 때만 보인다. 늘 떠 있으면 화면 오른쪽
+   아래의 조작 요소를 영구히 덮는다(시료 상세의 필터 선택칸이 그랬다). */
+.top {
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity var(--ds-dur) var(--ds-ease), visibility var(--ds-dur) var(--ds-ease);
+}
+
+.top.is-on {
+	opacity: 1;
+	visibility: visible;
 }
