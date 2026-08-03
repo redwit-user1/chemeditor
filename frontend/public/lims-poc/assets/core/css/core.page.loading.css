@@ -19,10 +19,10 @@
 }
 .page-progress-bar 
 { 
-  background-color: #4e6ece; 
-  width:0%; 
-  height:5px; 
-  border-radius: 3px; 
+  background-color: var(--ds-primary);
+  width:0%;
+  height: var(--ds-1);
+  border-radius: var(--ds-1);
 }
 .page-progress-percent 
 { 

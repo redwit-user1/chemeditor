@@ -43,8 +43,8 @@
 .jstree-default.category .jstree-clicked,
 .jstree-default.category .jstree-anchor.active,
 .jstree-default.category .jstree-anchor:hover {
-    background: #edf3fd;
-    border: 1px solid #1761de;
+    background: var(--ds-primary-weak);
+    border: 1px solid var(--ds-primary);
     box-shadow: 0px 1px 8px 0px #00000014;
 }
 .jstree-default.category .jstree-clicked,

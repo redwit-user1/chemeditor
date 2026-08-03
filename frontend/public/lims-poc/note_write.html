@@ -4184,24 +4184,26 @@
             const usedAmount = Math.abs(usage.deltaAmount);
             const lotDisp = usage.lotNo ? `LOT ${usage.lotNo}` : 'LOT 없음';
 
+            /* 세 줄이 전부 같은 크기·색이라 이름과 시각이 구분되지 않았다.
+               첫 줄만 본문, 나머지는 보조로 내리고 건 사이에 선을 둔다. */
             $target.append(
               $('<div></div>')
-                .addClass('ma-t10')
+                .addClass('note-reagent-item')
                 .append(
                   $('<div></div>')
-                    .addClass('txt-info-cont txt_ellipsis2')
+                    .addClass('note-reagent-nm txt_ellipsis2')
                     .attr('title', usage.reagentNm)
                     .text(`${usage.reagentNm} ${usedAmount} ${usage.unitCcd}`)
                 )
                 .append(
                   $('<div></div>')
-                    .addClass('txt-info-cont txt_ellipsis2')
+                    .addClass('note-reagent-sub txt_ellipsis2')
                     .attr('title', usage.barcode)
                     .text(`${usage.barcode} · ${lotDisp}`)
                 )
                 .append(
                   $('<div></div>')
-                    .addClass('txt-info-cont txt_ellipsis2')
+                    .addClass('note-reagent-sub txt_ellipsis2')
                     .text(`${usage.txnDtStr} · ${usage.txnUserNm ? usage.txnUserNm : '-'}`)
                 )
             );
@@ -4325,7 +4327,7 @@
 
       // 이전 페이지로 이동
       function note_prevPage() {
-        if ('' === 'NO') {
+        if ('NOTE_WRITE' === 'NO') {
           note_prevPageProc();
         } else {
           const writeMode = 'EDITOR';
@@ -5433,7 +5435,7 @@
                           </div>
                           <div class="inspector_list" id="sortable">
                             <div class="inspector_box flex-sty02 c-pointer ma-b10">
-                              <img src="assets/lib/eln/img/drag_indicator.png" alt="dragImg" id="" class="ma-r10" style="width: 25px; height: 25px;">
+                              <img src="assets/lib/eln/img/drag_indicator.png" alt="dragImg" id="" class="ma-r10 icon-drag">
                               <div class="inspector_info flex-sty04 writing">
                                 <div><span>${'점검자'}</span> <span class="inspector_sn">1</span></div>
                                 <div class="inspector_div fix">
@@ -5445,7 +5447,7 @@
                               </div>
                             </div>
                             <div class="inspector_box flex-sty02 c-pointer ma-b10">
-                              <img src="assets/lib/eln/img/drag_indicator.png" alt="dragImg" id="" class="ma-r10" style="width: 25px; height: 25px;">
+                              <img src="assets/lib/eln/img/drag_indicator.png" alt="dragImg" id="" class="ma-r10 icon-drag">
                               <div class="inspector_info flex-sty04 writing">
                                 <div><span>${'점검자'}</span> <span class="inspector_sn">2</span></div>
                                 <div class="inspector_div">
@@ -5923,7 +5925,18 @@
           <div class="flex-sty02">
             <div class="button-wrap pa-r20 pa-0">
               
-              
+              <button
+                onclick="note_getNoteHist()"
+                class="button-sty002 history"
+                id="dropdownHistoryBtn"
+                data-bs-toggle="dropdown"
+                data-bs-auto-close="false"
+                data-bs-display="static"
+                aria-haspopup="true"
+                aria-expanded="false"
+              >
+                <span>히스토리</span>
+              </button>
               <div
                 id="dropdown_note_history"
                 class="dropdown-menu dropdown-menu-lg-end"
@@ -6084,7 +6097,12 @@
                   </div>
                 </div>
               </div>
-              
+              <button
+                class="button-blue-full-sty01 save none ma-l10"
+                id="note-save-btn"
+              >
+                <span>저장</span>
+              </button>
               
             </div>
             <div class="icon-option-wrap dropdown">
@@ -6105,6 +6123,43 @@
                   class="option_title"
                 >연구노트 편집 옵션</div>
                 <div class="option_list">
+                  
+                    <a
+                      href="#"
+                      onclick="gfn_openModalNoteProjectSelect(&#39;9101&#39;)"
+                      class="dropdown-item"
+                    >프로젝트 선택</a>
+                    <a
+                      href="#"
+                      onclick="note_openModalLoadNotes(&#39;&quot;EDITOR&quot;&#39;)"
+                      class="dropdown-item"
+                    >연구노트 불러오기</a>
+                    <a
+                      href="#"
+                      onclick="note_openModalLoadTemplate(&#39;&quot;EDITOR&quot;&#39;)"
+                      class="dropdown-item"
+                    >템플릿 불러오기</a>
+                    <!--
+                                            <a href="#" class="dropdown-item" th:text="#{i18n.pkg.msg.322}">문서파일 업로드</a>
+                                        -->
+                    <a
+                      href="#"
+                      onclick="note_openModalMoveNote(&#39;9101&#39;, &#39;301&#39;, &#39;0&#39;, this)"
+                      class="dropdown-item"
+                    >연구노트 이동</a>
+                    <a
+                      href="#"
+                      onclick="note_openModalNoteMemberMandate()"
+                      class="dropdown-item"
+                    >연구노트 위임</a>
+                    <!--
+                                        <a href="#" class="dropdown-item" th:onclick="gfn_downloadNotePdf('9101')" th:text="#{i18n.pkg.msg.95}">연구노트 다운로드</a>
+                                        -->
+                    <a
+                      href="#"
+                      onclick="note_openModalDeleteNote(&#39;9101&#39;, &#39;&quot;KM00003710 \uD569\uC131 \u2014 batch A&quot;&#39;)"
+                      class="dropdown-item"
+                    >연구노트 삭제</a>
                   
                   
                 </div>
@@ -6127,14 +6182,10 @@
             <div class="cont">
               
                 <div class="flex-sty06 ma-t10">
-                  <div
-                    class="icon_box"
-                    style="margin-left: 3px"
-                  >
+                  <div class="icon_box">
                     <img
                       src="assets/lib/eln/img/icon_project_s.png"
-                      alt="프로젝트 아이콘"
-                      style="width: 10px" />
+                      alt="프로젝트 아이콘" />
                   </div>
                   <div
                     class="txt-info-txt ma-l5 txt_ellipsis"
@@ -6225,8 +6276,7 @@
                 <div class="icon_box">
                   <img
                     src="assets/lib/eln/img/icon_project_s.png"
-                    alt="시료 아이콘"
-                    style="width: 10px" />
+                    alt="시료 아이콘" />
                 </div>
                 <div class="txt-info-txt ma-l5 txt_ellipsis">대상 시료</div>
                 <div class="txt-info-cont txt_ellipsis">
@@ -6279,7 +6329,10 @@
             </div>
           </div>
           <div class="ma-t20">
-            
+            <button
+              class="button-sty003"
+              onclick="checkFileIdAndOpenModal(&#39;9101&#39;,&#39;301&#39;)"
+            >점검 요청</button>
             
             
           </div>
@@ -7059,7 +7112,7 @@
         }
         return ''
           + '<div class="ma-t20">'
-          + '  <p class="main-title-sty01">생성물 (수율 계산)</p>'
+          + '  <p class="sub-title-sty01">생성물 (수율 계산)</p>'
           + '  <div class="flex-sty04 ma-b10">'
           + '    <div class="guidetext-sty01">실수득량과 생성물 분자량을 입력하면 이론 수득량 대비 수율을 계산합니다.</div>'
           + '  </div>'

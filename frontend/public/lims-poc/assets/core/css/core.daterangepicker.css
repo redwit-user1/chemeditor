@@ -36,7 +36,7 @@
 .ui-state-highlight,
 .ui-widget-content .ui-state-highlight,
 .ui-widget-header .ui-state-highlight {
-    background: #1761de;
+    background: var(--ds-primary);
     color: #fff !important;
     text-align: center;
     border-radius: 50%;

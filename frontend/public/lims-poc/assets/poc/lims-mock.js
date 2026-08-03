@@ -594,6 +594,29 @@
       crrntProcessNm: '종료', projectPrgrstCcd: 'COMPLETE', projectPrgrstCcdNm: '완료' }
   ];
 
+  /*
+    카드의 "⋮" 트리거가 DOM 에 없었다 — 메뉴는 그려지는데 열 방법이 없어
+    aria-labelledby 가 가리킬 대상도 없었다(코드 결함 7건이 전부 이것이었다).
+    원인은 CSS 도 템플릿도 아니고 여기다: _layout/main/layout.html 의
+    카드의 "⋮" 트리거가 DOM 에 없었다 — 메뉴는 그려지는데 열 방법이 없어
+    aria-labelledby 가 가리킬 대상도 없었다(코드 결함 7건이 전부 이것이었다).
+    CSS 도 템플릿도 아니고 여기가 원인이다.
+
+    s2Template 의 if= 는 호출부가 넘긴 조건 객체를 본다. 그 조건은 원본 필드에서
+    파생된다 — layout.html:315 `isOwner: note['ownerYn'] === 'Y'`,
+    :625 `isGnrlAuthYn: project['gnrlAuthYn'] === 'Y'`. 즉 필요한 것은
+    isOwner/isAdmin 같은 불리언이 아니라 `*Yn: 'Y'` 문자열이다.
+    (처음엔 불리언을 넣었다가 아무것도 안 바뀌어서 알았다 — 읽히지도 않는 키였다)
+
+    `isAdmin` 은 서버가 심는 `[[${viewManagerYn}]]` 라 목이 아니라 픽스처 몫이다.
+    그쪽은 :578 의 대체 블록용이고, :566 블록이 gnrlAuthYn 으로 살아나므로
+    화면에는 트리거가 하나만 선다 — 원래 의도대로다.
+  */
+  ELN_PROJECTS.forEach(function (p) {
+    p.gnrlAuthYn = 'Y';
+    p.gnrlYn = p.gnrlUserNm === '김연구' ? 'Y' : 'N';
+  });
+
   /* 노트는 프로젝트에 매달린다. projectMno 로 걸러 프로젝트 상세에 뿌린다. */
   var ELN_NOTES = [
     { noteMno: 9101, projectMno: 301, projectNm: '표적단백질 저해제 발굴', folderMno: 0,
@@ -626,6 +649,13 @@
       writeModeCcdNm: '온라인', sharedYn: 'N',
       processNm: null, projectPrgrstCcdNm: '진행', securityGradeCcdNm: '2등급' }
   ];
+
+  /* 노트 카드도 같은 조건 속성을 쓴다(layout.html:264 isOwner / :276 isGnrlYn). */
+  ELN_NOTES.forEach(function (n) {
+    n.ownerYn = n.ownerNm === '김연구' ? 'Y' : 'N';
+    n.gnrlYn = n.ownerYn;
+    n.readableYn = 'N';   /* 카드 체크상자는 이 프로토타입에서 안 쓴다 */
+  });
 
   var nextNoteMno = 9110;
 

@@ -149,14 +149,14 @@
                                                 <td class="text-center">${posts.rn}</td>
                                                 <td class="mw-600 c-pointer selectable">
                                                     <div class="flex-sty02 txt_ellipsis">
-                                                        <img if="isFileAttach" src="assets/lib/eln/img/attach_file.png" alt="file" class="ma-r10" style="width: 20px; height: 20px;">
+                                                        <img if="isFileAttach" src="assets/lib/eln/img/attach_file.png" alt="file" class="ma-r10 icon-inline">
                                                         <div class="selectable-text" onclick="gfn_goPostsDetail(${posts.postsMno}); return false;">${posts.subject}</div>
                                                         <div if="isNew" class="badge badge-info icon-notice">N</div>
                                                     </div>
                                                 </td>
                                                 <td class="mw-180"><div class="txt_ellipsis">${posts.writerUserNm}</div></td>
                                                 <td>${posts.modifyDe}</td>
-                                                <td class="text-right"><img src="assets/lib/eln/img/icon_view.png" alt="조회수" class="ma-r10" style="width: 20px; height: 20px;"><span>${posts.hitCnt}</span></td>
+                                                <td class="text-right"><img src="assets/lib/eln/img/icon_view.png" alt="조회수" class="ma-r10 icon-inline"><span>${posts.hitCnt}</span></td>
                                             </tr>
                                         `,
                                         {
@@ -826,8 +826,8 @@
                               </div>
                             </div>
                             <div if="isGnrlAuthYn" class="icon-option-wrap dropdown">
-                              <a href="#" class="icon-option" aria-label="더 보기" id="dropdownOptionBtn${project.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
-                              <div  class="dropdown_option dropdown-menu dropdown-menu-end" aria-labelledby="dropdownOptionBtn${project.idx}">
+                              <a href="#" class="icon-option" aria-label="더 보기" id="dropdownProjectOptionBtn${project.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
+                              <div  class="dropdown_option dropdown-menu dropdown-menu-end" aria-labelledby="dropdownProjectOptionBtn${project.idx}">
                                 <div class="option_title">${'프로젝트 옵션'}</div>
                                 <div class="option_list">
                                   <a href="#" onclick="S2Util.goPage('/eln/project/modifyProject', {schProjectMno: ${project.projectMno}}); return false;" class="dropdown-item">${'프로젝트 수정'}</a>
@@ -838,8 +838,8 @@
                               </div>
                             </div>
                             <div class="icon-option-wrap dropdown">
-                              <a if="isAdmin" href="#" class="icon-option" aria-label="더 보기" id="dropdownOptionBtn${project.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
-                              <div  class="dropdown_option dropdown-menu dropdown-menu-end" aria-labelledby="dropdownOptionBtn${project.idx}">
+                              <a if="isAdmin" href="#" class="icon-option" aria-label="더 보기" id="dropdownProjectOptionBtn${project.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
+                              <div  class="dropdown_option dropdown-menu dropdown-menu-end" aria-labelledby="dropdownProjectOptionBtn${project.idx}">
                                 <div class="option_title">${'프로젝트 옵션'}</div>
                                 <div class="option_list">
                                   <a if="isPerformanceRegistered" href="#" onclick="gfn_openModalProjectPerformanceUnregister(${project.projectMno}, '${project.projectNm}'); return false;" class="dropdown-item text-danger">${'진도관리프로젝트 제외'}</a>
@@ -3324,8 +3324,7 @@
               </div>
             </div>
             <div class="top-right-icon">
-              <ul class="navbar-nav"
-                  style="height: 35px;">
+              <ul class="navbar-nav">
                 <li class="nav-alarm alarm-box po-r">
                   <div class="dropdown">
                     <a href="#"

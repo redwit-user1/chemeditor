@@ -113,9 +113,11 @@
 }
 
 .lims-prop-bar .prop-label {
-	font-size: var(--ds-fs-body);
-	font-weight: 400;
-	color: var(--ds-ink-2);
+	/* 라벨은 한 벌이다 — 12 / 500 / ink-4. 울타리(.lims-page) 안팎이
+	   달라서 같은 화학량론 요약이 화면마다 12px·13px 로 갈렸다. */
+	font-size: var(--ds-fs-small);
+	font-weight: var(--ds-fw-medium);
+	color: var(--ds-ink-4);
 	letter-spacing: -0.02em;
 }
 
@@ -337,8 +339,8 @@
 }
 
 .lims-stoich-summary .stoich-label {
-	font-size: var(--ds-fs-cell);
-	font-weight: 400;
+	font-size: var(--ds-fs-small);
+	font-weight: var(--ds-fw-medium);
 	color: var(--ds-ink-4);
 	letter-spacing: -0.02em;
 	white-space: nowrap;
@@ -437,7 +439,8 @@
 }
 
 .lims-stoich-note-box .stoich-line .k {
-	font-size: var(--ds-fs-cell);
+	font-size: var(--ds-fs-small);
+	font-weight: var(--ds-fw-medium);
 	color: var(--ds-ink-4);
 	letter-spacing: -0.02em;
 }
@@ -478,9 +481,9 @@
 .lims-scan-box .lims-scan-label {
 	flex: 0 0 auto;
 	margin: 0;
-	font-size: var(--ds-fs-body);
-	font-weight: 500;
-	color: var(--ds-ink-2);
+	font-size: var(--ds-fs-small);
+	font-weight: var(--ds-fw-medium);
+	color: var(--ds-ink-4);
 	letter-spacing: -0.02em;
 }
 

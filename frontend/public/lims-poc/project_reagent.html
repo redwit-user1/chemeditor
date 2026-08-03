@@ -760,7 +760,7 @@
         }
         return ''
           + '<div class="ma-t20">'
-          + '  <p class="main-title-sty01">생성물 (수율 계산)</p>'
+          + '  <p class="sub-title-sty01">생성물 (수율 계산)</p>'
           + '  <div class="flex-sty04 ma-b10">'
           + '    <div class="guidetext-sty01">실수득량과 생성물 분자량을 입력하면 이론 수득량 대비 수율을 계산합니다.</div>'
           + '  </div>'
@@ -1430,8 +1430,8 @@
                               </div>
                             </div>
                             <div if="isGnrlAuthYn" class="icon-option-wrap dropdown">
-                              <a href="#" class="icon-option" aria-label="더 보기" id="dropdownOptionBtn${project.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
-                              <div  class="dropdown_option dropdown-menu dropdown-menu-end" aria-labelledby="dropdownOptionBtn${project.idx}">
+                              <a href="#" class="icon-option" aria-label="더 보기" id="dropdownProjectOptionBtn${project.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
+                              <div  class="dropdown_option dropdown-menu dropdown-menu-end" aria-labelledby="dropdownProjectOptionBtn${project.idx}">
                                 <div class="option_title">${'프로젝트 옵션'}</div>
                                 <div class="option_list">
                                   <a href="#" onclick="S2Util.goPage('/eln/project/modifyProject', {schProjectMno: ${project.projectMno}}); return false;" class="dropdown-item">${'프로젝트 수정'}</a>
@@ -1442,8 +1442,8 @@
                               </div>
                             </div>
                             <div class="icon-option-wrap dropdown">
-                              <a if="isAdmin" href="#" class="icon-option" aria-label="더 보기" id="dropdownOptionBtn${project.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
-                              <div  class="dropdown_option dropdown-menu dropdown-menu-end" aria-labelledby="dropdownOptionBtn${project.idx}">
+                              <a if="isAdmin" href="#" class="icon-option" aria-label="더 보기" id="dropdownProjectOptionBtn${project.idx}" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></a>
+                              <div  class="dropdown_option dropdown-menu dropdown-menu-end" aria-labelledby="dropdownProjectOptionBtn${project.idx}">
                                 <div class="option_title">${'프로젝트 옵션'}</div>
                                 <div class="option_list">
                                   <a if="isPerformanceRegistered" href="#" onclick="gfn_openModalProjectPerformanceUnregister(${project.projectMno}, '${project.projectNm}'); return false;" class="dropdown-item text-danger">${'진도관리프로젝트 제외'}</a>
@@ -3928,8 +3928,7 @@
               </div>
             </div>
             <div class="top-right-icon">
-              <ul class="navbar-nav"
-                  style="height: 35px;">
+              <ul class="navbar-nav">
                 <li class="nav-alarm alarm-box po-r">
                   <div class="dropdown">
                     <a href="#"
@@ -4056,8 +4055,7 @@
     <div class="top_title_wrap project-detail">
       <div class="top_title">
         <div class="flex-sty01 po-r">
-          <div class="flex-sty06"
-               style="width: 75%;">
+          <div class="flex-sty06 project-title-row">
             
             <div class="project_simple_info">
               <p class="main-title-sty01"
@@ -4263,7 +4261,7 @@
         
         <div class="ma-t30">
           <div class="flex-sty01">
-            <p class="main-title-sty01">연구노트 시약 사용 이력</p>
+            <p class="sub-title-sty01">연구노트 시약 사용 이력</p>
             <button class="button-blue-line-sty01"
                     onclick="goReagentList();"><span>시약/재고 관리</span></button>
           </div>
@@ -4301,7 +4299,7 @@
         
         <div class="ma-t30">
           <div class="flex-sty01">
-            <p class="main-title-sty01">화학량론 (당량·몰수·한계시약·수율)</p>
+            <p class="sub-title-sty01">화학량론 (당량·몰수·한계시약·수율)</p>
           </div>
           <div class="flex-sty04 ma-t10">
             <div class="guidetext-sty01">시약의 분자량과 사용량으로 mmol 과 당량을 계산합니다. 분자량이 없거나 부피 단위에 밀도가 없으면 그 사유를 표시합니다.</div>
@@ -4325,7 +4323,7 @@
         
         <div class="ma-t30">
           <div class="flex-sty01">
-            <p class="main-title-sty01">등록 화합물</p>
+            <p class="sub-title-sty01">등록 화합물</p>
             <button class="button-blue-full-sty01"
                     onclick="goChemEditor();"><span>구조 등록</span></button>
           </div>

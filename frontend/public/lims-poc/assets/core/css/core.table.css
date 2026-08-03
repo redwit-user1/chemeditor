@@ -92,8 +92,8 @@
 .core-table .core-table-body .pagination>.active>span:focus, 
 .core-table .core-table-body .pagination>.active>span:hover {
     color: #fff !important;
-    background: #1761de;
-    border: 1px solid #1761de;
+    background: var(--ds-primary);
+    border: 1px solid var(--ds-primary);
 }
 .core-table .core-table-body .pagination>li>a,
 .core-table .core-table-body .pagination>li>span {

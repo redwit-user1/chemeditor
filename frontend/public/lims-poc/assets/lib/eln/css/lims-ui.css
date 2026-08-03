@@ -448,7 +448,9 @@
 .lims-page .lims-note-block .lims-actions-cell > .button-gray-line-sty01 {
 	min-height: var(--lims-control-h-sm);
 	height: var(--lims-control-h-sm);
-	padding: 0 var(--lims-gap-2);
+	/* 여백까지 8 로 내릴 이유는 없었다 — 위 주석이 낮춘다고 적은 건 높이뿐이다.
+	   표 칸 안의 다른 28px 버튼은 전부 12 라 이것만 좁아 보였다. */
+	padding: 0 var(--ds-3);
 	font-size: var(--lims-fs-caption);
 }
 
@@ -563,7 +565,7 @@
 .lims-page [onclick^="openModalSampleDelete"],
 .lims-page [onclick^="openModalLocationDelete"],
 .lims-page [onclick^="removeItemRow"] {
-	border-color: rgba(238, 81, 57, 0.45) !important;
+	border-color: var(--ds-danger-line-strong) !important;
 	/* 테두리는 원색을 유지해 "위험" 색으로 읽히게 하되, 글자는 어두운 쪽을 쓴다 —
 	   흰 배경 위의 var(--ds-danger) 은 3.58:1 로 기준 미달이다. */
 	color: var(--lims-danger-ink) !important;
@@ -842,7 +844,8 @@
 .lims-page .lims-card-title {
 	flex: 0 0 auto;
 	margin: 0;
-	font-size: var(--lims-fs-strong);
+	/* 카드 제목은 척도에 자리가 따로 있다 — 구획(18) 아래, 본문(14) 위 */
+	font-size: var(--ds-fs-card);
 	font-weight: var(--lims-fw-bold);
 	line-height: var(--lims-lh-snug);
 	color: var(--lims-ink);
@@ -1418,8 +1421,8 @@
 
 .lims-page .lims-state.normal { border-color: var(--ds-primary-line); }
 .lims-page .lims-state.soon { border-color: var(--ds-warn-line); }
-.lims-page .lims-state.expired { border-color: rgba(238, 81, 57, 0.24); }
-.lims-page .lims-state.done { border-color: rgba(30, 126, 70, 0.22); }
+.lims-page .lims-state.expired { border-color: var(--ds-danger-line); }
+.lims-page .lims-state.done { border-color: var(--ds-ok-line); }
 .lims-page .lims-state.muted { border-color: var(--lims-line-strong); }
 
 /* 옅은 배경 위의 원색 글자는 대비가 모자란다(경고 3.92:1, 위험 3.13:1).
@@ -1475,18 +1478,22 @@
 }
 
 /*
-  구획 제목 — `.sub-title-sty01` 과 (머리말 밖의) `.main-title-sty01` 은 둘 다
-  "카드/블록 하나를 여는 제목" 이라는 같은 역할인데, 구노 기본값이 각각 18~20px 와
-  22px 라 화면마다 크기가 달랐다. 시료 상세의 "기본 정보"(sub)와 시험 상세의
-  "시험 항목"(main)이 같은 자리에 서는데 14 vs 22 로 그려지던 상태다.
-  카드 제목과 같은 값 하나로 모은다.
+  구획 제목 — 여기서 `.main-title-sty01`(= 페이지 제목 22)까지 같이 14 로 내려
+  놓았었다. 한 클래스를 두 역할로 쓰고 있었던 것이 진짜 원인이다: ELN 화면에서는
+  페이지 제목(22), LIMS 화면에서는 블록 제목(14). 이제 LIMS 쪽 9곳을
+  `.sub-title-sty01` 로 고쳐 두었으므로 `.main-title-sty01` 은 손대지 않는다.
+
+  그리고 구획 제목을 14 로 두면 본문(14)과 굵기로만 갈린다. 척도에 이미 이
+  자리의 이름이 있다 — 22 페이지 / 18 구획 / 15 카드 / 14 본문.
+  울타리 안팎이 같아야 하므로 값은 --ds-fs-lead 하나로 간다.
 */
-.lims-page .sub-title-sty01,
-.lims-page .main-title-sty01 {
+.lims-page .sub-title-sty01 {
 	margin: 0 0 var(--lims-gap-2);
-	font-size: var(--lims-fs-strong);
+	font-size: var(--ds-fs-lead);
 	font-weight: var(--lims-fw-bold);
-	line-height: var(--lims-lh-snug);
+	/* --lims-lh-snug(1.4) 를 쓰면 울타리 밖(1.3)과 줄높이만 갈린다.
+	   크기·굵기·색을 맞춰 놓고 줄높이 하나로 다시 벌어질 이유가 없다. */
+	line-height: var(--ds-lh-tight);
 	color: var(--lims-ink);
 }
 
@@ -1522,9 +1529,10 @@
 }
 
 .lims-page .lims-prop-bar .prop-label {
-	font-size: var(--lims-fs-caption);
-	line-height: var(--lims-lh-base);
-	color: var(--lims-ink-3);
+	font-size: var(--ds-fs-small);
+	font-weight: var(--ds-fw-medium);
+	line-height: var(--ds-lh);
+	color: var(--ds-ink-4);
 }
 
 .lims-page .lims-prop-bar .prop-value {
@@ -2176,9 +2184,10 @@
 }
 
 .lims-page .lims-scan-box .lims-scan-label {
-	font-size: var(--lims-fs-body);
-	font-weight: var(--lims-fw-medium);
-	line-height: var(--lims-lh-base);
+	font-size: var(--ds-fs-small);
+	font-weight: var(--ds-fw-medium);
+	line-height: var(--ds-lh);
+	color: var(--ds-ink-4);
 }
 
 .lims-page .lims-scan-box .lims-scan-input {
@@ -2290,8 +2299,9 @@
 }
 
 .lims-page .lims-stoich-summary .stoich-label {
-	font-size: var(--lims-fs-caption);
-	line-height: var(--lims-lh-base);
+	font-size: var(--ds-fs-small);
+	font-weight: var(--ds-fw-medium);
+	line-height: var(--ds-lh);
 }
 
 .lims-page .lims-stoich-summary .stoich-value {
@@ -2332,8 +2342,9 @@
 }
 
 .lims-page .lims-stoich-note-box .stoich-line .k {
-	font-size: var(--lims-fs-caption);
-	line-height: var(--lims-lh-base);
+	font-size: var(--ds-fs-small);
+	font-weight: var(--ds-fw-medium);
+	line-height: var(--ds-lh);
 }
 
 .lims-page .lims-stoich-note-box .stoich-line .v {

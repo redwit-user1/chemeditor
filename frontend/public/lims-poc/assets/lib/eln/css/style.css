@@ -773,7 +773,7 @@ label.form-check-label2 {
     opacity: 0.8 !important;
 }
 .button-sty002.none {
-    padding: 4px 18px;
+    padding: 4px var(--ds-4);   /* 18 → 16, 눈금 위로 */
 }
 .button-sty002.category {
     background-image: url(../../../lib/eln/img/icon_category_dark.png);
@@ -942,7 +942,7 @@ label.form-check-label2 {
 }
 
 .button-blue-full-sty01.none {
-    padding: 4px 18px;
+    padding: 4px var(--ds-4);   /* 18 → 16, 눈금 위로 */
 }
 .button-blue-full-sty01.create {
     background-image: url(../../../lib/eln/img/icon_create.svg);
@@ -1156,7 +1156,7 @@ label.form-check-label2 {
     text-align: center;
 }
 .button-blue-line-sty04.review {
-    background: #c8daf9;
+    background: var(--ds-primary-weak);
 }
 .button-blue-line-sty04.small {
     min-width: 60px;
@@ -1168,7 +1168,7 @@ label.form-check-label2 {
     padding: 4px 12px;
     border-radius: 8px;
     color: #455a64;
-    background-color: #eceff1;
+    background-color: var(--ds-canvas);
     font-size: 16px;
     line-height: 32px;
     font-weight: 500;
@@ -1208,7 +1208,7 @@ label.form-check-label2 {
     padding: 9px 12px;
     border-radius: 8px;
     border: 1px solid var(--ds-line);
-    color: #546e7a !important;
+    color: var(--ds-ink-3) !important;
     font-size: 15px;
     line-height: 18px;
     font-weight: 500;
@@ -2387,7 +2387,7 @@ label.form-check-label2 {
 
 #dropdown_alarm.dropdown-menu .alarm_cont .dropdown-item:hover,
 #dropdown_alarm.dropdown-menu .alarm_cont .dropdown-item.active {
-    border: 1px solid #a3c1f5;
+    border: 1px solid var(--ds-primary-line);
     background: var(--ds-primary-weak);
     color: var(--ds-primary);
 }
@@ -2459,7 +2459,7 @@ label.form-check-label2 {
     letter-spacing: 0;
     text-align: left;
     color: #455a64;
-    background: #eceff1;
+    background: var(--ds-canvas);
     margin: 7px 0;
 }
 #dropdown_alarm.dropdown-menu .alarm_cont .alarm_text .rounded-circle {
@@ -2582,7 +2582,7 @@ label.form-check-label2 {
     letter-spacing: 0;
     text-align: left;
     color: #455a64;
-    background: #eceff1;
+    background: var(--ds-canvas);
     margin: 7px 0;
 }
 #dropdown_history.dropdown-menu .dropdown_content .alarm_icon {
@@ -2737,7 +2737,7 @@ label.form-check-label2 {
     letter-spacing: 0;
     text-align: left;
     color: #455a64;
-    background: #eceff1;
+    background: var(--ds-canvas);
     margin: 7px 0;
 }
 
@@ -3098,7 +3098,7 @@ label.form-check-label2 {
 }
 .main-card02.notice_board .tap.active {
     border-bottom: 0 !important;
-    color: #000 !important;
+    color: var(--ds-ink) !important;
 }
 .main-card02.notice_board .tab-content {
     position: relative;
@@ -4740,7 +4740,7 @@ label.form-check-label2 {
 }
 .note-card-board .note-card .note-card-cont .txt-info .txt-info-txt {
     width: 30%;
-    font-weight: 400;
+    font-weight: var(--ds-fw-medium);
     margin-bottom: var(--ds-1);
 }
 .note-card-board .note-card .note-card-cont .txt-info .txt-info-cont {
@@ -4763,7 +4763,7 @@ label.form-check-label2 {
     font-weight: 500;
     letter-spacing: 0;
     text-align: center;
-    color: #546e7a;
+    color: var(--ds-ink-3);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -4968,7 +4968,7 @@ label.form-check-label2 {
     width: 63px;
     height: 24px;
     border-radius: 4px;
-    border: 1px solid #a3c1f5;
+    border: 1px solid var(--ds-primary-line);
     color: var(--ds-primary) !important;
     text-align: center;
     font-size: 12px;
@@ -4989,7 +4989,7 @@ label.form-check-label2 {
     white-space: nowrap;
     border: 1px solid var(--ds-line);
     box-shadow: 0px 0px 4px 0px #0000000a;
-    color: #546e7a;
+    color: var(--ds-ink-3);
     text-align: center;
     font-size: 12px;
     font-weight: 500;
@@ -5009,7 +5009,7 @@ label.form-check-label2 {
     white-space: nowrap;
     border: 1px solid var(--ds-line);
     box-shadow: 0px 0px 4px 0px #0000000a;
-    color: #546e7a;
+    color: var(--ds-ink-3);
     text-align: center;
     font-size: 12px;
     font-weight: 500;
@@ -5027,7 +5027,7 @@ label.form-check-label2 {
 }
 .project-card-board .project-card .project-card-cont .txt-info .txt-info-txt {
     width: 25%;
-    font-weight: 400;
+    font-weight: var(--ds-fw-medium);
     margin-bottom: var(--ds-1);
 }
 .project-card-board .project-card .project-card-cont .txt-info .txt-info-cont {
@@ -5076,11 +5076,11 @@ label.form-check-label2 {
 }
 .project-card-board .project-card .project-card-cont.project-prgrst-COMPLETE .wrap-note-cnt {
     color: #26a69a;
-    background: #e0f2f1;
+    background: var(--ds-ok-weak);
 }
 .project-card-board .project-card .project-card-cont.project-prgrst-STOP .wrap-note-cnt {
     color: #78909c;
-    background: #eceff1;
+    background: var(--ds-canvas);
 }
 /* 크기·위치는 lims-theme.css §12-1. 500x423 고정 + 음수 margin 이라
    참여자가 둘이든 스물이든 같은 높이였고, 카드가 화면 오른쪽/아래쪽에
@@ -5288,12 +5288,12 @@ label.form-check-label2 {
 }
 
 .table-sty01 thead {
-    background-color: #eceff1;
-    color: #343a40;
+    background-color: var(--ds-canvas);
+    color: var(--ds-ink-2);
     margin-bottom: 0.5rem;
 }
 .core-table .core-table-body .table > thead > tr > th {
-    background-color: #eceff1;
+    background-color: var(--ds-canvas);
     border: 1px solid #d7d8d0;
     font-family: 'Noto Sans KR', sans-serif;
     font-size: 14px;
@@ -5363,7 +5363,7 @@ label.form-check-label2 {
 }
 
 .table-sty01 > :not(caption) > * {
-    border-bottom: 1px solid #f4f4f4;
+    border-bottom: 1px solid var(--ds-line);
 }
 
 .table-sty01 tr td .txt_ellipsis {
@@ -5465,7 +5465,7 @@ label.form-check-label2 {
     letter-spacing: 0;
     line-height: 20px;
     text-align: center;
-    color: #546e7a;
+    color: var(--ds-ink-3);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -6241,7 +6241,7 @@ code {
     line-height: 22.4px;
     letter-spacing: -0.02em;
     text-align: left;
-    color: #37474f;
+    color: var(--ds-ink-2);
 }
 
 .top_title_wrap {
@@ -6386,7 +6386,7 @@ code {
 }
 .project-info-project-box .txt-info .txt-info-txt {
     width: 30%;
-    font-weight: 400;
+    font-weight: var(--ds-fw-medium);
     color: var(--ds-ink-4);
 }
 .project-info-project-box .txt-info .txt-info-cont {
@@ -6570,7 +6570,7 @@ code {
     line-height: 24px;
     letter-spacing: -0.04em;
     text-align: center;
-    color: #343a40;
+    color: var(--ds-ink-2);
 }
 .note-title {
     max-width: 745px;
@@ -6625,11 +6625,13 @@ code {
     line-height: 20.4px;
 }
 #main-body #main-body-left .note-info-box .cont .txt-info-txt {
-    width: 85px;
+    /* 라벨 한 벌에 맞춘다 — 여기만 굵기 500 / 줄높이 22.4 로 서 있었다
+       (같은 .txt-info-txt 가 다른 화면에서는 400 / 18). 폭 85 → 88 */
+    width: 88px;
     margin-bottom: var(--ds-1);
     color: var(--ds-ink-4);
-    line-height: 22.4px;
-    letter-spacing: -0.02em;
+    line-height: var(--ds-lh);
+    letter-spacing: var(--ds-ls);
     text-align: left;
 }
 #main-body #main-body-left .note-info-box .cont .icon_box {
@@ -6668,7 +6670,7 @@ code {
     line-height: 15.6px;
     letter-spacing: -0.02em;
     text-align: center;
-    color: #546e7a;
+    color: var(--ds-ink-3);
 }
 #main-body #main-body-left .note-info-box .cont .txt-info-cont.step {
     min-width: 65px;
@@ -6805,7 +6807,7 @@ code {
     height: 56px;
     padding: 0px 32px;
     border-radius: 8px;
-    background: #eceff1;
+    background: var(--ds-canvas);
     font-size: 14px;
     font-weight: 500;
     line-height: 22.4px;
@@ -7537,7 +7539,7 @@ code {
     letter-spacing: 0;
     text-align: left;
     color: #455a64;
-    background: #eceff1;
+    background: var(--ds-canvas);
     margin: 7px 0;
 }
 .sign-box-drop-zone {
@@ -8218,7 +8220,7 @@ code {
     letter-spacing: 0;
     text-align: left;
     color: #455a64;
-    background: #eceff1;
+    background: var(--ds-canvas);
     margin: 7px 0;
 }
 .perf-box3 .content_text .rounded-circle {
@@ -9094,7 +9096,7 @@ code {
     line-height: 23.8px;
     letter-spacing: -0.02em;
     text-align: center;
-    color: #343a40;
+    color: var(--ds-ink-2);
 }
 .modal .modal-pop .modal-body .modal-cont-txt2.targetNm {
     overflow: hidden;
@@ -9626,7 +9628,7 @@ code {
     font-weight: 500;
     line-height: 15.6px;
     letter-spacing: -0.02em;
-    color: #546e7a;
+    color: var(--ds-ink-3);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -10005,7 +10007,7 @@ caption {
 }
 .alert-primary.blue {
     color: var(--ds-ink-3);
-    border: 1px solid #c8daf9;
+    border: 1px solid var(--ds-primary-line);
     background-color: var(--ds-primary-weak);
     background-image: url(../../../lib/eln/img/icon_alarm_text_blue.png);
     background-repeat: no-repeat;
@@ -10183,7 +10185,7 @@ h5,
 
 .gtasktableh th {
     background-color: #f0f4f8;
-    color: #222;
+    color: var(--ds-ink);
     font-weight: bold;
     border-bottom: 1px solid #d0d7de;
 }
