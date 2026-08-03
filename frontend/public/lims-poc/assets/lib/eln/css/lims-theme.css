@@ -3924,7 +3924,10 @@ a.top-logo:hover {
 .folder_name.c-pointer:hover,
 span.folder_name:hover,
 .btn_back.c-pointer:hover {
-	color: var(--ds-primary);
+	/* §10 이 대비를 맞추려고 .txt-project 등에 color:!important 를 걸어 두었다.
+	   그 탓에 이 홀버가 닿지 않아 "누를 수 있다"고 커서만 말하고 화면은
+	   가만히 있었다(프로젝트 이름 9곳, 노트 제목 8곳). 같은 무기로 받는다. */
+	color: var(--ds-primary) !important;
 	text-decoration: underline;
 	text-underline-offset: 2px;
 	cursor: pointer;
