@@ -3921,6 +3921,16 @@ a.top-logo:hover {
 .c-pointer.c-pointer:hover,
 .core-table tbody td > .c-pointer:hover,
 .core-table tbody td .txt-project.c-pointer:hover,
+/* 아래 둘은 색을 (0,5,0)/(0,3,3) + !important 로 쥐고 있어 위의 (0,2,0) 으로는
+   닿지 않는다. 같은 깊이에서 받는다.
+
+   여기서 검사기를 한 번 더 고쳤다. 처음 쓴 확인 스크립트는 "색·바탕·테두리·
+   밑줄·투명도 중 하나라도 바뀌면 반응 있음"으로 봤는데, 이 규칙이 밑줄도 같이
+   주는 탓에 색이 막힌 것들이 전부 통과했다(0건). 색만 따로 보는 검사를
+   나눠서야 세 개가 나왔다. 넓게 재는 검사는 좁게 재는 검사를 대신하지 못한다. */
+.note-card-board .note-card .note-card-cont .txt-title .txt-project.c-pointer:hover,
+.project-card-board .project-card .project-card-cont .txt-title .txt-project.c-pointer:hover,
+.core-table .core-table-body .table > thead > tr > th.c-pointer:hover,
 .folder_name.c-pointer:hover,
 span.folder_name:hover,
 .btn_back.c-pointer:hover {
@@ -4824,4 +4834,13 @@ input.form-check-input.btn {
 	font-weight: 400;
 	line-height: var(--ds-lh);
 	color: var(--ds-ink-4);
+}
+
+/* 작업 칸(.lims-actions-cell)의 링크는 lims-ui.css:2351 이 일부러 주 파랑으로
+   둔다 — 그 칸은 통째로 "할 수 있는 것"이라서다. 그래서 홀버까지 주 파랑을
+   주면 아무 일도 안 일어난다(결과 입력의 "이력" 링크가 그랬다).
+   onclick 이름으로 집으려 했다가 되돌렸다 — 자리로 잡는 것이 맞다. */
+.lims-page td.lims-actions-cell a.c-pointer:hover,
+.lims-page .lims-actions-cell a.c-pointer:hover {
+	color: var(--ds-primary-dark) !important;
 }

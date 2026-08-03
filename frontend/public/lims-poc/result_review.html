@@ -2599,7 +2599,7 @@
           approveUserNm: esc(r.approveUserNm || '-'),
           approveDt: esc(r.approveDt || '-'),
           noteDisp: r.noteNo
-            ? '<a href="#" class="c-pointer" aria-label="검색" onclick="openNote(' + r.resultMno + '); return false;">'
+            ? '<a href="#" class="c-pointer" onclick="openNote(' + r.resultMno + '); return false;">'
               + esc(r.noteNo) + '</a>'
             : '<span class="lims-muted">기록 없음</span>',
           rejectUserNm: esc(r.rejectUserNm || '-'),
@@ -6114,7 +6114,7 @@
       <script id="template_review_row_pending" type="text/template">
         <tr>
           <td class="text-left">
-            <a href="#" class="c-pointer" aria-label="검색" onclick="openDetail({{=resultMno}}); return false;">{{=testItemNm}}</a>
+            <a href="#" class="c-pointer" onclick="openDetail({{=resultMno}}); return false;">{{=testItemNm}}</a>
           </td>
           <td class="text-left">
             <div>{{=sampleNo}}</div>
@@ -6143,7 +6143,7 @@
       <script id="template_review_row_approved" type="text/template">
         <tr>
           <td class="text-left">
-            <a href="#" class="c-pointer" aria-label="검색" onclick="openDetail({{=resultMno}}); return false;">{{=testItemNm}}</a>
+            <a href="#" class="c-pointer" onclick="openDetail({{=resultMno}}); return false;">{{=testItemNm}}</a>
           </td>
           <td class="text-left">
             <div>{{=sampleNo}}</div>
@@ -6171,7 +6171,7 @@
       <script id="template_review_row_rejected" type="text/template">
         <tr>
           <td class="text-left">
-            <a href="#" class="c-pointer" aria-label="검색" onclick="openDetail({{=resultMno}}); return false;">{{=testItemNm}}</a>
+            <a href="#" class="c-pointer" onclick="openDetail({{=resultMno}}); return false;">{{=testItemNm}}</a>
           </td>
           <td class="text-left">
             <div>{{=sampleNo}}</div>
