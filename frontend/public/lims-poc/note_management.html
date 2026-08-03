@@ -2633,9 +2633,9 @@
                           isInspctn: note.inspctnStatusCcd ? true : false,
                           isShare: note.shareStatusCcd ? true : false,
                           isShareVer1:
-                            note.shareStatusCcd && 'N' === 'owner' ? true : false,
+                            note.shareStatusCcd && 'owner' === 'owner' ? true : false,
                           isShareVer2:
-                            note.shareStatusCcd && 'N' === 'ownerAdmin' ? true : false,
+                            note.shareStatusCcd && 'owner' === 'ownerAdmin' ? true : false,
                           isDownload: note.downloadStatusCcd ? true : false,
                           isPerformance: note.perfStatusCcd ? true : false
                         }

@@ -199,7 +199,7 @@
     { aliquotMno: 63, aliquotNo: 'SMP-20260712-001-A03', aliquotTpCcd: 'SPLIT', vesselTpCcd: 'TUBE',
       amount: 20, unitCcd: 'mg', locationNm: '2층 분석실 > 상온 선반 1', aliquotDt: '2026-07-14',
       aliquotStatusCcd: 'IN_USE', parentAliquotNo: 'SMP-20260712-001-A01', childSampleNo: null },
-    { aliquotMno: 64, aliquotNo: 'SMP-20260712-001-A04', aliquotTpCcd: 'DERIVED', vesselTpCcd: 'VIAL',
+    { aliquotMno: 64, aliquotNo: 'SMP-20260712-001-A04', aliquotTpCcd: 'DERIVE', vesselTpCcd: 'VIAL',
       amount: 0, unitCcd: 'mg', locationNm: '3층 시약실 > 냉동고 B > 1단', aliquotDt: '2026-07-14',
       aliquotStatusCcd: 'DEPLETED', parentAliquotNo: 'SMP-20260712-001-A01', childSampleNo: 'SMP-20260712-002' }
   ];
@@ -333,12 +333,12 @@
   var OOS = [
     { oosMno: 21, oosNo: 'OOS-2026-0007', testItemMno: 8003, testItemNm: '잔류용매 (GC)',
       testReqstMno: 7002, testReqstNo: 'TR-20260710-01', resultVal: '0.62', unitCcd: '%',
-      oosStatusCcd: 'INVESTIGATING', detectDt: '2026-07-26', detectUserNm: '박연구',
+      oosStatusCcd: 'PHASE1', detectDt: '2026-07-26', detectUserNm: '박연구',
       causeCcd: null, invstgUserNm: '최QA', judgeCcd: 'FAIL' },
     { oosMno: 22, oosNo: 'OOS-2026-0006', testItemMno: 8005, testItemNm: '수분 (KF)',
       testReqstMno: 7003, testReqstNo: 'TR-20260702-03', resultVal: '0.71', unitCcd: '%',
       oosStatusCcd: 'CLOSED', detectDt: '2026-07-08', detectUserNm: '김연구',
-      causeCcd: 'TEST_ERROR', invstgUserNm: '최QA', judgeCcd: 'INVALID' }
+      causeCcd: 'TEST_ERROR', invstgUserNm: '최QA', judgeCcd: 'NA' }
   ];
 
   var METHODS = [
@@ -396,13 +396,13 @@
   var INSTRUMENTS = [
     { instrumentMno: 601, instrumentCd: 'HPLC-01', instrumentNm: 'Agilent 1260 Infinity II',
       instrumentTpCcd: 'HPLC', modelNm: '1260 Infinity II', locationNm: '2층 분석실',
-      instrumentStatusCcd: 'ACTIVE', lastCalDe: '20260511', nextCalDe: '20261111', calState: 'VALID' },
+      instrumentStatusCcd: 'NORMAL', lastCalDe: '20260511', nextCalDe: '20261111', calState: 'VALID' },
     { instrumentMno: 602, instrumentCd: 'GC-02', instrumentNm: 'Agilent 8890 GC-HS',
       instrumentTpCcd: 'GC', modelNm: '8890', locationNm: '2층 분석실',
-      instrumentStatusCcd: 'ACTIVE', lastCalDe: '20260120', nextCalDe: '20260812', calState: 'SOON' },
+      instrumentStatusCcd: 'NORMAL', lastCalDe: '20260120', nextCalDe: '20260812', calState: 'SOON' },
     { instrumentMno: 603, instrumentCd: 'KF-01', instrumentNm: 'Metrohm 851 Titrando',
       instrumentTpCcd: 'KF', modelNm: '851', locationNm: '3층 시약실',
-      instrumentStatusCcd: 'ACTIVE', lastCalDe: '20250630', nextCalDe: '20260630', calState: 'EXPIRED' },
+      instrumentStatusCcd: 'NORMAL', lastCalDe: '20250630', nextCalDe: '20260630', calState: 'EXPIRED' },
     { instrumentMno: 604, instrumentCd: 'UV-01', instrumentNm: 'Shimadzu UV-1900i',
       instrumentTpCcd: 'UV', modelNm: 'UV-1900i', locationNm: '2층 분석실',
       instrumentStatusCcd: 'RETIRED', lastCalDe: '20240902', nextCalDe: null, calState: 'NONE' }
@@ -673,6 +673,34 @@
     { userMno: 1025, userNm: '박연구', orztNm: '분석팀', authGrpNm: '연구원' },
     { userMno: 1026, userNm: '이연구', orztNm: '합성팀', authGrpNm: '연구원' },
     { userMno: 1030, userNm: '최QA', orztNm: '품질보증', authGrpNm: '운영관리자' }
+  ];
+
+  /* 노트 관리 현황이 쓰는 요청 목록. 점검·공유·다운로드 세 갈래를 한 건씩
+     둔다 — 화면이 갈래마다 다른 줄을 그리므로 하나만 두면 나머지가 안 보인다. */
+  var NOTE_REQUESTS = [
+    { noteMno: 9101, noteNm: 'KM00003710 합성 — batch A', projectNm: '표적단백질 저해제 발굴',
+      ownerNm: '이연구', createDe: '2026-07-26', createUserNm: '박연구',
+      reqstSe: 'inspctn', inspctnStatusCcd: 'REQUEST',
+      /* 상태 칸은 문자열이 아니라 승인 사슬의 점이다 — 템플릿이
+         inspctnUserList 를 돌며 <div class="progress {코드}"> 를 만든다.
+         이 배열이 없으면 note['inspctnStatus'] 가 '' 로 덮여 라벨만 남는다.
+         (CSS 가 아는 코드는 APPROVAL / REJECT / UNCONFIRM 셋이다) */
+      inspctnUserList: [
+        { inspctnStatusCcd: 'APPROVAL' },
+        { inspctnStatusCcd: 'UNCONFIRM' },
+        { inspctnStatusCcd: 'UNCONFIRM' }
+      ],
+      inspctnReqstMno: 5001, editorTpCcd: 'EDITOR', done: false },
+    { noteMno: 9102, noteNm: 'HPLC 순도 분석 (M-HPLC-001)', projectNm: '시험법 검증 (KM-3719)',
+      ownerNm: '김연구', createDe: '2026-07-24', createUserNm: '최QA',
+      reqstSe: 'share', shareStatusCcd: 'REQUEST',
+      shareManagerList: [{ shareStatusCcd: 'APPROVAL' }, { shareStatusCcd: 'UNCONFIRM' }],
+      shareReqstMno: 5002, shareReqstPeriodDays: 30, editorTpCcd: 'EDITOR', done: false },
+    { noteMno: 9103, noteNm: 'OOS-2026-0007 조사 기록', projectNm: '간독성 스크리닝',
+      ownerNm: '박연구', createDe: '2026-07-20', createUserNm: '김연구',
+      reqstSe: 'download', downloadStatusCcd: 'APPROVE',
+      downloadManagerList: [{ downloadStatusCcd: 'APPROVAL' }, { downloadStatusCcd: 'APPROVAL' }],
+      editorTpCcd: 'EDITOR', done: true }
   ];
 
   /* RDKit 이 그린 실제 구조식이 아니라 자리표시용 도형이다.
@@ -947,7 +975,7 @@
           oosMno: 21, oosNo: 'OOS-2026-0007', testItemMno: 8003, testItemNm: '잔류용매 (GC)',
           reqstNo: 'TR-20260710-01', sampleNo: 'SMP-20260705-014',
           resultVal: '0.62', unitCcd: '%', specDisp: '≤ 0.50 %',
-          oosStatusCcd: 'INVESTIGATING', oosStatusCcdNm: '조사중',
+          oosStatusCcd: 'PHASE1', oosStatusCcdNm: '실험실조사',
           detectDt: '2026-07-26', invstgUserMno: 1030, invstgUserNm: '최QA',
           causeCcd: null, causeCcdNm: null, invstgDesc: '주입량 재확인 및 표준품 재조제 후 재분석 예정.'
         },
@@ -1146,6 +1174,29 @@
       };
     },
     '/api/eln/note/noteList': function (p) { return HANDLERS['/api/eln/note/myNoteList'](p); },
+    /*
+      노트 관리 현황(받은 요청) — 이 엔드포인트가 목에 없어서 화면이 통째로
+      비어 있었다. 템플릿은 `if (res.noteReceivedListInfo)` 안에서만 표와
+      "데이터 없음"을 갈라 그리므로, 응답 자체가 없으면 둘 다 안 그려진다.
+      필터 단추만 남고 그 아래가 백지였다 — 24화면 중 유일하게 빈 화면이었고
+      숫자 검사로는 안 걸린다(오류도, 넘침도, 대비 미달도 없다).
+    */
+    '/api/eln/note/noteMngReqstReceivedList': function (p) {
+      var rows = NOTE_REQUESTS;
+      /* 전체 탭의 data-tab-se 는 'full' 이다('all' 이 아니다) */
+      if (p.schNoteReqstStatus && p.schNoteReqstStatus !== 'full') {
+        rows = rows.filter(function (r) { return r.reqstSe === p.schNoteReqstStatus; });
+      }
+      return { noteReceivedListInfo: page(rows, p.pageNo, p.pageUnit) };
+    },
+    '/api/eln/note/noteMngReqstList': function (p) {
+      return { noteReqstListInfo: page(NOTE_REQUESTS, p.pageNo, p.pageUnit) };
+    },
+    '/api/eln/note/noteMngCompleteList': function (p) {
+      var done = NOTE_REQUESTS.filter(function (r) { return r.done; });
+      return { noteCompleteListInfo: page(done, p.pageNo, p.pageUnit) };
+    },
+
     '/api/eln/folder/projectFolderList': function () { return { folderList: [] }; },
     '/api/eln/folder/myFolderList': function () { return { folderList: [] }; },
     '/api/eln/project/projectFolderProcessList': function () { return { folderList: [], processList: [] }; },
@@ -1355,7 +1406,7 @@
         instrumentMno: mno, instrumentCd: p.instrumentCd || ('EQ-' + mno),
         instrumentNm: p.instrumentNm || '(이름 없음)', instrumentTpCcd: p.instrumentTpCcd || 'HPLC',
         modelNm: p.modelNm || null, locationNm: locationNmOf(p.locationMno),
-        instrumentStatusCcd: 'ACTIVE', lastCalDe: null, nextCalDe: null, calState: 'NONE'
+        instrumentStatusCcd: 'NORMAL', lastCalDe: null, nextCalDe: null, calState: 'NONE'
       });
       return { instrumentMno: mno };
     },

@@ -37,6 +37,12 @@
 	--ds-4: calc(var(--ds-unit) * 4);
 	--ds-5: calc(var(--ds-unit) * 5);
 	--ds-6: calc(var(--ds-unit) * 6);
+	/* 7 은 처음에 사다리에서 빼 놓았는데, 그 뒤로 네 곳이 var(--ds-7) 을 썼다.
+	   없는 토큰을 참조하면 var() 가 통째로 무효가 되고 그 속성은 초기값(0)이
+	   된다 — 아래 규칙으로 내려가지 않는다. 그래서 폴더 이름 왼쪽 아이콘 자리
+	   28px 이 0 이 되어 아이콘이 글자 위에 겹쳐 있었다.
+	   28 은 이미 --ds-control-sm 으로 쓰는 값이다. 사다리에 넣는다. */
+	--ds-7: calc(var(--ds-unit) * 7);
 	--ds-8: calc(var(--ds-unit) * 8);
 	--ds-10: calc(var(--ds-unit) * 10);
 
@@ -4467,10 +4473,8 @@ table th {
 	padding: var(--ds-4) var(--ds-4) var(--ds-4) calc(var(--ds-unit) * 14);
 }
 
-/* 프로젝트 상세 왼쪽 판 */
-.tab-wrap.project-detail-note .tab-left .box02 .folder-element {
-	padding-left: var(--ds-7);
-}
+/* 프로젝트 상세 왼쪽 판 — 아이콘 자리는 .folder_name 쪽에서 이미 비운다.
+   여기에 또 주면 28+28 로 두 배가 된다(둘 다 죽어 있어서 안 보였다). */
 
 /* --- 모서리 --- */
 /* 부트스트랩 기본 3px 이 남던 자리 둘 */
@@ -4581,8 +4585,8 @@ a:hover,
 /* 체크상자에 .btn 이 같이 붙어 있어 위 .btn 규칙과 부트스트랩 #999 를
    동시에 맞는다. 입력칸 계열로 되돌린다. */
 input.form-check-input.btn {
-	width: var(--ds-3);
-	height: var(--ds-3);
+	width: var(--ds-4);
+	height: var(--ds-4);
 	min-height: 0;
 	padding: 0;
 	border: 1px solid var(--ds-line-2);
@@ -4850,4 +4854,53 @@ input.form-check-input.btn {
 	color: var(--ds-primary) !important;
 	text-decoration: underline;
 	text-underline-offset: 2px;
+}
+
+/* 목록의 긴 이름 — 자르지 않으면 열이 밀려 마지막 열이 그릇 밖으로 나간다.
+   시료 관리에서 표가 20px 넘쳐 "관리" 머리가 "관" 으로 잘려 보였다.
+   overflow-x:auto 라 스크롤은 되지만, 화면은 그냥 잘린 것처럼 읽힌다. */
+.core-table td .cell-clip {
+	display: block;
+	max-width: calc(var(--ds-unit) * 36);   /* 144 — 여유 18px */
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* 체크상자와 라벨은 한 쌍이다.
+
+   지금 마크업은 둘을 형제로 나란히 두고, 라벨의 왼쪽 여백 24px 안에 체크상자를
+   겹쳐 놓는 방식이다. 가로는 그렇게 맞았지만 세로가 안 맞았다 — 체크상자 12px 이
+   줄높이 36px 짜리 라벨의 맨 위에 붙어, 글자보다 한참 위에 떠 있었다.
+   겹치기를 그만두고 한 줄로 세운다. 쌍 사이는 쌍 안쪽보다 넓게 둔다. */
+.lims-filter .tabs-box {
+	display: flex;
+	align-items: center;
+	gap: var(--ds-2);
+}
+
+.lims-filter .tabs-box .form-check-label2 {
+	padding-left: 0;
+	line-height: var(--ds-lh);
+	white-space: nowrap;
+}
+
+.lims-filter .tabs-box .form-check-input {
+	/* adminlte.min.css 가 .form-check-input 을 position:absolute 로 둔다.
+	   원래 마크업(라벨 안쪽 여백에 겹쳐 놓기)에는 맞지만, 한 줄로 세우면
+	   체크상자가 흐름에서 빠져 라벨 글자 위에 얹힌다. 흐름으로 되돌린다. */
+	position: relative;
+	margin: 0;
+	flex: 0 0 auto;
+}
+
+.lims-filter .tabs-box .form-check-label2 + .form-check-input {
+	margin-left: var(--ds-3);
+}
+
+/* 한 칸에 값 두 개를 담을 때의 구분자. 머리는 "상태 / 판정" 인데 칸은
+   "시험중 -" 처럼 붙어 나와 한 덩어리로 읽혔다. */
+.cell-sep {
+	margin: 0 var(--ds-2);
+	color: var(--ds-line-2);
 }
