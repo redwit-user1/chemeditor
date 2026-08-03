@@ -1217,7 +1217,12 @@
           : u.userNm === '박연구' ? 'park@kmedihub.re.kr'
           : u.userNm === '이연구' ? 'lee@kmedihub.re.kr' : 'qa@kmedihub.re.kr',
         fileId: '',
-        projectMemberRoleCcd: lead ? '1' : '0',
+        /* 코드값은 지어내면 안 된다. 화면이 member_role_{코드} 로 클래스를
+           만들고 CSS 가 그 클래스로 색을 고르므로, 없는 코드를 주면 어떤
+           규칙에도 안 걸려 기본값(예전엔 흰 글자 + 연회색)으로 떨어진다.
+           style.css:4402 이하가 아는 코드는 PJ_MANAGER / PJ_LEAD_RESEARCHER /
+           PJ_RESEARCHER 다. */
+        projectMemberRoleCcd: lead ? 'PJ_MANAGER' : 'PJ_RESEARCHER',
         projectMemberRoleCcdNm: lead ? '책임자' : '연구원',
         authGrpNm: u.authGrpNm
       });
@@ -1547,6 +1552,34 @@
         window.location.href = target;
       };
     }
+
+    /*
+      PoC 범위 밖으로 나가는 링크.
+
+      서버 렌더링 단계에서 렌더 대상이 아닌 경로(@{'/eln/project/createProject'}
+      등)는 href="#" 로 남는다. 그러면 "프로젝트 생성" 같은 주요 버튼을 눌러도
+      아무 일이 안 일어나고, 보는 사람은 고장으로 읽는다. 실제 제품에는 정상
+      링크가 있고 이 프로토타입이 그 화면을 안 그렸을 뿐이라는 사실을 화면이
+      말해 주게 한다 — 조용한 무반응보다 낫다.
+    */
+    window.__limsOutOfScopeToast = true;   /* 검사기가 "죽은 링크"와 구분하는 표시 */
+    document.addEventListener('click', function (ev) {
+      var a = ev.target && ev.target.closest && ev.target.closest('a[href="#"]');
+      if (!a) return;
+      if (a.getAttribute('onclick') || a.getAttribute('data-bs-toggle')) return;
+      var n = a.parentElement;
+      while (n && n !== document.body) {
+        if (n.getAttribute('onclick') || n.getAttribute('data-bs-toggle')) return;
+        n = n.parentElement;
+      }
+      if (a.closest('.pagination, .paginate_button')) return;   /* 위임 처리됨 */
+      var label = (a.textContent || '').trim().slice(0, 20);
+      if (!label) return;
+      ev.preventDefault();
+      if (typeof S2Util !== 'undefined' && S2Util.toasts) {
+        S2Util.toasts('"' + label + '" 화면은 이번 PoC 범위에 없습니다.', { class: 'Toast-bottom-web' });
+      }
+    }, true);
 
     /*
       PoC 배너와 업무 흐름 바를 붙이던 자리다. 둘 다 뗐다 —

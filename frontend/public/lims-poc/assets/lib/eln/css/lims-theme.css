@@ -1814,7 +1814,7 @@ a.note-card-title {
 /* 세로로 쌓인 머리/본문을 가진 판들 — 머리는 고정, 본문만 스크롤한다.
    Bootstrap 의 .dropdown-menu.show{display:block} 을 id 무게로 받는다. */
 #dropdown_alarm.dropdown-menu.show,
-#dropdown_member.dropdown-menu.show,
+.dropdown_member.dropdown-menu.show,
 #dropdown_history.dropdown-menu.show,
 #dropdown_note_history.dropdown-menu.show,
 #dropdown_search.dropdown-menu.show {
@@ -1823,7 +1823,7 @@ a.note-card-title {
 }
 
 #dropdown_alarm.dropdown-menu,
-#dropdown_member.dropdown-menu,
+.dropdown_member.dropdown-menu,
 #dropdown_history.dropdown-menu,
 #dropdown_note_history.dropdown-menu,
 #dropdown_search.dropdown-menu {
@@ -1849,14 +1849,14 @@ a.note-card-title {
 }
 
 /* — 프로젝트 참여자 */
-#dropdown_member.dropdown-menu {
+.dropdown_member.dropdown-menu {
 	width: var(--pop-w-card);
 	height: auto;
 	max-height: var(--pop-h-lg);
 	margin-top: var(--pop-offset) !important;
 }
 
-#dropdown_member.dropdown-menu .member_top {
+.dropdown_member.dropdown-menu .member_top {
 	flex: none;
 }
 
@@ -1917,7 +1917,7 @@ a.note-card-title {
 }
 
 /* 행 메뉴(⋮) — 항목이 짧은 명령들이다 */
-#dropdown_option.dropdown-menu {
+.dropdown_option.dropdown-menu {
 	width: var(--pop-w-menu);
 	max-height: var(--pop-h);
 	overflow-y: auto;
@@ -4101,7 +4101,7 @@ textarea,
 --------------------------------------------------------------------------- */
 /* style.css 의 원본 선택자가 #id.dropdown-menu .부모 .자식((1,3,0)) 이라
    (1,1,0) 으로는 닿지 않는다. 같은 자리에서 받는다. */
-#dropdown_member.dropdown-menu .member_top .member_title,
+.dropdown_member.dropdown-menu .member_top .member_title,
 #dropdown_alarm.dropdown-menu .alarm_title,
 #dropdown_history.dropdown-menu .dropdown_header .title,
 #dropdown_note_history.dropdown-menu .dropdown_header .title {
@@ -4110,7 +4110,7 @@ textarea,
 	line-height: var(--ds-lh);
 }
 
-#dropdown_member.dropdown-menu .member_top .projectNm {
+.dropdown_member.dropdown-menu .member_top .projectNm {
 	font-size: var(--ds-fs-body);
 	font-weight: 400;
 	line-height: var(--ds-lh);
@@ -4118,17 +4118,17 @@ textarea,
 }
 
 /* 구획 제목과 그 옆 개수는 한 덩어리다 — 크기가 갈리면 두 개로 읽힌다 */
-#dropdown_member.dropdown-menu .member_cont .sub-title-sty02,
-#dropdown_member .member_cont .sub-title-sty02 span,
-#dropdown_member .member_cont .title_cnt,
-#dropdown_member .member_cont .memberCnt {
+.dropdown_member.dropdown-menu .member_cont .sub-title-sty02,
+.dropdown_member .member_cont .sub-title-sty02 span,
+.dropdown_member .member_cont .title_cnt,
+.dropdown_member .member_cont .memberCnt {
 	font-size: var(--ds-fs-body);
 	font-weight: var(--ds-fw-medium);
 	line-height: var(--ds-lh);
 }
 
-#dropdown_member .member_cont .title_cnt,
-#dropdown_member .member_cont .memberCnt {
+.dropdown_member .member_cont .title_cnt,
+.dropdown_member .member_cont .memberCnt {
 	color: var(--ds-ink-4);
 }
 
@@ -4145,7 +4145,7 @@ textarea,
 }
 
 /* 비어 있을 때의 안내 — 판에서 가장 큰 글자일 이유가 없다 */
-#dropdown_member .no-data span,
+.dropdown_member .no-data span,
 #dropdown_alarm .no-data span,
 #dropdown_history .no-data span,
 #dropdown_note_history .no-data span,
