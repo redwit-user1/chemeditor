@@ -4904,3 +4904,10 @@ input.form-check-input.btn {
 	margin: 0 var(--ds-2);
 	color: var(--ds-line-2);
 }
+
+/* 요약 띠 안의 '규칙' 칸 — 잰 값이 아니므로 지표 크기로 두지 않는다. */
+.lims-prop-bar .prop-value.is-note {
+	font-size: var(--ds-fs-body);
+	font-weight: var(--ds-fw-medium);
+	color: var(--ds-ink-2);
+}

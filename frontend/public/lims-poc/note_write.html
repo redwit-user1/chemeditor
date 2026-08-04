@@ -215,7 +215,7 @@
 
           const params = {
             modalTitle: '연구노트 점검 요청',
-            subTitle: 'KM00003710 합성 — batch A',
+            subTitle: 'KM00003710 합성 batch A',
             owner: '이연구',
             cnclTxt: '닫기',
             cnfmTxt: '확인'
@@ -244,7 +244,7 @@
                     ajaxPost(
                       '/api/eln/note/inspctn/createInspctnReqst',
                       {
-                        noteNm: 'KM00003710 합성 — batch A',
+                        noteNm: 'KM00003710 합성 batch A',
                         noteMno: noteMno,
                         inspctnUserMnoList: inspctnUserMnoArr,
                         inspctnReqstSeCcd: inspctnReqstSeCcd,
@@ -350,7 +350,7 @@
                     ajaxPost(
                       '/api/eln/note/inspctn/createInspctnReqst',
                       {
-                        noteNm: 'KM00003710 합성 — batch A',
+                        noteNm: 'KM00003710 합성 batch A',
                         noteMno: '9101',
                         inspctnUserMnoList: inspctnUserMnoArr,
                         inspctnReqstSeCcd: inspctnReqstSeCcd,
@@ -387,7 +387,7 @@
                     ajaxPost(
                       '/api/eln/note/inspctn/createSelfInspctnReqst',
                       {
-                        noteNm: 'KM00003710 합성 — batch A',
+                        noteNm: 'KM00003710 합성 batch A',
                         noteMno: '9101',
                         inspctnReqstSeCcd: inspctnReqstSeCcd,
                         selfInspctnRsnCcd: selfInspctnRsnCcd,
@@ -729,7 +729,7 @@
           function (res) {
             const params = {
               modalTitle: '연구노트 점검 요청',
-              subTitle: noteNm ? noteNm : 'KM00003710 합성 — batch A'
+              subTitle: noteNm ? noteNm : 'KM00003710 합성 batch A'
             };
 
             $.extend(params, res.elnNoteInspctnReqst);
@@ -867,7 +867,7 @@
         const inspctnReqstMno = pInspctnReqstMno
           ? pInspctnReqstMno
           : '';
-        const noteNm = pNoteNm ? pNoteNm : 'KM00003710 합성 — batch A';
+        const noteNm = pNoteNm ? pNoteNm : 'KM00003710 합성 batch A';
 
         ajaxPost(
           '/api/eln/note/inspctn/inspctnInfo',
@@ -5015,7 +5015,7 @@
       function note_openModalNoteMemberMandate() {
         const params = {
           modalTitle: '연구노트 위임',
-          subTitle: 'KM00003710 합성 — batch A',
+          subTitle: 'KM00003710 합성 batch A',
           leftTitle: '연구노트 위임 가이드',
           contTxt1: '동일한 프로젝트 내 참여자를 대상으로 위임 가능합니다.',
           contTxt2: '작성중이던 연구노트를 위임할 참여자를 선택해주세요.',
@@ -5207,7 +5207,7 @@
       // 연구노트 공유 요청 모달
       function note_openModalNoteRequestShare() {
         const params = {
-          subTitle: 'KM00003710 합성 — batch A'
+          subTitle: 'KM00003710 합성 batch A'
         };
 
         $('#modal-note-request-share')
@@ -5260,7 +5260,7 @@
       function note_openModalNoteRequestShareConfirm() {
         const params = {
           modalTitle: '연구노트 공유 요청',
-          subTitle: 'KM00003710 합성 — batch A',
+          subTitle: 'KM00003710 합성 batch A',
           userNm: '김연구',
           ownerNm: '이연구',
           ownerMno: '1026',
@@ -5915,8 +5915,8 @@
             ></div>
             <div
               class="note-title"
-              title="KM00003710 합성 — batch A"
-            >KM00003710 합성 — batch A</div>
+              title="KM00003710 합성 batch A"
+            >KM00003710 합성 batch A</div>
             
             <div
               class="note-type ma-l10 write_mode_EDITOR"
@@ -6157,7 +6157,7 @@
                                         -->
                     <a
                       href="#"
-                      onclick="note_openModalDeleteNote(&#39;9101&#39;, &#39;&quot;KM00003710 \uD569\uC131 \u2014 batch A&quot;&#39;)"
+                      onclick="note_openModalDeleteNote(&#39;9101&#39;, &#39;&quot;KM00003710 \uD569\uC131 batch A&quot;&#39;)"
                       class="dropdown-item"
                     >연구노트 삭제</a>
                   
@@ -6483,7 +6483,7 @@
                 </div>
                 <div class="lims-note-struct-status" id="struct-status-{{=blockId}}">구조를 넣으면 여기에 분자식·분자량이 즉시 채워집니다.</div>
                 
-                <div class="guidetext-sty01 lims-note-editor-guide">구조 입력기(Ketcher)에서 그린 뒤 "이 구조로 검색"을 누르면 이 블록으로 들어옵니다. ChemDraw 바이너리(.cdx)는 읽지 않고, 클립보드의 SMILES/MOL 텍스트만 씁니다.</div>
+                <div class="guidetext-sty01 lims-note-editor-guide">구조 입력기에서 그린 구조가 이 블록으로 들어옵니다.</div>
                 <input type="text" id="caption-{{=blockId}}" maxlength="200"
                        class="input-write-sty02-line wp-100 ma-t10"
                        placeholder="구조 설명 (선택) 예) 목적화합물 KM00003710" value="{{=captionVal}}" aria-label="구조 설명 (선택) 예) 목적화합물 KM00003710" />
@@ -6531,7 +6531,7 @@
               </div>
             </div>
             <div class="flex-sty04 ma-t10">
-              <div class="guidetext-sty01">mmol 은 사용량과 분자량으로 계산합니다. 부피 단위는 밀도가 있어야 질량으로 환산됩니다. 계산할 수 없는 칸에는 0 대신 사유를 적습니다.</div>
+              <div class="guidetext-sty01">사용량과 분자량으로 mmol 을 계산합니다.</div>
             </div>
             <input type="text" id="caption-{{=blockId}}" maxlength="200"
                    class="input-write-sty02-line wp-100 ma-t10"
@@ -7087,7 +7087,7 @@
         return ''
           + '<div class="lims-stoich-summary ma-b20"></div>'
           + '<div class="flex-sty04 ma-b10">'
-          + '  <div class="guidetext-sty01">역할을 바꾸면 한계시약과 당량이 다시 계산됩니다. 계산할 수 없는 값은 그 사유를 표시합니다.</div>'
+          + '  <div class="guidetext-sty01">역할을 바꾸면 한계시약과 당량이 다시 계산됩니다.</div>'
           + '</div>'
           + '<div class="lims-stoich-table-wrap">'
           + '  <table class="table table-hover table-sty01">'
@@ -7112,9 +7112,9 @@
         }
         return ''
           + '<div class="ma-t20">'
-          + '  <p class="sub-title-sty01">생성물 (수율 계산)</p>'
+          + '  <p class="sub-title-sty01">생성물</p>'
           + '  <div class="flex-sty04 ma-b10">'
-          + '    <div class="guidetext-sty01">실수득량과 생성물 분자량을 입력하면 이론 수득량 대비 수율을 계산합니다.</div>'
+          + '    <div class="guidetext-sty01">실수득량과 분자량을 넣으면 수율을 계산합니다.</div>'
           + '  </div>'
           + '  <div class="flex-sty05 ma-b20">'
           + '    <label class="modal-cont-label">생성물 명</label>'

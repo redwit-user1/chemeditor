@@ -526,7 +526,7 @@
     넣는다 — 화면은 값이 없으면 줄을 안 그리므로, 서버가 안 줘도 깨지지 않는다.
   */
   var NOTE = {
-    noteMno: 9101, noteNm: 'KM00003710 합성 — batch A',
+    noteMno: 9101, noteNm: 'KM00003710 합성 batch A',
     projectMno: 301, projectNm: '표적단백질 저해제 발굴',
     writerNm: '이연구', writeDtStr: '2026-07-12 17:40', statusCcd: 'WRITING',
     sampleMno: 5001, sampleNo: 'SMP-20260712-001', sampleNm: 'KM00003710 합성 원료 (batch A)'
@@ -620,7 +620,7 @@
   /* 노트는 프로젝트에 매달린다. projectMno 로 걸러 프로젝트 상세에 뿌린다. */
   var ELN_NOTES = [
     { noteMno: 9101, projectMno: 301, projectNm: '표적단백질 저해제 발굴', folderMno: 0,
-      noteNm: 'KM00003710 합성 — batch A', ownerNm: '이연구', modifyDtStr: '2026-07-12 17:40',
+      noteNm: 'KM00003710 합성 batch A', ownerNm: '이연구', modifyDtStr: '2026-07-12 17:40',
       writeStatusCcd: 'COMPLETE', writeStatusCcdNm: '작성완료', keywords: '합성,batch', editorTpCcd: 'EDITOR', editorTpCcdNm: '에디터',
       writeModeCcdNm: '온라인', sharedYn: 'N',
       processNm: '2단계 · 합성', projectPrgrstCcdNm: '진행', securityGradeCcdNm: '2등급' },
@@ -660,7 +660,7 @@
   var nextNoteMno = 9110;
 
   var SAMPLE_NOTES = [
-    { noteMno: 9101, sampleMno: 5001, noteNm: 'KM00003710 합성 — batch A', projectNm: '표적단백질 저해제 발굴',
+    { noteMno: 9101, sampleMno: 5001, noteNm: 'KM00003710 합성 batch A', projectNm: '표적단백질 저해제 발굴',
       createUserNm: '이연구', modifyDtStr: '2026-07-12 17:40', writeStatusCcd: 'COMPLETE' },
     { noteMno: 9102, sampleMno: 5001, noteNm: 'HPLC 순도 분석 (M-HPLC-001 v3)', projectNm: '표적단백질 저해제 발굴',
       createUserNm: '김연구', modifyDtStr: '2026-07-27 14:22', writeStatusCcd: 'INSPECTION' },
@@ -678,7 +678,7 @@
   /* 노트 관리 현황이 쓰는 요청 목록. 점검·공유·다운로드 세 갈래를 한 건씩
      둔다 — 화면이 갈래마다 다른 줄을 그리므로 하나만 두면 나머지가 안 보인다. */
   var NOTE_REQUESTS = [
-    { noteMno: 9101, noteNm: 'KM00003710 합성 — batch A', projectNm: '표적단백질 저해제 발굴',
+    { noteMno: 9101, noteNm: 'KM00003710 합성 batch A', projectNm: '표적단백질 저해제 발굴',
       ownerNm: '이연구', createDe: '2026-07-26', createUserNm: '박연구',
       reqstSe: 'inspctn', inspctnStatusCcd: 'REQUEST',
       /* 상태 칸은 문자열이 아니라 승인 사슬의 점이다 — 템플릿이
@@ -1843,7 +1843,7 @@
       '<div class="lims-chem-stub-canvas" id="chemStubCanvas"></div>' +
       '<div class="lims-chem-stub-side">' +
       '  <div class="lims-chem-stub-title">구조 불러오기</div>' +
-      '  <div class="lims-chem-stub-note">실제 화면에서는 이 자리에 Ketcher 편집기가 열립니다. ' +
+      '  <div class="lims-chem-stub-note">여기에 구조 편집기가 열립니다. ' +
       '구조를 그리거나 ChemDraw 에서 복사해 붙여넣으면 아래 물성이 즉시 갱신됩니다.</div>' +
       '  <div class="lims-chem-stub-list" id="chemStubList"></div>' +
       '</div>';

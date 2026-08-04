@@ -2635,7 +2635,8 @@
           </div>
           <div class="prop-item">
             <span class="prop-label">판정</span>
-            <span class="prop-value">${escapeHtml(decimalTxt)} · 경계값 포함</span>
+            
+            <span class="prop-value is-note">${escapeHtml(decimalTxt)}, 경계값 포함</span>
           </div>
           <div class="lims-prop-status">
             <span class="lims-state muted">${escapeHtml(gSpec.specNm || '')} v${escapeHtml(gSpec.verNo)}</span>
@@ -5824,7 +5825,7 @@
                        class="noteList"
                        onclick="gfn_openNoteDetail(&#39;/eln/note/noteDetails&#39;, &#39;9101&#39;)"
                        data-note-mno="9101">
-                      <span title="KM00003710 합성 — batch A">KM00003710 합성 — batch A</span>
+                      <span title="KM00003710 합성 batch A">KM00003710 합성 batch A</span>
                       
                     </a>
                   </li>
@@ -6224,7 +6225,7 @@
             <span class="sep">/</span>
             <span>결과 입력</span>
           </nav>
-          <h2 class="lims-title">결과 입력 · 판정</h2>
+          <h2 class="lims-title">결과 입력</h2>
         </div>
         <div class="lims-head-actions">
           <a class="button-blue-line-sty01 none"
@@ -6254,8 +6255,7 @@
         
         <div class="flex-sty04 ma-t10">
           <div class="guidetext-sty01">
-            확정하면 즉시 기록되며 삭제할 수 없습니다. 값을 고치면 정정 사유와 함께 이력이 남습니다.
-            임시저장은 없습니다 — 아직 확정하지 않은 값은 저장되지 않습니다.
+            확정한 값은 삭제할 수 없습니다. 고치면 정정 사유가 이력에 남습니다.
           </div>
         </div>
 

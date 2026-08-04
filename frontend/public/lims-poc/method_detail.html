@@ -2740,7 +2740,7 @@
                 <option value="N">초과 (제외)</option>
               </select>
             </div>
-            <div class="flex-sty04"><div class="guidetext-sty01">기본값은 <b>포함</b>입니다. "98.0 % 이상"에서 정확히 98.0 은 적합입니다. (결정 Q9)</div></div>
+            <div class="flex-sty04"><div class="guidetext-sty01">기본값은 <b>포함</b>입니다. "98.0 % 이상"에서 정확히 98.0 은 적합입니다.</div></div>
           </div>
           <div class="flex-sty05 ma-b20" id="${prefix}UpperGroup">
             <label for="${prefix}UpperVal" class="modal-cont-label">상한 값</label>
@@ -2752,7 +2752,7 @@
                 <option value="N">미만 (제외)</option>
               </select>
             </div>
-            <div class="flex-sty04"><div class="guidetext-sty01">기본값은 <b>포함</b>입니다. "0.50 % 이하"에서 정확히 0.50 은 적합입니다. (결정 Q9)</div></div>
+            <div class="flex-sty04"><div class="guidetext-sty01">기본값은 <b>포함</b>입니다. "0.50 % 이하"에서 정확히 0.50 은 적합입니다.</div></div>
           </div>
           <div class="flex-sty05 ma-b20" id="${prefix}ExpectGroup">
             <label for="${prefix}ExpectVal" class="modal-cont-label">기대 값</label>
@@ -2778,13 +2778,13 @@
               <option value="UM">uM</option>
               <option value="NONE">무차원</option>
             </select>
-            <div class="flex-sty04"><div class="guidetext-sty01">결과 단위가 이 단위와 다르면 입력이 차단됩니다. 시스템은 단위를 환산하지 않습니다. (결정 Q10)</div></div>
+            <div class="flex-sty04"><div class="guidetext-sty01">결과 단위가 이 단위와 다르면 입력이 차단됩니다. 시스템은 단위를 환산하지 않습니다.</div></div>
           </div>
           <div class="flex-sty05 ma-b20">
             <label for="${prefix}DecimalPt" class="modal-cont-label">소수 자릿수</label>
             <input type="number" id="${prefix}DecimalPt" step="1" min="0" max="6"
                    class="input-write-sty02-line" title="소수 자릿수" />
-            <div class="flex-sty04"><div class="guidetext-sty01">판정 시 측정값을 이 자릿수로 반올림한 뒤 비교합니다. 원문 값은 반올림하지 않고 보존됩니다. (결정 Q9)</div></div>
+            <div class="flex-sty04"><div class="guidetext-sty01">판정 시 측정값을 이 자릿수로 반올림한 뒤 비교합니다. 원문 값은 반올림하지 않고 보존됩니다.</div></div>
           </div>
           <div class="flex-sty05">
             <label for="${prefix}EffectDe" class="modal-cont-label">시행 일자</label>
@@ -3049,7 +3049,7 @@
               <div class="flex-sty05">
                 <label class="modal-cont-label">확인</label>
                 <div class="guidetext-sty01">${meta.guide}</div>
-                <div class="flex-sty04"><div class="guidetext-sty01">진행 중인 시험은 착수 시점 버전을 그대로 사용합니다. 강제 승계는 하지 않습니다. (결정 Q7)</div></div>
+                <div class="flex-sty04"><div class="guidetext-sty01">진행 중인 시험은 착수 시점 버전을 그대로 사용합니다. 강제 승계는 하지 않습니다.</div></div>
               </div>
             </div>
             <div class="modal-footer">
@@ -5814,7 +5814,7 @@
                        class="noteList"
                        onclick="gfn_openNoteDetail(&#39;/eln/note/noteDetails&#39;, &#39;9101&#39;)"
                        data-note-mno="9101">
-                      <span title="KM00003710 합성 — batch A">KM00003710 합성 — batch A</span>
+                      <span title="KM00003710 합성 batch A">KM00003710 합성 batch A</span>
                       
                     </a>
                   </li>
@@ -6214,7 +6214,7 @@
             <span class="sep">/</span>
             <span>시험법 상세</span>
           </nav>
-          <h2 class="lims-title">시험법 상세 — <span id="methodCdTitle"></span> <span id="methodNmTitle"></span></h2>
+          <h2 class="lims-title"><span id="methodCdTitle"></span> <span id="methodNmTitle"></span></h2>
         </div>
         <div class="lims-head-actions">
           <button class="button-gray-line-sty01"
@@ -6225,8 +6225,7 @@
       <div class="ma-tm20">
         <div class="flex-sty04 ma-t30">
           <div class="guidetext-sty01">
-            버전 이력에 삭제 버튼이 없는 것은 누락이 아닙니다. 과거 시험 결과가 특정 버전 행을 근거로 삼기 때문에
-            폐기해도 행은 남습니다.
+            폐기한 버전도 이력에 남습니다.
           </div>
         </div>
 
@@ -6263,15 +6262,14 @@
         
         <div class="spec-section d-none ma-t30">
           <div class="flex-sty01">
-            <p class="sub-title-sty01">판정기준 — <span id="selectedVerNo"></span></p>
+            <p class="sub-title-sty01">판정기준 <span id="selectedVerNo"></span></p>
             <button class="button-blue-full-sty01"
                     onclick="openModalSpecCreate();"><span>판정기준 등록</span></button>
           </div>
 
           <div class="flex-sty04 ma-t10">
             <div class="guidetext-sty01">
-              경계값은 기본으로 <b>포함</b>입니다 — "98.0 % 이상"에서 정확히 98.0 은 적합입니다.
-              판정은 판정기준의 소수 자릿수로 반올림한 뒤 비교하며, 측정 원문 값은 반올림하지 않고 보존됩니다. (결정 Q9)
+              경계값을 포함해 판정합니다. 측정 원문 값은 반올림하지 않고 보존됩니다.
             </div>
           </div>
 
