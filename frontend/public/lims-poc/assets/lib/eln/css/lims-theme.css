@@ -4911,3 +4911,89 @@ input.form-check-input.btn {
 	font-weight: var(--ds-fw-medium);
 	color: var(--ds-ink-2);
 }
+
+/* ---------------------------------------------------------------------------
+   §31  공통 확인·경고 창 (bootbox / coreDialog)
+
+   이 창만 디자인 체계 밖에 있었다. 실측:
+     - 폭 1440px. §12 에서 .modal-dialog 의 max-width 를 none 으로 풀어 놓고
+       크기는 .modal-wrap-styNN 쪽에서 주기로 했는데, 이 창은 그 클래스를 안
+       달아서 상한이 아예 없어졌다. 내가 만든 구멍이다.
+     - style.css:8626 의 min-height 248px 탓에 두 줄짜리 문장이 248px 상자에
+       담겼다. 창이 커 보이는 두 번째 이유다.
+     - 바닥 버튼이 btn-xs(28 / 12px)다. 같은 "확인"이 앱의 다른 모달 바닥에서는
+       40 / 14px 이다 — 같은 동작인데 크기가 갈렸다.
+     - 몸통 여백 17/25px 이 눈금 밖.
+   척도에는 이미 이 창을 위한 자리가 있다(--modal-w-sm "확인·경고").
+--------------------------------------------------------------------------- */
+
+.core-dialog .modal-dialog {
+	max-width: var(--modal-w-sm);
+}
+
+.core-dialog .modal-dialog .modal-content {
+	min-width: 0;
+	min-height: 0;
+	max-height: var(--modal-h-sm);
+	border: 1px solid var(--ds-line);
+	border-radius: var(--ds-radius-lg);
+	box-shadow: var(--ds-shadow-pop) !important;
+}
+
+.core-dialog .modal-dialog .modal-header {
+	padding: var(--ds-4) var(--ds-5);
+}
+
+.core-dialog .modal-dialog .modal-title {
+	padding-left: 0;
+	font-size: var(--ds-fs-card) !important;
+}
+
+.core-dialog .modal-dialog .modal-body {
+	padding: var(--ds-6) var(--ds-5);
+	font-size: var(--ds-fs-body);
+	line-height: var(--ds-lh);
+	letter-spacing: var(--ds-ls);
+}
+
+/* 묻는 창에는 경고 그림을 얹지 않는다. 두 개의 버튼과 물음표가 이미
+   "고르라"고 말한다. 경고 그림은 alert 쪽에만 남긴다. */
+.core-dialog-confirm .modal-dialog .modal-body:before {
+	display: none;
+}
+
+.core-dialog-confirm .modal-dialog .modal-body .bootbox-body {
+	margin-top: 0;
+}
+
+/* 바닥줄 — 앱의 다른 모달 바닥과 같은 규격으로. */
+.core-dialog .modal-footer {
+	display: flex;
+	align-items: center;
+	/* bootbox 는 swapButtonOrder 로 확인을 DOM 앞에 놓는다. 예전 inline-block
+	   배치에서는 그게 오른쪽으로 흘렀는데, flex 로 바꾸니 확인이 왼쪽으로
+	   왔다. 되돌리는 값은 row-reverse 다 — 취소가 왼쪽, 확인이 오른쪽. */
+	flex-direction: row-reverse;
+	justify-content: flex-start;
+	gap: var(--ds-2);
+	height: auto;
+	padding: var(--ds-3) var(--ds-5);
+	border-bottom-left-radius: var(--ds-radius-lg);
+	border-bottom-right-radius: var(--ds-radius-lg);
+}
+
+.core-dialog .modal-footer .btn {
+	min-height: var(--ds-10);
+	height: var(--ds-10);
+	min-width: calc(var(--ds-unit) * 18);   /* 72 — 두 글자 버튼이 쪼그라들지 않게 */
+	padding: 0 var(--ds-5);
+	font-size: var(--ds-fs-body);
+	border-radius: var(--ds-radius);
+}
+
+/* 경고 기호가 제목과 본문에 두 번 나온다(core.dialog.js 가 제목 문자열에
+   글리프를 끼워 넣고, 본문은 ::before 로 그림을 얹는다). 한 창에 같은 기호를
+   두 번 둘 이유가 없다 — 본문 쪽 하나만 남긴다. */
+.core-dialog .modal-title .icon {
+	display: none;
+}

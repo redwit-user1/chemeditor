@@ -63,7 +63,7 @@ var coreDialog = {
                       .replace(/\n/g, '<br/>')
                 : msg,
             swapButtonOrder: true,
-            className: 'core-dialog',
+            className: 'core-dialog core-dialog-confirm',
             centerVertical: true,
             buttons: {
                 cancel: {
