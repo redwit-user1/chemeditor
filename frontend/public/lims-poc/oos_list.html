@@ -2513,6 +2513,10 @@
       const JUDGE_LABEL = { PASS: '적합', FAIL: '부적합', NA: '판정불가' };
 
       function initPage() {
+        /* 필터 줄의 날짜 두 칸은 readonly 인데 달력이 안 붙어 있었다 —
+           직접 입력도 막히고 달력도 안 뜨니 값을 넣을 방법이 아예 없었다.
+           모달 안의 날짜는 어디서나 이렇게 붙인다(sample_list:227 등). */
+        $('.lims-filter .form_date').coreDateRangePicker({ beginInputId: 'schStartDe', endInputId: 'schEndDe' });
         getOosList();
       }
 

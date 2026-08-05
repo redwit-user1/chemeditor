@@ -4997,3 +4997,132 @@ input.form-check-input.btn {
 .core-dialog .modal-title .icon {
 	display: none;
 }
+
+/* ---------------------------------------------------------------------------
+   §32  달력 (jQuery UI datepicker)
+
+   여태 z-index 하나만 손봐 놓고 안쪽은 손대지 않았다. 열어서 재 보니
+   글꼴 Arial(본문은 Pretendard), 셀 여백 2.8px. 떠 있는 판인데 §12-1-b 의
+   체계를 하나도 안 받고 있었다 — 눌러야 열리는 면이라 아무도 안 봤다.
+
+   앞서 시약·기준이탈의 필터 날짜에는 달력이 아예 안 붙어 있었다(readonly 인데
+   달력이 없어 값을 넣을 방법이 없었다). 붙이고 나서야 이 면이 보였다.
+--------------------------------------------------------------------------- */
+
+#ui-datepicker-div {
+	/* 연·월 선택기 둘이 화살표 사이에 한 줄로 서려면 이만큼은 있어야 한다.
+	   좁으면 머리가 두 줄로 접힌다. */
+	min-width: calc(var(--ds-unit) * 62);   /* 248 */
+	padding: var(--ds-2);
+	border: 1px solid var(--ds-line);
+	border-radius: var(--ds-radius);
+	background: var(--ds-surface);
+	box-shadow: var(--ds-shadow-pop);
+	font-family: var(--ds-font);
+	font-size: var(--ds-fs-small);
+}
+
+#ui-datepicker-div,
+#ui-datepicker-div * {
+	font-family: var(--ds-font);
+}
+
+#ui-datepicker-div .ui-datepicker-header {
+	padding: var(--ds-1) 0 var(--ds-2);
+	border: 0;
+	background: transparent;
+}
+
+#ui-datepicker-div .ui-datepicker-title {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--ds-1);
+	font-size: var(--ds-fs-body);
+	font-weight: var(--ds-fw-medium);
+	line-height: var(--ds-lh);
+	color: var(--ds-ink);
+}
+
+#ui-datepicker-div .ui-datepicker-prev,
+#ui-datepicker-div .ui-datepicker-next {
+	top: var(--ds-1);
+	width: var(--ds-6);
+	height: var(--ds-6);
+	border: 0;
+	border-radius: calc(var(--ds-radius) - 4px);
+	background: transparent;
+	cursor: pointer;
+}
+
+#ui-datepicker-div .ui-datepicker-prev:hover,
+#ui-datepicker-div .ui-datepicker-next:hover {
+	background: var(--ds-hover);
+}
+
+#ui-datepicker-div th {
+	padding: var(--ds-1) 0;
+	font-size: var(--ds-fs-micro);
+	font-weight: var(--ds-fw-medium);
+	color: var(--ds-ink-4);
+}
+
+#ui-datepicker-div td {
+	padding: 1px;
+}
+
+#ui-datepicker-div td a,
+#ui-datepicker-div td span {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: var(--ds-7);
+	min-height: var(--ds-7);
+	padding: 0;
+	border: 0;
+	border-radius: calc(var(--ds-radius) - 4px);
+	background: transparent;
+	font-size: var(--ds-fs-small);
+	color: var(--ds-ink-2);
+	text-align: center;
+}
+
+#ui-datepicker-div td a:hover {
+	background: var(--ds-hover);
+	color: var(--ds-ink);
+}
+
+#ui-datepicker-div td .ui-state-active,
+#ui-datepicker-div td a.ui-state-active {
+	background: var(--ds-primary);
+	color: #fff;
+}
+
+#ui-datepicker-div td.ui-datepicker-today a {
+	border: 1px solid var(--ds-primary);
+	color: var(--ds-primary);
+}
+
+#ui-datepicker-div td.ui-state-disabled span {
+	color: var(--ds-ink-4);
+	opacity: 0.5;
+}
+
+/* 머리의 연·월 선택기가 45px 고정이라 네 자리 연도가 "202" 로 잘렸다.
+   내용에 맞게 늘리고 다른 작은 선택기와 같은 규격으로 세운다. */
+#ui-datepicker-div .ui-datepicker-title select {
+	width: auto;
+	min-width: calc(var(--ds-unit) * 17);   /* 68 — "2026" + 화살표 */
+	height: var(--ds-control-sm);
+	margin: 0 var(--ds-1);
+	padding: 0 var(--ds-1) 0 var(--ds-2);
+	border: 1px solid var(--ds-line-2);
+	border-radius: calc(var(--ds-radius) - 4px);
+	background: var(--ds-surface);
+	font-size: var(--ds-fs-small);
+	color: var(--ds-ink-2);
+}
+
+#ui-datepicker-div .ui-datepicker-title select:hover {
+	border-color: var(--ds-ink-4);
+}

@@ -43,7 +43,7 @@
 
 .core-dialog .modal-dialog .modal-title {
 	font-size: 14px;
-	font-family: "Noto Sans KR", sans-serif;
+	font-family: var(--ds-font);
 	padding-left: 10px;
     padding-top: 5px;
 }
@@ -76,7 +76,7 @@
 
 .core-dialog .modal-dialog .modal-footer {
 	text-align: center;
-	font-family: "Noto Sans KR", sans-serif;
+	font-family: var(--ds-font);
 }
 
 .core-dialog .modal-dialog .modal-footer button {

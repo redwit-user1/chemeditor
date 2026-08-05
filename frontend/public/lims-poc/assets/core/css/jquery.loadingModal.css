@@ -792,7 +792,7 @@
   z-index: 2; }
 
 .jquery-loading-modal__text {
-  font-family: "Noto Sans KR", sans-serif;
+  font-family: var(--ds-font);
   font-size: 18px;
   text-align: center;
   -webkit-transition: color 1s ease-in;

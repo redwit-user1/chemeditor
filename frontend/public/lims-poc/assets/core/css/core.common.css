@@ -7,7 +7,7 @@
  * Copyright (C)  All right reserved.
 */
 body{	
-	font-family: 'Noto Sans KR';
+	font-family: var(--ds-font);
 	color: #5a5c69;
 	letter-spacing:normal;
 	word-spacing:-0.64px;

@@ -38,7 +38,7 @@
 .core-table .core-table-body .table>thead>tr>th {
 	background: #f5f7fb;
 	border: 1px solid #d7d8d0;
-	font-family: "Noto Sans KR", sans-serif;
+	font-family: var(--ds-font);
 	font-size: 12px;
 }
 .core-table .core-table-body .table>tbody>tr>td {
@@ -77,7 +77,7 @@
 	margin-left: 13px;
 }
 .core-table .core-table-body .pagination>li>a {
-	font-family: "Noto Sans KR", sans-serif;
+	font-family: var(--ds-font);
 	padding: 0;
 	width: 27px;
 	height: 27px;
@@ -122,7 +122,7 @@
 
 .core-table .core-table-body  span {
 	line-height: 30px;
-    font-family: "Noto Sans KR", sans-serif;
+    font-family: var(--ds-font);
 }
 .core-table .core-table-body  .search {
 	margin-bottom: 10px;
