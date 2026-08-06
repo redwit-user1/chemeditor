@@ -13,7 +13,7 @@
 
 ::-webkit-scrollbar-thumb {
 	/* background: #d9d9d9; 0110 */
-	background:#bfbfbf;
+	background: var(--ds-line-2);
 }
 
 ::-webkit-scrollbar-track {
@@ -95,7 +95,9 @@ a:active {
 	position: fixed;
 	height: 100%;
 	width: 295px;
-	background: #08204A;
+	/* 예전 남색 사이드바 값이다. 지금은 뒤에서 흰색으로 덮여 화면에 안 나오는데
+	   선언만 남아 있었다 — 덮는 규칙을 건드리는 순간 남색이 되돌아온다. */
+	background: var(--ds-surface);
 	z-index: 1000;
 	transition: margin-left var(--ds-dur-lg) var(--ds-ease);
 }
@@ -106,8 +108,8 @@ a:active {
 	transition: var(--ds-anim) var(--ds-dur-lg) var(--ds-ease);
 }
 .sidenav2 a span {
-	font-size: 14px;
-	font-weight: 400;
+	font-size: var(--ds-fs-body);
+	font-weight: var(--ds-fw-normal);
 }
 
 /* ===================================================================================================

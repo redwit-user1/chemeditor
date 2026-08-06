@@ -42,7 +42,7 @@ textarea[readonly] {
     color: var(--ds-ink-4);
 }
 input.search_write-text-s::placeholder {
-    font-size: 15px !important;
+    font-size: var(--ds-fs-card) !important;
 }
 
 ul,
@@ -58,10 +58,10 @@ li {
 }
 
 label:not(.form-check-label):not(.form-check-label2):not(.custom-file-label) {
-    font-weight: 500 !important;
+    font-weight: var(--ds-fw-medium) !important;
 }
 label.form-check-label2 {
-    font-weight: 400 !important;
+    font-weight: var(--ds-fw-normal) !important;
 }
 
 .c-pointer {
@@ -69,10 +69,10 @@ label.form-check-label2 {
 }
 
 .fw-400 {
-    font-weight: 400 !important;
+    font-weight: var(--ds-fw-normal) !important;
 }
 .fw-500 {
-    font-weight: 500 !important;
+    font-weight: var(--ds-fw-medium) !important;
 }
 
 .scroll {
@@ -567,7 +567,7 @@ label.form-check-label2 {
     visibility: hidden;
     border: 1px solid var(--ds-line);
     font-size: var(--ds-fs-body);
-    font-weight: 400;
+    font-weight: var(--ds-fw-normal);
     line-height: var(--ds-lh);
     letter-spacing: var(--ds-ls);
     text-align: left;
@@ -634,21 +634,21 @@ label.form-check-label2 {
 .main-title-sty01 {
     display: block;
     font-size: 32px;
-    font-weight: 700;
-    line-height: 48px;
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     color: var(--ds-ink);
 }
 
 .main-title-sty02 {
     font-size: 24px;
-    font-weight: 700;
-    line-height: 36px;
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     color: var(--ds-ink);
 }
 .main-title-sty03 {
     font-size: 16px;
-    font-weight: 500;
-    line-height: 25.28px;
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.03em;
     text-align: left;
     color: var(--ds-ink);
@@ -668,33 +668,33 @@ label.form-check-label2 {
 .sub-title-sty01 {
     font-size: 20px;
     color: var(--ds-ink);
-    font-weight: 700;
+    font-weight: var(--ds-fw-bold);
 }
 .sub-title-sty01 .title_cnt {
     font-size: 20px;
-    font-weight: 700;
-    line-height: 28px;
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh-tight);
     color: var(--ds-ink-4);
 }
 
 .sub-title-sty02 {
     font-size: 16px;
     color: var(--ds-ink-3);
-    font-weight: 700;
-    line-height: 27px;
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     margin-bottom: 10px !important;
 }
 .sub-title-sty02 .title_cnt {
     font-size: 16px;
-    font-weight: 700;
-    line-height: 27px;
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     color: var(--ds-ink-4);
 }
 .sub-title-sty03 {
-    font-size: 18px;
+    font-size: var(--ds-fs-lead);
     color: var(--ds-ink);
-    font-weight: 700;
-    line-height: 25.2px;
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh-tight);
     margin-bottom: 10px !important;
 }
 .sub-title-sty03.green_dot:before {
@@ -704,7 +704,7 @@ label.form-check-label2 {
     margin-right: 10px;
     width: 8px;
     height: 8px;
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     background: #1CB56C;
 }
 .sub-title-sty03.gray_dot:before {
@@ -714,7 +714,7 @@ label.form-check-label2 {
     margin-right: 10px;
     width: 8px;
     height: 8px;
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     background: var(--ds-ink-4);
 }
 
@@ -739,8 +739,8 @@ label.form-check-label2 {
     color: #fff !important;
     border: 0;
     outline: 0;
-    line-height: 1;
-    border-radius: 8px;
+    line-height: var(--ds-lh-none);
+    border-radius: calc(var(--ds-radius) - 2px);
     border-right: 0;
     background-color: var(--ds-primary);
     background-image: url(../../../lib/eln/img/icon_plus_w.svg), url(../../../lib/eln/img/icon_arrow_drop_down.png);
@@ -761,15 +761,15 @@ label.form-check-label2 {
     height: 40px;
     padding: 4px 12px 4px 37px;
     color: var(--ds-ink-3) !important;
-    line-height: 1;
-    border-radius: 8px;
+    line-height: var(--ds-lh-none);
+    border-radius: calc(var(--ds-radius) - 2px);
     background-color: #fff;
     background-repeat: no-repeat;
     background-position: left 9px top 7px;
     border: 1px solid var(--ds-line);
     cursor: pointer;
     font-size: 16px;
-    line-height: 32px;
+    line-height: var(--ds-lh);
     letter-spacing: -0.03em;
     text-align: left;
 }
@@ -810,14 +810,14 @@ label.form-check-label2 {
 .button-sty003 {
     width: 100%;
     height: 40px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     background-color: #fff;
     padding: 0 24px;
     border: 1px solid #90a4ae;
     color: #455a64;
     font-size: 16px;
-    font-weight: 500;
-    line-height: 16px;
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh-none);
     letter-spacing: -0.03em;
 }
 .button-sty003:hover {
@@ -837,9 +837,9 @@ label.form-check-label2 {
     height: 36px;
     padding: 5px 18px 5px 40px;
     border-radius: 36px;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 24px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
     color: var(--ds-ink-4);
@@ -866,10 +866,10 @@ label.form-check-label2 {
 .button-chk-sty02 .btn {
     height: 40px;
     border: 0;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     margin: 3px 0 0 7px;
     padding-top: 8px;
-    font-size: 15px;
+    font-size: var(--ds-fs-card);
     background-image: url(../../../lib/eln/img/icon_check_gray.png);
     background-repeat: no-repeat;
     background-position: left 6px top 7px;
@@ -929,14 +929,14 @@ label.form-check-label2 {
     height: 40px;
     padding: 4px 12px 4px 37px;
     color: #fff !important;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     border-right: 0;
     background-color: var(--ds-primary);
     background-repeat: no-repeat;
     background-position: left 9px top 7px;
     cursor: pointer;
     font-size: 16px;
-    line-height: 32px;
+    line-height: var(--ds-lh);
     letter-spacing: -0.03em;
     text-align: left;
     border: 0;
@@ -1022,11 +1022,11 @@ label.form-check-label2 {
     height: 32px;
     padding: 4px 16px;
     color: #fff !important;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     background-color: var(--ds-primary);
     cursor: pointer;
-    font-size: 14px;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    line-height: var(--ds-lh);
     letter-spacing: -0.03em;
     text-align: center;
     border: 0;
@@ -1037,10 +1037,10 @@ label.form-check-label2 {
     height: 46px;
     padding: 12px;
     color: #fff !important;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     background-color: var(--ds-primary);
     font-size: 16px;
-    line-height: 23.8px;
+    line-height: var(--ds-lh);
     letter-spacing: -0.03em;
     text-align: center;
     border: 0;
@@ -1053,9 +1053,9 @@ label.form-check-label2 {
     border-radius: 5px;
     border: 0;
     color: #fff !important;
-    font-size: 12px;
-    line-height: 19px;
-    font-weight: 400;
+    font-size: var(--ds-fs-small);
+    line-height: var(--ds-lh);
+    font-weight: var(--ds-fw-normal);
     cursor: pointer;
     background-color: var(--ds-primary);
     background-image: url(../../../lib/eln/img/icon_add_white.png);
@@ -1066,7 +1066,7 @@ label.form-check-label2 {
 .button-blue-line-sty01 {
     height: 40px;
     padding: 4px 12px 4px 37px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     border: 1px solid var(--ds-primary);
     color: var(--ds-primary) !important;
     background-color: #fff;
@@ -1075,8 +1075,8 @@ label.form-check-label2 {
     background-position: left 9px top 8px;
     cursor: pointer;
     font-size: 16px;
-    line-height: 30px;
-    font-weight: 500;
+    line-height: var(--ds-lh);
+    font-weight: var(--ds-fw-medium);
     letter-spacing: -0.03em;
     text-align: left;
 }
@@ -1098,7 +1098,7 @@ label.form-check-label2 {
     right: -51px;
     top: 0px;
     opacity: 0;
-    font-size: 12px;
+    font-size: var(--ds-fs-small);
     color: var(--ds-ink-3) !important;
     cursor: pointer;
 }
@@ -1110,12 +1110,12 @@ label.form-check-label2 {
 .button-blue-line-sty02 {
     display: block;
     padding: 4px 2px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     background: #fff;
     border: 1px solid var(--ds-primary);
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: center;
     color: var(--ds-primary) !important;
@@ -1136,11 +1136,11 @@ label.form-check-label2 {
     padding: 4px 16px;
     color: var(--ds-primary) !important;
     border: 1px solid var(--ds-primary);
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     background-color: #fff;
     cursor: pointer;
-    font-size: 14px;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    line-height: var(--ds-lh);
     letter-spacing: -0.03em;
     text-align: center;
 }
@@ -1151,11 +1151,11 @@ label.form-check-label2 {
     padding: 1px 16px;
     color: var(--ds-primary) !important;
     border: 1px solid var(--ds-primary);
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     background-color: #fff;
     cursor: pointer;
-    font-size: 14px;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    line-height: var(--ds-lh);
     letter-spacing: -0.03em;
     text-align: center;
 }
@@ -1170,12 +1170,12 @@ label.form-check-label2 {
     width: 100%;
     height: 40px;
     padding: 4px 12px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     color: #455a64;
     background-color: var(--ds-canvas);
     font-size: 16px;
-    line-height: 32px;
-    font-weight: 500;
+    line-height: var(--ds-lh);
+    font-weight: var(--ds-fw-medium);
     letter-spacing: -0.03em;
     text-align: center;
     border: 0;
@@ -1186,12 +1186,12 @@ label.form-check-label2 {
     height: 32px;
     padding: 4px 16px;
     color: #fff !important;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     background-color: #607d8b;
     cursor: pointer;
     text-align: center;
-    font-size: 14px;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    line-height: var(--ds-lh);
     letter-spacing: -0.03em;
     border: 0;
 }
@@ -1199,7 +1199,7 @@ label.form-check-label2 {
     height: 24px;
     padding: 1px;
     color: var(--ds-ink-3) !important;
-    font-size: 12px;
+    font-size: var(--ds-fs-small);
 }
 .button-gray-full-sty02.disabled {
     background: var(--ds-hover);
@@ -1210,16 +1210,16 @@ label.form-check-label2 {
 .button-gray-line-sty01 {
     height: 40px;
     padding: 9px 12px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     border: 1px solid var(--ds-line);
     color: var(--ds-ink-3) !important;
-    font-size: 15px;
-    line-height: 18px;
-    font-weight: 500;
+    font-size: var(--ds-fs-card);
+    line-height: var(--ds-lh-tight);
+    font-weight: var(--ds-fw-medium);
     cursor: pointer;
 }
 .button-gray-line-sty01 span {
-    font-size: 12px;
+    font-size: var(--ds-fs-small);
 }
 .button-gray-line-sty01.small {
     padding: 9px 12px;
@@ -1232,9 +1232,9 @@ label.form-check-label2 {
     border-radius: 5px;
     border: 1px solid #dbdbdb;
     color: #000 !important;
-    font-size: 12px;
-    line-height: 19px;
-    font-weight: 400;
+    font-size: var(--ds-fs-small);
+    line-height: var(--ds-lh);
+    font-weight: var(--ds-fw-normal);
     cursor: pointer;
     background-color: #fff;
     background-image: url(../../../lib/eln/img/icon_add_blue.png);
@@ -1247,13 +1247,13 @@ label.form-check-label2 {
     width: 100%;
     height: 40px;
     padding: 4px 12px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     color: var(--ds-ink-4);
     background-color: unset;
     border: 0;
     font-size: 16px;
-    line-height: 32px;
-    font-weight: 500;
+    line-height: var(--ds-lh);
+    font-weight: var(--ds-fw-medium);
     letter-spacing: -0.03em;
     text-align: center;
 }
@@ -1269,9 +1269,9 @@ label.form-check-label2 {
     background-size: 18px;
     cursor: pointer;
     color: var(--ds-primary) !important;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
 }
 
@@ -1281,8 +1281,8 @@ label.form-check-label2 {
     font-size: 16px;
     color: var(--ds-ink-3);
     padding: 12px 20px;
-    line-height: 1;
-    border-radius: 8px;
+    line-height: var(--ds-lh-none);
+    border-radius: calc(var(--ds-radius) - 2px);
     border: 0;
     outline: 0;
     opacity: 1;
@@ -1291,7 +1291,7 @@ label.form-check-label2 {
 .button-cnfm-sty01.small,
 .button-cncl-sty01.small {
     padding: 10px 15px;
-    font-size: 14px;
+    font-size: var(--ds-fs-body);
 }
 
 .button-remove-full-sty02 {
@@ -1299,11 +1299,11 @@ label.form-check-label2 {
     height: 32px;
     padding: 4px 16px;
     color: #fff !important;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     background-color: #e12f13;
     cursor: pointer;
-    font-size: 14px;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    line-height: var(--ds-lh);
     letter-spacing: -0.03em;
     text-align: center;
     border: 0;
@@ -1326,12 +1326,12 @@ label.form-check-label2 {
     position: absolute;
     top: -29px;
     right: 16px;
-    font-size: 12px;
+    font-size: var(--ds-fs-small);
     color: var(--ds-ink-4) !important;
     width: 45px;
     height: 16px;
     margin-bottom: 1rem;
-    line-height: 1;
+    line-height: var(--ds-lh-none);
     background-image: url(../img/chevron_right.png);
     background-repeat: no-repeat;
     background-position: right -7px top -6px;
@@ -1342,13 +1342,13 @@ label.form-check-label2 {
 }
 
 .button-more-sty02 {
-    font-size: 14px;
+    font-size: var(--ds-fs-body);
     color: var(--ds-ink) !important;
     width: 93px;
     height: 16px;
-    font-weight: 500;
+    font-weight: var(--ds-fw-medium);
     margin-bottom: 1rem;
-    line-height: 1;
+    line-height: var(--ds-lh-none);
     background-image: url(../img/icon_arrow_right_b.png);
     background-repeat: no-repeat;
     background-position: right 2px top 2px;
@@ -1360,9 +1360,9 @@ label.form-check-label2 {
 }
 
 .button-gray-txt-sty01 {
-    font-size: 12px;
-    font-weight: 400;
-    line-height: 15.6px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh-tight);
     letter-spacing: 0;
     text-align: center;
     background: none;
@@ -1382,9 +1382,9 @@ label.form-check-label2 {
 .button-gray-txt-sty02 {
     height: 32px;
     padding-top: 5px;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: center;
     background: none;
@@ -1405,7 +1405,7 @@ label.form-check-label2 {
 .radio-box-sty01 {
     width: 408px;
     height: 48px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     background: var(--ds-canvas);
 }
 .radio-box-sty01 .btn {
@@ -1413,26 +1413,26 @@ label.form-check-label2 {
     height: 48px;
     margin: 0;
     font-size: 16px;
-    font-weight: 500;
-    line-height: 32px;
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.03em;
     text-align: center;
     border: 0;
     color: var(--ds-ink-4);
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     background: var(--ds-canvas) !important;
 }
 .radio-box-sty01 .btn-check:checked + .btn-secondary {
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     background: var(--ds-primary) !important;
-    font-weight: 700;
+    font-weight: var(--ds-fw-bold);
     color: #fff;
 }
 
 .radio-box-sty02 {
     font-size: 16px;
-    font-weight: 500;
-    line-height: 25.28px;
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.03em;
     text-align: left;
     color: var(--ds-ink-3);
@@ -1450,8 +1450,8 @@ label.form-check-label2 {
     color: var(--ds-ink-3);
     background-color: #ced4da;
     padding: 10px 20px;
-    line-height: 1;
-    border-radius: 8px;
+    line-height: var(--ds-lh-none);
+    border-radius: calc(var(--ds-radius) - 2px);
     position: relative;
     left: 1px;
     height: 40px;
@@ -1468,10 +1468,10 @@ label.form-check-label2 {
     font-size: 16px;
     color: #ffffff !important;
     padding: 12px 16px 12px 16px;
-    line-height: 1;
+    line-height: var(--ds-lh-none);
     border: 0;
     outline: 0;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     margin: 4px;
     display: block;
     width: 100%;
@@ -1489,7 +1489,7 @@ label.form-check-label2 {
     height: 40px;
     border: 1px solid var(--ds-line);
     background-color: #fff;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
 }
 .list-block-btn-box .nav-tabs {
     border-bottom: 0 !important;
@@ -1709,16 +1709,16 @@ label.form-check-label2 {
     flex-direction: column;
     width: 100%;
     height: 100px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     border: 1px dashed var(--ds-line);
     background-color: var(--ds-canvas);
     padding: 20px;
     color: var(--ds-ink-3);
     text-align: center;
     letter-spacing: 0;
-    font-size: 15px;
-    font-weight: 500;
-    line-height: 25.28px;
+    font-size: var(--ds-fs-card);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.03em;
 }
 .grid-add.active,
@@ -1737,11 +1737,11 @@ label.form-check-label2 {
     right: 15px;
     height: 32px;
     padding: 4px 16px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     border: 1px solid var(--ds-line);
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
     background: #fff;
@@ -1752,9 +1752,9 @@ label.form-check-label2 {
 }
 .grid-add .limit_txt,
 .grid-add2 .limit_txt {
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 21px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: center;
     color: var(--ds-ink-4);
@@ -1762,7 +1762,7 @@ label.form-check-label2 {
 .file-list .add-file {
     height: 58px;
     padding: 13px 22px;
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     display: flex;
     justify-content: space-between;
     background-color: #fff;
@@ -1770,8 +1770,8 @@ label.form-check-label2 {
     align-items: center;
     margin-bottom: 0.5rem;
     font-size: 16px;
-    font-weight: 500;
-    line-height: 25.28px;
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.03em;
     text-align: left;
 }
@@ -1931,7 +1931,7 @@ label.form-check-label2 {
 
 #nav-dropdown-menu.dropdown-menu a,
 #nav-dropdown-sidebar-editor-tp.dropdown-menu a {
-    font-size: 15px;
+    font-size: var(--ds-fs-card);
     padding-left: 40px;
     color: #fff !important;
 }
@@ -1948,7 +1948,7 @@ label.form-check-label2 {
 
 .nav-menu {
     padding: 7px 12px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     letter-spacing: -0.03em;
 }
 
@@ -2024,7 +2024,7 @@ label.form-check-label2 {
 .nav-menu a.active {
     width: 100%;
     background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     opacity: 1 !important;
 }
 /* 14/18 은 눈금(4의 배수)에 없다. 사이드바 한 칸에서만 184건이 나왔다.
@@ -2044,13 +2044,13 @@ label.form-check-label2 {
 .nav-list-wrap .nav-list-top .nav-list-title-wrap:hover {
     width: 100%;
     background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     opacity: 1 !important;
 }
 .nav-list-wrap .nav-list-top .nav-list-title-wrap .nav-list-title {
     font-size: 16px;
-    font-weight: 700;
-    line-height: 24px;
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: -0.03em;
     text-align: left;
     color: #fff !important;
@@ -2058,17 +2058,17 @@ label.form-check-label2 {
 .nav-list-wrap .nav-list-top .nav-list-cnt {
     width: 32px;
     background: #394d6e;
-    font-size: 12px;
+    font-size: var(--ds-fs-small);
     border-radius: 18px;
-    line-height: 20px;
-    font-weight: 700;
+    line-height: var(--ds-lh);
+    font-weight: var(--ds-fw-bold);
     margin-left: 10px;
     text-align: center;
 }
 .nav-list-wrap .nav-list-top .nav-list-all {
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 20px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     border-bottom: 1px solid var(--ds-ink-4);
     color: var(--ds-ink-4) !important;
     margin-bottom: 1rem;
@@ -2083,8 +2083,8 @@ label.form-check-label2 {
     padding-left: 35px;
     text-align: left;
     color: #fff !important;
-    font-size: 14px;
-    font-weight: 400;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-normal);
     overflow: hidden;
     text-overflow: ellipsis;
     letter-spacing: 0;
@@ -2109,7 +2109,7 @@ label.form-check-label2 {
 .nav-note-list a.active {
     width: 100%;
     background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     opacity: 1 !important;
 }
 
@@ -2152,8 +2152,8 @@ label.form-check-label2 {
     outline: 0;
     color: var(--ds-ink-3);
     padding: 8px 16px;
-    font-size: 15px;
-    font-weight: 400;
+    font-size: var(--ds-fs-card);
+    font-weight: var(--ds-fw-normal);
     border: 1px solid var(--ds-canvas);
     background-color: var(--ds-canvas);
     border-top-left-radius: 8px;
@@ -2185,9 +2185,9 @@ label.form-check-label2 {
 }
 
 .auth_time a {
-    font-size: 14px;
+    font-size: var(--ds-fs-body);
     color: var(--ds-ink) !important;
-    line-height: 24px;
+    line-height: var(--ds-lh);
 }
 
 .top-right-icon .navbar-nav {
@@ -2223,8 +2223,8 @@ label.form-check-label2 {
     height: 14px;
     padding: 0;
     font-size: 10px;
-    font-weight: 400;
-    line-height: 15px;
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
 }
 
 .nav-profile {
@@ -2246,12 +2246,12 @@ label.form-check-label2 {
     border-radius: 50%;
 }
 .nav-profile .profile-info h6 {
-    font-size: 14px;
+    font-size: var(--ds-fs-body);
     color: var(--ds-ink);
-    line-height: 23.8px;
+    line-height: var(--ds-lh);
     margin-left: 8px;
     margin-bottom: 0px !important;
-    font-weight: 700;
+    font-weight: var(--ds-fw-bold);
 }
 .nav-profile .profile-info .profile_expand_wrap {
     width: 25px;
@@ -2277,21 +2277,21 @@ label.form-check-label2 {
 #dropdown_profile.dropdown-menu {
     background-color: #fff;
     background-clip: padding-box;
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     border: 1px solid var(--ds-hover);
     box-shadow: var(--ds-shadow-pop);
 }
 #dropdown_profile.dropdown-menu .dropdown-item {
     padding: 5px;
     padding-left: 40px;
-    font-size: 14px !important;
+    font-size: var(--ds-fs-body) !important;
     color: var(--ds-ink) !important;
-    font-weight: 500;
+    font-weight: var(--ds-fw-medium);
 }
 
 #dropdown_profile .dropdown-item.active,
 #dropdown_profile .dropdown-item:hover {
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     background-color: var(--ds-canvas);
 }
 
@@ -2316,16 +2316,16 @@ label.form-check-label2 {
     border-bottom: 1px solid var(--ds-line);
 }
 #dropdown_profile.dropdown-menu .profile_info .name {
-    font-size: 14px;
+    font-size: var(--ds-fs-body);
     color: var(--ds-ink);
-    line-height: 23px;
-    font-weight: 700;
+    line-height: var(--ds-lh);
+    font-weight: var(--ds-fw-bold);
 }
 #dropdown_profile.dropdown-menu .profile_info .email {
-    font-size: 12px;
+    font-size: var(--ds-fs-small);
     color: var(--ds-ink-4);
-    line-height: 18px;
-    font-weight: 400;
+    line-height: var(--ds-lh);
+    font-weight: var(--ds-fw-normal);
 }
 
 #dropdown_profile.dropdown-menu .menu_list {
@@ -2338,15 +2338,15 @@ label.form-check-label2 {
     position: absolute;
     background-color: #fff;
     background-clip: padding-box;
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     box-shadow: var(--ds-shadow-pop);
     border: 1px solid var(--ds-hover);
     background: var(--ds-canvas);
 }
 #dropdown_alarm.dropdown-menu .alarm_title {
     font-size: 16px;
-    font-weight: 700;
-    line-height: 25.28px;
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
     color: var(--ds-ink);
@@ -2376,11 +2376,11 @@ label.form-check-label2 {
     padding: 4px 12px;
     border-radius: 55px;
     border: 1px solid var(--ds-line) !important;
-    font-size: 14px;
-    font-weight: 500;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
     color: var(--ds-ink-3);
     background: #fff;
-    line-height: 23.8px;
+    line-height: var(--ds-lh);
     margin-right: 5px;
     cursor: pointer;
     text-align: center;
@@ -2409,10 +2409,10 @@ label.form-check-label2 {
     min-height: 128px;
     margin: 19px;
     padding: 14px 24px 20px 24px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     border: 1px solid var(--ds-line);
     background: #fff;
-    font-size: 14px;
+    font-size: var(--ds-fs-body);
     color: var(--ds-ink);
 }
 
@@ -2423,27 +2423,27 @@ label.form-check-label2 {
     border: 1px solid rgba(222, 226, 230, 0.7);
 }
 #dropdown_alarm.dropdown-menu .alarm_cont .alarm_top .name {
-    font-size: 15px;
-    font-weight: 700;
-    line-height: 24px;
+    font-size: var(--ds-fs-card);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
     color: var(--ds-ink);
     margin-left: 5px;
 }
 #dropdown_alarm.dropdown-menu .alarm_cont .alarm_top .date {
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 21px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
     color: var(--ds-ink-4);
     margin-left: 5px;
 }
 #dropdown_alarm.dropdown-menu .alarm_cont .alarm_text .s-name {
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 22.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
 }
@@ -2454,12 +2454,12 @@ label.form-check-label2 {
     text-overflow: ellipsis;
     letter-spacing: 0;
     white-space: nowrap;
-    font-weight: 700;
+    font-weight: var(--ds-fw-bold);
 }
 #dropdown_alarm.dropdown-menu .alarm_cont .alarm_text .event {
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
     color: #455a64;
@@ -2489,8 +2489,8 @@ label.form-check-label2 {
 }
 #dropdown_history.dropdown-menu .dropdown_header .title {
     font-size: 16px;
-    font-weight: 700;
-    line-height: 25.28px;
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
     color: var(--ds-ink);
@@ -2498,8 +2498,8 @@ label.form-check-label2 {
 #dropdown_history.dropdown-menu .dropdown_header .date_txt,
 #dropdown_history.dropdown-menu .dropdown_header .sch_cnt {
     font-size: 16px;
-    font-weight: 500;
-    line-height: 24px;
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.03em;
     text-align: left;
     color: var(--ds-ink-3);
@@ -2523,10 +2523,10 @@ label.form-check-label2 {
     min-height: 156px;
     margin-bottom: 15px;
     padding: 14px 24px 20px 24px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     border: 1px solid var(--ds-line);
     background: #fff;
-    font-size: 14px;
+    font-size: var(--ds-fs-body);
     color: var(--ds-ink);
 }
 
@@ -2536,27 +2536,27 @@ label.form-check-label2 {
     border-radius: 50%;
 }
 #dropdown_history.dropdown-menu .dropdown_content .alarm_top .name {
-    font-size: 15px;
-    font-weight: 700;
-    line-height: 24px;
+    font-size: var(--ds-fs-card);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
     color: var(--ds-ink);
     margin-left: 5px;
 }
 #dropdown_history.dropdown-menu .dropdown_content .alarm_top .date {
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 21px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
     color: var(--ds-ink-4);
     margin-left: 5px;
 }
 #dropdown_history.dropdown-menu .dropdown_content .alarm_text .s-name {
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 22.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
 }
@@ -2580,9 +2580,9 @@ label.form-check-label2 {
     height: 25px;
 }
 #dropdown_history.dropdown-menu .dropdown_content .alarm_text .event {
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
     color: #455a64;
@@ -2593,11 +2593,11 @@ label.form-check-label2 {
     display: flex;
     height: 20px;
     padding: 0px 8px;
-    border-radius: 4px;
+    border-radius: calc(var(--ds-radius) - 4px);
     background: var(--ds-ink);
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 20.4px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     color: #fff;
 }
@@ -2618,8 +2618,8 @@ label.form-check-label2 {
 }
 #dropdown_note_history.dropdown-menu .dropdown_header .title {
     font-size: 16px;
-    font-weight: 700;
-    line-height: 25.28px;
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
     color: var(--ds-ink);
@@ -2629,10 +2629,10 @@ label.form-check-label2 {
     padding: 4px;
     margin-right: 10px;
     font-size: 16px;
-    font-weight: 500;
+    font-weight: var(--ds-fw-medium);
     color: var(--ds-ink);
     background: #fff;
-    line-height: 23.8px;
+    line-height: var(--ds-lh);
     cursor: pointer;
     text-align: center;
     border: 0;
@@ -2654,8 +2654,8 @@ label.form-check-label2 {
 #dropdown_note_history.dropdown-menu .dropdown_header .date_txt,
 #dropdown_note_history.dropdown-menu .dropdown_header .sch_cnt {
     font-size: 16px;
-    font-weight: 500;
-    line-height: 24px;
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.03em;
     text-align: left;
     color: var(--ds-ink-3);
@@ -2679,10 +2679,10 @@ label.form-check-label2 {
     min-height: 170px;
     margin-bottom: 15px;
     padding: 14px 24px 20px 24px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     border: 1px solid var(--ds-line);
     background: #fff;
-    font-size: 14px;
+    font-size: var(--ds-fs-body);
     color: var(--ds-ink);
 }
 #dropdown_note_history.dropdown-menu .dropdown_content .alarm_top #myImg {
@@ -2691,27 +2691,27 @@ label.form-check-label2 {
     border-radius: 50%;
 }
 #dropdown_note_history.dropdown-menu .dropdown_content .alarm_top .name {
-    font-size: 15px;
-    font-weight: 700;
-    line-height: 24px;
+    font-size: var(--ds-fs-card);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
     color: var(--ds-ink);
     margin-left: 5px;
 }
 #dropdown_note_history.dropdown-menu .dropdown_content .alarm_top .date {
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 21px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
     color: var(--ds-ink-4);
     margin-left: 5px;
 }
 #dropdown_note_history.dropdown-menu .dropdown_content .alarm_text .s-name {
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 22.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
 }
@@ -2735,9 +2735,9 @@ label.form-check-label2 {
     height: 25px;
 }
 #dropdown_note_history.dropdown-menu .dropdown_content .alarm_text .event {
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
     color: #455a64;
@@ -2752,16 +2752,16 @@ label.form-check-label2 {
     padding: 0;
     background-color: #fff;
     background-clip: padding-box;
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     box-shadow: var(--ds-shadow-pop);
     border: 1px solid var(--ds-hover);
     margin-top: 3px !important;
 }
 #dropdown_search.dropdown-menu .title {
     height: 36px;
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 20.4px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink-4);
@@ -2778,27 +2778,27 @@ label.form-check-label2 {
 #dropdown_search .dropdown-select-btn {
     height: 40px;
     padding: 0px 14px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     border: 1px solid var(--ds-line);
     background-color: #fff;
-    font-size: 15px;
-    line-height: 24px;
+    font-size: var(--ds-fs-card);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-primary);
-    font-weight: 500;
+    font-weight: var(--ds-fw-medium);
 }
 #dropdown_search .dropdown-select-btn .caret {
     color: var(--ds-ink-3);
     padding-left: 8px;
-    font-size: 14px;
+    font-size: var(--ds-fs-body);
 }
 #dropdown_search.default .dropdown-select-btn,
 #dropdown_search .dropdown-select-btn.default {
     background-color: var(--ds-hover);
     border: 1px solid var(--ds-hover);
     color: var(--ds-ink) !important;
-    font-weight: 400;
+    font-weight: var(--ds-fw-normal);
 }
 #dropdown_search .dropdown-select-btn.dropdown-toggle::after {
     float: right;
@@ -2818,7 +2818,7 @@ label.form-check-label2 {
     padding: 0;
     background-color: #fff;
     background-clip: padding-box;
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     box-shadow: var(--ds-shadow-pop);
     border: 1px solid var(--ds-hover);
 }
@@ -2833,27 +2833,27 @@ label.form-check-label2 {
     border-bottom: 4px solid var(--ds-canvas);
 }
 .dropdown-sch-select.dropdown-menu .dropdown-menu-title .drop-title {
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 20.4px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     color: var(--ds-ink-4);
 }
 .dropdown-sch-select.dropdown-menu .dropdown-menu-cont .drop-cont1 {
     height: 40px;
     padding: 8px 15px;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 21px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
     color: var(--ds-ink-3);
     border-bottom: 1px solid var(--ds-canvas);
 }
 .dropdown-sch-select.dropdown-menu .dropdown-menu-cont .drop-cont1 .allCheck {
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 15.6px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh-tight);
     letter-spacing: -0.02em;
     text-align: center;
     color: var(--ds-ink);
@@ -2891,9 +2891,9 @@ label.form-check-label2 {
 }
 .dropdown-sch-select.dropdown-menu .dropdown-menu-cont .txt {
     width: 145px;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 21px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
     color: var(--ds-ink);
@@ -2902,9 +2902,9 @@ label.form-check-label2 {
     letter-spacing: 0;
 }
 .dropdown-sch-select.dropdown-menu .dropdown-menu-cont .sub-txt {
-    font-size: 12px;
-    font-weight: 400;
-    line-height: 20.4px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink-4);
@@ -2922,9 +2922,9 @@ label.form-check-label2 {
 .dropdown-sch-select.list.dropdown-menu .dropdown-menu-cont .date-txt-box {
     height: 25px;
     padding: 10px 45px 10px 10px;
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: 0.03em;
     text-align: center;
     color: var(--ds-ink-4);
@@ -3024,7 +3024,7 @@ label.form-check-label2 {
     display: flex;
     width: 56.5%;
     height: 238px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     background: #fff;
     box-shadow: var(--ds-shadow);
     flex-direction: row;
@@ -3042,23 +3042,23 @@ label.form-check-label2 {
 .main-card01 .title01 {
     font-size: 32px;
     color: #101010;
-    font-weight: 700;
+    font-weight: var(--ds-fw-bold);
     padding: 19px 0 20px 0;
-    line-height: 38px;
+    line-height: var(--ds-lh-tight);
 }
 .main-card01 .txt01 {
-    font-size: 14px;
+    font-size: var(--ds-fs-body);
     color: var(--ds-ink-4);
-    line-height: 22px;
+    line-height: var(--ds-lh);
     background-image: url(../img/icon_time_update.png);
     background-repeat: no-repeat;
     padding-left: 24px;
 }
 .main-card01 .txt02 {
-    font-size: 15px;
+    font-size: var(--ds-fs-card);
     color: var(--ds-ink-3);
-    line-height: 24px;
-    font-weight: 500;
+    line-height: var(--ds-lh);
+    font-weight: var(--ds-fw-medium);
 }
 .main-card01 .card-profile {
     width: 180px;
@@ -3066,13 +3066,13 @@ label.form-check-label2 {
     background-image: url(../img/main_profile.png);
     background-repeat: no-repeat;
     border: 1px solid rgba(222, 226, 230, 0.4);
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
 }
 
 .main-card02 {
     width: 42%;
     height: 238px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     background: #fff;
     box-shadow: var(--ds-shadow);
 }
@@ -3086,11 +3086,11 @@ label.form-check-label2 {
 }
 .main-card02.notice_board .board-top .tap {
     border: 0 !important;
-    font-weight: 700;
+    font-weight: var(--ds-fw-bold);
     display: flex;
     align-items: center;
     padding-bottom: 16px;
-    font-size: 15px !important;
+    font-size: var(--ds-fs-card) !important;
     color: var(--ds-ink-4);
 }
 .main-card02.notice_board .tap:hover {
@@ -3109,8 +3109,8 @@ label.form-check-label2 {
 }
 .main-card02.notice_board .tab-content .tab-cont {
     padding: 16px 30px;
-    font-size: 15px;
-    font-weight: 400;
+    font-size: var(--ds-fs-card);
+    font-weight: var(--ds-fw-normal);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink-3);
@@ -3124,7 +3124,7 @@ label.form-check-label2 {
 }
 .main-card02.notice_board .tab-content .tab-cont li a:hover {
     color: var(--ds-ink-3);
-    font-weight: 500;
+    font-weight: var(--ds-fw-medium);
     text-decoration: underline;
     text-underline-offset: 3px;
 }
@@ -3196,7 +3196,7 @@ label.form-check-label2 {
     opacity: 0.9;
     color: #fff;
     border-radius: 5px;
-    font-size: 15px;
+    font-size: var(--ds-fs-card);
     box-shadow: var(--ds-shadow-pop);
     word-wrap: break-word;
     transition: opacity var(--ds-dur-lg) var(--ds-ease);
@@ -3210,12 +3210,12 @@ label.form-check-label2 {
     width: 49px;
     height: 24px;
     padding: 2px 8px;
-    border-radius: 4px;
+    border-radius: calc(var(--ds-radius) - 4px);
     background: #03a9f4;
     box-shadow: var(--ds-shadow);
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 20.4px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: center;
     color: #fff;
@@ -3256,8 +3256,8 @@ label.form-check-label2 {
 
 .guide_text {
     font-size: 16px;
-    font-weight: 400;
-    line-height: 28.8px;
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: -0.05em;
     text-align: left;
     color: var(--ds-ink-3);
@@ -3268,16 +3268,16 @@ label.form-check-label2 {
 }
 .guide_text2 {
     font-size: 16px;
-    font-weight: 500;
-    line-height: 27px;
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.06em;
     text-align: right;
     color: #fff;
 }
 .guide_text_s {
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 28.8px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: -0.05em;
     text-align: left;
     color: var(--ds-ink-3);
@@ -3302,11 +3302,11 @@ label.form-check-label2 {
     display: inline-block;
     height: 20px;
     padding: 0px 8px;
-    border-radius: 4px;
+    border-radius: calc(var(--ds-radius) - 4px);
     background: #263238;
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 20.4px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: #fff;
@@ -3322,11 +3322,11 @@ label.form-check-label2 {
     height: 32px;
     margin-top: 10px;
     padding: 4px 15px 4px 30px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     border: 1px solid var(--ds-line);
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
     color: var(--ds-ink-3);
@@ -3339,7 +3339,7 @@ label.form-check-label2 {
     display: flex;
     height: 32px;
     padding: 4px 8px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     background: var(--ds-canvas);
     border: 1px solid var(--ds-line);
     color: var(--ds-ink-4);
@@ -3356,8 +3356,8 @@ label.form-check-label2 {
 }
 
 .keyword-wrap .keyword .keyword-txt {
-    font-size: 14px;
-    font-weight: 500;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
     letter-spacing: -0.02em;
     text-align: center;
     color: var(--ds-ink-3);
@@ -3391,7 +3391,7 @@ label.form-check-label2 {
     /* width: 306px; */
     width: 22.9%;
     background: #fff;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     border: 1px solid var(--ds-line);
     height: 680px;
 }
@@ -3432,7 +3432,7 @@ label.form-check-label2 {
 }
 
 .content-wrapper.chk-mode .tab-wrap .tab-left .box02 .folder-element.chk-active {
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     background-color: var(--ds-primary-weak);
     border: 1px solid var(--ds-primary);
 }
@@ -3452,9 +3452,9 @@ label.form-check-label2 {
     text-overflow: ellipsis;
     white-space: nowrap;
     color: var(--ds-ink);
-    font-size: 15px;
+    font-size: var(--ds-fs-card);
     text-align: left;
-    font-weight: 500;
+    font-weight: var(--ds-fw-medium);
 }
 .content-wrapper.chk-mode .tab-wrap .tab-left .box02 .folder-element .folder_name {
     padding-left: 48px;
@@ -3466,12 +3466,12 @@ label.form-check-label2 {
     width: 30px;
     height: 20px;
     padding: 0px var(--ds-1);
-    border-radius: 10px;
-    font-size: 12px;
+    border-radius: var(--ds-radius);
+    font-size: var(--ds-fs-small);
     background: var(--ds-line);
     text-align: center;
-    line-height: 19px;
-    font-weight: 500;
+    line-height: var(--ds-lh);
+    font-weight: var(--ds-fw-medium);
     color: var(--ds-ink-4);
     margin-left: 8px;
 }
@@ -3480,12 +3480,12 @@ label.form-check-label2 {
     height: 20px;
     padding: 0px 5px;
     margin-left: 5px;
-    border-radius: 10px;
-    font-size: 12px;
+    border-radius: var(--ds-radius);
+    font-size: var(--ds-fs-small);
     background: var(--ds-primary);
     text-align: center;
-    line-height: 19px;
-    font-weight: 500;
+    line-height: var(--ds-lh);
+    font-weight: var(--ds-fw-medium);
     color: #fff;
     display: none;
 }
@@ -3504,9 +3504,9 @@ label.form-check-label2 {
 .tab-wrap .tab-right .folder_name {
     max-width: 650px;
     padding-left: 24px;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     color: var(--ds-ink-3);
     overflow: hidden;
@@ -3517,9 +3517,9 @@ label.form-check-label2 {
     background-position: left 0px top 2px;
 }
 .tab-wrap .tab-right .folder_text {
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
     color: #8b8d97;
@@ -3534,7 +3534,7 @@ label.form-check-label2 {
     margin-bottom: 15px;
     padding: 10px 20px;
     border: 1px solid var(--ds-line);
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     background-color: #fff;
     align-items: center;
     justify-content: space-between;
@@ -3550,9 +3550,9 @@ label.form-check-label2 {
 .tab-wrap .step-list .step-box .step-nm {
     max-width: 150px;
     margin-left: 4px;
-    font-size: 18px;
-    font-weight: 500;
-    line-height: 27px;
+    font-size: var(--ds-fs-lead);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink);
@@ -3561,7 +3561,7 @@ label.form-check-label2 {
     max-width: 367px;
     margin-left: 8px;
     font-size: 16px;
-    font-weight: 400;
+    font-weight: var(--ds-fw-normal);
     letter-spacing: -0.05em;
     text-align: left;
     color: var(--ds-ink-4);
@@ -3572,9 +3572,9 @@ label.form-check-label2 {
     border-radius: 20px;
     background: var(--ds-hover);
     color: var(--ds-ink-3);
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 22.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
 }
@@ -3583,9 +3583,9 @@ label.form-check-label2 {
     height: 36px;
     padding: 5px 18px;
     border-radius: 36px;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 24px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
     color: var(--ds-ink-4);
@@ -3627,7 +3627,7 @@ label.form-check-label2 {
     width: 1296px;
     min-height: 500px;
     padding: 20px 30px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     box-shadow: var(--ds-shadow);
     background-color: #fff;
 }
@@ -3635,11 +3635,11 @@ label.form-check-label2 {
 .confirm-status {
     height: 20px;
     padding: 0px 8px;
-    border-radius: 4px;
+    border-radius: calc(var(--ds-radius) - 4px);
     background: var(--ds-ink-4);
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 18px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: #fff;
@@ -3653,8 +3653,8 @@ label.form-check-label2 {
 
 .template-detail-wrap .subject {
     font-size: 24px;
-    font-weight: 700;
-    line-height: 33.6px;
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh-tight);
     letter-spacing: -0.03em;
     text-align: left;
     color: var(--ds-ink);
@@ -3667,9 +3667,9 @@ label.form-check-label2 {
 #templateImg {
     width: 100px;
     height: 65px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 400;
+    border-radius: calc(var(--ds-radius) - 2px);
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-normal);
 }
 
 #editorDrawCanvas {
@@ -3805,7 +3805,7 @@ label.form-check-label2 {
         background-color: #fff;
         box-shadow: var(--ds-shadow);
         border: 1px solid var(--ds-line);
-        border-radius: 10px;
+        border-radius: var(--ds-radius);
         background-position: left 11px top 8px;
     }
     .tab-wrap.project-detail-note .tab-left .box02 .folder-element:last-child {
@@ -3888,7 +3888,7 @@ label.form-check-label2 {
     width: 100%;
     min-height: 68px;
     padding: 8px 20px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     border: 1px solid var(--ds-line);
     background: #fff;
 }
@@ -3914,7 +3914,7 @@ label.form-check-label2 {
     height: 40px;
     padding: 4px 8px;
     margin: 5px 0 5px 10px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     background: #fff;
     border: 1px solid var(--ds-line);
     color: var(--ds-ink-4);
@@ -3937,18 +3937,18 @@ label.form-check-label2 {
 }
 .search-filter-box .filter-elmnt .filter-elmnt-title,
 .search-filter-box .filter-elmnt2 .filter-elmnt-title {
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
     color: var(--ds-primary);
 }
 .search-filter-box .filter-elmnt .filter-elmnt-cont,
 .search-filter-box .filter-elmnt2 .filter-elmnt-cont {
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
     color: var(--ds-ink-3);
@@ -3958,7 +3958,7 @@ label.form-check-label2 {
     display: flex;
     height: 32px;
     padding: 4px 8px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     background: var(--ds-canvas);
     border: 1px solid var(--ds-line);
     color: var(--ds-ink-4);
@@ -3966,17 +3966,17 @@ label.form-check-label2 {
     white-space: nowrap;
 }
 .search-filter-box .filter-elmnt.gray .filter-elmnt-title {
-    font-size: 12px;
-    font-weight: 500;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-medium);
     letter-spacing: -0.02em;
     text-align: center;
     color: var(--ds-ink-3);
     padding-left: 5px;
 }
 .search-filter-box .filter-elmnt.gray .filter-elmnt-cont {
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
 }
@@ -3994,9 +3994,9 @@ label.form-check-label2 {
     text-align: right;
 }
 .search-filter-box .search-text {
-    font-size: 15px;
-    font-weight: 400;
-    line-height: 24px;
+    font-size: var(--ds-fs-card);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     color: var(--ds-ink);
 }
@@ -4015,8 +4015,8 @@ label.form-check-label2 {
     border: 1px solid var(--ds-line);
     color: var(--ds-ink);
     font-size: 16px;
-    font-weight: 500;
-    line-height: 25.28px;
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     margin-right: 10px;
     background-color: #fff;
@@ -4073,9 +4073,9 @@ label.form-check-label2 {
     padding: 3px 0px 10px 0;
     margin-right: 20px;
     color: var(--ds-ink-4);
-    font-size: 18px;
-    font-weight: 500;
-    line-height: 25.28px;
+    font-size: var(--ds-fs-lead);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh-tight);
     letter-spacing: 0;
     margin-bottom: 0px;
     background-color: var(--ds-canvas);
@@ -4109,8 +4109,8 @@ label.form-check-label2 {
     margin-right: 30px;
     color: var(--ds-ink-4);
     font-size: 16px;
-    font-weight: 500;
-    line-height: 25.28px;
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     margin-bottom: 0px;
     border: 0;
@@ -4138,8 +4138,8 @@ label.form-check-label2 {
     background-color: unset;
     color: var(--ds-ink-4);
     font-size: 16px;
-    font-weight: 500;
-    line-height: 15.28px;
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh-none);
     letter-spacing: 0;
     border: 0;
     background-repeat: no-repeat;
@@ -4179,8 +4179,8 @@ label.form-check-label2 {
     margin-bottom: 0px;
     background-color: var(--ds-canvas) !important;
     font-size: 16px;
-    font-weight: 500;
-    line-height: 25.28px;
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     border-radius: 0;
     border: 0;
@@ -4207,9 +4207,9 @@ label.form-check-label2 {
     margin-bottom: 0;
     background-color: #fafafa !important;
     border: 1px solid #e0e0e0;
-    font-weight: 500;
-    font-size: 12px;
-    line-height: 14px;
+    font-weight: var(--ds-fw-medium);
+    font-size: var(--ds-fs-small);
+    line-height: var(--ds-lh-tight);
     text-align: center;
     color: var(--ds-ink-4);
     border-top-left-radius: 5px;
@@ -4292,7 +4292,7 @@ label.form-check-label2 {
     .tab-board-sty01 .board-top .tab.note.active {
         background-image: none;
         padding: 3px 7px;
-        font-size: 15px;
+        font-size: var(--ds-fs-card);
     }
 
     .tab-board-sty02 .board-top .tab {
@@ -4332,7 +4332,7 @@ label.form-check-label2 {
     height: 410px;
     margin: 0 auto;
     padding: 88px 0px;
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     background-color: var(--ds-canvas);
     border: 1px solid var(--ds-line);
 }
@@ -4353,8 +4353,8 @@ label.form-check-label2 {
 }
 .no-data span {
     font-size: 16px;
-    font-weight: 400;
-    line-height: 25.28px;
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     color: var(--ds-ink-4);
 }
 
@@ -4362,13 +4362,13 @@ label.form-check-label2 {
     height: 32px;
     margin: 10px auto;
     padding: 4px 7px 4px 30px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     border: 1px solid var(--ds-line);
     background: #fff;
     color: var(--ds-ink-3);
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     background-image: url(../img/icon_add.png);
     background-repeat: no-repeat;
@@ -4384,13 +4384,13 @@ label.form-check-label2 {
 .authGrpTxt02.role,
 .gradeGrpTxt.grade {
     height: 20px;
-    border-radius: 4px;
+    border-radius: calc(var(--ds-radius) - 4px);
     padding: 0 8px;
     margin: 10px;
     color: var(--ds-ink-3);
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 18px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     text-align: center;
     background: var(--ds-line);
 }
@@ -4433,11 +4433,11 @@ label.form-check-label2 {
 .authGrpTxt02.gnrl {
     height: 20px;
     padding: 2px 8px;
-    border-radius: 4px;
+    border-radius: calc(var(--ds-radius) - 4px);
     border: 1px solid #7ea8f1;
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 14px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh-tight);
     letter-spacing: -0.04em;
     text-align: center;
     color: #598fee;
@@ -4484,23 +4484,23 @@ label.form-check-label2 {
     padding: 0;
     background-color: #fff;
     background-clip: padding-box;
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     box-shadow: var(--ds-shadow-pop);
     border: 1px solid var(--ds-hover);
     background-color: #fff;
 }
 .dropdown_option.dropdown-menu .option_title {
     padding: 10px 15px 4px 15px;
-    font-size: 12px;
+    font-size: var(--ds-fs-small);
     color: var(--ds-ink-4);
-    line-height: 18px;
-    font-weight: 400;
+    line-height: var(--ds-lh);
+    font-weight: var(--ds-fw-normal);
 }
 .dropdown_option.dropdown-menu .option_list {
-    font-size: 14px;
+    font-size: var(--ds-fs-body);
     color: var(--ds-ink);
-    line-height: 18px;
-    font-weight: 400;
+    line-height: var(--ds-lh-tight);
+    font-weight: var(--ds-fw-normal);
     padding: 5px;
 }
 .dropdown_option.dropdown-menu .option_list .dropdown-item {
@@ -4508,7 +4508,7 @@ label.form-check-label2 {
 }
 .dropdown_option.dropdown-menu .option_list .dropdown-item:hover,
 .dropdown_option.dropdown-menu .option_list .dropdown-item:active {
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     background-color: var(--ds-canvas);
 }
 
@@ -4517,12 +4517,12 @@ label.form-check-label2 {
     min-width: 130px;
     height: 40px;
     padding: 0px 14px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     border: 1px solid var(--ds-line);
     background-color: #fff;
     color: var(--ds-ink);
     font-size: 16px;
-    font-weight: 400;
+    font-weight: var(--ds-fw-normal);
 }
 .dropdown-select-sty01.full {
     max-width: 100% !important;
@@ -4536,8 +4536,8 @@ label.form-check-label2 {
     border: 0;
     background-color: unset;
     color: var(--ds-ink);
-    font-size: 14px;
-    font-weight: 400;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-normal);
     padding-left: 0;
 }
 .dropdown-select-sty02 .caret {
@@ -4548,21 +4548,21 @@ label.form-check-label2 {
    56px 이 됐고, 정렬 목록 16줄이면 460px 짜리 기둥이 됐다. */
 .dropdown-select.dropdown-menu {
     background-clip: padding-box;
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     box-shadow: var(--ds-shadow-pop);
     border: 1px solid var(--ds-hover);
     background-color: #fff;
 }
 .dropdown-category.dropdown-menu {
     background-clip: padding-box;
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     box-shadow: var(--ds-shadow-pop);
     border: 1px solid var(--ds-hover);
     background-color: #fff;
 }
 .dropdown-select.dropdown-menu .dropdown-item {
     color: var(--ds-ink);
-    font-weight: 400;
+    font-weight: var(--ds-fw-normal);
 }
 .dropdown-select.dropdown-menu .dropdown-item:hover {
     background-color: var(--ds-canvas);
@@ -4612,7 +4612,7 @@ label.form-check-label2 {
     margin-bottom: var(--ds-4);
     background-color: #fff;
     box-shadow: var(--ds-shadow);
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     border: 1px solid var(--ds-line);
     flex-shrink: 0;
     float: left;
@@ -4637,12 +4637,12 @@ label.form-check-label2 {
     min-width: 49px;
     height: 24px;
     padding: var(--ds-1) 8px;
-    border-radius: 4px;
+    border-radius: calc(var(--ds-radius) - 4px);
     background: #03a9f4;
     box-shadow: var(--ds-shadow);
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 20.4px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: center;
     color: #fff;
@@ -4692,9 +4692,9 @@ label.form-check-label2 {
     display: flex;
     margin: var(--ds-4) 0 7px 0;
     color: var(--ds-ink-4);
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 18px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
 }
@@ -4724,9 +4724,9 @@ label.form-check-label2 {
 }
 .note-card-board .note-card .note-card-cont .txt-note {
     height: 50px;
-    font-size: 18px;
-    font-weight: 700;
-    line-height: 25.2px;
+    font-size: var(--ds-fs-lead);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh-tight);
     letter-spacing: 0;
     text-align: left;
     color: var(--ds-ink);
@@ -4744,8 +4744,8 @@ label.form-check-label2 {
     letter-spacing: 0;
     text-align: left;
     color: var(--ds-ink-3);
-    font-size: 12px;
-    line-height: 20.4px;
+    font-size: var(--ds-fs-small);
+    line-height: var(--ds-lh);
 }
 .note-card-board .note-card .note-card-cont .txt-info .txt-info-txt {
     width: 30%;
@@ -4754,7 +4754,7 @@ label.form-check-label2 {
 }
 .note-card-board .note-card .note-card-cont .txt-info .txt-info-cont {
     width: 70%;
-    font-weight: 700;
+    font-weight: var(--ds-fw-bold);
     padding-left: var(--ds-1);
 }
 .note-card-board .note-card .note-card-cont .wrap-step {
@@ -4763,13 +4763,13 @@ label.form-check-label2 {
 .note-card-board .note-card .note-card-cont .wrap-step .txt-step,
 .note-card-board .note-card .note-card-cont .wrap-step .txt-keyword {
     height: 25px;
-    line-height: 23px;
+    line-height: var(--ds-lh);
     padding: 0 var(--ds-2);
     margin: var(--ds-2) 5px;
-    border-radius: 4px;
+    border-radius: calc(var(--ds-radius) - 4px);
     border: 1px solid var(--ds-line);
-    font-size: 12px;
-    font-weight: 500;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-medium);
     letter-spacing: 0;
     text-align: center;
     color: var(--ds-ink-3);
@@ -4788,8 +4788,8 @@ label.form-check-label2 {
 }
 .note-card-board .note-card .note-card-cont .wrap-step .txt-note-cnt {
     height: 25px;
-    font-size: 12px;
-    font-weight: 700;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-bold);
     padding-left: 24px;
     margin: var(--ds-2) 22px;
     color: var(--ds-ink-4);
@@ -4812,7 +4812,7 @@ label.form-check-label2 {
     display: block;
 }
 .content-wrapper.chk-mode .note-card-board .note-card .note-card-cont.chk-active {
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     background-color: var(--ds-primary-weak);
     border: 1px solid var(--ds-primary);
 }
@@ -4820,7 +4820,7 @@ label.form-check-label2 {
     width: 100%;
     height: 100%;
     top: 0;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     margin: 0;
     display: none;
 }
@@ -4931,7 +4931,7 @@ label.form-check-label2 {
     margin-bottom: var(--ds-4);
     background-color: #fff;
     box-shadow: var(--ds-shadow);
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     border: 1px solid var(--ds-line);
     flex-shrink: 0;
     float: left;
@@ -4958,8 +4958,8 @@ label.form-check-label2 {
 .project-card-board .project-card .project-card-cont .txt-title .txt-project {
     width: 280px;
     font-size: 16px;
-    font-weight: 700;
-    line-height: 25.2px;
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
     color: var(--ds-ink);
@@ -4976,15 +4976,15 @@ label.form-check-label2 {
     display: block;
     width: 63px;
     height: 24px;
-    border-radius: 4px;
+    border-radius: calc(var(--ds-radius) - 4px);
     border: 1px solid var(--ds-primary-line);
     color: var(--ds-primary) !important;
     text-align: center;
-    font-size: 12px;
-    font-weight: 500;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-medium);
     letter-spacing: 0;
     padding-left: var(--ds-4);
-    line-height: 21px;
+    line-height: var(--ds-lh);
     background-image: url(../img/icon_people.png);
     background-repeat: no-repeat;
     background-position: 5px 2px;
@@ -4992,7 +4992,7 @@ label.form-check-label2 {
 .project-card-board .project-card .project-card-cont .txt-title .txt-box2 {
     width: 88px;
     height: 24px;
-    border-radius: 4px;
+    border-radius: calc(var(--ds-radius) - 4px);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -5000,16 +5000,16 @@ label.form-check-label2 {
     box-shadow: var(--ds-shadow);
     color: var(--ds-ink-3);
     text-align: center;
-    font-size: 12px;
-    font-weight: 500;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-medium);
     letter-spacing: 0;
     padding: 0 5px;
-    line-height: 21px;
+    line-height: var(--ds-lh);
 }
 .project-card-board .project-card .project-card-cont .txt-title .txt-box3 {
     width: 115px;
     height: 24px;
-    border-radius: 4px;
+    border-radius: calc(var(--ds-radius) - 4px);
     background-image: url(../img/icon_tag.png);
     background-repeat: no-repeat;
     background-position: 5px 2px;
@@ -5020,10 +5020,10 @@ label.form-check-label2 {
     box-shadow: var(--ds-shadow);
     color: var(--ds-ink-3);
     text-align: center;
-    font-size: 12px;
-    font-weight: 500;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-medium);
     letter-spacing: 0;
-    line-height: 21px;
+    line-height: var(--ds-lh);
     padding: 0px 6px 0 23px;
 }
 .project-card-board .project-card .project-card-cont .txt-info {
@@ -5031,8 +5031,8 @@ label.form-check-label2 {
     letter-spacing: 0;
     text-align: left;
     color: var(--ds-ink-3);
-    font-size: 12px;
-    line-height: 20.4px;
+    font-size: var(--ds-fs-small);
+    line-height: var(--ds-lh);
 }
 .project-card-board .project-card .project-card-cont .txt-info .txt-info-txt {
     width: 25%;
@@ -5042,7 +5042,7 @@ label.form-check-label2 {
 .project-card-board .project-card .project-card-cont .txt-info .txt-info-cont {
     display: flex;
     width: 75%;
-    font-weight: 700;
+    font-weight: var(--ds-fw-bold);
     padding-left: var(--ds-1);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -5051,11 +5051,11 @@ label.form-check-label2 {
 .project-card-board .project-card .project-card-cont .txt-info .txt-info-cont .txt-info-icon {
     width: 40px;
     height: 16px;
-    border-radius: 4px;
+    border-radius: calc(var(--ds-radius) - 4px);
     color: #fff;
     font-size: 10px;
-    font-weight: 500;
-    line-height: 16px;
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     text-align: center;
     margin: var(--ds-1) 15px;
 }
@@ -5074,9 +5074,9 @@ label.form-check-label2 {
     border-bottom-right-radius: 8px;
 }
 .project-card-board .project-card .project-card-cont .wrap-note-cnt span {
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 22.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     margin: 0 2px;
 }
 .project-card-board .project-card .project-card-cont.project-prgrst-PROGRESS .wrap-note-cnt {
@@ -5098,7 +5098,7 @@ label.form-check-label2 {
     padding: 0;
     background-color: #fff;
     background-clip: padding-box;
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     box-shadow: var(--ds-shadow-pop);
     border: 1px solid var(--ds-hover);
     background: var(--ds-canvas);
@@ -5118,15 +5118,15 @@ label.form-check-label2 {
 }
 .dropdown_member.dropdown-menu .member_top .member_title {
     font-size: 16px;
-    font-weight: 700;
-    line-height: 25.28px;
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
 }
 .dropdown_member.dropdown-menu .member_top .projectNm {
-    font-size: 15px;
-    font-weight: 400;
-    line-height: 24px;
+    font-size: var(--ds-fs-card);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     padding: 8px 5px 5px 27px;
     background-image: url(../img/icon_dark_project.png);
@@ -5146,7 +5146,7 @@ label.form-check-label2 {
 .dropdown_member.dropdown-menu .member_cont .member_list .member_box {
     height: 61px;
     padding: 8px 16px;
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     margin-bottom: 10px;
     background: var(--ds-canvas);
 }
@@ -5164,17 +5164,17 @@ label.form-check-label2 {
     margin-left: 10px;
 }
 .dropdown_member.dropdown-menu .member_cont .profile_info .name {
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
     color: var(--ds-ink);
 }
 .dropdown_member.dropdown-menu .member_cont .profile_info .email {
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 21px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
     color: var(--ds-ink-4);
@@ -5254,7 +5254,7 @@ label.form-check-label2 {
     margin-bottom: 17px;
     background-color: #fff;
     box-shadow: var(--ds-shadow);
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     border: 1px solid var(--ds-line);
     float: left;
     background-image: url(../img/icon_folder.png);
@@ -5272,19 +5272,19 @@ label.form-check-label2 {
     text-overflow: ellipsis;
     white-space: nowrap;
     color: var(--ds-ink);
-    font-size: 15px;
+    font-size: var(--ds-fs-card);
     text-align: left;
 }
 .folder-card-board .folder-card .folder-card-cont .note_cnt {
     min-width: 27px;
     height: 20px;
     padding: 0px 5px;
-    border-radius: 10px;
-    font-size: 12px;
+    border-radius: var(--ds-radius);
+    font-size: var(--ds-fs-small);
     background: var(--ds-line);
     text-align: center;
-    line-height: 19px;
-    font-weight: 500;
+    line-height: var(--ds-lh);
+    font-weight: var(--ds-fw-medium);
     color: var(--ds-ink-4);
     margin-left: 10px;
 }
@@ -5305,9 +5305,9 @@ label.form-check-label2 {
     background-color: var(--ds-canvas);
     border: 1px solid #d7d8d0;
     font-family: var(--ds-font);
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 31px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
 }
 .core-table .core-table-body .table > thead > tr > th:first-child {
     border-top-left-radius: 8px;
@@ -5330,8 +5330,8 @@ label.form-check-label2 {
 .table-sty01 tbody {
     color: var(--ds-ink-3);
     margin-bottom: 0.5rem;
-    font-size: 14px;
-    font-weight: 400;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-normal);
 }
 .core-table .core-table-body .table > tbody > tr > td:first-child {
     border-top-left-radius: 8px;
@@ -5422,9 +5422,9 @@ label.form-check-label2 {
     height: 24px;
     padding: 8px;
     border-radius: 50px;
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 7.6px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh-none);
     letter-spacing: -0.02em;
     text-align: center;
     color: var(--ds-ink-4);
@@ -5436,11 +5436,11 @@ label.form-check-label2 {
     width: 49px;
     height: 24px;
     padding: 2px 8px;
-    border-radius: 4px;
+    border-radius: calc(var(--ds-radius) - 4px);
     background: #03a9f4;
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 20.4px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: center;
     color: #fff;
@@ -5466,13 +5466,13 @@ label.form-check-label2 {
     height: 24px;
     padding: 0px 5px;
     margin: 0 8px;
-    border-radius: 4px;
+    border-radius: calc(var(--ds-radius) - 4px);
     border: 1px solid var(--ds-line);
     box-shadow: var(--ds-shadow);
-    font-size: 12px;
-    font-weight: 500;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-medium);
     letter-spacing: 0;
-    line-height: 20px;
+    line-height: var(--ds-lh);
     text-align: center;
     color: var(--ds-ink-3);
     overflow: hidden;
@@ -5518,7 +5518,7 @@ label.form-check-label2 {
     height: 100%;
     box-shadow: var(--ds-shadow-pop);
     background-color: #fff;
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     padding: 40px 60px;
 }
 
@@ -5545,30 +5545,30 @@ label.form-check-label2 {
 .text-board .project-regist-title {
     font-size: 24px;
     color: var(--ds-ink);
-    font-weight: 700;
-    line-height: 36px;
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     margin-bottom: 1rem;
 }
 .text-board .project-regist-title span {
     display: block;
     font-size: 20px;
     color: var(--ds-primary);
-    line-height: 30px;
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
 }
 .text-board .project-regist-title p {
-    font-size: 22px;
+    font-size: var(--ds-fs-title);
     color: var(--ds-ink);
-    font-weight: 700;
+    font-weight: var(--ds-fw-bold);
     margin-bottom: 0;
 }
 
 .text-board label:not(.btn) {
     display: block;
-    font-size: 18px;
-    font-weight: 500;
-    line-height: 28.44px;
+    font-size: var(--ds-fs-lead);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink-3);
@@ -5626,18 +5626,18 @@ label.form-check-label2 {
 }
 .form-check-label {
     font-size: 16px;
-    font-weight: 500;
-    line-height: 31.28px;
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.03em;
     text-align: left;
     color: var(--ds-ink-3);
     cursor: pointer;
 }
 .form-check-label2 {
-    font-size: 14px;
-    font-weight: 400;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-normal);
     padding-left: 22px;
-    line-height: 35.28px;
+    line-height: var(--ds-lh);
     margin-bottom: 0;
     letter-spacing: -0.03em;
     text-align: left;
@@ -5670,13 +5670,13 @@ label.form-check-label2 {
 }
 
 code {
-    font-size: 14px;
+    font-size: var(--ds-fs-body);
     color: var(--ds-ink-3);
 }
 .select-sty01 {
     min-width: 150px;
     height: 46px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     padding: 0px 30px 0 15px;
     border: 1px solid var(--ds-line);
     margin-right: 6px;
@@ -5688,13 +5688,13 @@ code {
 .select-sty02 {
     width: 288px;
     height: 40px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     padding: 0px 30px 0 15px;
     border: 1px solid var(--ds-line);
     margin-right: 6px;
     color: var(--ds-ink-3);
     text-align: left;
-    font-size: 15px;
+    font-size: var(--ds-fs-card);
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
@@ -5709,18 +5709,18 @@ code {
 
 .guidetext-sty01 {
     margin-top: 10px;
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 21px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
     color: var(--ds-ink-3);
 }
 .guidetext-sty02 {
     margin-top: 10px;
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: right;
     color: var(--ds-ink-4);
@@ -5728,7 +5728,7 @@ code {
 
 .form_date {
     padding-left: 10px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     border: 1px solid var(--ds-line);
     background-color: #fff;
 }
@@ -5736,13 +5736,13 @@ code {
     padding: 8px 16px;
     width: 866px;
     height: 180px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     border: 1px solid var(--ds-line);
     background-color: #fff;
     outline: 0;
     resize: none;
     font-size: 16px;
-    font-weight: 400;
+    font-weight: var(--ds-fw-normal);
     color: var(--ds-ink-3);
 }
 .form-textarea:disabled {
@@ -5770,7 +5770,7 @@ code {
     width: 100%;
     height: 46px;
     outline: 0;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     border: 1px solid var(--ds-line);
     padding: 9px 16px;
     background-color: #fff;
@@ -5788,18 +5788,18 @@ code {
     width: 100%;
     height: 40px;
     outline: 0;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     border: 1px solid var(--ds-line);
     padding: 9px 16px;
     background-color: #fff;
-    line-height: 40px;
+    line-height: var(--ds-lh);
     color: var(--ds-ink-3);
-    font-size: 15px;
+    font-size: var(--ds-fs-card);
 }
 .input-write-sty02-line placeholder {
     color: var(--ds-ink-4);
-    font-size: 15px;
-    font-weight: 400;
+    font-size: var(--ds-fs-card);
+    font-weight: var(--ds-fw-normal);
 }
 .input-write-sty02-line:focus {
     box-shadow: 0 0 4px 0 var(--ds-primary);
@@ -5808,17 +5808,17 @@ code {
 .input-write-date2 {
     height: 46px;
     outline: 0;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     border: 0 !important;
     padding: 9px 16px;
     background-color: #fff !important;
     line-height: 43px;
     text-align: right;
-    font-weight: 500;
+    font-weight: var(--ds-fw-medium);
     color: var(--ds-primary);
 }
 .input-write-date::placeholder {
-    font-weight: 400;
+    font-weight: var(--ds-fw-normal);
     color: var(--ds-ink-4);
 }
 .input-write-date2 {
@@ -5833,13 +5833,13 @@ code {
     width: 90px;
     height: 30px;
     padding: 0;
-    font-size: 14px;
+    font-size: var(--ds-fs-body);
     border-radius: 9px;
     border: 0 !important;
     background-color: unset;
-    line-height: 43px;
+    line-height: var(--ds-lh);
     text-align: center;
-    font-weight: 400;
+    font-weight: var(--ds-fw-normal);
     color: var(--ds-ink);
 }
 
@@ -5848,7 +5848,7 @@ code {
     height: 46px;
     border: 1px solid var(--ds-line) !important;
     background-color: #fff !important;
-    border-radius: 8px !important;
+    border-radius: calc(var(--ds-radius) - 2px) !important;
     margin-left: 10px;
     padding: 15px !important;
 }
@@ -5857,7 +5857,7 @@ code {
     height: 46px;
     border: 1px solid var(--ds-line) !important;
     background-color: #fff !important;
-    border-radius: 8px !important;
+    border-radius: calc(var(--ds-radius) - 2px) !important;
     margin-left: 10px;
     padding: 15px !important;
 }
@@ -5902,9 +5902,9 @@ code {
 }
 
 .invalid-feedback {
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 21px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
     color: var(--ds-ink-3);
@@ -5924,7 +5924,7 @@ code {
     color: var(--ds-ink);
     width: 100%;
     outline: 0;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     border: 1px solid var(--ds-line);
     background-color: #fff;
     margin-right: 4px;
@@ -5962,7 +5962,7 @@ code {
     margin: 52px 0 0 -1px !important;
     background-color: #fff;
     background-clip: padding-box;
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     box-shadow: var(--ds-shadow-pop);
     border: 1px solid #adb5bd;
     transform: translate(0px, 0px) !important;
@@ -5971,9 +5971,9 @@ code {
 #dropdown_input_member_admin .member_title,
 #dropdown_input_member_gnrl .member_title,
 #dropdown_input_member_loaner .member_title {
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 20.4px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
     color: var(--ds-ink-3);
@@ -6004,7 +6004,7 @@ code {
 #dropdown_input_member_gnrl .member_box:hover,
 #dropdown_input_member_loaner .member_box:hover {
     background: var(--ds-canvas);
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
 }
 #dropdown_input_member .profile_info,
 #dropdown_input_member_admin .profile_info,
@@ -6016,9 +6016,9 @@ code {
 #dropdown_input_member_admin .profile_info .name,
 #dropdown_input_member_gnrl .profile_info .name,
 #dropdown_input_member_loaner .profile_info .name {
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
     color: var(--ds-ink-3);
@@ -6027,9 +6027,9 @@ code {
 #dropdown_input_member_admin .profile_info .email,
 #dropdown_input_member_gnrl .profile_info .email,
 #dropdown_input_member_loaner .profile_info .email {
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 21px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
     color: var(--ds-ink-4);
@@ -6037,7 +6037,7 @@ code {
 
 .project_member_list .member_box {
     padding: 8px 16px;
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     margin-bottom: 10px;
     background: var(--ds-canvas);
 }
@@ -6065,9 +6065,9 @@ code {
 }
 .project_member_list .profile_info .name {
     max-width: 120px;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
     color: var(--ds-ink);
@@ -6076,9 +6076,9 @@ code {
     text-overflow: ellipsis;
 }
 .project_member_list .profile_info .email {
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 21px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
     color: var(--ds-ink-4);
@@ -6236,22 +6236,22 @@ code {
     overflow: hidden;
     text-overflow: ellipsis;
     font-size: 32px;
-    font-weight: 700;
-    line-height: 48px;
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     color: var(--ds-ink);
 }
 .project_simple_info .project_title {
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 22.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
     color: var(--ds-ink-4);
 }
 .project_simple_info .project_cont {
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 22.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
     color: var(--ds-ink-2);
@@ -6277,21 +6277,21 @@ code {
     height: 95px;
     margin-top: 8px;
     padding: 20px 24px 20px 90px;
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     border: 0px;
     box-shadow: var(--ds-shadow);
     background-color: #fff;
     color: var(--ds-ink-3);
-    font-weight: 700;
-    font-size: 18px;
+    font-weight: var(--ds-fw-bold);
+    font-size: var(--ds-fs-lead);
     background-repeat: no-repeat;
     background-position: left 10px top 12px;
 }
 .project-info-note-box .note-card-title {
-    font-size: 15px;
-    line-height: 24px;
+    font-size: var(--ds-fs-card);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
-    font-weight: 500;
+    font-weight: var(--ds-fw-medium);
 }
 .project-info-note-box div.card-total {
     background-image: url(../img/icon_note_step1.png);
@@ -6332,7 +6332,7 @@ code {
     min-height: 203px;
     margin-top: 20px;
     padding: 20px 25px;
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     border: 1px solid var(--ds-line);
     box-shadow: var(--ds-shadow);
     background: #fff;
@@ -6342,31 +6342,31 @@ code {
     min-height: 65px;
     margin-top: 20px;
     padding: 5px 20px 15px 20px;
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     border: 1px solid var(--ds-line);
     box-shadow: var(--ds-shadow);
     background: #fff;
 }
 .project-info-project-box .card-title {
-    font-size: 18px;
-    font-weight: 700;
-    line-height: 25.2px;
+    font-size: var(--ds-fs-lead);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh-tight);
     letter-spacing: -0.04em;
     text-align: left;
 }
 .project-info-project-box .card-date {
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
     color: var(--ds-primary);
 }
 .project-info-project-box .card-step-desc {
     height: 45px;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 22.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
     color: var(--ds-ink-4);
@@ -6380,18 +6380,18 @@ code {
 }
 .project-info-project-box .card-tab-btn {
     margin-top: 15px;
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 15.6px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh-tight);
     letter-spacing: -0.02em;
     text-align: center;
     color: var(--ds-primary) !important;
 }
 .project-info-project-box .txt-info {
     margin-top: 15px;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 22.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
     letter-spacing: -0.02em;
@@ -6408,9 +6408,9 @@ code {
 }
 .project-info-project-box .card-desc {
     height: 100%;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 22.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
     color: var(--ds-ink-4);
@@ -6571,16 +6571,16 @@ code {
 }
 .lock-wrap .lock-txt {
     font-size: 20px;
-    font-weight: 700;
-    line-height: 28px;
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh-tight);
     letter-spacing: -0.06em;
     text-align: center;
     color: var(--ds-ink);
 }
 .lock-wrap .lock-cont {
-    font-size: 15px;
-    font-weight: 400;
-    line-height: 24px;
+    font-size: var(--ds-fs-card);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: center;
     color: var(--ds-ink-2);
@@ -6594,10 +6594,10 @@ code {
 .note-type {
     height: 20px;
     padding: 0px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 20px;
+    border-radius: calc(var(--ds-radius) - 4px);
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: center;
 }
@@ -6616,14 +6616,14 @@ code {
     width: 100%;
     min-height: 209px;
     padding: 20px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     background: var(--ds-canvas);
     border: 1px solid var(--ds-line);
 }
 #main-body #main-body-left .note-info-box .title {
     font-size: 16px;
-    font-weight: 700;
-    line-height: 25.28px;
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: -0.03em;
     text-align: left;
     color: var(--ds-ink-3);
@@ -6633,9 +6633,9 @@ code {
     letter-spacing: 0;
     text-align: left;
     color: var(--ds-ink-3);
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 20.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
 }
 #main-body #main-body-left .note-info-box .cont .txt-info-txt {
     /* 라벨 한 벌에 맞춘다 — 여기만 굵기 500 / 줄높이 22.4 로 서 있었다
@@ -6675,12 +6675,12 @@ code {
     height: 24px;
     padding: 4px 8px;
     background: #fff;
-    border-radius: 4px;
+    border-radius: calc(var(--ds-radius) - 4px);
     border: 1px solid var(--ds-line);
     box-shadow: var(--ds-shadow);
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 15.6px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh-tight);
     letter-spacing: -0.02em;
     text-align: center;
     color: var(--ds-ink-3);
@@ -6693,8 +6693,8 @@ code {
     border-radius: 30px;
     background: var(--ds-ink-3);
     font-size: 10px;
-    font-weight: 500;
-    line-height: 16px;
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: center;
     color: #fff;
@@ -6703,7 +6703,7 @@ code {
 
 #main-body #main-body-left .inspection-status-box {
     width: 100%;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     min-height: 125px;
     max-height: 266px;
     border: 1px solid var(--ds-line);
@@ -6712,14 +6712,14 @@ code {
 #main-body #main-body-left .inspection-status-box .status-header {
     max-height: 97px;
     font-size: 16px;
-    font-weight: 700;
-    line-height: 25.28px;
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: -0.03em;
     text-align: left;
     color: var(--ds-ink-3);
     padding: 18px;
     background: var(--ds-canvas);
-    border-radius: 8px 8px 0 0;
+    border-radius: calc(var(--ds-radius) - 2px) 8px 0 0;
     border-bottom: 1px solid var(--ds-line);
 }
 #main-body #main-body-left .inspection-status-box .status-header .icon-dot {
@@ -6735,7 +6735,7 @@ code {
     background: var(--ds-danger);
 }
 #main-body #main-body-left .inspection-status-box .status-header .txt-cnt {
-    font-size: 14px;
+    font-size: var(--ds-fs-body);
 }
 #main-body #main-body-left .inspection-status-box .status-body .inspector_info {
     width: 100%;
@@ -6743,9 +6743,9 @@ code {
     padding: 15px 20px;
     background: #fff;
     border-bottom: 1px solid var(--ds-line);
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 22.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
     color: var(--ds-ink-4);
@@ -6755,18 +6755,18 @@ code {
     border-bottom: 0;
 }
 #main-body #main-body-left .inspection-status-box .status-body .inspector_info .inspector-user-name {
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 22.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: right;
     color: var(--ds-ink);
 }
 #main-body #main-body-left .inspection-status-box .status-body .inspector_info .inspector-user-email {
     max-width: 126px;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 22.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: right;
     color: var(--ds-ink-4);
@@ -6802,9 +6802,9 @@ code {
 =================================================================================================== */
 .posts-detail-wrap .subject {
     width: 80%;
-    font-size: 22px;
-    font-weight: 700;
-    line-height: 33.6px;
+    font-size: var(--ds-fs-title);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: -0.03em;
     text-align: left;
     color: var(--ds-ink);
@@ -6819,11 +6819,11 @@ code {
     width: 100%;
     height: 56px;
     padding: 0px 32px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     background: var(--ds-canvas);
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 22.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
     color: var(--ds-ink-4);
@@ -6832,9 +6832,9 @@ code {
 }
 .posts-detail-wrap .detail-wrap .detail-info .txt-title {
     margin-right: 15px;
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 22.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
     color: var(--ds-ink-3);
@@ -6846,11 +6846,11 @@ code {
     width: 100%;
     height: 355px;
     padding: 32px;
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     background: #fff;
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 22.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
     color: var(--ds-ink-3);
@@ -6896,9 +6896,9 @@ code {
     border-radius: 20px;
     border: 1px solid var(--ds-line);
     color: var(--ds-ink-3);
-    font-size: 15px;
-    font-weight: 500;
-    line-height: 25.28px;
+    font-size: var(--ds-fs-card);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     margin-right: 12px;
     background-color: #fff;
@@ -6918,7 +6918,7 @@ code {
     /* 이 화면은 오래 비어 있어 한 번도 재어진 적이 없다 — 세로 여백이
        눈금(4의 배수) 밖이었다. 10 → 12 */
     padding: var(--ds-3) var(--ds-5);
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     box-shadow: var(--ds-shadow);
     background-color: #fff;
     align-items: center;
@@ -6938,11 +6938,11 @@ code {
 .note-info-list .note-info-box .status {
     height: 32px;
     padding: var(--ds-1) var(--ds-3);
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     background: var(--ds-canvas);
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 22.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
     color: var(--ds-ink-4);
@@ -6950,9 +6950,9 @@ code {
 .note-info-list .note-info-box .note-title {
     max-width: 297px;
     color: var(--ds-ink-3);
-    font-size: 15px;
-    font-weight: 500;
-    line-height: 24px;
+    font-size: var(--ds-fs-card);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     cursor: pointer;
@@ -6970,9 +6970,9 @@ code {
 }
 .note-info-list .note-info-box .note-info {
     margin-top: 3px;
-    font-size: 12px;
-    font-weight: 400;
-    line-height: 18px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink-3);
@@ -6996,9 +6996,9 @@ code {
     background-image: url(../img/file.png);
     background-repeat: no-repeat;
     background-position: left 6px top 3px;
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 7.6px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh-none);
     letter-spacing: -0.02em;
     text-align: right;
     color: var(--ds-ink-4);
@@ -7009,9 +7009,9 @@ code {
     border-radius: 50px;
     border: 1px solid var(--ds-line);
     background-color: #fff;
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 7.6px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh-none);
     letter-spacing: -0.02em;
     text-align: center;
     color: var(--ds-ink-4);
@@ -7035,7 +7035,7 @@ code {
     min-width: 250px;
     background: #fff;
     border: 1px solid var(--ds-line);
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     box-shadow: var(--ds-shadow-pop);
     z-index: 1000;
 }
@@ -7065,19 +7065,19 @@ code {
     border-radius: 50%;
 }
 .note-info-list .note-info-box .admin-name {
-    font-size: 14px;
-    font-weight: 500;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
     color: var(--ds-ink);
 }
 .note-info-list .note-info-box .admin-email {
-    font-size: 12px;
+    font-size: var(--ds-fs-small);
     color: var(--ds-ink-4);
 }
 
 .target-info-list.empNoChg .target-info-box .box1 {
     width: 145px;
-    font-size: 14px;
-    font-weight: 700;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-bold);
     color: var(--ds-ink-3);
 }
 .target-info-list.empNoChg .target-info-box .box2 {
@@ -7086,16 +7086,16 @@ code {
 .target-info-list.empNoChg .target-info-box .box2 .title {
     display: flex;
     color: var(--ds-ink-3);
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 24px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
 }
 .target-info-list.empNoChg .target-info-box .box2 .title .text-focus {
     max-width: 300px;
-    font-size: 15px;
-    font-weight: 500;
+    font-size: var(--ds-fs-card);
+    font-weight: var(--ds-fw-medium);
     text-decoration: underline;
     text-underline-offset: 3px;
     overflow: hidden;
@@ -7105,12 +7105,12 @@ code {
 }
 .target-info-list.empNoChg .target-info-box .box2 .sub-title {
     display: flex;
-    font-size: 12px;
-    line-height: 23px;
+    font-size: var(--ds-fs-small);
+    line-height: var(--ds-lh);
 }
 .target-info-list.empNoChg .target-info-box .box2 .sub-title .text-focus {
     max-width: 200px;
-    font-weight: 500;
+    font-weight: var(--ds-fw-medium);
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -7120,18 +7120,18 @@ code {
 .target-info-list.empNoChg .target-info-box .txt-div {
     width: 176px;
     padding: var(--ds-3);
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 21px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
     color: var(--ds-ink-3);
 }
 .note-info-list .note-info-box .txt-div .txt-title,
 .target-info-list.empNoChg .target-info-box .txt-title {
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 18px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink-4);
@@ -7144,7 +7144,7 @@ code {
     width: 24px;
     height: 4px;
     margin-right: 3px;
-    border-radius: 4px;
+    border-radius: calc(var(--ds-radius) - 4px);
 }
 .note-info-list .note-info-box .txt-div .txt-cont .progress.UNCONFIRM {
     background: var(--ds-line);
@@ -7420,13 +7420,13 @@ code {
     height: 430px;
     padding: 20px;
     background: #fff;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     box-shadow: var(--ds-shadow);
 }
 .mypage-content .content-left .cont-title {
     font-size: 20px;
-    font-weight: 700;
-    line-height: 28px;
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh-tight);
     letter-spacing: -0.06em;
     text-align: left;
     color: var(--ds-ink);
@@ -7446,9 +7446,9 @@ code {
     align-items: center;
 }
 .mypage-content .content-left .cont-profile .user-name {
-    font-size: 18px;
-    font-weight: 700;
-    line-height: 25.2px;
+    font-size: var(--ds-fs-lead);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh-tight);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink);
@@ -7459,8 +7459,8 @@ code {
 .mypage-content .content-left .cont-profile .user-email {
     width: 90%;
     font-size: 16px;
-    font-weight: 500;
-    line-height: 27px;
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: center;
     color: var(--ds-ink-4);
@@ -7477,11 +7477,11 @@ code {
     height: 49px;
     padding: 0px 16px;
     margin-bottom: 5px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     cursor: pointer;
-    font-size: 15px;
-    font-weight: 500;
-    line-height: 24px;
+    font-size: var(--ds-fs-card);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink);
@@ -7497,13 +7497,13 @@ code {
     min-height: 646px;
     padding: 30px;
     background: #fff;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     box-shadow: var(--ds-shadow);
 }
 .mypage-content .content-right .signature-box {
     height: 240px;
     padding: 16px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     background: #fff;
     border: 1px solid var(--ds-line);
 }
@@ -7511,7 +7511,7 @@ code {
     width: 100%;
     height: 208px;
     padding: 24px 19px;
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     background: var(--ds-hover);
 }
 
@@ -7520,9 +7520,9 @@ code {
     top: 5px;
     right: 23px;
     margin-top: 15px;
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 15.6px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh-tight);
     letter-spacing: -0.02em;
     text-align: center;
     color: var(--ds-primary) !important;
@@ -7531,9 +7531,9 @@ code {
 }
 
 .mypage-content .content-right .alarm_text .s-name {
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 22.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
 }
@@ -7545,12 +7545,12 @@ code {
     text-overflow: ellipsis;
     letter-spacing: 0;
     white-space: nowrap;
-    font-weight: 700;
+    font-weight: var(--ds-fw-bold);
 }
 .mypage-content .content-right .alarm_text .event {
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
     color: #455a64;
@@ -7642,7 +7642,7 @@ code {
     height: 220px;
     margin-top: 15px;
     padding: 22px 30px;
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     box-shadow: var(--ds-shadow-pop);
     background: #fff;
 }
@@ -7651,23 +7651,23 @@ code {
     min-height: 470px;
     margin-top: 20px;
     padding: 20px 25px;
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     box-shadow: var(--ds-shadow-pop);
     background: #fff;
 }
 .activity-summary-box .card-title {
     margin-bottom: 0;
-    font-size: 18px;
-    font-weight: 700;
-    line-height: 25.2px;
+    font-size: var(--ds-fs-lead);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh-tight);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink-3);
 }
 .activity-summary-box .schDate {
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 22.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: right;
     color: var(--ds-ink-4);
@@ -7684,9 +7684,9 @@ code {
     height: 40px;
     padding: 8px 0px;
     margin-bottom: 5px;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 22.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
     color: var(--ds-ink-4);
@@ -7710,13 +7710,13 @@ code {
 .activity-summary-box .rank-txt .rank-new {
     width: 16px;
     height: 16px;
-    border-radius: 4px;
+    border-radius: calc(var(--ds-radius) - 4px);
     background-color: #ffa000 !important;
-    font-size: 12px;
+    font-size: var(--ds-fs-small);
     color: #fff;
-    font-weight: 400;
+    font-weight: var(--ds-fw-normal);
     text-align: center;
-    line-height: 18px !important;
+    line-height: var(--ds-lh) !important;
     margin-right: 7px;
 }
 .activity-summary-box .rank-txt .rank-up:before {
@@ -7742,17 +7742,17 @@ code {
     background-position: left 1px top -1px;
 }
 .activity-summary-box .card3 .txt1 {
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 22.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: center;
     color: var(--ds-ink-4);
 }
 .activity-summary-box .card3 .txt2 {
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 16.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh-tight);
     letter-spacing: -0.02em;
     text-align: center;
     color: var(--ds-ink);
@@ -7766,9 +7766,9 @@ code {
     border-bottom: 1px solid #ced4da;
 }
 .activity-summary-box .card4 .project-list-wrap .project-title {
-    font-size: 15px;
-    font-weight: 700;
-    line-height: 24px;
+    font-size: var(--ds-fs-card);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink-3);
@@ -7784,34 +7784,34 @@ code {
     background: #adb5bd;
 }
 .activity-summary-box .card4 .project-list-wrap .txt-info-txt {
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 18px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink-4);
 }
 .activity-summary-box .card4 .project-list-wrap .txt-info-cont {
     margin-left: 10px;
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 18px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink-3);
 }
 .activity-summary-box .card4 .project-list-wrap .note-txt {
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 18px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: right;
     color: var(--ds-ink-4);
 }
 .activity-summary-box .card4 .project-list-wrap .note-cnt {
     font-size: 16px;
-    font-weight: 700;
-    line-height: 25.28px;
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: -0.03em;
     text-align: right;
     color: var(--ds-primary);
@@ -7840,10 +7840,10 @@ code {
     height: 26px;
     padding: 4px 13px;
     border-radius: 20px;
-    font-size: 12px;
+    font-size: var(--ds-fs-small);
     background: var(--ds-hover);
-    font-weight: 700;
-    line-height: 18px;
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink-3);
@@ -7862,15 +7862,15 @@ code {
     Activity status
 =================================================================================================== */
 .activity-status-box {
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     background-color: #fff;
     border: 1px solid var(--ds-line);
 }
 .activity-status-box .header {
     height: 40px;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 23.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
     color: var(--ds-ink-4);
@@ -7908,9 +7908,9 @@ code {
 }
 .activity-status-box .header .cnt {
     margin-left: 7px;
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 22.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: right;
     color: var(--ds-ink-3);
@@ -7919,9 +7919,9 @@ code {
     width: 318px;
     height: 40px;
     padding: 8px 20px;
-    font-size: 15px;
-    font-weight: 500;
-    line-height: 24px;
+    font-size: var(--ds-fs-card);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink);
@@ -7929,9 +7929,9 @@ code {
     border-top: 1px solid var(--ds-line);
 }
 .activity-status-box .content .member-cnt {
-    font-size: 15px;
-    font-weight: 500;
-    line-height: 24px;
+    font-size: var(--ds-fs-card);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink-4);
@@ -7948,7 +7948,7 @@ code {
     width: 24px;
     height: 24px;
     border: 1px solid var(--ds-line);
-    border-radius: 4px;
+    border-radius: calc(var(--ds-radius) - 4px);
     background-color: #fff;
     background-image: url(../../../lib/eln/img/icon_select_arrow_drop_down.png);
     background-repeat: no-repeat;
@@ -7966,9 +7966,9 @@ code {
 .activity-status-box .content .progress-box1 .note-cnt,
 .activity-status-box .content .progress-box2 .note-cnt {
     padding-left: 10px;
-    font-size: 15px;
-    font-weight: 500;
-    line-height: 24px;
+    font-size: var(--ds-fs-card);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink-3);
@@ -7976,9 +7976,9 @@ code {
 .activity-status-box .content .progress-box1 .note-per,
 .activity-status-box .content .progress-box2 .note-per {
     padding-left: 5px;
-    font-size: 15px;
-    font-weight: 400;
-    line-height: 24px;
+    font-size: var(--ds-fs-card);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink-3);
@@ -8002,17 +8002,17 @@ code {
     padding-left: 10px;
 }
 .activity-status-box .content .profile_info .name {
-    font-size: 15px;
-    font-weight: 500;
-    line-height: 24px;
+    font-size: var(--ds-fs-card);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink);
 }
 .activity-status-box .content .profile_info .department {
-    font-size: 15px;
-    font-weight: 400;
-    line-height: 24px;
+    font-size: var(--ds-fs-card);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink-4);
@@ -8052,7 +8052,7 @@ code {
     min-height: 500px;
     margin-top: 20px;
     padding: 20px 25px;
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     box-shadow: var(--ds-shadow-pop);
     background: #fff;
 }
@@ -8064,7 +8064,7 @@ code {
 }
 .perf-box1 .box-top .top-title {
     font-size: 20px;
-    font-weight: 700;
+    font-weight: var(--ds-fw-bold);
     color: var(--ds-ink-3);
 }
 
@@ -8077,26 +8077,26 @@ code {
 }
 .perf-box1 .box-body .txt1 {
     margin-right: 10px;
-    font-size: 13px;
+    font-size: var(--ds-fs-cell);
     color: var(--ds-ink-4);
 }
 .perf-box1 .box-body .txt2 {
-    font-size: 13px;
+    font-size: var(--ds-fs-cell);
     color: var(--ds-primary);
-    font-weight: 500;
+    font-weight: var(--ds-fw-medium);
 }
 
 .perf-project-dashboard .perf-title {
     margin-top: 50px;
-    font-weight: 700;
-    font-size: 22px;
+    font-weight: var(--ds-fw-bold);
+    font-size: var(--ds-fs-title);
     line-height: 150%;
     color: var(--ds-ink);
 }
 .perf-project-dashboard .perf-sub-title {
     margin-top: 50px;
-    font-weight: 700;
-    font-size: 22px;
+    font-weight: var(--ds-fw-bold);
+    font-size: var(--ds-fs-title);
     line-height: 150%;
     color: var(--ds-ink);
 }
@@ -8114,15 +8114,15 @@ code {
     height: 220px;
     margin-top: 15px;
     padding: 22px 30px;
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     box-shadow: var(--ds-shadow-pop);
     background: #fff;
 }
 .perf-box2 .card-title {
     margin-bottom: 0;
-    font-size: 18px;
-    font-weight: 700;
-    line-height: 25.2px;
+    font-size: var(--ds-fs-lead);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh-tight);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink-3);
@@ -8131,9 +8131,9 @@ code {
     height: 40px;
     padding: 8px 0px;
     margin-bottom: 5px;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 22.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
     color: var(--ds-ink-4);
@@ -8157,13 +8157,13 @@ code {
 .perf-box2 .rank-txt .rank-new {
     width: 16px;
     height: 16px;
-    border-radius: 4px;
+    border-radius: calc(var(--ds-radius) - 4px);
     background-color: #ffa000 !important;
-    font-size: 12px;
+    font-size: var(--ds-fs-small);
     color: #fff;
-    font-weight: 400;
+    font-weight: var(--ds-fw-normal);
     text-align: center;
-    line-height: 18px !important;
+    line-height: var(--ds-lh) !important;
     margin-right: 7px;
 }
 .perf-box2 .rank-txt .rank-up:before {
@@ -8190,8 +8190,8 @@ code {
 }
 .perf-box2 .card3 .txt1 {
     font-size: 20px;
-    font-weight: 500;
-    line-height: 16.4px;
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh-none);
     letter-spacing: -0.02em;
     text-align: center;
     color: #0f4094;
@@ -8201,21 +8201,21 @@ code {
     min-height: 480px;
     margin-top: 30px;
     padding: 20px 30px;
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     box-shadow: var(--ds-shadow-pop);
     background: #fff;
 }
 .perf-box2 .card4 .date-txt {
-    font-weight: 500;
-    font-size: 14px;
+    font-weight: var(--ds-fw-medium);
+    font-size: var(--ds-fs-body);
     line-height: 160%;
     text-align: right;
     color: var(--ds-ink-4);
 }
 .perf-box3 .content_text .s-name {
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 22.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
 }
@@ -8226,12 +8226,12 @@ code {
     text-overflow: ellipsis;
     letter-spacing: 0;
     white-space: nowrap;
-    font-weight: 700;
+    font-weight: var(--ds-fw-bold);
 }
 .perf-box3 .content_text .event {
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
     color: #455a64;
@@ -8245,15 +8245,15 @@ code {
     Performance
 =================================================================================================== */
 .performance-goals-box {
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     background-color: #fff;
     border: 1px solid var(--ds-line);
 }
 .performance-goals-box .header {
     height: 40px;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 23.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
     color: var(--ds-ink-4);
@@ -8290,9 +8290,9 @@ code {
 }
 .performance-goals-box .header .cnt {
     margin-left: 7px;
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 22.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: right;
     color: var(--ds-ink-3);
@@ -8301,9 +8301,9 @@ code {
     width: 470px;
     height: 40px;
     padding: 8px 20px;
-    font-size: 15px;
-    font-weight: 500;
-    line-height: 24px;
+    font-size: var(--ds-fs-card);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink);
@@ -8318,9 +8318,9 @@ code {
     text-align: center;
 }
 .performance-goals-box .content .detail-goal-cnt {
-    font-size: 15px;
-    font-weight: 500;
-    line-height: 24px;
+    font-size: var(--ds-fs-card);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink-4);
@@ -8341,9 +8341,9 @@ code {
 .performance-goals-box .content .progress-box1 .perf-per,
 .performance-goals-box .content .progress-box2 .perf-per {
     padding-left: 6px;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 24px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink-3);
@@ -8352,9 +8352,9 @@ code {
 .performance-goals-box .content .progress-box2 .file-cnt {
     padding-left: 19px;
     margin-left: 4px;
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 24px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink-3);
@@ -8421,7 +8421,7 @@ code {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-size: 14px;
+    font-size: var(--ds-fs-body);
     font-weight: bold;
     color: #333;
     line-height: 1.4;
@@ -8432,7 +8432,7 @@ code {
     display: inline-block;
     word-break: break-all;
     white-space: normal;
-    font-size: 14px;
+    font-size: var(--ds-fs-body);
     color: #666;
     line-height: 1.4;
     max-width: 100%;
@@ -8443,17 +8443,17 @@ code {
     flex-shrink: 0;
 }
 .performance-goals-box .content .detail-perf .detail-info .title {
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 24px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink);
 }
 .performance-goals-box .content .detail-perf .detail-info .name {
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 24px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink-4);
@@ -8462,8 +8462,8 @@ code {
     width: 145px;
     height: 100%;
     padding-top: 10px;
-    font-weight: 400;
-    font-size: 12px;
+    font-weight: var(--ds-fw-normal);
+    font-size: var(--ds-fs-small);
     color: var(--ds-ink-4);
     border-right: 1px solid var(--ds-line);
     text-align: center;
@@ -8488,13 +8488,13 @@ code {
 .performance-goals-box .content .achievement .achieved,
 .performance-goals-box .content .achievement .not-achieved {
     height: 20px;
-    border-radius: 4px;
+    border-radius: calc(var(--ds-radius) - 4px);
     padding: 0 8px;
     margin: 10px;
     color: #fff;
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 18px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     text-align: center;
     background: var(--ds-primary);
 }
@@ -8514,21 +8514,21 @@ code {
     height: 95px;
     margin-top: 8px;
     padding: 20px 24px 20px 90px;
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     border: 0px;
     box-shadow: var(--ds-shadow);
     background-color: #fff;
     color: var(--ds-ink-3);
-    font-weight: 700;
-    font-size: 18px;
+    font-weight: var(--ds-fw-bold);
+    font-size: var(--ds-fs-lead);
     background-repeat: no-repeat;
     background-position: left 10px top 12px;
 }
 .performance-goals-cnt-box .note-card-title {
-    font-size: 15px;
-    line-height: 24px;
+    font-size: var(--ds-fs-card);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
-    font-weight: 500;
+    font-weight: var(--ds-fw-medium);
 }
 .performance-goals-cnt-box div.card-total {
     background-image: url(../img/icon_note_step1.png);
@@ -8621,7 +8621,7 @@ code {
     min-height: 79%;
     box-shadow: var(--ds-shadow-pop);
     background-color: #fff;
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
     padding: 10px;
 }
 
@@ -8651,9 +8651,9 @@ code {
     box-shadow: none;
     overflow-y: auto;
     text-align: center;
-    font-size: 15px;
-    font-weight: 400;
-    line-height: 22px;
+    font-size: var(--ds-fs-card);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     word-wrap: break-word;
     letter-spacing: -0.04em;
 }
@@ -8672,8 +8672,8 @@ code {
 }
 .core-dialog .modal-dialog .modal-title {
     font-size: 16px !important;
-    font-weight: 700 !important;
-    line-height: 22.4px;
+    font-weight: var(--ds-fw-bold) !important;
+    line-height: var(--ds-lh-tight);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink) !important;
@@ -8715,7 +8715,7 @@ code {
 .modal .modal-wrap-sty04 {
     background: #fff;
     box-shadow: var(--ds-shadow-pop);
-    border-radius: 10px;
+    border-radius: var(--ds-radius);
 }
 .modal .modal-wrap-sty01 {
     width: 840px;
@@ -8766,9 +8766,9 @@ code {
     justify-content: flex-start;
 }
 .modal .modal-pop .modal-header .modal-title {
-    font-size: 18px;
-    font-weight: 700;
-    line-height: 27px;
+    font-size: var(--ds-fs-lead);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink);
@@ -8776,9 +8776,9 @@ code {
 .modal .modal-pop .modal-header .modal-sub {
     width: 100%;
     padding-left: 31px;
-    font-size: 15px;
-    font-weight: 400;
-    line-height: 24px;
+    font-size: var(--ds-fs-card);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink);
@@ -8862,9 +8862,9 @@ code {
     height: 64px;
     padding: 10px 30px;
     border-bottom: 1px solid var(--ds-line);
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     color: var(--ds-ink-3);
 }
@@ -8872,9 +8872,9 @@ code {
     color: var(--ds-ink-4);
 }
 .modal .modal-pop.modal-wrap-sty03 .modal-body .wrap-top .cont {
-    font-size: 12px;
-    font-weight: 400;
-    line-height: 20.4px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     margin-top: 3px;
     color: var(--ds-ink-3);
@@ -8896,9 +8896,9 @@ code {
     background-repeat: no-repeat;
     background-position: left 27px top 14px;
     color: var(--ds-ink-3);
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
     border-bottom: 1px solid var(--ds-line);
@@ -8945,9 +8945,9 @@ code {
 }
 .modal .modal-pop .modal-body.inspection .desc {
     height: 180px;
-    font-size: 15px;
-    font-weight: 400;
-    line-height: 24px;
+    font-size: var(--ds-fs-card);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
     color: var(--ds-ink-4);
@@ -8955,21 +8955,21 @@ code {
     font-family: var(--ds-font);
     padding: 9px 16px;
     white-space: pre-wrap;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
 }
 .modal .modal-pop .modal-body.divide-sty02 .desc,
 .modal .modal-pop .modal-body.divide-sty03 .desc {
     height: 120px;
-    font-size: 15px;
-    font-weight: 400;
-    line-height: 24px;
+    font-size: var(--ds-fs-card);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     text-align: left;
     color: var(--ds-ink-4);
     overflow-y: auto;
     padding: 9px 16px;
     font-family: var(--ds-font);
     white-space: pre-wrap;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
 }
 
 .modal .modal-pop .modal-body.share .desc,
@@ -8977,9 +8977,9 @@ code {
     width: 90%;
     height: 75px;
     margin: 0 auto;
-    font-size: 15px;
-    font-weight: 400;
-    line-height: 24px;
+    font-size: var(--ds-fs-card);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
     color: var(--ds-ink-4);
@@ -8987,7 +8987,7 @@ code {
     font-family: var(--ds-font);
     padding: 9px 16px;
     white-space: pre-wrap;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
 }
 
 .modal .modal-pop .modal-body.inspection .desc.read,
@@ -9009,9 +9009,9 @@ code {
 }
 .modal .modal-pop .modal-body.inspection #collapseUserGroup .col_header {
     padding: 10px 20px;
-    font-size: 15px;
-    font-weight: 500;
-    line-height: 24px;
+    font-size: var(--ds-fs-card);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     border-bottom: 1px solid var(--ds-line);
@@ -9035,9 +9035,9 @@ code {
 }
 .modal .modal-pop .modal-body.inspection #collapseUserGroup .user_list_wrap .team_name {
     padding-left: 15px;
-    font-size: 12px;
-    font-weight: 400;
-    line-height: 20.4px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink-3);
@@ -9049,18 +9049,18 @@ code {
 .modal .modal-pop .modal-body.inspection #collapseUserGroup .user_list_wrap .team_member .name {
     padding-left: 22px;
     margin-right: 3px;
-    font-size: 14px;
-    line-height: 17px;
+    font-size: var(--ds-fs-body);
+    line-height: var(--ds-lh-tight);
     letter-spacing: -0.02em;
     text-align: left;
     color: #263238;
     cursor: pointer;
-    font-weight: 400 !important;
+    font-weight: var(--ds-fw-normal) !important;
 }
 .modal .modal-pop .modal-body.inspection #collapseUserGroup .user_list_wrap .team_member .email {
     max-width: 126px;
-    font-size: 14px;
-    font-weight: 400 !important;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-normal) !important;
     cursor: pointer;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -9069,16 +9069,16 @@ code {
 
 .modal .modal-pop .modal-body .modal-cont-title {
     font-size: 16px;
-    font-weight: 700;
-    line-height: 25.28px;
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: -0.03em;
     text-align: left;
     color: var(--ds-ink);
 }
 .modal .modal-pop .modal-body .modal-cont-title2 {
-    font-size: 18px;
-    font-weight: 700;
-    line-height: 27px;
+    font-size: var(--ds-fs-lead);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: center;
     color: var(--ds-ink-3);
@@ -9086,29 +9086,29 @@ code {
 .modal .modal-pop .modal-body .modal-cont-label {
     display: block;
     font-size: 16px;
-    font-weight: 500;
-    line-height: 27px;
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink-3);
 }
 .modal .modal-pop .modal-body .modal-cont-txt {
-    font-size: 12px;
-    font-weight: 400;
-    line-height: 20.4px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     margin-bottom: 15px;
     color: var(--ds-ink-3);
 }
 .modal .modal-pop .modal-body .modal-cont-txt.green {
-    font-weight: 700;
+    font-weight: var(--ds-fw-bold);
     color: #1cb56c;
 }
 .modal .modal-pop .modal-body .modal-cont-txt2 {
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: center;
     color: var(--ds-ink-2);
@@ -9129,9 +9129,9 @@ code {
     height: 25px;
 }
 .modal .modal-pop .modal-body .modal-cont-txt3 {
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: center;
     color: var(--ds-ink-3);
@@ -9161,9 +9161,9 @@ code {
 }
 .modal .modal-pop .modal-body .alert-msg {
     padding-left: 28px;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 21px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
     color: var(--ds-ink-3);
@@ -9173,8 +9173,8 @@ code {
 }
 .modal .modal-pop .modal-body .title_cnt {
     font-size: 16px;
-    font-weight: 500;
-    line-height: 25.28px;
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.03em;
     color: var(--ds-ink-4);
 }
@@ -9182,7 +9182,7 @@ code {
     height: 48px;
     margin-bottom: 15px;
     padding: 4px 8px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     background: var(--ds-hover);
     border: 1px solid var(--ds-hover);
     cursor: pointer;
@@ -9190,14 +9190,14 @@ code {
 .modal .modal-pop .modal-body .load-note-list li:hover {
     height: 48px;
     padding: 4px 8px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     background-color: var(--ds-primary-weak);
     border: 1px solid var(--ds-primary);
 }
 .modal .modal-pop .modal-body .load-note-list li.active {
     height: 48px;
     padding: 4px 8px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     background-color: var(--ds-primary-weak);
     border: 1px solid var(--ds-primary);
     background-image: url(../../../lib/eln/img/icon_check_blue.png);
@@ -9206,9 +9206,9 @@ code {
 }
 .modal .modal-pop .modal-body .load-note-list li .txt {
     max-width: 600px;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 23.8px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     color: var(--ds-ink-3);
     overflow: hidden;
@@ -9224,7 +9224,7 @@ code {
 .modal .modal-pop .modal-body .load-note-list li .icon_note {
     width: 40px;
     height: 40px;
-    border-radius: 4px;
+    border-radius: calc(var(--ds-radius) - 4px);
     border: 1px solid var(--ds-line);
     background: #fff;
     background-image: url(../../../lib/eln/img/icon_note_lg.png);
@@ -9238,7 +9238,7 @@ code {
     height: 190px;
     margin-top: 14px;
     margin-right: 15px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     background: #fff;
     border: 1px solid var(--ds-line);
     cursor: pointer;
@@ -9247,13 +9247,13 @@ code {
     margin-right: 0 !important;
 }
 .modal .modal-pop .modal-body .load-template-list li .box-img {
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     height: calc(100% - 84px);
 }
 .modal .modal-pop .modal-body .load-template-list li .box-img img {
     width: 179px;
     height: 104px;
-    border-radius: 8px 8px 0 0;
+    border-radius: calc(var(--ds-radius) - 2px) 8px 0 0;
 }
 .modal .modal-pop .modal-body .load-template-list li .box-cont {
     display: flex;
@@ -9264,9 +9264,9 @@ code {
     border-top: 1px solid var(--ds-line);
 }
 .modal .modal-pop .modal-body .load-template-list li .box-cont .txt-title {
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 18.8px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh-tight);
     letter-spacing: -0.02em;
     text-align: left;
     color: var(--ds-ink);
@@ -9279,9 +9279,9 @@ code {
     -webkit-box-orient: vertical;
 }
 .modal .modal-pop .modal-body .load-template-list li .box-cont .txt-info {
-    font-size: 12px;
-    font-weight: 400;
-    line-height: 16px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh-tight);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink-4);
@@ -9295,7 +9295,7 @@ code {
     width: 181px;
     height: 190px;
     top: 0;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     margin: 0 -9px;
     cursor: pointer;
 }
@@ -9310,13 +9310,13 @@ code {
     width: 100%;
     min-height: 55px;
     padding: 17px 24px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     background: #fff;
     border: 1px solid var(--ds-line);
     color: var(--ds-ink-4);
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 22.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
 }
@@ -9324,18 +9324,18 @@ code {
     min-height: 76px;
 }
 .modal .modal-pop .modal-body.inspection .inspector_info .sel-user-name {
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 22.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: right;
     color: var(--ds-ink);
 }
 .modal .modal-pop .modal-body.inspection .inspector_info .sel-user-email {
     max-width: 185px;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 22.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: right;
     color: var(--ds-ink-4);
@@ -9356,9 +9356,9 @@ code {
     min-height: 50px;
     padding-top: 15px;
     margin-top: 15px;
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 22.4px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
     text-align: left;
     background: #fff;
@@ -9387,9 +9387,9 @@ code {
     top: 5px;
     right: 23px;
     margin-top: 15px;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 15.6px;
+    font-size: var(--ds-fs-body);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh-none);
     letter-spacing: -0.02em;
     text-align: center;
     color: var(--ds-ink) !important;
@@ -9402,8 +9402,8 @@ code {
 
 .modal .modal-pop .modal-body.divide-sty02 .wrap-title,
 .modal .modal-pop .modal-body.divide-sty03 .wrap-title {
-    font-weight: 700;
-    font-size: 18px;
+    font-weight: var(--ds-fw-bold);
+    font-size: var(--ds-fs-lead);
     line-height: 140%;
     vertical-align: middle;
     color: var(--ds-ink);
@@ -9416,7 +9416,7 @@ code {
 .sign_name {
     font-size: 35px;
     text-align: center;
-    font-weight: 500;
+    font-weight: var(--ds-fw-medium);
 }
 
 .modal .modal-pop .modal-body.divide-sty03 .approval-box {
@@ -9629,19 +9629,19 @@ code {
 .progress.circle .progress-value .step_per {
     font-size: 24px;
     color: #0f4094;
-    line-height: 39px;
+    line-height: var(--ds-lh);
     text-align: center;
-    font-weight: 700;
+    font-weight: var(--ds-fw-bold);
 }
 .progress.circle .progress-value .step_txt {
     max-width: 74px;
     height: 24px;
     padding: 4px 8px 4px 8px;
     border: 1px solid var(--ds-line);
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 15.6px;
+    border-radius: calc(var(--ds-radius) - 4px);
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh-tight);
     letter-spacing: -0.02em;
     color: var(--ds-ink-3);
     white-space: nowrap;
@@ -9663,7 +9663,7 @@ code {
     width: 100%;
     height: 76px;
     padding: 8px 30px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     border: 1px solid var(--ds-line);
     background: #fff;
 }
@@ -9716,18 +9716,18 @@ code {
 }
 
 .box-proc .progress-title {
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 18px;
+    font-size: var(--ds-fs-small);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink-4);
 }
 .box-proc .progress-cont {
     margin-left: 10px;
-    font-size: 18px;
-    font-weight: 500;
-    line-height: 26px;
+    font-size: var(--ds-fs-lead);
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh-tight);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink);
@@ -9843,9 +9843,9 @@ code {
     justify-content: space-around;
 }
 #note-cover-container .title-wrap .title-sub {
-    font-size: 18px;
-    font-weight: 400;
-    line-height: 20.4px;
+    font-size: var(--ds-fs-lead);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh-none);
     text-align: left;
     color: var(--ds-ink-4);
 }
@@ -9865,8 +9865,8 @@ code {
 }
 #note-cover-container .title-wrap h1 {
     font-size: 46px;
-    font-weight: 500;
-    line-height: 53px;
+    font-weight: var(--ds-fw-medium);
+    line-height: var(--ds-lh-tight);
     letter-spacing: -0.03em;
     text-align: left;
     word-break: keep-all;
@@ -9886,16 +9886,16 @@ code {
     width: 90px;
     padding: 20px 0;
     font-size: 21px;
-    font-weight: 700;
-    line-height: 15.6px;
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh-none);
     letter-spacing: -0.02em;
     text-align: left;
     color: var(--ds-ink);
 }
 #note-cover-container .info-table td {
     font-size: 21px;
-    font-weight: 400;
-    line-height: 20.4px;
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh-none);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink-3);
@@ -9917,9 +9917,9 @@ code {
     background: var(--ds-canvas);
 }
 #note-info-container .table-title {
-    font-size: 18px;
-    font-weight: 700;
-    line-height: 21px;
+    font-size: var(--ds-fs-lead);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh-tight);
     letter-spacing: -0.02em;
     text-align: left;
 }
@@ -9945,16 +9945,16 @@ code {
     width: 120px;
     padding: 12px;
     font-size: 16px;
-    font-weight: 700;
-    line-height: 17.6px;
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh-none);
     letter-spacing: -0.02em;
     text-align: left;
     color: var(--ds-ink);
 }
 #note-info-container .certificate-table td {
     font-size: 16px;
-    font-weight: 400;
-    line-height: 22.4px;
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh-tight);
     letter-spacing: -0.04em;
     text-align: left;
     color: var(--ds-ink-3);
@@ -9968,7 +9968,7 @@ code {
 #note-info-container .hist-table th{
     padding: 12px;
     font-size: 16px;
-    font-weight: 700;
+    font-weight: var(--ds-fw-bold);
     text-align: left;
     color: var(--ds-ink);
     background-color: var(--ds-canvas);
@@ -9977,8 +9977,8 @@ code {
 #note-info-container .hist-table td {
     padding: 12px;
     font-size: 16px;
-    font-weight: 400;
-    line-height: 20.4px;
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh-tight);
     color: var(--ds-ink-3);
     border-bottom: 1px dotted #adb5bd;
 }
@@ -9990,9 +9990,9 @@ code {
     width: 120px;
 }
 #note-info-container .hist-table .authenticator-name {
-    font-size: 15px;
-    font-weight: 700;
-    line-height: 17px;
+    font-size: var(--ds-fs-card);
+    font-weight: var(--ds-fw-bold);
+    line-height: var(--ds-lh-none);
     letter-spacing: -0.04em;
     text-align: left;
 }
@@ -10008,11 +10008,11 @@ caption {
 .alert-primary.blue {
     width: 100%;
     padding: var(--ds-4) 24px 15px 55px;
-    border-radius: 8px;
+    border-radius: calc(var(--ds-radius) - 2px);
     border: 0;
     font-size: 16px;
-    font-weight: 400;
-    line-height: 28.8px;
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: -0.05em;
     text-align: left;
     color: var(--ds-ink-3);
@@ -10032,14 +10032,14 @@ caption {
 .icon-notice {
     width: 16px;
     height: 16px;
-    border-radius: 4px;
+    border-radius: calc(var(--ds-radius) - 4px);
     background-color: #ffa000 !important;
-    font-size: 12px;
+    font-size: var(--ds-fs-small);
     color: #fff;
-    font-weight: 400;
+    font-weight: var(--ds-fw-normal);
     text-align: center;
     padding: 0;
-    line-height: 18px !important;
+    line-height: var(--ds-lh) !important;
     margin-left: 8px;
     margin-bottom: 0 !important;
 }
@@ -10114,8 +10114,8 @@ h5,
        h5 를 쓰는 자리(공통 확인창 제목 등)가 본문과 다른 글꼴로 그려졌다.
        쉬는 화면에는 h5 가 거의 없어 24화면 검사에 안 걸렸다. */
     font-family: var(--ds-font) !important;
-    font-weight: 500 !important;
-    font-size: 18px !important;
+    font-weight: var(--ds-fw-medium) !important;
+    font-size: var(--ds-fs-lead) !important;
     color: var(--ds-ink) !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
@@ -10142,9 +10142,9 @@ h5,
 }
 
 .tooltip {
-    font-size: 13px;
-    font-weight: 400;
-    line-height: 22.4px;
+    font-size: var(--ds-fs-cell);
+    font-weight: var(--ds-fw-normal);
+    line-height: var(--ds-lh);
     letter-spacing: -0.02em;
 }
 
@@ -10156,7 +10156,7 @@ h5,
     display: inline-block;
     padding-left: 0;
     margin: 13px 0;
-    border-radius: 4px;
+    border-radius: calc(var(--ds-radius) - 4px);
 }
 .pagination > li {
     display: inline-block;
@@ -10168,7 +10168,7 @@ h5,
 .pagination > li > span {
     position: relative;
     padding: 6px 10px;
-    line-height: 1.42857143;
+    line-height: var(--ds-lh-tight);
     color: var(--ds-ink-3);
     text-decoration: none;
     background-color: #fff;
@@ -10198,10 +10198,10 @@ h5,
     left: 5px;
     position: absolute;
     z-index: 2;
-    font-size: 12px;
+    font-size: var(--ds-fs-small);
 }
 .ggroupitem {
-    font-weight: 500 !important;
+    font-weight: var(--ds-fw-medium) !important;
 }
 
 .gtasktableh th {

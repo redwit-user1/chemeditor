@@ -60,11 +60,13 @@
 	text-align: center;
 	overflow: hidden;
 }
+/* 모서리 사다리는 6·8·10·14·알약이다. 4px 은 이 한 줄만 쓰고 있었다.
+   바깥 여백 13px 도 4px 눈금 밖이다. */
 .core-table .core-table-body .pagination {
     display: inline-block;
     padding-left: 0;
-    margin: 13px 0;
-    border-radius: 4px;
+    margin: var(--ds-3) 0;
+    border-radius: calc(var(--ds-radius) - 4px);
 }
 .core-table .core-table-body .pagination>li {
     display: inline-block;
@@ -99,7 +101,7 @@
 .core-table .core-table-body .pagination>li>span {
     position: relative;
     padding: 6px 10px;
-    line-height: 1.42857143;
+    line-height: var(--ds-lh-tight)143;
     color: #495057;
     text-decoration: none;
     background-color: #fff;

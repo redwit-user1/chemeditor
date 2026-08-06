@@ -66,8 +66,8 @@
 	padding: calc(var(--ds-unit) / 2) var(--ds-2);
 	border-radius: calc(var(--ds-radius) - 6px);
 	font-size: var(--ds-fs-small);
-	font-weight: 500;
-	line-height: 1.5;
+	font-weight: var(--ds-fw-medium);
+	line-height: var(--ds-lh);
 	letter-spacing: -0.02em;
 	white-space: nowrap;
 }
@@ -123,7 +123,7 @@
 
 .lims-prop-bar .prop-value {
 	font-size: var(--ds-fs-lead);
-	font-weight: 700;
+	font-weight: var(--ds-fw-bold);
 	color: var(--ds-primary);
 	letter-spacing: -0.04em;
 	font-variant-numeric: tabular-nums;
@@ -131,7 +131,7 @@
 
 .lims-prop-bar .prop-value.empty {
 	color: var(--ds-ink-4);
-	font-weight: 400;
+	font-weight: var(--ds-fw-normal);
 }
 
 /* ---------------------------------------------------------------------------
@@ -212,7 +212,7 @@
 
 .lims-compound-thumb.is-empty {
 	font-size: var(--ds-fs-small);
-	font-weight: 400;
+	font-weight: var(--ds-fw-normal);
 	color: var(--ds-ink-4);
 	letter-spacing: -0.02em;
 	text-align: center;
@@ -221,7 +221,7 @@
 .lims-compound-regid {
 	margin-bottom: var(--ds-2);
 	font-size: var(--ds-fs-body);
-	font-weight: 700;
+	font-weight: var(--ds-fw-bold);
 	color: var(--ds-ink);
 	letter-spacing: -0.04em;
 	word-break: break-all;
@@ -348,7 +348,7 @@
 
 .lims-stoich-summary .stoich-value {
 	font-size: var(--ds-fs-body);
-	font-weight: 700;
+	font-weight: var(--ds-fw-bold);
 	color: var(--ds-ink);
 	letter-spacing: -0.04em;
 	font-variant-numeric: tabular-nums;
@@ -360,7 +360,7 @@
 
 .lims-stoich-summary .stoich-value.empty {
 	font-size: var(--ds-fs-body);
-	font-weight: 400;
+	font-weight: var(--ds-fw-normal);
 	color: var(--ds-ink-4);
 }
 
@@ -370,7 +370,7 @@
 	padding: calc(var(--ds-unit) / 2) var(--ds-2);
 	border-radius: var(--ds-radius);
 	font-size: var(--ds-fs-small);
-	font-weight: 400;
+	font-weight: var(--ds-fw-normal);
 	letter-spacing: -0.02em;
 	white-space: nowrap;
 }
@@ -398,7 +398,7 @@
 	background: var(--ds-primary);
 	color: var(--ds-surface);
 	font-size: var(--ds-fs-small);
-	font-weight: 400;
+	font-weight: var(--ds-fw-normal);
 	letter-spacing: -0.02em;
 	white-space: nowrap;
 }
@@ -408,9 +408,9 @@
 	display: inline-block;
 	color: var(--ds-ink-4);
 	font-size: var(--ds-fs-cell);
-	font-weight: 400;
+	font-weight: var(--ds-fw-normal);
 	letter-spacing: -0.02em;
-	line-height: 1.4;
+	line-height: var(--ds-lh-tight);
 }
 
 .lims-stoich-reason.danger {
@@ -425,7 +425,7 @@
 /* 수율 행 */
 .table-sty01 tr.lims-stoich-yield-row > td {
 	background: var(--ds-canvas);
-	font-weight: 700;
+	font-weight: var(--ds-fw-bold);
 	color: var(--ds-ink);
 }
 
@@ -447,14 +447,14 @@
 
 .lims-stoich-note-box .stoich-line .v {
 	font-size: var(--ds-fs-body);
-	font-weight: 700;
+	font-weight: var(--ds-fw-bold);
 	color: var(--ds-ink);
 	letter-spacing: -0.02em;
 	font-variant-numeric: tabular-nums;
 }
 
 .lims-stoich-note-box .stoich-line .v.empty {
-	font-weight: 400;
+	font-weight: var(--ds-fw-normal);
 	color: var(--ds-ink-4);
 }
 
@@ -496,7 +496,7 @@
 	border-radius: var(--ds-radius);
 	background: var(--ds-surface);
 	font-size: var(--ds-fs-metric);
-	font-weight: 700;
+	font-weight: var(--ds-fw-bold);
 	color: var(--ds-ink);
 	letter-spacing: -0.02em;
 	font-variant-numeric: tabular-nums;
@@ -509,7 +509,7 @@
 
 .lims-scan-box .lims-scan-input::placeholder {
 	font-size: var(--ds-fs-card);
-	font-weight: 400;
+	font-weight: var(--ds-fw-normal);
 	color: var(--ds-ink-4);
 }
 
@@ -530,7 +530,7 @@
 .lims-scan-card .lims-scan-card-barcode {
 	margin: 0;
 	font-size: var(--ds-fs-title);
-	font-weight: 700;
+	font-weight: var(--ds-fw-bold);
 	color: var(--ds-primary);
 	letter-spacing: -0.02em;
 	font-variant-numeric: tabular-nums;
@@ -540,7 +540,7 @@
 .lims-scan-card .lims-scan-card-nm {
 	margin: var(--ds-1) 0 var(--ds-5);
 	font-size: var(--ds-fs-body);
-	font-weight: 500;
+	font-weight: var(--ds-fw-medium);
 	color: var(--ds-ink);
 	letter-spacing: -0.02em;
 }
@@ -577,7 +577,7 @@
 
 .lims-scan-card .lims-scan-field-value.strong {
 	font-size: var(--ds-fs-lead);
-	font-weight: 700;
+	font-weight: var(--ds-fw-bold);
 	color: var(--ds-primary);
 	font-variant-numeric: tabular-nums;
 }
@@ -626,7 +626,7 @@
 
 .lims-scan-choice .lims-scan-choice-barcode {
 	font-size: var(--ds-fs-body);
-	font-weight: 700;
+	font-weight: var(--ds-fw-bold);
 	color: var(--ds-primary);
 	letter-spacing: -0.02em;
 	font-variant-numeric: tabular-nums;
@@ -688,8 +688,8 @@
    완료·취소·대기가 전부 muted 로 같아 보였다. 완료를 따로 뗀다.
    ------------------------------------------------------------------ */
 .lims-state.done {
-	background-color: #e6f4ea;
-	color: #1e7e46;
+	background-color: var(--ds-ok-weak);
+	color: var(--ds-ok);
 }
 
 /* ------------------------------------------------------------------
@@ -719,12 +719,12 @@
 
 .lims-summary-row .lims-summary-value {
 	font-size: var(--ds-fs-metric);
-	font-weight: 500;
+	font-weight: var(--ds-fw-medium);
 	color: var(--ds-ink);
-	line-height: 1.3;
+	line-height: var(--ds-lh-tight);
 }
 
-.lims-summary-row .lims-summary-value.warn { color: #f59f00; }
+.lims-summary-row .lims-summary-value.warn { color: var(--ds-warn); }
 .lims-summary-row .lims-summary-value.danger { color: var(--ds-danger); }
 .lims-summary-row .lims-summary-value.primary { color: var(--ds-primary); }
 
@@ -822,8 +822,11 @@
 	font-size: var(--shell-nav-fs);
 }
 
+/* 줄높이를 안 적어 두어 위에서 16px 이 상속됐다 — 13px 글자에 비율 1.23 이라
+   사다리(1 / 1.3 / 1.5) 밖이었다. 메뉴 한 줄은 조밀한 자리다. */
 .sidenav2 a span {
 	font-size: calc(var(--shell-nav-fs) - 1px);
+	line-height: var(--ds-lh-tight);
 }
 
 /* 본문 폭은 사이드바 폭에서 계산된다. 한 곳만 보고 따라가게 둔다. */

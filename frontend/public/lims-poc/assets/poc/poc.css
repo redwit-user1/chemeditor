@@ -12,14 +12,14 @@
   padding: 7px 18px;
   background: #101828;
   color: #fff;
-  font-size: 12px;
+  font-size: var(--ds-fs-small);
   line-height: 1.5;
 }
 .lims-poc-banner b {
   padding: 2px 8px;
   border-radius: 3px;
   background: #2f6fed;
-  font-weight: 700;
+  font-weight: var(--ds-fw-bold);
 }
 .lims-poc-banner span {
   color: #d0d5dd;
@@ -40,18 +40,18 @@
 .lims-poc-flow .lims-poc-flow-label {
   margin-right: 6px;
   color: #667085;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: var(--ds-fs-small);
+  font-weight: var(--ds-fw-bold);
   white-space: nowrap;
 }
 .lims-poc-flow a,
 .lims-poc-flow span.lims-poc-step {
   padding: 3px 10px;
   border: 1px solid #e4e7ec;
-  border-radius: 14px;
+  border-radius: var(--ds-radius-lg);
   background: #fff;
   color: #475467;
-  font-size: 12px;
+  font-size: var(--ds-fs-small);
   text-decoration: none;
   white-space: nowrap;
 }
@@ -63,12 +63,12 @@
   border-color: #2f6fed;
   background: #2f6fed;
   color: #fff;
-  font-weight: 700;
+  font-weight: var(--ds-fw-bold);
 }
 /* 단계 구분 화살표. 1.41:1 이면 흐름 자체가 안 읽힌다. */
 .lims-poc-flow .lims-poc-arrow {
   color: #667085;
-  font-size: 11px;
+  font-size: var(--ds-fs-micro);
 }
 
 /* 구조 입력기 대역 — Ketcher 자리에 RDKit 이 그린 구조와 계산값을 보여준다. */
@@ -78,7 +78,7 @@
   align-items: stretch;
   padding: 20px;
   border: 1px solid var(--ds-line);
-  border-radius: 10px;
+  border-radius: var(--ds-radius);
   background: #fff;
 }
 .lims-chem-stub-canvas {
@@ -88,7 +88,7 @@
   flex: 1 1 auto;
   min-height: 380px;
   border: 1px dashed var(--ds-line);
-  border-radius: 8px;
+  border-radius: calc(var(--ds-radius) - 2px);
   background: var(--ds-canvas);
 }
 .lims-chem-stub-canvas svg {
@@ -103,13 +103,13 @@
   gap: 10px;
 }
 .lims-chem-stub-title {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: var(--ds-fs-body);
+  font-weight: var(--ds-fw-bold);
   color: var(--ds-ink);
 }
 .lims-chem-stub-note {
-  font-size: 12px;
-  line-height: 1.65;
+  font-size: var(--ds-fs-small);
+  line-height: var(--ds-lh);
   color: var(--ds-ink-4);
 }
 .lims-chem-stub-list {
@@ -121,10 +121,10 @@
 .lims-chem-stub-item {
   padding: 8px 12px;
   border: 1px solid var(--ds-line);
-  border-radius: 6px;
+  border-radius: calc(var(--ds-radius) - 4px);
   background: #fff;
   color: var(--ds-ink-3);
-  font-size: 13px;
+  font-size: var(--ds-fs-cell);
   font-variant-numeric: tabular-nums;
   text-align: left;
   cursor: pointer;
@@ -137,7 +137,7 @@
   border-color: var(--ds-primary);
   background: var(--ds-primary-weak);
   color: var(--ds-primary);
-  font-weight: 700;
+  font-weight: var(--ds-fw-bold);
 }
 @media (max-width: 900px) {
   .lims-chem-stub { flex-direction: column; }
@@ -153,10 +153,10 @@
   max-width: 520px;
   padding: 12px 18px;
   transform: translate(-50%, 12px);
-  border-radius: 8px;
+  border-radius: calc(var(--ds-radius) - 2px);
   background: rgba(16, 24, 40, 0.94);
   color: #fff;
-  font-size: 13px;
+  font-size: var(--ds-fs-cell);
   line-height: 1.5;
   opacity: 0;
   pointer-events: none;
@@ -175,7 +175,7 @@
 }
 .lims-poc-flow .lims-poc-sub .lims-poc-step {
   padding: 3px 9px;
-  font-size: 11px;
+  font-size: var(--ds-fs-micro);
   color: #667085;
   border-style: dashed;
 }
@@ -193,12 +193,12 @@
 }
 .lims-poc-flow .lims-poc-flow-ext .lims-poc-step {
   padding: 4px 9px;
-  font-size: 11px;
+  font-size: var(--ds-fs-micro);
   color: #98a2b3;
 }
 .lims-poc-flow .lims-poc-flow-ext .lims-poc-step.on {
   border-color: #98a2b3;
   background: #f2f4f7;
   color: #475467;
-  font-weight: 700;
+  font-weight: var(--ds-fw-bold);
 }

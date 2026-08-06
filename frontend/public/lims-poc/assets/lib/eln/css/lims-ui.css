@@ -128,7 +128,7 @@
 /* 단, 스스로 높이를 갖는 span 은 예외다. 버튼 라벨은 세로 가운데 정렬이라 1,
    상태 배지는 제 역할의 행간(snug)을 지켜야 한다. 위 재설정보다 한 단 위에 둔다. */
 .lims-page .core-table .core-table-body [class*="button-"] > span {
-	line-height: 1;
+	line-height: var(--ds-lh-none);
 }
 
 .lims-page .core-table .core-table-body span.lims-state {
@@ -307,12 +307,12 @@
 	background-image: none;
 	font-size: var(--lims-fs-body);
 	font-weight: var(--lims-fw-medium);
-	line-height: 1;
+	line-height: var(--ds-lh-none);
 	text-align: center;
 	white-space: nowrap;
 	vertical-align: middle;
 	cursor: pointer;
-	transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+	transition: background-color var(--ds-dur) var(--ds-ease), border-color var(--ds-dur) var(--ds-ease), color var(--ds-dur) var(--ds-ease);
 }
 
 .lims-page .button-blue-full-sty01 > span,
@@ -320,7 +320,7 @@
 .lims-page .button-gray-line-sty01 > span {
 	font-size: inherit;
 	font-weight: inherit;
-	line-height: 1;
+	line-height: var(--ds-lh-none);
 }
 
 /* primary — 화면당 하나가 원칙이다(등록·의뢰·확정) */
@@ -352,7 +352,9 @@
 }
 
 .lims-page .button-blue-line-sty01:active {
-	background-color: #dfeafb;
+	/* 누른 상태의 파랑을 따로 갖고 있었다. 눌린 느낌은 아래 1px 이동이 이미
+	   말해 주므로 색은 홀버와 같은 하나로 둔다 — 파랑이 하나 준다. */
+	background-color: var(--ds-primary-weak);
 	transform: translateY(1px);
 }
 
@@ -419,8 +421,8 @@
 	border-radius: var(--lims-radius);
 	font-size: var(--lims-fs-body);
 	font-weight: var(--lims-fw-medium);
-	line-height: 1;
-	transition: background-color 0.12s ease;
+	line-height: var(--ds-lh-none);
+	transition: background-color var(--ds-dur) var(--ds-ease);
 }
 
 .lims-page .button-cnfm-sty01:hover { background-color: var(--lims-primary-dark); }
@@ -754,7 +756,7 @@
 	border-radius: var(--ds-radius);
 	background: var(--lims-surface);
 	text-decoration: none;
-	transition: border-color 0.12s ease, box-shadow 0.12s ease;
+	transition: border-color var(--ds-dur) var(--ds-ease), box-shadow var(--ds-dur) var(--ds-ease);
 }
 
 .lims-page a.lims-kpi-item:hover,
@@ -912,7 +914,7 @@
 	font-size: var(--lims-fs-body);
 	line-height: calc(var(--lims-control-h) - 2px);
 	color: var(--lims-ink);
-	transition: border-color 0.12s ease, box-shadow 0.12s ease;
+	transition: border-color var(--ds-dur) var(--ds-ease), box-shadow var(--ds-dur) var(--ds-ease);
 }
 
 .lims-page .select-sty02 {
@@ -1011,7 +1013,7 @@
 	border-radius: var(--lims-radius);
 	background: var(--lims-surface);
 	color: var(--lims-ink-2);
-	transition: border-color 0.12s ease, background-color 0.12s ease, color 0.12s ease;
+	transition: border-color var(--ds-dur) var(--ds-ease), background-color var(--ds-dur) var(--ds-ease), color var(--ds-dur) var(--ds-ease);
 }
 
 .lims-page .lims-filter .search-box .select-wrap > a.c-pointer:hover {
@@ -1113,7 +1115,7 @@
 /* 부트스트랩은 hover 틴트를 tr:hover 에 선언된 --bs-table-hover-bg 로 칠한다.
    구노가 그 자리에 회색(var(--ds-hover))을 박아두었으므로 같은 자리에서 덮어써야 한다. */
 .lims-page .core-table .core-table-body .table > tbody > tr:hover {
-	--bs-table-hover-bg: #eff5ff !important;
+	--bs-table-hover-bg: var(--ds-primary-weak) !important;
 	--bs-table-hover-color: var(--lims-ink) !important;
 }
 
@@ -1234,7 +1236,7 @@ th.lims-num,
 	padding: 0 var(--lims-gap-2);
 	font-size: var(--lims-fs-body);
 	font-weight: var(--lims-fw-medium);
-	line-height: 1;
+	line-height: var(--ds-lh-none);
 	color: var(--lims-primary);
 	vertical-align: middle;
 }
@@ -1339,9 +1341,9 @@ th.lims-num,
 	background: transparent;
 	font-size: var(--lims-fs-body);
 	font-weight: var(--lims-fw-medium);
-	line-height: 1;
+	line-height: var(--ds-lh-none);
 	color: var(--lims-ink-2);
-	transition: background-color 0.12s ease, color 0.12s ease;
+	transition: background-color var(--ds-dur) var(--ds-ease), color var(--ds-dur) var(--ds-ease);
 }
 
 .lims-page .paging-box .pagination > li > a:hover {
@@ -1520,7 +1522,7 @@ th.lims-num,
 
 .lims-page .lims-note-box.is-danger {
 	border-left-color: var(--lims-danger);
-	background: #fdf3f2;
+	background: var(--ds-danger-weak);
 }
 
 /* 물성 패널 — 붙여넣기 직후 분자식·분자량이 뜨는 자리. 이 PoC 의 주인공이라
@@ -1626,7 +1628,7 @@ th.lims-num,
 	border-radius: var(--lims-radius);
 	background: transparent;
 	font-size: var(--lims-fs-lead);
-	font-weight: 700;
+	font-weight: var(--ds-fw-bold);
 	color: var(--lims-ink);
 	letter-spacing: -0.02em;
 }
@@ -1726,7 +1728,7 @@ th.lims-num,
 }
 
 .lims-page .lims-note-block.is-struct {
-	border-color: #cfe0fa;
+	border-color: var(--ds-primary-line);
 }
 
 .lims-page .lims-note-block-head {
@@ -1751,7 +1753,7 @@ th.lims-num,
 	color: var(--lims-ink-2);
 	font-size: var(--lims-fs-micro);
 	font-weight: var(--lims-fw-medium);
-	line-height: 1;
+	line-height: var(--ds-lh-none);
 }
 
 .lims-page .lims-note-block-kind {
@@ -1962,7 +1964,7 @@ th.lims-num,
 }
 
 .lims-page .lims-note-struct-status.is-ok {
-	color: #1a7f4b;
+	color: var(--ds-ok);
 }
 
 .lims-page .lims-note-struct-status.is-danger {
@@ -2207,7 +2209,7 @@ th.lims-num,
 	padding: 0 var(--ds-4);
 	font-size: var(--lims-fs-metric);
 	font-weight: var(--lims-fw-bold);
-	line-height: 1;
+	line-height: var(--ds-lh-none);
 }
 
 .lims-page .lims-scan-box .lims-scan-input::placeholder {

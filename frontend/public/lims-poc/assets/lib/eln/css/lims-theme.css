@@ -230,7 +230,9 @@
 	--lims-fw-medium: var(--ds-fw-medium);
 	--lims-fw-bold: var(--ds-fw-bold);
 	--lims-lh-tight: var(--ds-lh-tight);
-	--lims-lh-snug: 1.4;
+	/* 1.4 는 1.3 과 1.5 사이에 끼어 있어 어느 자리에 쓸지 설명할 말이 없었다.
+	   실제로 쓰인 곳(배지·화합물 등록번호)은 전부 조밀한 자리다. */
+	--lims-lh-snug: var(--ds-lh-tight);
 	--lims-lh-base: var(--ds-lh);
 	--lims-lh-loose: 1.7;
 	--lims-control-h: var(--ds-control);
@@ -269,7 +271,7 @@ h2.lims-title,
 .page-title,
 h2.title {
 	font-size: var(--ds-fs-title);
-	font-weight: 700;
+	font-weight: var(--ds-fw-bold);
 	line-height: var(--ds-lh-tight);
 	color: var(--ds-ink);
 }
@@ -283,7 +285,7 @@ h2.title {
 .sub-title-sty02 .title_cnt,
 .modal .modal-pop .modal-body .title_cnt {
 	font-size: var(--ds-fs-title);
-	font-weight: 500;
+	font-weight: var(--ds-fw-medium);
 }
 
 /* 연구노트 카드에서 .txt-project 는 위쪽 경로 줄이라 작게 간다 */
@@ -297,7 +299,7 @@ h2.title {
    카드 제목 척도(15)로 맞추되 작게 만들지는 않는다. */
 .project-card-board .project-card .project-card-cont .txt-title .txt-project {
 	font-size: var(--ds-fs-card);
-	font-weight: 700;
+	font-weight: var(--ds-fw-bold);
 	color: var(--ds-ink) !important;
 }
 
@@ -349,7 +351,7 @@ h2.title {
 .sub-title-sty02,
 .sub-title-sty02 > span {
 	font-size: var(--ds-fs-lead);
-	font-weight: 700;
+	font-weight: var(--ds-fw-bold);
 	color: var(--ds-ink);
 }
 
@@ -407,7 +409,7 @@ h2.title {
 
 .main-card01 .title01 {
 	font-size: var(--ds-fs-metric);
-	font-weight: 700;
+	font-weight: var(--ds-fw-bold);
 	line-height: var(--ds-lh-tight);
 	color: var(--ds-ink);
 	letter-spacing: -0.03em;
@@ -431,7 +433,7 @@ h2.title {
 
 :where(.sub-title-sty01, .lims-card-title, .note-info-box .title, .board-top .title) {
 	font-size: var(--ds-fs-card);
-	font-weight: 700;
+	font-weight: var(--ds-fw-bold);
 	line-height: var(--ds-lh-tight);
 	color: var(--ds-ink);
 }
@@ -444,7 +446,7 @@ h2.title {
 
 :where(.core-table thead th) {
 	font-size: var(--ds-fs-small);
-	font-weight: 500;
+	font-weight: var(--ds-fw-medium);
 	color: var(--ds-ink-4);
 }
 
@@ -537,7 +539,7 @@ body,
 	background-image: none !important;
 	color: #fff !important;
 	font-size: var(--ds-fs-body);
-	font-weight: 500;
+	font-weight: var(--ds-fw-medium);
 	/*
 	  이 버튼이 두 줄로 접혀 "연구노트 생 / 성" 이 되고 있었다. 사이드바를 좁히면
 	  가장 먼저 깨지는 자리다. 줄바꿈을 막고, 대신 좁아지면 글자를 줄인다.
@@ -602,7 +604,7 @@ body,
 	border-radius: var(--ds-radius);
 	color: var(--ds-ink-3) !important;
 	font-size: var(--ds-fs-body);
-	font-weight: 400;
+	font-weight: var(--ds-fw-normal);
 	line-height: var(--ds-lh-tight);
 	opacity: 1;
 	background-repeat: no-repeat !important;
@@ -611,7 +613,7 @@ body,
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	transition: background-color 0.12s ease, color 0.12s ease;
+	transition: background-color var(--ds-dur) var(--ds-ease), color var(--ds-dur) var(--ds-ease);
 }
 
 .nav-menu a.menuCd:hover {
@@ -622,7 +624,7 @@ body,
 .nav-menu a.menuCd.active {
 	background-color: var(--ds-primary-weak);
 	color: var(--ds-primary) !important;
-	font-weight: 500;
+	font-weight: var(--ds-fw-medium);
 }
 
 .nav-menu a.menuCd.LIMS_COMPOUND { background-image: url(../img/lucide/hexagon-d.svg) !important; }
@@ -679,7 +681,13 @@ body,
 	color: var(--ds-ink-3) !important;
 	font-size: var(--ds-fs-micro);
 	font-weight: var(--ds-fw-medium);
-	line-height: var(--ds-5);
+	/* 간격 토큰(--ds-5)을 줄높이로 쓰고 있었다. 값은 맞았지만 뜻이 틀렸고,
+	   11px 글자에 비율 1.82 라 사다리 밖으로 잡혔다. 알약은 상자로 세운다. */
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	height: var(--ds-5);
+	line-height: var(--ds-lh-none);
 }
 
 .nav-list-wrap .nav-list-top .nav-list-all {
@@ -1061,11 +1069,11 @@ a.button-more-sty01 {
 	border: 1px solid transparent;
 	border-radius: var(--ds-radius);
 	font-size: var(--ds-fs-cell);
-	font-weight: 500;
+	font-weight: var(--ds-fw-medium);
 	line-height: 1;
 	white-space: nowrap;
 	cursor: pointer;
-	transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+	transition: background-color var(--ds-dur) var(--ds-ease), border-color var(--ds-dur) var(--ds-ease), color var(--ds-dur) var(--ds-ease);
 }
 
 /* --- 주 --- */
@@ -1262,14 +1270,14 @@ a.button-more-sty01 {
 	background-position: right center;
 	background-size: 14px 14px;
 	font-size: var(--ds-fs-small);
-	font-weight: 400;
+	font-weight: var(--ds-fw-normal);
 }
 
 /* 탭 */
 .board-top .tab,
 .nav-link.tap {
 	font-size: var(--ds-fs-body);
-	font-weight: 500;
+	font-weight: var(--ds-fw-medium);
 	color: var(--ds-ink-4) !important;
 }
 
@@ -1311,7 +1319,7 @@ p.badge,
 }
 
 .icon-status.write-status-COMPLETE {
-	background-color: #e6f4ea !important;
+	background-color: var(--ds-ok-weak) !important;
 	color: var(--ds-ok) !important;
 }
 
@@ -1428,7 +1436,7 @@ a.note-card-title {
 
 .note-detail .note-title {
 	font-size: var(--ds-fs-lead);
-	font-weight: 700;
+	font-weight: var(--ds-fw-bold);
 	color: var(--ds-ink);
 }
 
@@ -1481,7 +1489,8 @@ a.note-card-title {
 }
 
 .modal-backdrop.show {
-	background-color: #101828;
+	/* --ds-backdrop 과 같은 값을 따로 적고 있었다 */
+	background-color: var(--ds-backdrop);
 	opacity: 0.44;
 }
 
@@ -1587,7 +1596,7 @@ a.note-card-title {
 	border-radius: var(--ds-radius);
 	background: var(--ds-surface);
 	cursor: pointer;
-	transition: border-color 0.12s ease, background-color 0.12s ease;
+	transition: border-color var(--ds-dur) var(--ds-ease), background-color var(--ds-dur) var(--ds-ease);
 }
 
 .lims-pick-row:hover {
@@ -1607,7 +1616,7 @@ a.note-card-title {
 
 .lims-pick-no {
 	font-size: var(--ds-fs-cell);
-	font-weight: 700;
+	font-weight: var(--ds-fw-bold);
 	color: var(--ds-ink);
 }
 
@@ -1650,7 +1659,7 @@ a.note-card-title {
 	background: var(--ds-primary);
 	color: #fff;
 	font-size: var(--ds-fs-small);
-	font-weight: 500;
+	font-weight: var(--ds-fw-medium);
 	flex: none;
 }
 
@@ -1676,7 +1685,7 @@ a.note-card-title {
 /* 필수 표시 — 빨간 별 하나로 끝낸다. 안내문을 필드마다 붙이지 않는다. */
 .lims-req {
 	color: var(--ds-danger);
-	font-weight: 700;
+	font-weight: var(--ds-fw-bold);
 }
 
 /* 고를 수 없는 장비(교정 기한 경과)는 목록에 남기되 눌리지 않게 둔다.
@@ -1712,7 +1721,7 @@ a.note-card-title {
 	background-color: transparent !important;
 	color: var(--ds-ink-2) !important;
 	font-size: var(--ds-fs-body);
-	font-weight: 400;
+	font-weight: var(--ds-fw-normal);
 	line-height: 1;
 	white-space: nowrap;
 }
@@ -1729,7 +1738,7 @@ a.note-card-title {
 .dropdown-menu > li > a.active {
 	background-color: var(--ds-primary-weak) !important;
 	color: var(--ds-primary-dark) !important;
-	font-weight: 500;
+	font-weight: var(--ds-fw-medium);
 }
 
 .dropdown-menu .dropdown-divider {
@@ -1780,7 +1789,7 @@ a.note-card-title {
 	border-radius: calc(var(--ds-radius) - 4px);
 	color: var(--ds-ink-2) !important;
 	font-size: var(--ds-fs-body);
-	font-weight: 400;
+	font-weight: var(--ds-fw-normal);
 }
 
 #nav-dropdown-menu.dropdown-menu a:focus,
@@ -2058,7 +2067,7 @@ a.note-card-title {
 .modal[id^="modal-lims-"] .modal-pop .modal-header .modal-title {
 	margin: 0;
 	font-size: var(--ds-fs-lead);
-	font-weight: 700;
+	font-weight: var(--ds-fw-bold);
 	line-height: var(--ds-lh-tight);
 	color: var(--ds-ink);
 }
@@ -2071,7 +2080,7 @@ a.note-card-title {
 	margin: 0;
 	padding-left: 0;
 	font-size: var(--ds-fs-small);
-	font-weight: 400;
+	font-weight: var(--ds-fw-normal);
 	line-height: var(--ds-lh);
 	color: var(--ds-ink-4);
 	white-space: nowrap;
@@ -2168,13 +2177,13 @@ a.note-card-title {
 
 .lims-stoich-summary .stoich-value {
 	font-size: var(--ds-fs-body);
-	font-weight: 700;
+	font-weight: var(--ds-fw-bold);
 	color: var(--ds-ink);
 }
 
 .lims-stoich-summary .stoich-value.empty {
 	font-size: var(--ds-fs-body);
-	font-weight: 400;
+	font-weight: var(--ds-fw-normal);
 	color: var(--ds-ink-4);
 }
 
@@ -2184,7 +2193,7 @@ a.note-card-title {
 .modal .modal-pop .modal-body .lims-stoich-section-title {
 	margin: var(--ds-5) 0 var(--ds-2);
 	font-size: var(--ds-fs-card);
-	font-weight: 700;
+	font-weight: var(--ds-fw-bold);
 	color: var(--ds-ink);
 }
 
@@ -2319,7 +2328,7 @@ a.note-card-title {
 	background: transparent;
 	color: var(--ds-ink-4);
 	font-size: var(--ds-fs-micro);
-	font-weight: 500;
+	font-weight: var(--ds-fw-medium);
 	font-variant-numeric: tabular-nums;
 }
 
@@ -2332,7 +2341,7 @@ a.note-card-title {
 .lims-page .lims-note-block-kind,
 .lims-page .lims-note-block-kind.is-struct {
 	font-size: var(--ds-fs-micro);
-	font-weight: 500;
+	font-weight: var(--ds-fw-medium);
 	letter-spacing: 0.02em;
 	color: var(--ds-ink-4);
 }
@@ -2345,7 +2354,7 @@ a.note-card-title {
 	opacity: 0;
 	transform: translateY(-2px);
 	pointer-events: none;
-	transition: opacity 0.12s ease, transform 0.12s ease;
+	transition: opacity var(--ds-dur) var(--ds-ease), transform var(--ds-dur) var(--ds-ease);
 }
 
 .lims-page .lims-note-block:hover .lims-note-block-tools,
@@ -2455,7 +2464,7 @@ a.note-card-title {
 	background: transparent;
 	font-size: var(--ds-fs-micro);
 	opacity: 0;
-	transition: opacity 0.12s ease;
+	transition: opacity var(--ds-dur) var(--ds-ease);
 }
 
 .lims-page .lims-note-block:focus-within .lims-note-editor .rw-statusbar {
@@ -2491,7 +2500,7 @@ a.note-card-title {
 	right: var(--ds-6);
 	height: 1px;
 	background: var(--ds-line);
-	transition: background-color 0.12s ease;
+	transition: background-color var(--ds-dur) var(--ds-ease);
 }
 
 /* 블록끼리 맞닿은 자리는 넣기 줄이 실선을 대신한다 — 선이 둘이 되지 않게 */
@@ -2510,7 +2519,7 @@ a.note-card-title {
 	opacity: 0;
 	transform: scale(0.96);
 	pointer-events: none;
-	transition: opacity 0.12s ease, transform 0.12s ease;
+	transition: opacity var(--ds-dur) var(--ds-ease), transform var(--ds-dur) var(--ds-ease);
 }
 
 .lims-page .lims-note-insert:hover .lims-note-insert-actions,
@@ -2532,7 +2541,7 @@ a.note-card-title {
 	background: var(--ds-surface);
 	color: var(--ds-ink-3);
 	font-size: var(--ds-fs-micro);
-	font-weight: 500;
+	font-weight: var(--ds-fw-medium);
 	line-height: 1;
 	white-space: nowrap;
 	cursor: pointer;
@@ -2566,7 +2575,7 @@ a.note-card-title {
 #main-body-left .note-info-box > .title {
 	margin-bottom: var(--ds-3);
 	font-size: var(--ds-fs-card);
-	font-weight: 700;
+	font-weight: var(--ds-fw-bold);
 	color: var(--ds-ink);
 }
 
@@ -3044,7 +3053,7 @@ a.button-more-sty02,
 	background-position: right center;
 	background-size: 12px 12px;
 	font-size: var(--ds-fs-small);
-	font-weight: 500;
+	font-weight: var(--ds-fw-medium);
 	line-height: var(--ds-lh);
 }
 
@@ -4172,7 +4181,7 @@ textarea,
 
 .dropdown_member.dropdown-menu .member_top .projectNm {
 	font-size: var(--ds-fs-body);
-	font-weight: 400;
+	font-weight: var(--ds-fw-normal);
 	line-height: var(--ds-lh);
 	color: var(--ds-ink-3);
 }
@@ -4212,7 +4221,7 @@ textarea,
 #dropdown_alarm .alarm_cont .alarm_content > span,
 #dropdown_history .dropdown_content > span {
 	font-size: var(--ds-fs-body);
-	font-weight: 400;
+	font-weight: var(--ds-fw-normal);
 	line-height: var(--ds-lh);
 	color: var(--ds-ink-4);
 }
@@ -4312,7 +4321,10 @@ textarea,
 }
 
 .alert-primary {
-	padding: var(--ds-4) var(--ds-4) var(--ds-4) var(--ds-14, 56px);
+	/* 왼쪽 56px 은 경고 아이콘 자리다. --ds-14 라는 토큰은 없다 — 예비값
+	   덕에 56px 로 떨어져 눈에는 맞았지만, 있지도 않은 이름을 부르고 있었다.
+	   (같은 함정으로 --ds-7 이 여백을 0 으로 만든 적이 있다) */
+	padding: var(--ds-4) var(--ds-4) var(--ds-4) calc(var(--ds-unit) * 14);
 }
 
 .main-card02.notice_board .board-top {
@@ -4621,6 +4633,8 @@ input.form-check-input.btn {
 	height: var(--ds-4);
 	min-height: 0;
 	padding: 0;
+	/* 부트스트랩이 0.25em(=4px)을 준다 — 사다리(6·8·10·14·알약) 밖이다 */
+	border-radius: calc(var(--ds-radius) - 4px);
 	border: 1px solid var(--ds-line-2);
 }
 
@@ -4867,7 +4881,7 @@ input.form-check-input.btn {
 
 .note-reagent-sub {
 	font-size: var(--ds-fs-small);
-	font-weight: 400;
+	font-weight: var(--ds-fw-normal);
 	line-height: var(--ds-lh);
 	color: var(--ds-ink-4);
 }
