@@ -569,6 +569,29 @@
       expiryOverrideYn: 'Y', reason: '유효기한 경과 — 책임자 승인 후 사용' }
   ];
 
+  /* 화학량론 — 노트 본문의 표와 오른쪽 요약이 같은 답을 해야 한다.
+     한계시약은 고르는 것이 아니라 반응물 중 mmol 이 가장 작은 행으로 정해진다.
+     아래 값은 위 NOTE_USAGE 의 사용량과 분자량에서 나온 것이다. */
+  var STOICH_ROWS = [
+    { reagentNm: '탄산칼륨 (무수)', lotNo: null, usedAmount: 276, unitCcd: 'mg',
+      molWt: 138.21, mmol: 1.997, equiv: 1.00, role: 'reactant', limitingYn: 'Y' },
+    { reagentNm: '트리에틸아민', lotNo: null, usedAmount: 0.42, unitCcd: 'mL',
+      molWt: 101.19, mmol: 3.013, equiv: 1.51, role: 'reagent', limitingYn: 'N' },
+    { reagentNm: '디클로로메탄', lotNo: null, usedAmount: 20, unitCcd: 'mL',
+      molWt: 84.93, mmol: 312.257, equiv: 156.37, role: 'solvent', limitingYn: 'N' }
+  ];
+
+  var STOICH = {
+    limitingNm: '탄산칼륨 (무수)',
+    limitingMmol: 1.997,
+    yieldPct: null,                    /* 생성물 행이 없다 — 모르는 것은 모른다고 둔다 */
+    calcSource: 'LOCAL',
+    /* 표는 rows 를, 요약은 limiting* 를 읽는다. 한쪽만 채우면 같은 화면에서
+       표는 "기록 없음", 요약은 "탄산칼륨" 이라고 서로 다른 말을 한다. */
+    rows: STOICH_ROWS,
+    usageList: STOICH_ROWS
+  };
+
   /* ---------------------------------------------------------------
      구노 ELN 본체 — 프로젝트와 그 안의 연구노트.
 
@@ -1091,12 +1114,14 @@
       });
     },
 
+    /* 위의 요약 카드가 "사용 시약 3종 · 사용 건수 4건" 이라고 말한다.
+       그 아래 표가 한 줄이면 화면이 자기 자신과 어긋난다 — 같은 목록에서 센다. */
     '/api/lims/project/projectReagentUsage': function () {
-      return { usageList: [
+      return { usageList: NOTE_USAGE.concat([
         { reagentNm: '아세토니트릴 (HPLC grade)', barcode: 'RGT-000301', deltaAmount: -200,
           unitCcd: 'mL', txnDtStr: '2026-07-14 16:02', txnUserNm: '김연구',
           noteNm: 'HPLC 순도 분석', expiryOverrideYn: 'N', reason: null }
-      ] };
+      ]) };
     },
     /* 연구노트 작성 화면의 오른쪽 패널. 노트 ↔ 재고 이력이 이어져 있다는 사실이
        이 목록으로 보인다(시약을 쓰면 그 기록이 노트에 남는다). */
@@ -1105,8 +1130,12 @@
     },
     '/api/lims/project/projectCompoundList': function () { return { compoundList: COMPOUNDS.slice(0, 2) }; },
 
-    '/api/lims/stoich/projectStoich': function () { return { stoich: { usageList: [] } }; },
-    '/api/lims/stoich/noteStoich': function () { return { stoich: { usageList: [] } }; },
+    /* 화학량론 — 노트 본문의 표와 오른쪽 요약이 같은 답을 해야 한다.
+       빈 응답을 주면 표는 "탄산칼륨이 한계시약"이라고, 요약은 "미정"이라고
+       말한다. 한 화면에서 두 개의 답이 나오는 것 자체가 결함이다.
+       한계시약은 고르는 것이 아니라 반응물 중 mmol 이 가장 작은 행으로 정해진다. */
+    '/api/lims/stoich/projectStoich': function () { return { stoich: STOICH }; },
+    '/api/lims/stoich/noteStoich': function () { return { stoich: STOICH }; },
 
     /* ---- 구노 ELN 본체 ---- */
     /* 대시보드의 공지/자료실. 목록 자체가 이번 범위는 아니지만, 응답이 없으면

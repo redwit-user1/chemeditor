@@ -70,6 +70,18 @@
 	--ds-lh-tight: 1.3;
 	--ds-lh: 1.5;
 	--ds-lh-none: 1;      /* 버튼 라벨처럼 줄상자를 안 쓰는 자리 */
+	--ds-lh-cell: 20px;   /* 표 칸은 정수 줄높이다 — 13px*1.5 = 19.5 가 행 높이를 1px 씩 어긋내고 있었다 */
+
+	/* 표 행 사다리 — 여백 8 + 내용(20 / 28 / 40)
+	   36 한 줄 · 44 컨트롤 한 줄 · 56 두 줄 스택. 이 셋 밖은 없다. */
+	--ds-row-sm: calc(var(--ds-unit) * 9);    /* 36 */
+	--ds-row: calc(var(--ds-unit) * 11);      /* 44 */
+	--ds-row-lg: calc(var(--ds-unit) * 14);   /* 56 */
+
+	/* 아이콘 상자 — 형식(png·마스크·글꼴)이 섞여 있어도 차지하는 자리는 셋뿐이다 */
+	--ds-icon-sm: calc(var(--ds-unit) * 4);   /* 16 */
+	--ds-icon: calc(var(--ds-unit) * 5);      /* 20 */
+	--ds-icon-lg: calc(var(--ds-unit) * 6);   /* 24 */
 	--ds-ls: -0.02em;
 
 	/* 조작 요소 — 한 줄에 서면 높이가 같아야 한다 */
@@ -986,11 +998,15 @@ body,
 
 .core-table thead th {
 	background: var(--ds-canvas);
-	border-bottom: 1px solid var(--ds-line);
+	border-bottom: 0;
+	box-shadow: inset 0 -1px 0 var(--ds-line);
 }
 
+/* 줄 사이 선은 상자 안에 넣는다. 밖에 두면 border-collapse 가 그 1px 을
+   아래 행의 위쪽에 얹어 행이 44 가 아니라 45 가 된다. */
 .core-table tbody td {
-	border-bottom: 1px solid var(--ds-line);
+	border-bottom: 0;
+	box-shadow: inset 0 -1px 0 var(--ds-line);
 }
 
 /* ---------------------------------------------------------------------------
@@ -3318,7 +3334,7 @@ sup {
 	padding: var(--ds-2) var(--ds-3) !important;
 	font-size: var(--ds-fs-small) !important;
 	font-weight: var(--ds-fw-medium) !important;
-	line-height: var(--ds-lh) !important;
+	line-height: var(--ds-lh-cell) !important;
 	color: var(--ds-ink-4) !important;
 	background: var(--ds-canvas) !important;
 	white-space: nowrap;
@@ -3532,12 +3548,12 @@ sup {
 .lims-stoich-table-wrap .table-sty01 > thead > tr > th {
 	padding: var(--ds-2) var(--ds-3) !important;
 	border: 0 !important;
-	border-bottom: 1px solid var(--ds-line) !important;
 	border-radius: 0 !important;
+	box-shadow: inset 0 -1px 0 var(--ds-line);
 	background: var(--ds-canvas) !important;
 	font-size: var(--ds-fs-small) !important;
 	font-weight: var(--ds-fw-medium) !important;
-	line-height: var(--ds-lh) !important;
+	line-height: var(--ds-lh-cell) !important;
 	color: var(--ds-ink-4) !important;
 }
 
@@ -3592,12 +3608,17 @@ select.select-xs,
 	color: var(--ds-ink);
 }
 
+/* 표 칸 안의 조작 요소는 28px 이다. 화학량론 표는 .core-table 로 감싸이지 않은
+   곳(프로젝트 시약 탭)에도 그려져 거기서만 36px 이 되어 행이 52 로 커졌다.
+   자리(표 칸)로 잡되, 감싸개가 없는 이 표는 이름으로 함께 잡는다. */
 .core-table td select.btn,
 .core-table td select.btn-xs,
 .core-table td .select-sty02.select-sty02,
 .lims-actions-cell select.btn,
 .lims-actions-cell select.btn-xs,
-.lims-actions-cell .select-sty02.select-sty02 {
+.lims-actions-cell .select-sty02.select-sty02,
+td > .lims-stoich-role-sel.lims-stoich-role-sel,
+td > .lims-stoich-unit-sel.lims-stoich-unit-sel {
 	height: var(--ds-control-sm);
 	min-height: var(--ds-control-sm);
 	padding: 0 var(--ds-5) 0 var(--ds-2);
@@ -4259,11 +4280,13 @@ textarea,
 	padding-left: var(--ds-1);
 }
 
-/* 표 — 셀 좌우 21px, 페이지 번호 6/10 */
+/* 표 칸 여백은 한 가지다 — 8/12.
+   22장 중 20장이 이미 8/12 였고 research_support 한 장만 16/20 이라
+   같은 한 줄짜리 행이 63px 로 혼자 커져 있었다. 다수를 기준으로 맞춘다. */
 .core-table .core-table-body .table > tbody > tr > td,
 .core-table .core-table-body .table > tbody > tr > th {
-	padding-left: var(--ds-5);
-	padding-right: var(--ds-5);
+	padding-left: var(--ds-3);
+	padding-right: var(--ds-3);
 }
 
 .pagination > li > a {
@@ -4435,8 +4458,8 @@ table th {
    14px 을 주고 있었다(내 .core-table tbody td 보다 구체적이다) */
 .core-table .core-table-body .table > tbody > tr > td,
 .core-table .core-table-body .table > tbody > tr > th {
-	padding-top: var(--ds-4);
-	padding-bottom: var(--ds-4);
+	padding-top: var(--ds-2);
+	padding-bottom: var(--ds-2);
 }
 
 /* 노트 정보 탭 */
@@ -4900,9 +4923,12 @@ input.form-check-input.btn {
 
 /* 한 칸에 값 두 개를 담을 때의 구분자. 머리는 "상태 / 판정" 인데 칸은
    "시험중 -" 처럼 붙어 나와 한 덩어리로 읽혔다. */
+/* 값 사이의 '/' — 선 색으로 그렸더니 1.3:1 로 사실상 안 보였다. 글자로 남길
+   거라면 읽히는 색이어야 하고, 안 읽혀도 되는 것이라면 글자가 아니라 선이다.
+   '/'는 "3 / 4" 처럼 뜻을 갖고 있으므로 읽히는 쪽으로 둔다. */
 .cell-sep {
-	margin: 0 var(--ds-2);
-	color: var(--ds-line-2);
+	margin: 0 var(--ds-1);
+	color: var(--ds-ink-4);
 }
 
 /* 요약 띠 안의 '규칙' 칸 — 잰 값이 아니므로 지표 크기로 두지 않는다. */
@@ -5125,4 +5151,135 @@ input.form-check-input.btn {
 
 #ui-datepicker-div .ui-datepicker-title select:hover {
 	border-color: var(--ds-ink-4);
+}
+
+/* ---------------------------------------------------------------------------
+   33) 표 행 높이 — 아홉 가지였다
+
+   재 보니 36 · 37 · 38 · 45 · 54 · 55 · 56 · 63 · 77 이었다. 그런데 칸 여백은
+   거의 다 8/12 로 같았다. 즉 흩어진 원인은 여백이 아니라 세 가지였다:
+
+     · 줄높이 19.5px  — 13 × 1.5. 한 줄이면 .5, 두 줄이면 1px 이 남는다.
+       그래서 같은 한 줄 표가 36 과 37, 두 줄 표가 54 와 55 와 56 으로 갈렸다.
+     · research_support 만 칸 여백이 16/20
+     · project_reagent 의 "기록 없음" 칸이 세 줄로 감김
+
+   내용은 실제로 세 가지뿐이다 — 글자 한 줄(20) · 28px 컨트롤 · 두 줄 스택(40).
+   여백 8 을 위아래로 붙이면 36 / 44 / 56 이 나오고 셋 다 4px 눈금 위에 선다.
+   높이를 강제로 박지 않는다. 줄높이를 정수로 만들면 사다리는 저절로 맞는다. */
+
+.lims-page .table.table-sty01 > tbody > tr > td,
+.lims-page .table.table-sty01 > tbody > tr > th,
+.core-table .core-table-body .table > tbody > tr > td,
+.core-table .core-table-body .table > tbody > tr > th,
+.lims-page .core-table .core-table-body .table > tbody > tr > td,
+.lims-page .core-table .core-table-body .table > tbody > tr > th {
+	line-height: var(--ds-lh-cell);
+}
+
+/* 두 줄 스택 — 값 아래에 부연을 다는 칸. 39px(19.5×2)이 아니라 40 이어야 한다. */
+.lims-cell,
+.lims-cell-sub,
+.note-reagent-item {
+	line-height: var(--ds-lh-cell);
+}
+
+/* 칸 안의 배지도 글자 한 줄과 같은 상자에 선다 */
+.lims-page .table > tbody > tr > td .lims-state,
+.lims-page .table > tbody > tr > td .lims-tree-depth {
+	height: var(--ds-lh-cell);
+	line-height: var(--ds-lh-cell);
+}
+
+/* 빈 표 안내는 아이콘 + 한 줄이라 본문 행보다 크다(lims-ui.css). 그건 맞다.
+   다만 그 합이 77px 이라 눈금 밖이었다 — 20칸(80px)으로 세운다. */
+.table > tbody > tr.emptymessage > td {
+	height: calc(var(--ds-unit) * 20);
+}
+
+/* 줄 사이 선이 행 상자 밖에 붙어 있어 36/44/56 이 37/45/57 로 밀려 있었다.
+   선을 상자 안으로 넣는다 — 사다리가 눈금 위에 정확히 선다. */
+/* adminlte 의 `.table td { border-top: 1px }` 도 같은 1px 을 얹는다 — 함께 지운다 */
+.lims-page .table > tbody > tr > td,
+.lims-page .table > tbody > tr > th,
+.core-table .table > tbody > tr > td,
+.core-table .table > tbody > tr > th {
+	border-top: 0;
+	border-bottom: 0;
+	box-shadow: inset 0 -1px 0 var(--ds-line);
+}
+
+.lims-page .table > tbody > tr.emptymessage > td {
+	box-shadow: none;
+}
+
+/* 칸 안에 inline 으로 서는 상자(배지·작은 선택칸·입력칸·버튼)는 글꼴의 내림선
+   자리만큼 줄상자를 더 키운다. 20px 배지가 21px 을, 28px 선택칸이 29px 을 먹어
+   행이 36/44 대신 37/45 가 되던 이유다. 줄상자 위에 맞춰 세운다 — 칸의 줄높이와
+   상자 높이가 이미 같으니 위에 맞추면 남는 자리가 생기지 않는다.
+   하나씩 열거하면 반드시 하나가 빠진다(선택칸 둘 중 하나가 그랬다). 칸 안에서
+   상자로 서는 것을 통째로 잡는다. */
+.lims-page .table > tbody > tr > td > select,
+.lims-page .table > tbody > tr > td > input,
+.lims-page .table > tbody > tr > td > button,
+.lims-page .table > tbody > tr > td > img,
+.lims-page .table > tbody > tr > td > .lims-state,
+.lims-page .table > tbody > tr > td > .lims-tree-depth,
+.lims-page .table > tbody > tr > td > .badge,
+.lims-page .table > tbody > tr > td > .lims-stoich-limiting-mark,
+.lims-page .table > tbody > tr > td > .lims-stoich-source,
+.lims-page .table > tbody > tr > td > [class*="button-"],
+.core-table .core-table-body .table > tbody > tr > td > select,
+.core-table .core-table-body .table > tbody > tr > td > input,
+.core-table .core-table-body .table > tbody > tr > td > button,
+.core-table .core-table-body .table > tbody > tr > td > img,
+.core-table .core-table-body .table > tbody > tr > td > .badge,
+.core-table .core-table-body .table > tbody > tr > td > [class*="button-"],
+.table-sty01 > tbody > tr > td > select,
+.table-sty01 > tbody > tr > td > input,
+.table-sty01 > tbody > tr > td > button,
+.table-sty01 > tbody > tr > td > [class*="button-"],
+.table-sty01 > tbody > tr > td > .lims-stoich-limiting-mark,
+.table-sty01 > tbody > tr > td > .lims-stoich-source {
+	vertical-align: top;
+}
+
+/* border-collapse: collapse 는 이웃한 칸의 선을 하나로 합치면서 그 1px 을 아래
+   행의 위쪽에 얹는다. 그래서 선을 상자 안(box-shadow)으로 옮겨도 첫 행만 45 로
+   남았다 — 머리행의 선이 첫 본문 행에 얹혀 있었다.
+   선을 전부 상자 안에서 그리는 이상 합칠 선이 없다. 합치기를 끈다. */
+.lims-page .table,
+.core-table .table {
+	border-collapse: separate;
+	border-spacing: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   34) 아이콘이 차지하는 자리
+
+   형식이 셋(png 배경 · 마스크 · 글꼴아이콘) 섞여 있는 것 자체는 지금 고칠 수
+   없다 — png 스프라이트를 마스크로 옮기는 일이다. 그러나 "얼마나 자리를
+   차지하는가"는 지금 맞출 수 있고, 눈에 보이는 것도 그쪽이다.
+   실측: 8×12, 21×24, 40×40 … 아홉 가지였다. 16 / 20 / 24 셋으로 세운다. */
+
+/* 글꼴아이콘 — fa-sort 가 8×12, fa-search 가 40×40 이었다 */
+i.fa,
+i.fas,
+i.far,
+i.fab {
+	display: inline-block;
+	width: var(--ds-icon);
+	height: var(--ds-icon);
+	font-size: var(--ds-fs-cell);
+	line-height: var(--ds-icon);
+	text-align: center;
+	vertical-align: top;
+}
+
+/* 카드 오른쪽 위 점 세 개 — 안이 빈 채로 그려지면 flex 부모가 21px 로 눌러
+   버려, 같은 줄에 선 카드들의 제목 폭이 3px 씩 달라져 있었다. */
+.icon-option-wrap {
+	flex: none;
+	width: var(--ds-icon-lg);
+	height: var(--ds-icon-lg);
 }

@@ -120,8 +120,10 @@
 	font-size: 12px;	
 }
 
+/* 표 본문 안의 모든 span 에 30px 을 물리고 있었다. 표 머리에 <span> 을 쓴 화면
+   (연구지원 목록)만 머리·행이 46px 로 혼자 커져 있던 원인이다. 칸의 줄상자를 쓴다. */
 .core-table .core-table-body  span {
-	line-height: 30px;
+	line-height: var(--ds-lh-cell);
     font-family: var(--ds-font);
 }
 .core-table .core-table-body  .search {

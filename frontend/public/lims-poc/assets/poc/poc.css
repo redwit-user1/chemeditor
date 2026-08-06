@@ -77,7 +77,7 @@
   gap: 20px;
   align-items: stretch;
   padding: 20px;
-  border: 1px solid var(--ds-hover);
+  border: 1px solid var(--ds-line);
   border-radius: 10px;
   background: #fff;
 }

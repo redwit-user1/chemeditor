@@ -1056,12 +1056,13 @@
 .lims-page .lims-table > tbody > tr > th {
 	padding: var(--lims-gap-2) var(--lims-gap-3) !important;
 	border: 0 !important;
-	border-bottom: 1px solid var(--lims-line-strong) !important;
 	border-radius: 0 !important;
+	/* 줄 사이 선은 상자 안에 둔다. 밖에 두면 행이 36/44/56 이 아니라 37/45/57 이 된다. */
+	box-shadow: inset 0 -1px 0 var(--lims-line-strong);
 	background: var(--lims-surface-2) !important;
 	font-size: var(--lims-fs-caption);
 	font-weight: var(--lims-fw-medium);
-	line-height: var(--lims-lh-base);
+	line-height: var(--ds-lh-cell);
 	color: var(--lims-ink-3);
 	white-space: nowrap;
 	vertical-align: middle;
@@ -1071,9 +1072,10 @@
 .lims-page .table-sty01 > tbody > tr > td,
 .lims-page .lims-table > tbody > tr > td {
 	padding: var(--lims-gap-2) var(--lims-gap-3) !important;
-	border-bottom: 1px solid var(--lims-line) !important;
+	border-bottom: 0 !important;
+	box-shadow: inset 0 -1px 0 var(--lims-line);
 	font-size: var(--lims-fs-body);
-	line-height: var(--lims-lh-base);
+	line-height: var(--ds-lh-cell);
 	color: var(--lims-ink-2);
 	vertical-align: middle;
 }
@@ -1095,6 +1097,7 @@
 .lims-page .core-table .core-table-body .table > tbody > tr:last-child > td,
 .lims-page .lims-table > tbody > tr:last-child > td {
 	border-bottom: 0 !important;
+	box-shadow: none;
 }
 
 /* tr 에 걸린 기본 구분선(#f4f4f4)은 td 의 선과 이중으로 그려진다 */
@@ -1237,6 +1240,7 @@
 .lims-page .emptymessage > td {
 	padding: var(--lims-gap-8) var(--lims-gap-3) !important;
 	border-bottom: 0 !important;
+	box-shadow: none !important;
 	color: var(--lims-ink-3);
 	font-size: var(--lims-fs-body);
 	line-height: var(--lims-lh-base);
@@ -1987,8 +1991,8 @@
 /* 표 안의 작은 조작 요소는 높이가 28px 이다 — 행간도 그 높이에 맞춰야
    글자가 칸 위쪽으로 붙지 않는다 (기본 규칙은 34px 기준의 30px 을 물려준다) */
 .lims-page .lims-note-eq-input,
-.lims-page .lims-note-block .lims-stoich-role-sel,
-.lims-page .lims-note-block .lims-stoich-unit-sel {
+.lims-page .lims-stoich-role-sel,
+.lims-page .lims-stoich-unit-sel {
 	line-height: calc(var(--lims-control-h-sm) - 2px);
 }
 
@@ -2000,7 +2004,10 @@
 	text-align: right;
 }
 
-.lims-page .lims-note-block .lims-stoich-role-sel {
+/* 같은 표가 노트 안(모달)과 프로젝트 탭(인라인) 두 곳에서 그려진다.
+   .lims-note-block 안으로 좁혀 두어 프로젝트 탭에서는 이 규격이 안 닿았고,
+   그쪽 역할 선택칸만 280px 로 늘어나 있었다. 표를 기준으로 잡는다. */
+.lims-page .lims-stoich-role-sel {
 	width: 88px;
 	min-width: 88px;
 	height: var(--lims-control-h-sm);
@@ -2010,18 +2017,19 @@
 	font-size: var(--lims-fs-body);
 }
 
-.lims-page .lims-note-block .lims-stoich-unit-sel {
+.lims-page .lims-stoich-unit-sel {
 	width: 68px;
 	min-width: 68px;
 	height: var(--lims-control-h-sm);
 	margin-left: var(--lims-gap-1);
 	padding: 0 var(--lims-gap-5) 0 var(--lims-gap-2);
 	font-size: var(--lims-fs-body);   /* 옆 사용량 입력칸과 같은 크기 */
-	vertical-align: middle;
+	/* 줄상자 위에 맞춘다 — middle 은 내림선 자리를 1px 더 먹어 행을 45 로 만든다 */
+	vertical-align: top;
 }
 
 .lims-page .lims-note-eq-input {
-	vertical-align: middle;
+	vertical-align: top;
 }
 
 /* 표 밀도 — 셀 여백을 한 단 줄여 아홉 열이 한 화면에 들어오게 한다. */
@@ -2325,6 +2333,7 @@
 	font-size: var(--lims-fs-micro);
 	font-weight: var(--lims-fw-medium);
 	line-height: var(--lims-lh-snug);
+	vertical-align: top;
 }
 
 .lims-page .lims-stoich-limiting-mark {

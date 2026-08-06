@@ -6777,6 +6777,13 @@
         return isNum(value) ? Number(value).toFixed(digits) : null;
       }
 
+      /* 사용량은 사람이 넣은 값이다. 276 을 276.0000 으로 늘려 적으면 넣지도 않은
+         자릿수를 잰 것처럼 보인다. 계산값(mmol·당량)과 달리 꼬리 0 은 지운다. */
+      function fmtAmt(value) {
+        if (!isNum(value)) { return null; }
+        return String(Number(Number(value).toFixed(4)));
+      }
+
       function unitLabel(code) {
         for (var i = 0; i < UNITS.length; i++) {
           if (UNITS[i].v === code) { return UNITS[i].t; }
@@ -6927,7 +6934,7 @@
         $tr.append($('<td></td>').addClass('text-left').text(row.lotNo || '-'));
 
         // 사용량
-        var amount = fmt(row.usedAmount, 4);
+        var amount = fmtAmt(row.usedAmount);
         $tr.append($('<td></td>').addClass('num')
           .text(amount !== null ? amount + ' ' + unitLabel(row.unitCcd) : '-'));
 

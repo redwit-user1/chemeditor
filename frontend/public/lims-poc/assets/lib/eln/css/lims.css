@@ -190,7 +190,7 @@
 
 .lims-compound-card:hover {
 	border-color: var(--ds-primary);
-	box-shadow: 0 4px 16px rgba(33, 37, 41, 0.16);
+	box-shadow: var(--ds-shadow-pop);
 }
 
 .lims-compound-thumb {
