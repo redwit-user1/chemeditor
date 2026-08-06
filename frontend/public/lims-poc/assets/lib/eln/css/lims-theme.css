@@ -70,6 +70,10 @@
 	--ds-lh-tight: 1.3;
 	--ds-lh: 1.5;
 	--ds-lh-none: 1;      /* 버튼 라벨처럼 줄상자를 안 쓰는 자리 */
+	/* 움직여도 되는 속성만 적는다. 속성을 안 적으면 transition-property 가
+	   all 이 되어 초점 고리(outline-width)와 자리(width·height)까지 따라
+	   움직인다. 초점은 즉시 보여야 하고, 자리가 움직이면 글이 흔들린다. */
+	--ds-anim: background-color, border-color, color, box-shadow, opacity, transform;
 	--ds-lh-cell: 20px;   /* 표 칸은 정수 줄높이다 — 13px*1.5 = 19.5 가 행 높이를 1px 씩 어긋내고 있었다 */
 
 	/* 표 행 사다리 — 여백 8 + 내용(20 / 28 / 40)
@@ -573,7 +577,7 @@ body,
 	background-color: currentColor;
 	-webkit-mask: url(../img/lucide/chevron-down-d.svg) center / contain no-repeat;
 	mask: url(../img/lucide/chevron-down-d.svg) center / contain no-repeat;
-	transition: transform .15s ease;
+	transition: transform var(--ds-dur) var(--ds-ease);
 }
 
 .sidenav2 a.button-sty001[aria-expanded="true"]::after {
@@ -796,18 +800,21 @@ body,
 	box-shadow: 0 0 0 3px rgba(47, 91, 245, 0.14);
 }
 
+/* 아이콘은 18px 이 맞지만 누르는 자리가 18×18 이면 작다(기준 24).
+   mask 를 contain 으로 두면 상자를 키우는 순간 그림도 같이 커진다 —
+   크기를 못 박고 상자만 36 으로 넓힌다. 보이는 것은 그대로, 표적만 커진다. */
 .sticky-sty-01 .search-box-write .search_btn {
 	position: absolute;
 	top: 50%;
-	right: var(--ds-3);
-	width: 18px;
-	height: 18px;
+	right: calc(var(--ds-3) - 9px);
+	width: var(--ds-control);
+	height: var(--ds-control);
 	transform: translateY(-50%);
 	border: 0;
 	background-color: var(--ds-ink-4);
 	background-image: none;
-	-webkit-mask: url(../img/lucide/search.svg) center / contain no-repeat;
-	mask: url(../img/lucide/search.svg) center / contain no-repeat;
+	-webkit-mask: url(../img/lucide/search.svg) center / 18px 18px no-repeat;
+	mask: url(../img/lucide/search.svg) center / 18px 18px no-repeat;
 }
 
 /*
@@ -2401,7 +2408,7 @@ a.note-card-title {
 	background: var(--ds-surface);
 	overflow: hidden;
 	opacity: 0;
-	transition: max-height 0.14s ease, opacity 0.14s ease, margin-bottom 0.14s ease;
+	transition: max-height var(--ds-dur) var(--ds-ease), opacity var(--ds-dur) var(--ds-ease), margin-bottom var(--ds-dur) var(--ds-ease);
 }
 
 /* 두 줄로 접히면 초점을 줄 때마다 본문이 79px 씩 내려간다. 한 줄로 세우고
@@ -4043,6 +4050,7 @@ textarea,
 .sidenav2 a,
 .nav-link,
 .tab-item {
+	transition-property: var(--ds-anim);
 	transition-duration: var(--ds-dur);
 	transition-timing-function: var(--ds-ease);
 }
@@ -4053,6 +4061,7 @@ textarea,
 .dropdown-menu,
 .toast,
 [class*='card'] {
+	transition-property: var(--ds-anim);
 	transition-duration: var(--ds-dur-lg);
 	transition-timing-function: var(--ds-ease);
 }
@@ -5278,8 +5287,127 @@ i.fab {
 
 /* 카드 오른쪽 위 점 세 개 — 안이 빈 채로 그려지면 flex 부모가 21px 로 눌러
    버려, 같은 줄에 선 카드들의 제목 폭이 3px 씩 달라져 있었다. */
+/* 폭을 못 박으면 안쪽 여백(pa-l10)을 단 감싸개에서 단추가 8px 밖으로 나간다 —
+   폭은 최소값으로 두어 여백이 그 위에 붙게 한다.
+   높이는 반대다. 최소값만 주면 flex 부모의 stretch 를 타고 53px 까지 늘어난다
+   (실제로 늘어났다). 높이는 못 박고, 세로 가운데에 세운다. */
 .icon-option-wrap {
 	flex: none;
-	width: var(--ds-icon-lg);
+	align-self: center;
+	min-width: var(--ds-icon-lg);
 	height: var(--ds-icon-lg);
+}
+
+/* 안이 비어 있으면 아무것도 아닌 24px 이 자리를 먹는다. 권한이 없어 단추가
+   안 그려진 카드에서 그렇다 — 자리까지 비운다. */
+.icon-option-wrap:not(:has(a)):not(:has(button)) {
+	display: none;
+}
+
+/* 줄이 넘치던 3px — 제목이 min-width: auto 라 제 글자 폭 아래로 못 줄어든다.
+   flex 자식의 기본값이라 말줄임(text-overflow)도 같이 죽어 있었다. */
+.flex-sty01 > .txt-title,
+.note-card-cont .txt-title,
+.project-card-cont .txt-title {
+	min-width: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   35) 움직임 — 다섯 가지 속도였다
+
+   실측: 0.12s ease(412) · 0.2s ease(44) · 0.5s ease(24) · 0.15s linear(7) ·
+   0.15s ease-in-out(2). 앞의 둘은 토큰이고 뒤의 셋은 아니었다.
+
+   0.5s 는 layout.css 의 `transition: .5s` 두 줄에서 왔다. 속성을 안 적어
+   transition-property 가 all 이 된 채였다 — 초점 고리(outline-width)까지
+   따라 움직여서, Tab 으로 옮겨 간 자리가 0.12초 뒤에야 보였다.
+   초점은 즉시 보여야 한다. 속성 목록(--ds-anim)을 두고 거기 적힌 것만 움직인다.
+
+   남은 둘은 부트스트랩의 .fade(0.15s linear)와 배지다. 같은 두 속도로 모은다. */
+.fade,
+.tab-pane.fade,
+.modal.fade,
+.badge,
+.badge-info {
+	transition-duration: var(--ds-dur) !important;
+	transition-timing-function: var(--ds-ease) !important;
+}
+
+/* ---------------------------------------------------------------------------
+   36) 누르는 자리의 크기
+
+   실측: 버튼처럼 서는 것 중 24px 이 안 되는 것 셋 —
+   머리말 검색 단추 18×18(23곳), '더보기' 55×14, '전체 연구노트' 80×18.
+   글줄에 흐르는 링크는 여기서 세지 않는다. 그 높이는 글줄 높이고, 그것까지
+   세면 50종이 나오는데 전부 정상이라 진짜 셋이 묻힌다.
+
+   '더보기' 류는 화살표 그림과 글자가 붙은 작은 표시라 상자를 키우면 자리가
+   밀린다. 보이는 것은 그대로 두고 누를 수 있는 면만 넓힌다. */
+/* sty01 은 이미 absolute 다. relative 로 덮으면 자리를 잡아 주던
+   top/right 가 무효가 되어 카드 오른쪽 끝에 있던 '더보기'가 탭 위로
+   옮겨 가 겹친다 — 내가 낸 구멍이다. 덧대기에는 positioned 이기만
+   하면 되므로 이미 absolute 인 쪽은 건드리지 않는다. */
+.button-more-sty02 {
+	position: relative;
+}
+
+.button-more-sty01::after,
+.button-more-sty02::after {
+	content: '';
+	position: absolute;
+	top: -6px;
+	right: -6px;
+	bottom: -6px;
+	left: -6px;
+}
+
+/* 눌리는 글줄 — 프로젝트 이름·폴더 이름·공지 줄. 높이가 곧 글줄 높이(20~22)라
+   기준(24)에 조금 못 미친다. 글자를 키우거나 줄을 벌리면 목록의 리듬이 바뀐다 —
+   보이는 것은 그대로 두고 누를 수 있는 면만 위아래로 넓힌다. */
+.txt-project.c-pointer,
+.folder_name.c-pointer,
+span.folder_name[tabindex],
+.selectable-text[tabindex],
+.notice-list li[tabindex],
+.main-card02 li[tabindex] {
+	position: relative;
+}
+
+.txt-project.c-pointer::after,
+.folder_name.c-pointer::after,
+span.folder_name[tabindex]::after,
+.selectable-text[tabindex]::after,
+.notice-list li[tabindex]::after,
+.main-card02 li[tabindex]::after {
+	content: '';
+	position: absolute;
+	top: -3px;
+	right: 0;
+	bottom: -3px;
+	left: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   37) 못 불러온 상태 — '결과 없음'과 같은 얼굴이면 안 된다
+
+   목록 10화면에 오류 분기가 0개였다. 요청이 실패하면 공통 처리기가 알림창을
+   하나 띄우고 사라질 뿐, 표는 아무 말도 하지 않은 채 남았다. 사용자는 "검색
+   결과가 없구나"로 읽는다 — 그러면 검색어를 바꾼다. 해야 할 일은 다시 시도다.
+
+   자리와 규격은 빈 상태를 그대로 쓰되 표시와 색을 가른다. */
+.table > tbody > tr.emptymessage.is-error > td {
+	height: calc(var(--ds-unit) * 22);   /* 80(빈 상태) + 버튼 한 줄 */
+	color: var(--ds-ink-3);
+}
+
+.lims-page .emptymessage.is-error > td::before {
+	background-color: var(--ds-danger);
+	opacity: 1;
+	-webkit-mask-image: url(../img/lucide/circle-alert.svg);
+	mask-image: url(../img/lucide/circle-alert.svg);
+}
+
+.table > tbody > tr.emptymessage.is-error > td .button-gray-line-sty01 {
+	margin-left: var(--ds-3);
+	vertical-align: middle;
 }

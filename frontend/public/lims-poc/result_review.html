@@ -2556,7 +2556,9 @@
 
         if (!gRows.length) {
           const cols = $head.find('th').length;
-          $body.append('<tr><td colspan="' + cols + '" class="text-center lims-empty-cell">'
+          /* 다른 목록 아홉 화면은 tr.emptymessage 를 쓴다. 여기만 자기 클래스를
+             쓰고 있어 같은 '결과 없음'이 화면마다 다른 모양이었다. */
+          $body.append('<tr class="emptymessage"><td colspan="' + cols + '" class="text-center">'
             + emptyText() + '</td></tr>');
           return;
         }
@@ -5813,9 +5815,9 @@
                           <button onclick="header_getNotiList();"
                                   class="dropdown-item all">전체</button>
                           <button onclick="header_getNotiList(&quot;NOTE_INSPECTION&quot;);"
-                                  class="dropdown-item NOTE_INSPECTION">연구노트점검</button>
+                                  class="dropdown-item NOTE_INSPECTION">연구노트 점검</button>
                           <button onclick="header_getNotiList(&quot;NOTE_SHARE&quot;);"
-                                  class="dropdown-item NOTE_SHARE">연구노트공유</button>
+                                  class="dropdown-item NOTE_SHARE">연구노트 공유</button>
                           <button onclick="header_getNotiList(&quot;NOTE_DOWNLOAD&quot;);"
                                   class="dropdown-item NOTE_DOWNLOAD">연구노트 다운로드</button>
                           <button onclick="header_getNotiList(&quot;PROJECT&quot;);"
@@ -6292,6 +6294,12 @@
 
         <!-- 모달 키보드 조작 — tabindex/초점/Esc/창 이름. 부트스트랩 뒤에 와야 한다 -->
         <script src="assets/lib/eln/js/lims-modal-a11y.js"></script>
+
+        <!-- onclick 을 단 div·span 을 키보드로도 누를 수 있게 (실측 80곳) -->
+        <script src="assets/lib/eln/js/lims-click-a11y.js"></script>
+
+        <!-- 목록 조회 실패를 표 자리에 남긴다 -->
+        <script src="assets/lib/eln/js/lims-list-state.js"></script>
 
         <script type="text/javascript">
             /*<![CDATA[*/

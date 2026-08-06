@@ -1583,7 +1583,7 @@ label.form-check-label2 {
 }
 
 .collapsing {
-    transition: height 0.3s ease;
+    transition: height var(--ds-dur-lg) var(--ds-ease);
 }
 
 .collapse_btn {
@@ -3199,7 +3199,7 @@ label.form-check-label2 {
     font-size: 15px;
     box-shadow: var(--ds-shadow-pop);
     word-wrap: break-word;
-    transition: opacity 0.3s ease-out;
+    transition: opacity var(--ds-dur-lg) var(--ds-ease);
     z-index: 1050;
 }
 .toast-sty01.fade-out {
@@ -4460,8 +4460,10 @@ label.form-check-label2 {
     background: var(--ds-line);
 }
 
+/* 폭을 못 박아 두면 안쪽 여백(.pa-l10)을 함께 단 자리에서 24px 짜리 단추가
+   상자 밖으로 8px 밀려난다(프로젝트 상세 머리 두 곳). 최소 크기로 둔다. */
 .dropdown.icon-option-wrap {
-    width: 24px;
+    min-width: 24px;
     height: 24px;
     cursor: pointer;
 }
@@ -8399,7 +8401,7 @@ code {
     padding: 8px 15px;
     border-right: 1px solid var(--ds-line);
     box-sizing: border-box;
-    transition: padding 0.15s;
+    transition: padding var(--ds-dur) var(--ds-ease);
 }
 .performance-goals-box .content .detail-perf .detail-info.multi-line {
     padding: 0px 15px;
@@ -10128,7 +10130,7 @@ h5,
     top: 35% !important;
 }
 .accordion-collapse {
-    transition: height 0.3s ease; /* 애니메이션 시간을 1초로 설정 */
+    transition: height var(--ds-dur-lg) var(--ds-ease); /* 애니메이션 시간을 1초로 설정 */
 }
 .accordion-item {
     background-color: unset;

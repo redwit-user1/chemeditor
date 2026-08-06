@@ -194,17 +194,30 @@ var coreRequest = {
         } else if (typeof errorCallBack === 'function') {
           errorCallBack(msg);
         } else {
+          /*
+            여기 들어오는 글은 서버 응답 원문이었다. 서버가 스택 트레이스를
+            돌려주면 그게 그대로 알림창에 뜨고, 본문이 비면 빈 창이 뜬다.
+            사용자가 읽을 글과 개발자가 읽을 글은 다르다 —
+            창에는 무엇이 일어났고 무엇을 하면 되는지만 적고,
+            기술적인 내용은 콘솔로 보낸다.
+          */
+          if (console && console.error) { console.error('[요청 실패] ' + actionURL + '\n' + msg); }
+
           if (request.responseText.indexOf('<!DOCTYPE html>') != -1) {
-            coreCommon.href('/');
+            /* 로그인 화면이 돌아온 경우다. 말없이 옮기면 하던 일이 왜 사라졌는지 알 수 없다. */
+            coreDialog.alert('로그인이 필요합니다. 처음 화면으로 이동합니다.', function () {
+              coreCommon.href('/');
+            });
           } else {
             let errMessage = '';
             if (S2Util.isJSON(request.responseText)) {
               const obj = JSON.parse(request.responseText);
               errMessage = obj.msg;
-            } else {
-              errMessage = request.responseText;
             }
-            coreDialog.alert(errMessage && typeof errMessage === 'string' ? errMessage.replace('S2Message:', '') : errMessage);
+            /* 서버가 사람이 읽을 문장을 준 경우에만 그대로 쓴다 */
+            const human = errMessage && typeof errMessage === 'string'
+              ? errMessage.replace('S2Message:', '').trim() : '';
+            coreDialog.alert(human || '요청을 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.');
           }
         }
         delete this.postAjaxObj;

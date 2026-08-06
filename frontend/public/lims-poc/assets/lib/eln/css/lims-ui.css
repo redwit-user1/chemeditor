@@ -1187,7 +1187,10 @@
 	color: var(--lims-ink-3);
 }
 
-/* 숫자 열 — 자릿수가 맞아야 크기 비교가 된다. */
+/* 숫자 열 — 자릿수가 맞아야 크기 비교가 된다.
+   .lims-page 안으로 좁혀 두었더니 ELN 쪽 목록(연구 활동 지원)에서는 안 닿아
+   같은 뜻의 열이 화면마다 왼쪽·가운데·오른쪽으로 갈렸다. 이름으로 잡는다. */
+.lims-num,
 .lims-page .lims-num,
 .lims-page .core-table .core-table-body .table > tbody > tr > td.num,
 .lims-page .core-table .core-table-body .table > tbody > tr > td.text-right {
@@ -1195,6 +1198,7 @@
 	white-space: nowrap;
 }
 
+th.lims-num,
 .lims-page th.lims-num,
 .lims-page .core-table .core-table-body .table > thead > tr > th.num,
 .lims-page .core-table .core-table-body .table > tbody > tr > th.num,
@@ -1924,7 +1928,7 @@
 .lims-page .lims-note-calc {
 	margin-top: var(--lims-gap-2);
 	border-radius: var(--ds-radius);
-	transition: box-shadow 0.2s ease, background-color 0.2s ease;
+	transition: box-shadow var(--ds-dur-lg) var(--ds-ease), background-color var(--ds-dur-lg) var(--ds-ease);
 }
 
 .lims-page .lims-note-calc .lims-prop-bar {

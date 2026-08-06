@@ -2564,7 +2564,11 @@
             } else {
               $target.html('<tr class="text-nowrap emptymessage"><td class="text-center" colspan="9">등록된 시험법이 없습니다.</td></tr>');
             }
-          }
+          },
+          /* 못 불러오면 표 자리에 남긴다 — '결과 없음'과 '못 불러옴'은
+             사용자가 할 일이 정반대다(검색어를 바꾼다 / 다시 시도) */
+          null,
+          limsListError(targetSelector, getMethodList)
         );
       }
 
@@ -5865,9 +5869,9 @@
                           <button onclick="header_getNotiList();"
                                   class="dropdown-item all">전체</button>
                           <button onclick="header_getNotiList(&quot;NOTE_INSPECTION&quot;);"
-                                  class="dropdown-item NOTE_INSPECTION">연구노트점검</button>
+                                  class="dropdown-item NOTE_INSPECTION">연구노트 점검</button>
                           <button onclick="header_getNotiList(&quot;NOTE_SHARE&quot;);"
-                                  class="dropdown-item NOTE_SHARE">연구노트공유</button>
+                                  class="dropdown-item NOTE_SHARE">연구노트 공유</button>
                           <button onclick="header_getNotiList(&quot;NOTE_DOWNLOAD&quot;);"
                                   class="dropdown-item NOTE_DOWNLOAD">연구노트 다운로드</button>
                           <button onclick="header_getNotiList(&quot;PROJECT&quot;);"
@@ -6005,7 +6009,7 @@
                      id="searchKeyword"
                      maxlength="255"
                      sch-enter="getMethodList"
-                     placeholder="검색어를 입력해주세요."
+                     placeholder="시험법 코드 · 시험법명"
                      aria-label="시험법명 · 코드 검색"
                      class="input-write-sty02-line w-250" />
               <a href="#"
@@ -6154,6 +6158,12 @@
 
         <!-- 모달 키보드 조작 — tabindex/초점/Esc/창 이름. 부트스트랩 뒤에 와야 한다 -->
         <script src="assets/lib/eln/js/lims-modal-a11y.js"></script>
+
+        <!-- onclick 을 단 div·span 을 키보드로도 누를 수 있게 (실측 80곳) -->
+        <script src="assets/lib/eln/js/lims-click-a11y.js"></script>
+
+        <!-- 목록 조회 실패를 표 자리에 남긴다 -->
+        <script src="assets/lib/eln/js/lims-list-state.js"></script>
 
         <script type="text/javascript">
             /*<![CDATA[*/

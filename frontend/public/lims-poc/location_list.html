@@ -2537,7 +2537,7 @@
       --------------------------------------------------------------- */
       function openModalLocation(mode, locationMno, upperMno, upperNm, currentNm, currentTp, currentPrefix, currentTemp) {
         const isCreate = mode === 'create';
-        const title = isCreate ? (upperMno ? '하위 위치 추가' : '최상위 위치 추가') : '보관위치 수정';
+        const title = isCreate ? (upperMno ? '하위 위치 등록' : '최상위 위치 등록') : '보관위치 수정';
         const subText = isCreate
           ? (upperMno ? `상위: ${upperNm}` : '건물·동 등 최상위 단위를 등록합니다.')
           : (currentNm || '');
@@ -5700,9 +5700,9 @@
                           <button onclick="header_getNotiList();"
                                   class="dropdown-item all">전체</button>
                           <button onclick="header_getNotiList(&quot;NOTE_INSPECTION&quot;);"
-                                  class="dropdown-item NOTE_INSPECTION">연구노트점검</button>
+                                  class="dropdown-item NOTE_INSPECTION">연구노트 점검</button>
                           <button onclick="header_getNotiList(&quot;NOTE_SHARE&quot;);"
-                                  class="dropdown-item NOTE_SHARE">연구노트공유</button>
+                                  class="dropdown-item NOTE_SHARE">연구노트 공유</button>
                           <button onclick="header_getNotiList(&quot;NOTE_DOWNLOAD&quot;);"
                                   class="dropdown-item NOTE_DOWNLOAD">연구노트 다운로드</button>
                           <button onclick="header_getNotiList(&quot;PROJECT&quot;);"
@@ -5826,7 +5826,7 @@
               <option value="BOX">박스</option>
             </select>
             <button class="button-blue-full-sty01"
-                    onclick="openModalLocation('create', null, null, null, '', 'BUILDING', '', '');"><span>최상위 위치 추가</span></button>
+                    onclick="openModalLocation('create', null, null, null, '', 'BUILDING', '', '');"><span>최상위 위치 등록</span></button>
           </div>
         </div>
 
@@ -5886,7 +5886,7 @@
           <td class="lims-num">{{=containerCnt}}</td>
           <td class="text-left">{{=fullPathNm}}</td>
           <td class="lims-actions-cell">
-            <button class="button-blue-line-sty01" onclick="openModalLocation('create', null, '{{=locationMno}}', '{{=locationNm}}', '', 'BOX', '', '');"><span>하위 추가</span></button>
+            <button class="button-blue-line-sty01" onclick="openModalLocation('create', null, '{{=locationMno}}', '{{=locationNm}}', '', 'BOX', '', '');"><span>하위 위치 등록</span></button>
             <button class="button-blue-line-sty01 ma-l5" onclick="openModalLocation('modify', '{{=locationMno}}', null, null, '{{=locationNm}}', '{{=locationTpCcd}}', '{{=barcodePrefix}}', '{{=temperature}}');"><span>수정</span></button>
             <button class="button-blue-line-sty01 is-danger is-delete ma-l5" onclick="openModalLocationDelete('{{=locationMno}}', '{{=locationNm}}');"><span>삭제</span></button>
           </td>
@@ -5954,6 +5954,12 @@
 
         <!-- 모달 키보드 조작 — tabindex/초점/Esc/창 이름. 부트스트랩 뒤에 와야 한다 -->
         <script src="assets/lib/eln/js/lims-modal-a11y.js"></script>
+
+        <!-- onclick 을 단 div·span 을 키보드로도 누를 수 있게 (실측 80곳) -->
+        <script src="assets/lib/eln/js/lims-click-a11y.js"></script>
+
+        <!-- 목록 조회 실패를 표 자리에 남긴다 -->
+        <script src="assets/lib/eln/js/lims-list-state.js"></script>
 
         <script type="text/javascript">
             /*<![CDATA[*/
