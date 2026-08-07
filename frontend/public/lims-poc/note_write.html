@@ -2735,6 +2735,7 @@
             /* 상단 바 브레드크럼 — 프로젝트 › 노트명 (참고 크롬 1a) */
             if (note.projectNm) { $('#noteCrumb').text(note.projectNm).removeClass('d-none'); }
             paintDocHead(note);
+            paintOverviewExtras(note);
             $('#noteProjectNm').text(note.projectNm || '연결 안 함')
               .toggleClass('is-empty', !note.projectNm);
             $('#noteWriterNm').text(note.writerNm || '-')
@@ -5160,6 +5161,52 @@
           + '<span><i class="bi bi-calendar3" aria-hidden="true"></i>실험일 ' + esc((note.writeDtStr || '').slice(0, 10) || '-') + '</span>'
           + tags.map(function (t) { return '<span class="tag">' + esc(t.trim()) + '</span>'; }).join('')
           + '</div>');
+      }
+
+      /*
+        개요 탭 보강 — 참고 목업(1a 우측 패널)의 메타를 제품 정보 상자에
+        같은 문법(.flex-sty06 줄)으로 덧붙인다: 협업자 · 태그 · 저장 이력.
+        협업자는 프로젝트 멤버다(점검자 지정 모달과 같은 모집단).
+      */
+      function paintOverviewExtras(note) {
+        const $cont = $('#main-body-left .note-info-box[data-side="overview"] .cont');
+        if (!$cont.length || $('#ovCollabRow').length) { return; }
+
+        const tags = String(note.keywords || 'HPLC,합성').split(',').filter(Boolean);
+        $cont.append(
+          '<div class="flex-sty06 ma-t8" id="ovTagRow">'
+          + '<div class="icon_box"></div>'
+          + '<div class="txt-info-txt ma-l5 txt_ellipsis">태그</div>'
+          + '<div class="txt-info-cont lims-ov-tags">'
+          + tags.map(function (t) { return '<span class="tag">' + esc(t.trim()) + '</span>'; }).join('')
+          + '</div></div>');
+
+        $cont.append(
+          '<div class="flex-sty06 ma-t8" id="ovCollabRow">'
+          + '<div class="icon_box"></div>'
+          + '<div class="txt-info-txt ma-l5 txt_ellipsis">협업자</div>'
+          + '<div class="txt-info-cont"><span class="lims-ov-avs" id="ovCollabAvs"></span></div>'
+          + '</div>');
+
+        $cont.append(
+          '<div class="flex-sty06 ma-t8" id="ovHistRow">'
+          + '<div class="icon_box"></div>'
+          + '<div class="txt-info-txt ma-l5 txt_ellipsis">저장 이력</div>'
+          + '<div class="txt-info-cont"><a href="javascript:void(0)" class="lims-ov-hist" '
+          + 'onclick="document.getElementById(\'dropdownHistoryBtn\') && document.getElementById(\'dropdownHistoryBtn\').click();">'
+          + '이력 열기</a></div></div>');
+
+        /* 협업자 아바타 — 멤버 목록은 요청 체인이 한가할 때(초기 로드 뒤) 받는다 */
+        window.setTimeout(function () {
+          ajaxPost('/api/eln/member/getProjectMemberList', { projectMno: gProjectMno || 301 }, null,
+            function (res) {
+              const rows = asList(res ? res.memberList : null).slice(0, 5);
+              $('#ovCollabAvs').html(rows.map(function (m) {
+                return '<span class="av" title="' + esc(m.userNm + ' · ' + (m.authGrpNm || '')) + '">'
+                  + esc(String(m.userNm || '?').charAt(0)) + '</span>';
+              }).join('') + '<span class="cnt">' + rows.length + '명</span>');
+            });
+        }, 1200);
       }
 
       /* 좌측 노트북 트리 — EntryTree 참고본의 골격. 프로젝트=폴더, 노트=잎. */

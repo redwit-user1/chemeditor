@@ -571,6 +571,13 @@
     rejectMemo: ''
   };
 
+  /* 저장 이력 — 저장 버튼이 누른 만큼 쌓인다(블록 단위가 아니라 저장 한 번에 한 줄). */
+  var NOTE_SAVE_HIST = [
+    { writeModeCcd: 'EDITOR', writeModeCcdNm: '에디터', editorMno: 1, fileMno: null,
+      createUserNm: '이연구', createDtStr: '2026-07-12 17:40', createUserFileId: '',
+      noteNm: 'KM00003710 합성 batch A', autoSaveYn: 'N' }
+  ];
+
   var NOTE_STATE_LOG = [
     { at: '2026-07-12 17:40', by: '이연구', act: 'WRITING', memo: '노트 생성' }
   ];
@@ -823,6 +830,7 @@
     METHODS: METHODS, SPECS: SPECS, INSTRUMENTS: INSTRUMENTS, CALS: CALS,
     LOCATIONS: LOCATIONS, REAGENTS: REAGENTS, CONTAINERS: CONTAINERS,
     NOTE_STATE_LOG: NOTE_STATE_LOG, NOTE_AMENDMENTS: NOTE_AMENDMENTS,
+    NOTE_SAVE_HIST: NOTE_SAVE_HIST,
     DATA_FILES: DATA_FILES,
     NOTE_INSPECTORS: NOTE_INSPECTION.inspectors
   };
@@ -1571,6 +1579,35 @@
       };
     },
 
+    /*
+      노트 히스토리 드롭다운. 제품 화면(note_getNoteHist)이 부르는 경로인데
+      목에 없어서 판이 늘 비어 있었다 — 히스토리 버튼이 "고장난 것"으로
+      읽히는 자리다. 저장 이력은 저장 호출에서 쌓고(아래 saveBlock 참조),
+      활동 내역은 점검 기록(NOTE_STATE_LOG)을 제품 응답 모양으로 바꿔 준다.
+    */
+    '/api/eln/note/noteHist': function (p) {
+      var save = NOTE_SAVE_HIST.slice().reverse();
+      var act = NOTE_STATE_LOG.slice().reverse().map(function (l) {
+        var nm = l.act === 'INSPECTION_REQ' ? '점검 요청'
+          : l.act === 'INSPECTION_CANCEL' ? '점검 요청 철회'
+          : l.act === 'INSPECTOR_APPROVAL' ? '점검 승인'
+          : l.act === 'INSPECTOR_REJECT' ? '점검 반려'
+          : l.act === 'TSA' ? '시점인증'
+          : l.act === 'AMEND' ? '정정 기록 추가' : '노트 작성';
+        return {
+          createUserNm: l.by || '시스템', createDtStr: l.at, createUserFileId: '',
+          content: l.memo || NOTE.noteNm, elnHistSeCcdNm: nm,
+          crudSeCcdNm: l.act === 'INSPECTOR_REJECT' ? '반려' : l.act === 'TSA' ? '인증' : '기록'
+        };
+      });
+      var se = String(p.schNoteHistSe || 'SAVE_HIST');
+      return {
+        saveHistCnt: save.length,
+        actHistCnt: act.length,
+        histList: se === 'SAVE_HIST' ? save : act
+      };
+    },
+
     '/api/lims/data/dataList': function (p) {
       var kw = String(p.schKeyword || '').trim().toLowerCase();
       var tp = String(p.schTp || 'ALL');
@@ -1710,6 +1747,13 @@
     */
     '/api/lims/note/saveBlock': function (p) {
       var ord = Number(p.blockOrd) || (NOTE_BLOCKS.length + 1);
+      if (ord === 1) {
+        NOTE_SAVE_HIST.push({
+          writeModeCcd: 'EDITOR', writeModeCcdNm: '에디터', editorMno: NOTE_SAVE_HIST.length + 1,
+          fileMno: null, createUserNm: POC_ME, createDtStr: stampNow(), createUserFileId: '',
+          noteNm: p.noteNm || NOTE.noteNm, autoSaveYn: 'N'
+        });
+      }
       var rows = [];
       if (p.rowsJson) {
         try { rows = JSON.parse(p.rowsJson) || []; } catch (e) { rows = []; }

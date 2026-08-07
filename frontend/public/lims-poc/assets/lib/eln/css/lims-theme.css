@@ -7708,3 +7708,113 @@ div:has(> .guidetext-sty01):has(> .count-wrap) {
 .lims-note-picker-row .meta.tone-primary { background: var(--ds-primary-weak); color: var(--ds-primary); }
 .lims-note-picker-row .meta.tone-person  { background: var(--ds-violet-weak); color: var(--ds-violet); }
 .lims-note-picker-row .meta.tone-muted   { background: var(--ds-line-soft); color: var(--ds-ink-3); }
+
+/* ── §55 개요 탭 보강 + 히스토리 타임라인 ─────────────────────────────── */
+
+.lims-ov-tags { display: flex; flex-wrap: wrap; gap: var(--ds-1); }
+
+.lims-ov-tags .tag {
+	padding: 1px var(--ds-2);
+	border-radius: var(--ds-radius-sm);
+	background: var(--ds-line-soft);
+	font-size: var(--ds-fs-micro);
+	color: var(--ds-ink-3);
+}
+
+/* 협업자 아바타 스택 — 목업 상단 바의 겹친 원 */
+.lims-ov-avs { display: inline-flex; align-items: center; }
+
+.lims-ov-avs .av {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	margin-left: -6px;
+	border: 2px solid #fff;
+	border-radius: 50%;
+	background: var(--ds-primary-weak);
+	font-size: var(--ds-fs-micro);
+	font-weight: 700;
+	color: var(--ds-primary);
+}
+
+.lims-ov-avs .av:first-child { margin-left: 0; }
+.lims-ov-avs .av:nth-child(2n) { background: var(--ds-violet-weak); color: var(--ds-violet); }
+.lims-ov-avs .av:nth-child(3n) { background: #eef8f7; color: var(--ds-ok); }
+.lims-ov-avs .cnt { margin-left: var(--ds-2); font-size: var(--ds-fs-micro); color: var(--ds-ink-4); }
+
+.lims-ov-hist { font-size: var(--ds-fs-small); color: var(--ds-primary); }
+
+/*
+  히스토리 드롭다운 — 제품 판을 덱 타임라인 결로. 프로필 이미지가 404 로
+  깨진 채 뜨던 것도 여기서 가린다(이 프로토타입에 이미지 서버가 없다).
+*/
+#dropdown_note_history { border: 1px solid var(--ds-line-2); border-radius: var(--ds-radius-lg); box-shadow: var(--ds-shadow-pop); }
+
+#dropdown_note_history .tab-cont.list-all {
+	position: relative;
+	padding: var(--ds-3) var(--ds-4) var(--ds-3) var(--ds-6);
+	border-bottom: 1px solid var(--ds-line-soft);
+}
+
+#dropdown_note_history .tab-cont.list-all::before {
+	content: '';
+	position: absolute;
+	left: var(--ds-3);
+	top: 18px;
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: var(--ds-primary);
+}
+
+#dropdown_note_history .tab-cont.list-all img { display: none; }
+#dropdown_note_history .alarm_top .name { font-weight: 700; color: var(--ds-ink-2); }
+#dropdown_note_history .alarm_top .date { margin-left: var(--ds-2); font-size: var(--ds-fs-micro); color: var(--ds-ink-4); }
+#dropdown_note_history .alarm_text .title { font-size: var(--ds-fs-small); color: var(--ds-ink-3); }
+#dropdown_note_history .alarm_text .event { color: var(--ds-primary-dark); font-weight: 500; }
+#dropdown_note_history .alarm_icon {
+	display: inline-block;
+	padding: 1px var(--ds-2);
+	border-radius: var(--ds-radius-sm);
+	background: var(--ds-line-soft);
+	font-size: var(--ds-fs-micro);
+	color: var(--ds-ink-3);
+}
+
+/*
+  검색 필터 바 — 접힌 상태에서는 아이콘 하나와 "검색 초기화"만 남아 빈 흰
+  띠로 읽혔다. 아이콘에 이름을 붙이고, 적용된 필터가 없을 때는 그 사실을
+  글자로 말한다(#filter-box 는 적용된 필터 칩이 들어오는 자리다).
+*/
+.search-filter-box .icon_filter {
+	display: inline-flex;
+	align-items: center;
+	width: auto;
+	height: var(--ds-control);
+	/* --ds-9 는 없는 토큰이다(정의는 8 다음이 10) — 썼다가 패딩이 0 으로
+	   무너져 라벨이 아이콘을 덮었다. 눈금값을 직접 계산한다. */
+	padding: 0 var(--ds-3) 0 calc(var(--ds-unit) * 9);
+	background-position: left var(--ds-3) center;
+}
+
+.search-filter-box .icon_filter::after {
+	content: '상세 검색';
+	font-size: var(--ds-fs-small);
+	font-weight: 500;
+	color: var(--ds-ink-3);
+	white-space: nowrap;
+}
+
+.search-filter-box #filter-box:empty::before {
+	content: '적용된 필터 없음';
+	font-size: var(--ds-fs-small);
+	color: var(--ds-ink-4);
+}
+
+.search-filter-box #filter-box:empty {
+	display: inline-flex;
+	align-items: center;
+	margin-left: var(--ds-3);
+}
