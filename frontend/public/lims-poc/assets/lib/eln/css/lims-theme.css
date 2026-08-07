@@ -53,7 +53,7 @@
 	--ds-fs-body: var(--ds-fs);                /* 14 — 본문, 버튼, 입력 */
 	--ds-fs-card: calc(var(--ds-fs) + 1px);    /* 15 — 카드 제목 */
 	--ds-fs-lead: calc(var(--ds-fs) + 4px);    /* 18 — 구획 제목 */
-	--ds-fs-title: calc(var(--ds-fs) + 8px);   /* 22 — 페이지 제목 */
+	--ds-fs-title: calc(var(--ds-fs) + 12px);  /* 26 — 페이지 제목 (참고 실측 26/700/-3%) */
 	--ds-fs-metric: calc(var(--ds-fs) + 12px); /* 26 — 지표 숫자 */
 
 	/* 아래첨자·윗첨자. 화학식(C25H24N2O3)이라 비율은 살리되 바닥을 준다.
@@ -118,7 +118,8 @@
 	   정본과 다르게 둔 곳은 세 군데뿐이고, 아래에 이유를 적었다.
 	   ========================================================================= */
 	--ds-primary: #1761de;        /* primary-500 — 버튼 채움 · 활성 테두리 */
-	--ds-primary-dark: #186ce8;   /* primary-600 — 홀버 */
+	--ds-primary-dark: #1557cc;   /* 눌린 파랑·파랑 글자. 정본 #186CE8 은 캔버스(#ECEFF1)에서
+	                                 4.18 로 미달(실측) — 같은 계열에서 5.57 나오는 값으로 */
 	--ds-primary-weak: #edf3fd;   /* primary-100 — 선택/홀버 바탕, info 바탕 */
 	--ds-primary-deep: #08204a;   /* GNB·사이드바 바탕 */
 
@@ -138,7 +139,8 @@
 	   흰 5.18 · 캔버스 4.91 · 홀버 4.65 (전부 실측).
 	   정본의 coolgray-600 과 700 사이에 있고 같은 색상각이다.
 	   장식(구분점·아이콘)에는 정본 값을 --ds-ink-soft 로 따로 남겨 둔다. */
-	--ds-ink-4: #666e76;
+	--ds-ink-4: #61686f;         /* 흐린 글자. 캔버스가 #ECEFF1 로 깊어지며 #666E76 이 4.48 로
+	                                 미달(실측) — 전 바닥(캔버스 4.89 · 홀버 5.08 · 흰 5.65) 통과값으로 */
 	--ds-ink-soft: #868e96;       /* coolgray-600 — 글자 아닌 곳(점·구분·비활성 아이콘).
 	                                 흰 바탕 11px 에서 3.32:1 이다. 글자에 쓰지 않는다 —
 	                                 §45·§46 에서 다섯 곳을 이 값으로 썼다가 실측에서 걸렸다. */
@@ -147,7 +149,10 @@
 	--ds-line-2: #ced4da;         /* coolgray-400 — 강한 테두리 */
 	--ds-line-soft: #e9ecef;      /* coolgray-200 — 옅은 채움·표 행 */
 	--ds-surface: #ffffff;
-	--ds-canvas: #f8f9fa;         /* coolgray-50 */
+	/* 참고 HTML(GOONO_LIMS_Ops) 실측 rgb(236,239,241). 50 단계보다 한 단계
+	   깊어야 흰 카드가 바닥에서 뜬다 — 이전의 #F8F9FA 는 카드와 거의 같은
+	   밝기라 화면이 통째로 흰 판으로 읽혔다. */
+	--ds-canvas: #eceff1;
 	--ds-hover: #f1f3f5;          /* coolgray-100 */
 
 	/* 뜻 색.
@@ -339,6 +344,7 @@ h2.title {
 	font-size: var(--ds-fs-title);
 	font-weight: var(--ds-fw-bold);
 	line-height: var(--ds-lh-tight);
+	letter-spacing: -0.03em;
 	color: var(--ds-ink);
 }
 
@@ -525,6 +531,9 @@ h2.title {
 /* ---------------------------------------------------------------------------
    3) 바탕
 --------------------------------------------------------------------------- */
+/* html 까지 칠한다 — body 는 내용 높이까지만이라, 짧은 화면에서는 그 아래로
+   html 의 옛 바닥색이 그대로 드러났다(캔버스를 #ECEFF1 로 바꾸자 보였다). */
+html,
 body,
 .wrapper,
 .content_wrap,
@@ -536,15 +545,16 @@ body,
    4) 셸 — 사이드바
 --------------------------------------------------------------------------- */
 /*
-  사이드바는 GOONO 딥네이비다. 제품 원형이 그랬고(style.css 의 흰 글자·흰
-  아이콘, #08204A 접힘 손잡이가 그 흔적) 참고 덱의 아이덴티티도 이 색이다.
-  앞선 정리에서 내가 흰 사이드바로 덮었는데, 그 결과 "아무것도 안 바뀐
-  회색 관리자 화면" 으로 읽혔다. 되돌린다.
+  사이드바는 밝은 테마다. 참고 HTML(ELN Editor 1a)의 왼쪽 패널이 흰 바탕에
+  옅은 경계선이고 GOONO_LIMS_Ops 덱 전체가 밝은 테마다. 한 번 딥네이비로
+  갔다가(제품 style.css 원형이 남색이라 그쪽을 정본으로 오판) "참고 HTML 과
+  전혀 다르다"는 지적을 받고 되돌렸다 — 정본은 첨부된 참고 HTML 이다.
+  아이콘 mask 화(-w/-d 두 벌 불필요)와 목록 PNG 불릿 제거는 유지한다.
 */
 .sidenav2 {
 	width: var(--ds-shell);
-	background: var(--ds-primary-deep) !important;
-	border-right: 0;
+	background: var(--ds-surface) !important;
+	border-right: 1px solid var(--ds-line);
 	box-shadow: none;
 }
 
@@ -583,7 +593,7 @@ body,
 .sidenav2 .top-logo img {
 	height: 20px;
 	width: auto;
-	filter: brightness(0) invert(1);
+	filter: brightness(0) saturate(100%) invert(9%) sepia(12%) saturate(1200%) hue-rotate(190deg);
 }
 
 .sidenav2 .ma-l24,
@@ -675,7 +685,7 @@ body,
 	margin: 1px 0;
 	padding: 0 var(--ds-2) 0 var(--ds-8);
 	border-radius: var(--ds-radius);
-	color: rgba(255, 255, 255, 0.78) !important;
+	color: var(--ds-ink-3) !important;
 	font-size: var(--ds-fs-body);
 	font-weight: var(--ds-fw-normal);
 	line-height: var(--ds-lh-tight);
@@ -708,13 +718,14 @@ body,
 }
 
 .nav-menu a.menuCd:hover {
-	background-color: rgba(255, 255, 255, 0.08);
-	color: #fff !important;
+	background-color: var(--ds-hover);
+	color: var(--ds-ink) !important;
 }
 
+/* 활성 = 옅은 파랑 바탕 + 파랑 글자 (참고 1a 의 선택 항목) */
 .nav-menu a.menuCd.active {
-	background-color: var(--ds-primary);
-	color: #fff !important;
+	background-color: var(--ds-primary-weak);
+	color: var(--ds-primary) !important;
 	font-weight: var(--ds-fw-medium);
 }
 
@@ -738,7 +749,7 @@ body,
 .sidenav2 .nav-list-wrap {
 	margin: 0 var(--ds-4);
 	padding-top: var(--ds-3);
-	border-top: 1px solid rgba(255, 255, 255, 0.14);
+	border-top: 1px solid var(--ds-line);
 }
 
 .nav-list-wrap .nav-list-top .nav-list-title-wrap {
@@ -752,14 +763,14 @@ body,
 }
 
 .nav-list-wrap .nav-list-top .nav-list-title-wrap:hover {
-	background-color: rgba(255, 255, 255, 0.06);
+	background-color: var(--ds-hover);
 }
 
 .nav-list-wrap .nav-list-top .nav-list-title-wrap .nav-list-title {
 	font-size: var(--ds-fs-body);
 	font-weight: var(--ds-fw-bold);
 	line-height: var(--ds-lh-tight);
-	color: #fff !important;
+	color: var(--ds-ink) !important;
 }
 
 .nav-list-wrap .nav-list-top .nav-list-cnt {
@@ -768,8 +779,8 @@ body,
 	margin-left: 0;
 	padding: 0 var(--ds-2);
 	border-radius: var(--ds-pill);
-	background: rgba(255, 255, 255, 0.16);
-	color: #fff !important;
+	background: var(--ds-hover);
+	color: var(--ds-ink-3) !important;
 	font-size: var(--ds-fs-micro);
 	font-weight: var(--ds-fw-medium);
 	/* 간격 토큰(--ds-5)을 줄높이로 쓰고 있었다. 값은 맞았지만 뜻이 틀렸고,
@@ -782,8 +793,7 @@ body,
 }
 
 .nav-list-wrap .nav-list-top .nav-list-all {
-	/* 남색 위에서 primary 파랑은 3.1:1 이 안 된다 — 밝은 파랑으로 */
-	color: #a9c4f5 !important;
+	color: var(--ds-primary) !important;
 	font-size: var(--ds-fs-small);
 }
 
@@ -810,7 +820,7 @@ body,
 	padding: var(--ds-2);
 	line-height: var(--ds-4);
 	border-radius: var(--ds-radius-sm);
-	color: rgba(255, 255, 255, 0.75) !important;
+	color: var(--ds-ink-3) !important;
 	font-size: var(--ds-fs-small);
 	white-space: nowrap;
 	overflow: hidden;
@@ -819,8 +829,8 @@ body,
 }
 
 .sidenav2 .nav-list-wrap a:hover {
-	background-color: rgba(255, 255, 255, 0.08);
-	color: #fff !important;
+	background-color: var(--ds-hover);
+	color: var(--ds-ink) !important;
 }
 
 /* ---------------------------------------------------------------------------
@@ -1100,7 +1110,8 @@ body,
 .lims-page .lims-card,
 .core-table .box,
 .box-table .box {
-	border: 1px solid var(--ds-line);
+	/* 참고 실측: radius 12 · border #CED4DA · 0 1px 16px 6% */
+	border: 1px solid var(--ds-line-2);
 	border-radius: var(--ds-radius-lg);
 	background: var(--ds-surface);
 	box-shadow: var(--ds-shadow);
@@ -6280,7 +6291,8 @@ td.lims-id,
 	align-items: center;
 	gap: 4px;
 	padding: 2px var(--ds-2);
-	border-radius: 999px;
+	/* 참고 실측: 상태 표시는 둥근 알약이 아니라 각진 알약(radius 4)이다 */
+	border-radius: var(--ds-radius-sm);
 	font-size: var(--ds-fs-micro);
 	font-weight: 700;
 	line-height: 1.5;
@@ -6344,7 +6356,7 @@ td.lims-id,
 /* 점검자 상태 알약 — 제품 INSPCTN_STATUS_CCD 어휘 그대로 */
 .lims-note-inspst {
 	padding: 1px var(--ds-2);
-	border-radius: 999px;
+	border-radius: var(--ds-radius-sm);
 	font-size: var(--ds-fs-micro);
 	font-weight: 700;
 }
