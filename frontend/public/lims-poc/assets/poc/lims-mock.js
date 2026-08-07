@@ -548,23 +548,31 @@
   };
 
   /*
-    노트 상태.
+    노트 점검 흐름 — 구노 제품에 이미 있는 그 흐름이다. 새로 짓지 않는다.
 
-    구노 ELN 의 공통코드는 임시저장·작성중·점검중·반려·작성완료 다섯이지만,
-    화면은 그 값을 글자로 찍기만 했다(#noteStatusNm 은 쓰는 코드만 있고 그
-    엘리먼트가 화면에 없었다 — 아무 데도 안 나오는 상태였다). 재단 요건의
-    핵심은 "누가 언제 무엇을 승인했는가" 이므로 상태를 흐름으로 다룬다.
+      작성 상태  WRITE_STATUS_CCD : WRITING → INSPECTION → COMPLETE / REJECT
+      점검자별   INSPCTN_STATUS_CCD: UNCONFIRM → APPROVAL / REJECT (철회는 CANCEL)
 
-    현재 상태는 따로 들지 않고 기록의 마지막 줄에서 읽는다. 상태와 이력이
-    어긋날 수 없다 — 어긋나면 감사 추적이 성립하지 않는다.
+      점검 요청(점검자 지정) → 점검자 승인 → 전원 승인 = 점검완료 + 시점인증
+      → 연구노트 수정 불가. 반려는 사유와 함께 작성중으로 되돌린다.
 
-    DRAFT ─검토 요청→ REVIEW_REQ ─리뷰 시작→ IN_REVIEW ─승인 및 서명→ SIGNED
-              ↑ 취소            └───────── 반려 ─→ REJECTED ─수정 후 재요청─┘
-    SIGNED 은 종착이다. 그 뒤의 유일한 쓰기는 정정 기록(원문은 그대로 두고
-    바로잡는 글을 덧붙인다) 이다 — 서명된 기록을 고쳐 쓰면 서명의 뜻이 없다.
+    (처음에 이 자리에 검토 요청/서명이라는 별도 흐름을 만들었다가 걷어냈다.
+    제품에 같은 기능 — 점검 — 이 이미 있었다. Constants.java 의
+    CD_WRITE_STATUS_* / CD_INSPCTN_STATUS_* 와 note layout 의 점검 요청·
+    점검자 지정·점검 진행 박스가 그것이다. 같은 기능을 두 이름으로 두면
+    사용자는 무엇이 정본인지 알 수 없다.)
+
+    현재 상태는 INSPECTION 객체가 정본이고, 타임라인은 붙임 기록이다.
   */
+  var NOTE_INSPECTION = {
+    statusCcd: 'WRITING',   /* WRITING | INSPECTION | COMPLETE | REJECT */
+    inspectors: [],          /* { userMno, userNm, orztNm, statusCcd, at, memo } */
+    tsa: null,               /* 시점인증 — { at, hash } (전원 승인 시 목이 찍는다) */
+    rejectMemo: ''
+  };
+
   var NOTE_STATE_LOG = [
-    { at: '2026-07-12 17:40', by: '이연구', act: 'DRAFT', memo: '' }
+    { at: '2026-07-12 17:40', by: '이연구', act: 'WRITING', memo: '노트 생성' }
   ];
 
   var NOTE_AMENDMENTS = [];
@@ -814,7 +822,8 @@
     TEST_ITEMS: TEST_ITEMS, RESULTS: RESULTS, REVIEWS: REVIEWS, OOS: OOS,
     METHODS: METHODS, SPECS: SPECS, INSTRUMENTS: INSTRUMENTS, CALS: CALS,
     LOCATIONS: LOCATIONS, REAGENTS: REAGENTS, CONTAINERS: CONTAINERS,
-    NOTE_STATE_LOG: NOTE_STATE_LOG, NOTE_AMENDMENTS: NOTE_AMENDMENTS
+    NOTE_STATE_LOG: NOTE_STATE_LOG, NOTE_AMENDMENTS: NOTE_AMENDMENTS,
+    NOTE_INSPECTORS: NOTE_INSPECTION.inspectors
   };
 
   function stateStore() {
@@ -824,7 +833,10 @@
   function saveState() {
     var st = stateStore();
     if (!st) return;
-    var dump = { nextNoteMno: nextNoteMno, seq: seq, sets: {} };
+    var dump = { nextNoteMno: nextNoteMno, seq: seq, sets: {},
+                 noteInspection: { statusCcd: NOTE_INSPECTION.statusCcd,
+                                   tsa: NOTE_INSPECTION.tsa,
+                                   rejectMemo: NOTE_INSPECTION.rejectMemo } };
     for (var k in STATE_SETS) { dump.sets[k] = STATE_SETS[k]; }
     try { st.setItem(STATE_KEY, JSON.stringify(dump)); } catch (e) { /* 용량 초과는 무시 — 다음 저장에서 다시 시도한다 */ }
   }
@@ -847,6 +859,11 @@
       arr.length = 0;
       Array.prototype.push.apply(arr, saved);
     }
+    if (dump.noteInspection) {
+      NOTE_INSPECTION.statusCcd = dump.noteInspection.statusCcd || 'WRITING';
+      NOTE_INSPECTION.tsa = dump.noteInspection.tsa || null;
+      NOTE_INSPECTION.rejectMemo = dump.noteInspection.rejectMemo || '';
+    }
     if (typeof dump.nextNoteMno === 'number') { nextNoteMno = dump.nextNoteMno; }
     if (dump.seq) { for (var q in dump.seq) { if (q in seq) seq[q] = dump.seq[q]; } }
   }
@@ -857,21 +874,18 @@
     window.location.reload();
   };
 
-  /* 갈 수 있는 곳. 여기에 없으면 못 간다. */
-  var NOTE_STATE_NEXT = {
-    DRAFT:      ['REVIEW_REQ'],
-    REVIEW_REQ: ['IN_REVIEW', 'DRAFT'],
-    IN_REVIEW:  ['SIGNED', 'REJECTED'],
-    REJECTED:   ['REVIEW_REQ'],
-    SIGNED:     []
-  };
+  function inspectionPayload() {
+    return {
+      statusCcd: NOTE_INSPECTION.statusCcd,
+      inspectors: NOTE_INSPECTION.inspectors.slice(),
+      tsa: NOTE_INSPECTION.tsa,
+      rejectMemo: NOTE_INSPECTION.rejectMemo,
+      stateLog: NOTE_STATE_LOG.slice()
+    };
+  }
 
-  /* 현재 상태는 기록의 마지막 줄이다. 정정 기록(AMEND)은 상태를 바꾸지 않는다. */
-  function noteState() {
-    for (var i = NOTE_STATE_LOG.length - 1; i >= 0; i--) {
-      if (NOTE_STATE_LOG[i].act !== 'AMEND') { return NOTE_STATE_LOG[i].act; }
-    }
-    return 'DRAFT';
+  function logState(by, act, memo) {
+    NOTE_STATE_LOG.push({ at: stampNow(), by: by || POC_ME, act: act, memo: memo || '' });
   }
 
   /* ---------------------------------------------------------------
@@ -1502,45 +1516,103 @@
       return {
         note: NOTE,
         blockList: NOTE_BLOCKS,
-        state: noteState(),
-        stateLog: NOTE_STATE_LOG.slice(),
+        inspection: inspectionPayload(),
         amendList: NOTE_AMENDMENTS.slice()
       };
     },
 
     /*
-      상태를 옮긴다. 어디서 어디로 갈 수 있는지는 목이 정한다 — 화면이 버튼을
-      감춰 두는 것만으로는 부족하다. 화면을 우회해서 부르면 그대로 통과하는
-      전이는 감사 추적에서 신뢰할 수 없다.
+      점검 요청 — 점검자를 지정해서 낸다. 제품 흐름 그대로:
+      작성중에서만 낼 수 있고, 점검자가 한 명도 없으면 요청이 아니다.
     */
-    '/api/lims/note/changeNoteState': function (p) {
-      var to = String(p.toStateCd || '');
-      var from = noteState();
-      if (!NOTE_STATE_NEXT[from] || NOTE_STATE_NEXT[from].indexOf(to) < 0) {
-        return { resultCode: 'FAIL', message: from + ' 에서 ' + to + ' 로는 옮길 수 없습니다.' };
+    '/api/lims/note/requestInspection': function (p) {
+      if (NOTE_INSPECTION.statusCcd !== 'WRITING' && NOTE_INSPECTION.statusCcd !== 'REJECT') {
+        return { resultCode: 'FAIL', message: '작성중(또는 반려) 상태에서만 점검을 요청할 수 있습니다.' };
       }
-      /* 반려에는 사유가 있어야 한다. 사유 없는 반려는 받은 쪽이 할 일이 없다. */
-      if (to === 'REJECTED' && !String(p.memo || '').trim()) {
-        return { resultCode: 'FAIL', message: '반려 사유를 입력하세요.' };
+      var mnos = String(p.inspectorMnos || '').split(',').filter(Boolean).map(Number);
+      if (!mnos.length) {
+        return { resultCode: 'FAIL', message: '점검자를 한 명 이상 지정하세요.' };
       }
-      NOTE_STATE_LOG.push({
-        at: stampNow(),
-        by: p.actorNm || POC_ME,
-        act: to,
-        memo: String(p.memo || '').trim()
+      NOTE_INSPECTION.inspectors = mnos.map(function (mno) {
+        var u = null;
+        for (var i = 0; i < USERS.length; i++) { if (USERS[i].userMno === mno) { u = USERS[i]; } }
+        return { userMno: mno, userNm: u ? u.userNm : ('사용자 ' + mno),
+                 orztNm: u ? u.orztNm : '', statusCcd: 'UNCONFIRM', at: null, memo: '' };
       });
-      NOTE.statusCcd = to;
-      return { state: to, stateLog: NOTE_STATE_LOG.slice() };
+      NOTE_INSPECTION.statusCcd = 'INSPECTION';
+      NOTE_INSPECTION.tsa = null;
+      NOTE_INSPECTION.rejectMemo = '';
+      NOTE.statusCcd = 'INSPECTION';
+      logState(p.actorNm, 'INSPECTION_REQ',
+        '점검자 ' + NOTE_INSPECTION.inspectors.map(function (x) { return x.userNm; }).join(', '));
+      return inspectionPayload();
+    },
+
+    /* 점검 요청 철회 — 아직 아무도 판정하지 않았을 때만. 제품의 CANCEL. */
+    '/api/lims/note/cancelInspection': function (p) {
+      if (NOTE_INSPECTION.statusCcd !== 'INSPECTION') {
+        return { resultCode: 'FAIL', message: '점검중이 아닙니다.' };
+      }
+      var acted = NOTE_INSPECTION.inspectors.some(function (x) { return x.statusCcd !== 'UNCONFIRM'; });
+      if (acted) {
+        return { resultCode: 'FAIL', message: '이미 판정한 점검자가 있어 철회할 수 없습니다.' };
+      }
+      NOTE_INSPECTION.statusCcd = 'WRITING';
+      NOTE_INSPECTION.inspectors = [];
+      NOTE.statusCcd = 'WRITING';
+      logState(p.actorNm, 'INSPECTION_CANCEL', '');
+      return inspectionPayload();
     },
 
     /*
-      정정 기록. 서명된 본문은 건드리지 않고 뒤에 덧붙인다.
-      원문·정정문·사유 셋을 다 받는다 — 무엇이 어떻게 왜 바뀌었는지가
-      한 줄에서 읽혀야 감사에서 쓸 수 있다.
+      점검자 판정. 판정 규칙은 목이 쥔다 —
+        반려 한 건이면 노트 전체가 반려(사유 필수).
+        전원 승인이면 점검완료 + 시점인증. 그 뒤 본문은 수정 불가.
     */
+    '/api/lims/note/inspectorDecide': function (p) {
+      if (NOTE_INSPECTION.statusCcd !== 'INSPECTION') {
+        return { resultCode: 'FAIL', message: '점검중 상태가 아닙니다.' };
+      }
+      var mno = Number(p.userMno);
+      var row = null;
+      NOTE_INSPECTION.inspectors.forEach(function (x) { if (x.userMno === mno) { row = x; } });
+      if (!row) { return { resultCode: 'FAIL', message: '이 노트의 점검자가 아닙니다.' }; }
+      if (row.statusCcd !== 'UNCONFIRM') {
+        return { resultCode: 'FAIL', message: '이미 판정했습니다.' };
+      }
+      var d = String(p.decision || '');
+      if (d !== 'APPROVAL' && d !== 'REJECT') {
+        return { resultCode: 'FAIL', message: '판정은 APPROVAL 또는 REJECT 입니다.' };
+      }
+      if (d === 'REJECT' && !String(p.memo || '').trim()) {
+        return { resultCode: 'FAIL', message: '반려 사유를 입력하세요.' };
+      }
+      row.statusCcd = d;
+      row.at = stampNow();
+      row.memo = String(p.memo || '').trim();
+      logState(row.userNm, d === 'APPROVAL' ? 'INSPECTOR_APPROVAL' : 'INSPECTOR_REJECT', row.memo);
+
+      if (d === 'REJECT') {
+        NOTE_INSPECTION.statusCcd = 'REJECT';
+        NOTE_INSPECTION.rejectMemo = row.memo;
+        NOTE.statusCcd = 'REJECT';
+      } else if (NOTE_INSPECTION.inspectors.every(function (x) { return x.statusCcd === 'APPROVAL'; })) {
+        NOTE_INSPECTION.statusCcd = 'COMPLETE';
+        NOTE.statusCcd = 'COMPLETE';
+        /* 시점인증. 실제 제품은 TSA 가 찍는다 — 목은 자리와 모양만 재현한다.
+           해시가 진짜가 아니라는 것을 화면이 숨기면 안 되므로 (모의) 를 붙인다. */
+        NOTE_INSPECTION.tsa = {
+          at: stampNow(),
+          hash: 'SHA-256 ' + ('0000000' + (seq.amend * 2654435761 % 0xfffffff).toString(16)).slice(-7) + '…(모의)'
+        };
+        logState('시스템', 'TSA', NOTE_INSPECTION.tsa.at);
+      }
+      return inspectionPayload();
+    },
+
     '/api/lims/note/addAmendment': function (p) {
-      if (noteState() !== 'SIGNED') {
-        return { resultCode: 'FAIL', message: '서명 완료된 노트에만 정정 기록을 남길 수 있습니다.' };
+      if (NOTE_INSPECTION.statusCcd !== 'COMPLETE') {
+        return { resultCode: 'FAIL', message: '점검 완료(시점인증)된 노트에만 정정 기록을 남길 수 있습니다.' };
       }
       var reason = String(p.reasonTxt || '').trim();
       if (!reason) { return { resultCode: 'FAIL', message: '정정 사유를 입력하세요.' }; }

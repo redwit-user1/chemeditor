@@ -2554,9 +2554,6 @@
          let 이면 선언 줄에 닿기 전에 부르는 순간 TDZ 로 터진다. */
       var gDirty = false;
       var gLastSavedAt = null;
-      /* 노트 상태. 서버(목)가 정본이고 화면은 받아 적기만 한다. */
-      var gNoteState = 'DRAFT';
-      var gStateLog = [];
       var gAmends = [];
 
       /* ---------------------------------------------------------------
@@ -2732,8 +2729,11 @@
               엘리먼트가 화면에 없었다 — 아무 데도 안 나오는 값이었다.
               이제는 상태 띠가 받는다.
             */
-            gNoteState = res && res.state ? res.state : 'DRAFT';
-            gStateLog = asList(res ? res.stateLog : null);
+            const insp = res && res.inspection ? res.inspection : null;
+            gInsp = insp
+              ? { statusCcd: insp.statusCcd, inspectors: asList(insp.inspectors),
+                  tsa: insp.tsa || null, rejectMemo: insp.rejectMemo || '' }
+              : { statusCcd: 'WRITING', inspectors: [], tsa: null, rejectMemo: '' };
             gAmends = asList(res ? res.amendList : null);
             paintNoteState();
 
@@ -3403,6 +3403,11 @@
               b.textVal = html;
             }
           });
+          /* 늦게 뜬 편집기에도 잠금을 건다 — 번들이 늦으면 순서가 뒤집힌다 */
+          if (gInsp.statusCcd === 'COMPLETE' && gTextEditors[b.blockId]
+              && typeof gTextEditors[b.blockId].setReadOnly === 'function') {
+            gTextEditors[b.blockId].setReadOnly(true);
+          }
         } catch (e) {
           mountTextFallback(b);
         }
@@ -4718,139 +4723,131 @@
 
 
       /* ===============================================================
-         노트 상태 — 초안 · 검토 대기 · 검토 중 · 서명 완료 · 반려
+         점검 — 구노 제품에 이미 있는 흐름을 그대로 쓴다
 
-         이 화면에는 상태가 없었다. [저장] 하나로 끝났고, 저장 후 안내문이
-         "결재·서명 워크플로는 범위 밖이라 상태만 제출로 둡니다" 라고 말했다.
-         그런데 재단이 대체하려는 시스템의 핵심이 바로 그 결재·서명이다.
-         전부는 못 만들더라도, 상태가 어떻게 흐르고 서명 뒤에 기록이 어떻게
-         보호되는지는 눌러 볼 수 있어야 한다.
+           점검 요청(점검자 지정) → 점검자 승인 → 전원 승인 = 점검완료 + 시점인증
+           → 연구노트 수정 불가. 반려는 사유와 함께 작성중으로.
 
-           초안 ─검토 요청→ 검토 대기 ─리뷰 시작→ 검토 중 ─승인 및 서명→ 서명 완료
-                    ↑ 요청 취소            └──────── 반려 ─→ 반려됨 ─수정 후 재요청─┘
+           작성 상태  WRITE_STATUS_CCD : WRITING → INSPECTION → COMPLETE / REJECT
+           점검자별   INSPCTN_STATUS_CCD: UNCONFIRM → APPROVAL / REJECT
 
-         서명 완료는 종착이다. 본문 편집이 잠기고, 남는 쓰기는 정정 기록뿐이다.
-         전이 가능 여부는 목이 판정한다 — 화면이 버튼을 감추는 것만으로는
-         감사 추적이 성립하지 않는다.
+         처음에 여기 검토 요청/서명이라는 별도 흐름을 만들었다가 걷어냈다.
+         제품에 같은 기능이 이미 있었다(Constants.CD_WRITE_STATUS_* 와 노트
+         레이아웃의 점검 요청·점검자 지정·점검 진행 박스). 같은 기능이 두
+         이름으로 있으면 사용자는 무엇이 정본인지 알 수 없다.
+
+         판정 규칙은 목이 쥔다 — 화면이 버튼을 감추는 것만으로는 우회하면
+         그대로 통과하고, 그러면 감사 추적이 성립하지 않는다.
+
+         띠·스테퍼의 생김새는 참고 덱(GOONO_LIMS_Ops)의 OOS 카드 머리를
+         따른다: 단계 원(완료 초록 체크 · 현재 파랑 숫자 · 미래 회색), 오른쪽
+         상태 알약, 진행 중에는 점검자별 진행이 그 아래 붙는다.
          =============================================================== */
 
-      const NOTE_STATES = {
-        /*
-          아이콘은 bootstrap-icons 를 쓴다. 참고 설계는 Material Symbols 이름을
-          쓰지만(hourglass_top·rate_review·assignment_return) 그 글꼴은 이
-          제품에 실려 있지 않다 — 그대로 두면 빈 네모가 나온다. 뜻이 같은
-          것으로 바꾼다. 없는 글꼴을 CDN 에서 받아 오지 않는다(폐쇄망).
-        */
-        DRAFT:      { nm: '초안',      cls: 'is-draft',     ico: 'bi-pencil-square' },
-        REVIEW_REQ: { nm: '검토 대기', cls: 'is-reviewreq', ico: 'bi-hourglass-split' },
-        IN_REVIEW:  { nm: '검토 중',   cls: 'is-inreview',  ico: 'bi-eye' },
-        SIGNED:     { nm: '서명 완료', cls: 'is-signed',    ico: 'bi-lock-fill' },
-        REJECTED:   { nm: '반려',      cls: 'is-rejected',  ico: 'bi-arrow-counterclockwise' }
+      /* 이 화면에는 로그인이 없다. 시연에서 점검자 역할을 대신 누른다. */
+      var gInsp = { statusCcd: 'WRITING', inspectors: [], tsa: null, rejectMemo: '' };
+
+      const WRITE_STATUS = {
+        WRITING:    { nm: '작성중',   cls: 'is-draft' },
+        INSPECTION: { nm: '점검중',   cls: 'is-inreview' },
+        COMPLETE:   { nm: '점검완료', cls: 'is-signed' },
+        REJECT:     { nm: '반려',     cls: 'is-rejected' }
       };
 
-      function stateChipHtml(cd) {
-        const st = NOTE_STATES[cd] || NOTE_STATES.DRAFT;
-        return '<span class="lims-note-state ' + st.cls + '">'
-          + '<i class="bi ' + st.ico + ' ico" aria-hidden="true"></i>'
-          + esc(st.nm) + '</span>';
+      const INSPCTN_STATUS = {
+        UNCONFIRM: { nm: '미확인', cls: 'is-unconfirm' },
+        APPROVAL:  { nm: '승인',   cls: 'is-approval' },
+        REJECT:    { nm: '반려',   cls: 'is-reject' }
+      };
+
+      function statusPill() {
+        const st = WRITE_STATUS[gInsp.statusCcd] || WRITE_STATUS.WRITING;
+        return '<span class="lims-note-state ' + st.cls + '">' + esc(st.nm) + '</span>';
       }
 
-      /* 기록의 마지막 줄 — 누가 언제 그렇게 했는지. 없으면 빈 문자열. */
-      function lastAct(cd) {
-        for (let i = gStateLog.length - 1; i >= 0; i--) {
-          if (gStateLog[i].act === cd) { return gStateLog[i]; }
-        }
-        return null;
+      /*
+        덱의 스테퍼. 점검 흐름을 네 단계로 편다.
+          1 작성 → 2 점검 요청 → 3 점검 진행 → 4 시점인증·완료
+        반려는 단계가 아니라 3에서 1로 돌아가는 사건이므로 스테퍼에는 넣지
+        않고 띠가 말한다.
+      */
+      function stepperHtml() {
+        const cd = gInsp.statusCcd;
+        const cur = cd === 'WRITING' ? 1 : cd === 'INSPECTION' ? 3 : cd === 'COMPLETE' ? 5 : 1;
+        const steps = ['작성', '점검 요청', '점검 진행', '시점인증 · 완료'];
+        let h = '<ol class="lims-note-steps">';
+        steps.forEach(function (nm, i) {
+          const n = i + 1;
+          /* cur 는 "몇 번째 단계까지 지났나" — WRITING=1(1만 현재),
+             INSPECTION=3(1·2 완료, 3 현재), COMPLETE=5(전부 완료) */
+          const state = n < cur ? 'done' : n === cur ? 'now' : 'todo';
+          h += '<li class="' + state + '">'
+            + '<span class="dot">' + (state === 'done'
+                ? '<i class="bi bi-check-lg" aria-hidden="true"></i>'
+                : n) + '</span>'
+            + '<span class="nm">' + nm + '</span></li>';
+        });
+        return h + '</ol>';
       }
 
       function paintNoteState() {
         const $bar = $('#noteStateBar');
         if (!$bar.length) { return; }
-        const cd = gNoteState;
-        const chip = stateChipHtml(cd);
+        const cd = gInsp.statusCcd;
         let tone = '';
-        let ico = 'bi-info-circle';
-        let msg = '';
-        let acts = '';
-        let block = false;
-        let why = '';
+        let body = '';
 
-        if (cd === 'DRAFT') {
-          tone = '';
-          ico = 'bi-pencil-square';
-          msg = chip + ' 작성 중입니다. 다 쓰고 나면 검토를 요청하세요.';
-          acts = '<button type="button" class="button-blue-full-sty01"'
-               + ' onclick="noteStateGo(\'REVIEW_REQ\');"><span>검토 요청</span></button>';
-        } else if (cd === 'REVIEW_REQ') {
-          tone = 'tone-warn';
-          ico = 'bi-hourglass-split';
-          const a = lastAct('REVIEW_REQ');
-          msg = chip + ' ' + (a ? esc(a.by) + '님이 ' + esc(a.at) + '에 검토를 요청했습니다.' : '검토를 기다리는 중입니다.')
-              + ' 검토자가 리뷰를 시작하면 본문은 잠기지 않지만 변경 이력이 남습니다.';
-          acts = '<button type="button" class="button-gray-line-sty01"'
-               + ' onclick="noteStateGo(\'DRAFT\');"><span>요청 취소</span></button>'
-               + '<button type="button" class="button-blue-full-sty01"'
-               + ' onclick="noteStateGo(\'IN_REVIEW\');"><span>리뷰 시작</span></button>';
-        } else if (cd === 'IN_REVIEW') {
+        if (cd === 'WRITING') {
+          body = '<div class="lims-note-statebar-msg">작성 중입니다. 다 쓰면 점검자를 지정해 점검을 요청하세요.</div>'
+            + '<div class="lims-note-statebar-acts">'
+            + '<button type="button" class="button-blue-full-sty01" onclick="openInspectorModal();">'
+            + '<span>점검 요청</span></button></div>';
+        } else if (cd === 'INSPECTION') {
           tone = 'tone-info';
-          ico = 'bi-eye';
-          const a = lastAct('IN_REVIEW');
-          msg = chip + ' ' + (a ? esc(a.by) + '님이 검토 중입니다.' : '검토 중입니다.')
-              + ' 승인하면 서명이 찍히고 본문은 더 이상 고칠 수 없습니다.';
-          /*
-            참고 설계의 [승인 및 서명] 은 초록 채움이다. 이 제품의 버튼 체계에
-            초록 채움이 없고, 하나 만들면 "주 동작 = 파랑" 규칙이 화면마다
-            달라진다. 초록은 상태 알약이 이미 내고 있으므로 버튼은 체계를
-            따른다 — 위험 동작(반려)만 빨강 계열.
-          */
-          acts = '<button type="button" class="button-remove-sty01"'
-               + ' onclick="noteStateReject();"><span>반려</span></button>'
-               + '<button type="button" class="button-blue-full-sty01"'
-               + ' onclick="noteStateGo(\'SIGNED\');"><span>승인 및 서명</span></button>';
-        } else if (cd === 'SIGNED') {
+          const total = gInsp.inspectors.length;
+          const done = gInsp.inspectors.filter(function (x) { return x.statusCcd !== 'UNCONFIRM'; }).length;
+          const anyActed = done > 0;
+          body = '<div class="lims-note-statebar-msg">점검 진행 중 — '
+            + '<strong>' + done + '/' + total + '</strong> 판정 완료. 전원 승인되면 시점인증이 찍히고 노트가 잠깁니다.</div>'
+            + '<div class="lims-note-statebar-acts">'
+            + (anyActed ? '' : '<button type="button" class="button-gray-line-sty01" onclick="cancelInspection();"><span>요청 철회</span></button>')
+            + '</div>'
+            + inspRowsHtml();
+        } else if (cd === 'COMPLETE') {
           tone = 'tone-ok';
-          ico = 'bi-lock-fill';
-          const a = lastAct('SIGNED');
-          msg = chip + ' ' + (a ? esc(a.by) + '님이 ' + esc(a.at) + '에 승인·서명했습니다.' : '서명이 완료되었습니다.')
-              + ' 본문은 잠겼습니다. 바로잡을 것이 있으면 원문을 두고 정정 기록을 덧붙이세요.';
-          acts = '<button type="button" class="button-gray-line-sty01"'
-               + ' onclick="openAmendModal();"><span>정정 기록 추가</span></button>';
-        } else if (cd === 'REJECTED') {
+          body = '<div class="lims-note-statebar-msg">점검 완료 — 시점인증 '
+            + '<span class="lims-mono">' + esc(gInsp.tsa ? gInsp.tsa.at : '') + '</span> · '
+            + '<span class="lims-mono">' + esc(gInsp.tsa ? gInsp.tsa.hash : '') + '</span><br>'
+            + '이 노트는 더 이상 수정할 수 없습니다. 바로잡을 것이 있으면 원문을 두고 정정 기록을 덧붙이세요.</div>'
+            + '<div class="lims-note-statebar-acts">'
+            + '<button type="button" class="button-gray-line-sty01" onclick="openAmendModal();"><span>정정 기록 추가</span></button>'
+            + '</div>';
+        } else if (cd === 'REJECT') {
           tone = 'tone-danger';
-          ico = 'bi-arrow-counterclockwise';
-          block = true;
-          const a = lastAct('REJECTED');
-          msg = chip + ' <strong>' + (a ? esc(a.by) + '님이 ' + esc(a.at) + '에 반려했습니다.' : '반려되었습니다.') + '</strong>';
-          why = a && a.memo ? esc(a.memo) : '사유가 기록되지 않았습니다.';
-          acts = '<button type="button" class="button-blue-full-sty01"'
-               + ' onclick="noteStateGo(\'REVIEW_REQ\');"><span>수정 후 재요청</span></button>';
+          const who = gInsp.inspectors.filter(function (x) { return x.statusCcd === 'REJECT'; })[0];
+          body = '<div class="lims-note-statebar-msg"><strong>'
+            + (who ? esc(who.userNm) + '님이 반려했습니다.' : '반려되었습니다.') + '</strong><br>'
+            + esc(gInsp.rejectMemo || '사유가 기록되지 않았습니다.') + '</div>'
+            + '<div class="lims-note-statebar-acts">'
+            + '<button type="button" class="button-blue-full-sty01" onclick="openInspectorModal();"><span>수정 후 재점검 요청</span></button>'
+            + '</div>';
         }
 
-        const icoHtml = '<i class="bi ' + ico + ' ico" aria-hidden="true"></i>';
-        $bar.removeClass('d-none tone-warn tone-info tone-ok tone-danger is-block')
-          .addClass(tone);
-        if (block) {
-          $bar.addClass('is-block').html(
-            '<div class="lims-note-statebar-head">' + icoHtml
-            + '<div class="lims-note-statebar-msg">' + msg + '</div></div>'
-            + '<p class="lims-note-statebar-why">' + why + '</p>'
-            + '<div class="lims-note-statebar-acts">' + acts + '</div>');
-        } else {
-          $bar.html(icoHtml
-            + '<div class="lims-note-statebar-msg">' + msg + '</div>'
-            + '<div class="lims-note-statebar-acts">' + acts + '</div>');
-        }
+        $bar.removeClass('d-none tone-warn tone-info tone-ok tone-danger')
+          .addClass(tone)
+          .html('<div class="lims-note-statebar-top">' + stepperHtml() + statusPill() + '</div>' + body);
 
         applyLock();
         paintAmends();
       }
 
       /*
-        서명 완료면 본문을 잠근다. 편집기를 없애지 않고 읽기 전용으로 둔다 —
-        없애면 "기록이 사라진" 것처럼 보이고, 서명된 노트에서 그건 최악이다.
+        점검완료(시점인증)면 본문을 잠근다. 편집기를 없애지 않고 읽기 전용으로
+        둔다 — 없애면 "기록이 사라진" 것처럼 보이고, 인증된 노트에서 그건
+        최악이다.
       */
       function applyLock() {
-        const locked = gNoteState === 'SIGNED';
+        const locked = gInsp.statusCcd === 'COMPLETE';
         $('.lims-note-main').toggleClass('lims-note-locked', locked);
         for (const key in gTextEditors) {
           const h = gTextEditors[key];
@@ -4861,46 +4858,142 @@
         $('.lims-note-canvas textarea, .lims-note-canvas input').prop('disabled', locked);
       }
 
-      /* 상태를 옮긴다. 판정은 목이 한다 — 실패하면 사유를 그대로 보여 준다. */
-      function noteStateGo(to, memo) {
-        ajaxPost(
-          '/api/lims/note/changeNoteState',
-          { noteMno: gNoteMno, toStateCd: to, memo: memo || '' },
-          null,
-          function (res) {
-            if (!res || !res.state) {
-              S2Util.toasts((res && res.message) || '상태를 바꾸지 못했습니다.', { class: 'Toast-bottom-web' });
-              return;
-            }
-            gNoteState = res.state;
-            gStateLog = asList(res.stateLog);
-            paintNoteState();
-            S2Util.toasts((NOTE_STATES[gNoteState] || {}).nm + ' 상태로 바꿨습니다.', { class: 'Toast-bottom-web' });
-          },
-          null,
-          function () { S2Util.toasts('상태를 바꾸지 못했습니다.', { class: 'Toast-bottom-web' }); }
-        );
+      /* 점검자별 진행 — 제품의 inspection-status-box 를 이 화면 문법으로. */
+      function inspRowsHtml() {
+        let h = '<ul class="lims-note-insplist">';
+        gInsp.inspectors.forEach(function (x) {
+          const st = INSPCTN_STATUS[x.statusCcd] || INSPCTN_STATUS.UNCONFIRM;
+          h += '<li>'
+            + '<span class="who">' + esc(x.userNm) + '</span>'
+            + '<span class="org">' + esc(x.orztNm || '') + '</span>'
+            + '<span class="lims-note-inspst ' + st.cls + '">' + st.nm + '</span>'
+            + (x.statusCcd === 'UNCONFIRM'
+              ? '<span class="act">'
+                + '<button type="button" class="button-gray-line-sty01" '
+                + 'onclick="inspectorDecide(' + x.userMno + ',\'REJECT\');"><span>반려</span></button>'
+                + '<button type="button" class="button-blue-full-sty01" '
+                + 'onclick="inspectorDecide(' + x.userMno + ',\'APPROVAL\');"><span>승인</span></button>'
+                + '</span>'
+              : '<span class="at lims-mono">' + esc(x.at || '') + '</span>')
+            + '</li>';
+        });
+        h += '</ul>'
+          + '<p class="lims-note-insphint">이 프로토타입에는 로그인이 없어 점검자 판정 버튼이 모두에게 보입니다. '
+          + '실제 제품에서는 각 점검자에게 자기 것만 보입니다.</p>';
+        return h;
       }
-      window.noteStateGo = noteStateGo;
 
-      /* 반려에는 사유가 있어야 한다. 사유 없는 반려는 받는 쪽이 할 일이 없다. */
-      function noteStateReject() {
-        bootbox.prompt({
-          title: '반려 사유',
-          message: '무엇을 어떻게 고쳐야 하는지 적어 주세요. 작성자에게 그대로 전달됩니다.',
-          inputType: 'textarea',
-          buttons: { confirm: { label: '반려' }, cancel: { label: '취소' } },
-          callback: function (memo) {
-            if (memo === null) { return; }
-            if (!String(memo).trim()) {
-              S2Util.toasts('반려 사유를 입력하세요.', { class: 'Toast-bottom-web' });
+      function reloadInspection(res) {
+        if (!res || !res.statusCcd) {
+          S2Util.toasts((res && res.message) || '처리하지 못했습니다.', { class: 'Toast-bottom-web' });
+          return false;
+        }
+        gInsp = { statusCcd: res.statusCcd, inspectors: asList(res.inspectors),
+                  tsa: res.tsa || null, rejectMemo: res.rejectMemo || '' };
+        paintNoteState();
+        return true;
+      }
+
+      /* ── 점검 요청: 점검자 지정 모달 ── */
+      function openInspectorModal() {
+        limsModal('modal-lims-note-inspector')
+          .draggable({ handle: '.modal-header' })
+          .modal('show')
+          .find('.modal-content')
+          .html(
+            '<div class="modal-header cursor-move">'
+            + '<p class="modal-title">점검 요청 — 점검자 지정</p>'
+            + '<span class="modal-sub">전원 승인 시 시점인증이 찍히고 노트가 잠깁니다. 반려 한 건이면 작성중으로 돌아갑니다.</span>'
+            + '</div>'
+            + '<div class="modal-body"><ul class="lims-note-picklist" id="inspectorPickList">'
+            + '<li class="lims-note-pickempty">프로젝트 멤버를 불러오는 중…</li>'
+            + '</ul></div>'
+            + '<div class="modal-footer">'
+            + '<button type="button" class="button-gray-line-sty02" data-bs-dismiss="modal"><span>취소</span></button>'
+            + '<button type="button" class="button-blue-full-sty02 button-cnfm"><span>점검 요청</span></button>'
+            + '</div>');
+
+        ajaxPost('/api/eln/member/getProjectMemberList',
+          { projectMno: gProjectMno || 301 }, null,
+          function (res) {
+            const rows = asList(res ? res.memberList : null);
+            const $ul = $('#inspectorPickList').empty();
+            if (!rows.length) {
+              $ul.append('<li class="lims-note-pickempty">지정할 수 있는 멤버가 없습니다.</li>');
               return;
             }
-            noteStateGo('REJECTED', String(memo).trim());
+            rows.forEach(function (m) {
+              $ul.append(
+                '<li><label>'
+                + '<input type="checkbox" value="' + m.userMno + '" />'
+                + '<span class="who">' + esc(m.userNm) + '</span>'
+                + '<span class="org">' + esc(m.orztNm || '') + ' · ' + esc(m.authGrpNm || '') + '</span>'
+                + '</label></li>');
+            });
+          });
+
+        $('#modal-lims-note-inspector').find('button.button-cnfm').off('click').on('click', function () {
+          const mnos = $('#inspectorPickList input:checked').map(function () { return this.value; }).get();
+          if (!mnos.length) {
+            S2Util.toasts('점검자를 한 명 이상 지정하세요.', { class: 'Toast-bottom-web' });
+            return;
           }
+          ajaxPost('/api/lims/note/requestInspection',
+            { noteMno: gNoteMno, inspectorMnos: mnos.join(',') }, null,
+            function (res) {
+              if (reloadInspection(res)) {
+                $('#modal-lims-note-inspector').modal('hide');
+                S2Util.toasts('점검을 요청했습니다.', { class: 'Toast-bottom-web' });
+              }
+            },
+            null,
+            function () { S2Util.toasts('점검 요청에 실패했습니다.', { class: 'Toast-bottom-web' }); });
         });
       }
-      window.noteStateReject = noteStateReject;
+      window.openInspectorModal = openInspectorModal;
+
+      function cancelInspection() {
+        ajaxPost('/api/lims/note/cancelInspection', { noteMno: gNoteMno }, null,
+          function (res) {
+            if (reloadInspection(res)) {
+              S2Util.toasts('점검 요청을 철회했습니다.', { class: 'Toast-bottom-web' });
+            }
+          },
+          null,
+          function () { S2Util.toasts('철회하지 못했습니다.', { class: 'Toast-bottom-web' }); });
+      }
+      window.cancelInspection = cancelInspection;
+
+      /* 점검자 판정. 반려는 사유가 본문이므로 반드시 받는다. */
+      function inspectorDecide(userMno, decision) {
+        function send(memo) {
+          ajaxPost('/api/lims/note/inspectorDecide',
+            { noteMno: gNoteMno, userMno: userMno, decision: decision, memo: memo || '' }, null,
+            function (res) { reloadInspection(res); },
+            null,
+            function () { S2Util.toasts('판정을 처리하지 못했습니다.', { class: 'Toast-bottom-web' }); });
+        }
+        if (decision === 'REJECT') {
+          bootbox.prompt({
+            title: '반려 사유',
+            message: '무엇을 어떻게 고쳐야 하는지 적어 주세요. 작성자에게 그대로 전달됩니다.',
+            inputType: 'textarea',
+            buttons: { confirm: { label: '반려' }, cancel: { label: '취소' } },
+            callback: function (memo) {
+              if (memo === null) { return; }
+              if (!String(memo).trim()) {
+                S2Util.toasts('반려 사유를 입력하세요.', { class: 'Toast-bottom-web' });
+                return;
+              }
+              send(String(memo).trim());
+            }
+          });
+        } else {
+          send('');
+        }
+      }
+      window.inspectorDecide = inspectorDecide;
+
 
       /* ---------------------------------------------------------------
          정정 기록
@@ -4976,7 +5069,7 @@
           .html(
             '<div class="modal-header cursor-move">'
             + '<p class="modal-title">정정 기록 추가</p>'
-            + '<span class="modal-sub">서명된 본문은 고치지 않습니다. 원문을 남긴 채 정정 내용을 덧붙입니다.</span>'
+            + '<span class="modal-sub">시점인증된 본문은 고치지 않습니다. 원문을 남긴 채 정정 내용을 덧붙입니다.</span>'
             + '</div>'
             + '<div class="modal-body">'
             + '<div class="lims-amend-form">'
@@ -4986,7 +5079,7 @@
             + '</div>'
             + '<div class="lims-amend-field is-mono">'
             + '<label for="amendOriginal">원문</label>'
-            + '<textarea id="amendOriginal" maxlength="500" placeholder="서명된 본문에 적힌 그대로"></textarea>'
+            + '<textarea id="amendOriginal" maxlength="500" placeholder="시점인증된 본문에 적힌 그대로"></textarea>'
             + '</div>'
             + '<div class="lims-amend-field is-mono">'
             + '<label for="amendNew">정정문</label>'
@@ -5027,7 +5120,6 @@
                 return;
               }
               gAmends = asList(res.amendList);
-              gStateLog = asList(res.stateLog);
               $('#modal-lims-note-amend').modal('hide');
               paintAmends();
               S2Util.toasts('정정 기록을 남겼습니다.', { class: 'Toast-bottom-web' });
@@ -5056,7 +5148,7 @@
         if (idx >= gBlocks.length) {
           if (submitYn === 'Y') {
             S2Util.toasts(
-              savedCnt + '개 블록을 저장했습니다. 결재·서명(Sign & Close) 워크플로는 이번 PoC 범위 밖이라 상태만 제출로 둡니다.',
+              savedCnt + '개 블록을 저장했습니다. 점검을 받으려면 본문 위의 [점검 요청]으로 점검자를 지정하세요.',
               { class: 'Toast-bottom-web' }
             );
           } else {
@@ -7453,6 +7545,16 @@
            data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered modal-lg">
           <div class="modal-pop modal-wrap-sty01 modal-content"></div>
+        </div>
+      </div>
+
+      
+      <div id="modal-lims-note-inspector"
+           class="modal fade"
+           data-bs-backdrop="static"
+           data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-pop modal-wrap-sty02 modal-content"></div>
         </div>
       </div>
 

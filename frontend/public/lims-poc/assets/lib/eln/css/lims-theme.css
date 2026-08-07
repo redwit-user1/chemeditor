@@ -6226,7 +6226,7 @@ td.lims-id,
 }
 
 /* ============================================================================
-   §47 노트 상태 — 초안 · 검토 대기 · 검토 중 · 서명 완료 · 반려
+   §47 노트 점검 — 작성중 · 점검중 · 점검완료(시점인증) · 반려
 
    지금까지 이 화면에는 상태가 없었다. 코드가 #noteStatusNm 에 글자를 쓰고
    있었는데 그 엘리먼트가 화면 어디에도 없다 — 아무 데도 안 나오는 값이었다.
@@ -6259,8 +6259,18 @@ td.lims-id,
 	line-height: 1;
 }
 
+/*
+  띠 안의 알약. 점검중 알약(파랑 약배경)이 tone-info 띠(같은 약배경) 위에
+  놓이면 형태가 사라진다 — 실제로 그랬다. 띠 안에서는 흰 바탕을 깐다.
+*/
+.lims-note-statebar .lims-note-state.is-draft,
+.lims-note-statebar .lims-note-state.is-inreview {
+	background: #fff;
+	box-shadow: inset 0 0 0 1px var(--ds-line);
+}
+
+/* 작성중 · 점검중 · 점검완료 · 반려 — WRITE_STATUS_CCD 그대로 */
 .lims-note-state.is-draft     { background: #e5f6fe; color: #026e9b; }
-.lims-note-state.is-reviewreq { background: #fff3d0; color: var(--ds-warn); }
 .lims-note-state.is-inreview  { background: var(--ds-primary-weak); color: var(--ds-primary); }
 .lims-note-state.is-signed    { padding: 2px 9px; background: var(--ds-ok-deep); color: #fff; }
 .lims-note-state.is-rejected  { padding: 2px 9px; background: var(--ds-danger); color: #fff; }
@@ -6279,9 +6289,6 @@ td.lims-id,
 /* ── 상태 띠 ───────────────────────────────────────────────────────────── */
 
 .lims-note-statebar {
-	display: flex;
-	align-items: center;
-	gap: var(--ds-3);
 	padding: var(--ds-3) var(--ds-4);
 	border-bottom: 1px solid var(--ds-line);
 	background: var(--ds-canvas);
@@ -6289,12 +6296,71 @@ td.lims-id,
 	color: var(--ds-ink-3);
 }
 
-.lims-note-statebar > .ico {
-	flex: none;
-	font-size: 18px;
-	line-height: 1;
+/* 스테퍼 줄 — 왼쪽 단계, 오른쪽 상태 알약 (덱의 OOS 카드 머리) */
+.lims-note-statebar-top {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--ds-4);
+	margin-bottom: var(--ds-3);
+}
+
+/*
+  덱의 스테퍼. 완료 = 초록 원 + 체크, 현재 = 파랑 원 + 숫자, 미래 = 회색 원.
+  단계 사이 선은 지나온 구간만 색을 받는다.
+*/
+.lims-note-steps {
+	display: flex;
+	flex: 1 1 auto;
+	align-items: center;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	min-width: 0;
+}
+
+.lims-note-steps li {
+	display: flex;
+	align-items: center;
+	gap: var(--ds-2);
+	white-space: nowrap;
+}
+
+.lims-note-steps li + li::before {
+	content: '';
+	display: block;
+	width: 34px;
+	height: 2px;
+	margin: 0 var(--ds-3);
+	background: var(--ds-line);
+}
+
+.lims-note-steps li.done + li::before { background: var(--ds-ok-dot); }
+.lims-note-steps li.now + li::before  { background: var(--ds-line); }
+
+.lims-note-steps .dot {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	background: var(--ds-line-soft);
+	font-size: var(--ds-fs-micro);
+	font-weight: 700;
+	/* 회색 원 위 숫자 — --ds-ink-4 는 이 바탕에서 4.37 로 미달(실측). 한 단계 진하게. */
+	color: var(--ds-ink-3);
+}
+
+.lims-note-steps .nm {
+	font-size: var(--ds-fs-small);
 	color: var(--ds-ink-4);
 }
+
+.lims-note-steps li.done .dot { background: var(--ds-ok-dot); color: #fff; }
+.lims-note-steps li.done .nm  { color: var(--ds-ok); font-weight: 700; }
+.lims-note-steps li.now .dot  { background: var(--ds-primary); color: #fff; }
+.lims-note-steps li.now .nm   { color: var(--ds-primary); font-weight: 700; }
 
 .lims-note-statebar-msg {
 	flex: 1 1 auto;
@@ -6318,32 +6384,99 @@ td.lims-id,
 .lims-note-statebar.tone-ok     { border-bottom-color: #a9e4c8; background: #f3fbf7; color: var(--ds-ok); }
 .lims-note-statebar.tone-danger { border-bottom-color: #f5c6c5; background: #fdeded; color: var(--ds-danger-text); }
 
-.lims-note-statebar.tone-warn > .ico   { color: var(--ds-warn); }
-.lims-note-statebar.tone-info > .ico   { color: var(--ds-primary); }
-.lims-note-statebar.tone-ok > .ico     { color: var(--ds-ok); }
-.lims-note-statebar.tone-danger > .ico { color: var(--ds-danger-text); }
+/* 스테퍼는 톤이 어두워져도 제 색을 유지한다 — 진행 정보가 톤에 묻히면 안 된다 */
 
-/*
-  반려는 사유가 본문이다. 한 줄에 이어 붙이면 사유가 문장 꼬리처럼 읽혀
-  넘어가므로 아이콘 폭만큼 들여 아래에 둔다.
-*/
-.lims-note-statebar.is-block {
-	display: block;
+.lims-note-statebar-msg { margin-bottom: var(--ds-2); }
+
+.lims-note-statebar-acts {
+	display: flex;
+	gap: var(--ds-2);
+	align-items: center;
 }
 
-.lims-note-statebar.is-block .lims-note-statebar-head {
+/* ── 점검자별 진행 (제품 inspection-status-box 의 이 화면 판) ─────────── */
+
+.lims-note-insplist {
+	margin: var(--ds-3) 0 0;
+	padding: 0;
+	list-style: none;
+	border: 1px solid var(--ds-line);
+	border-radius: var(--ds-radius);
+	background: #fff;
+}
+
+.lims-note-insplist li {
 	display: flex;
 	align-items: center;
+	gap: var(--ds-3);
+	padding: var(--ds-2) var(--ds-3);
+	border-bottom: 1px solid var(--ds-line-soft);
+	min-height: 44px;
+}
+
+.lims-note-insplist li:last-child { border-bottom: 0; }
+
+.lims-note-insplist .who { font-weight: 700; color: var(--ds-ink-2); }
+.lims-note-insplist .org { font-size: var(--ds-fs-micro); color: var(--ds-ink-4); }
+.lims-note-insplist .at  { margin-left: auto; font-size: var(--ds-fs-micro); color: var(--ds-ink-4); }
+
+.lims-note-insplist .act {
+	display: flex;
 	gap: var(--ds-2);
+	margin-left: auto;
 }
 
-.lims-note-statebar.is-block .lims-note-statebar-why {
-	margin: var(--ds-2) 0 0 26px;
-	color: var(--ds-ink-3);
+/* 점검자 상태 알약 — 제품 INSPCTN_STATUS_CCD 어휘 그대로 */
+.lims-note-inspst {
+	padding: 1px var(--ds-2);
+	border-radius: 999px;
+	font-size: var(--ds-fs-micro);
+	font-weight: 700;
 }
 
-.lims-note-statebar.is-block .lims-note-statebar-acts {
-	margin: var(--ds-3) 0 0 26px;
+.lims-note-inspst.is-unconfirm { background: var(--ds-line-soft); color: var(--ds-ink-3); }
+.lims-note-inspst.is-approval  { background: #f3fbf7; color: var(--ds-ok); }
+.lims-note-inspst.is-reject    { background: #fdeded; color: var(--ds-danger-text); }
+
+.lims-note-insphint {
+	margin: var(--ds-2) 0 0;
+	font-size: var(--ds-fs-micro);
+	color: var(--ds-ink-4);
+}
+
+/* ── 점검자 지정 모달의 멤버 목록 ─────────────────────────────────────── */
+
+.lims-note-picklist {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	max-height: 300px;
+	overflow-y: auto;
+	border: 1px solid var(--ds-line);
+	border-radius: var(--ds-radius);
+}
+
+.lims-note-picklist li { border-bottom: 1px solid var(--ds-line-soft); }
+.lims-note-picklist li:last-child { border-bottom: 0; }
+
+.lims-note-picklist label {
+	display: flex;
+	align-items: center;
+	gap: var(--ds-3);
+	margin: 0;
+	padding: var(--ds-2) var(--ds-3);
+	min-height: 44px;
+	cursor: pointer;
+}
+
+.lims-note-picklist label:hover { background: var(--ds-hover); }
+.lims-note-picklist .who { font-weight: 700; color: var(--ds-ink-2); }
+.lims-note-picklist .org { font-size: var(--ds-fs-micro); color: var(--ds-ink-4); }
+
+.lims-note-pickempty {
+	padding: var(--ds-4) var(--ds-3);
+	font-size: var(--ds-fs-small);
+	color: var(--ds-ink-4);
 }
 
 /* ── 서명 완료 뒤: 본문 잠금 ───────────────────────────────────────────── */
