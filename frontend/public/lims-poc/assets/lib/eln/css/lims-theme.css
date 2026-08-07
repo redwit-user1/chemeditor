@@ -7655,3 +7655,56 @@ div:has(> .guidetext-sty01):has(> .count-wrap) {
 	margin-top: 0;
 	margin-bottom: 0;
 }
+
+/* ── §46 보강 — 피커 행을 목업 1b 밀도로 ──────────────────────────────── */
+
+.lims-note-picker-row .ico {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: none;
+	width: 24px;
+	height: 24px;
+	border-radius: var(--ds-radius-sm);
+	background: var(--ds-hover);
+	color: var(--ds-ink-3);
+	font-size: 13px;
+}
+
+/* 멘션 종류별 아이콘 타일 — 본문 칩과 같은 계열색 */
+.lims-note-picker-row .ico.kind-REAGENT   { background: #fbf3e1; color: #8a5a00; }
+.lims-note-picker-row .ico.kind-SAMPLE    { background: var(--ds-primary-weak); color: var(--ds-primary); }
+.lims-note-picker-row .ico.kind-INSTRUMENT{ background: #eef8f7; color: var(--ds-ok); }
+.lims-note-picker-row .ico.kind-USER      { background: var(--ds-violet-weak); color: var(--ds-violet); }
+
+/* 파일럿 항목 — 보이되 되는 척하지 않는다 */
+.lims-note-picker-row.is-off .nm,
+.lims-note-picker-row.is-off .desc { color: var(--ds-ink-4); }
+.lims-note-picker-row.is-off .ico { opacity: 0.55; }
+
+.lims-note-picker-row .soon {
+	margin-left: auto;
+	padding: 1px var(--ds-2);
+	border-radius: var(--ds-radius-sm);
+	background: var(--ds-line-soft);
+	font-size: var(--ds-fs-micro);
+	color: var(--ds-ink-3);
+}
+
+/* 멘션 상태 글자 → 우측 상태 배지 (목업 1b) */
+.lims-note-picker-row .meta {
+	margin-left: auto;
+	padding: 1px var(--ds-2);
+	border-radius: var(--ds-radius-sm);
+	font-size: var(--ds-fs-micro);
+	font-weight: 700;
+	white-space: nowrap;
+}
+
+.lims-note-picker-row .meta.tone-ok      { background: #f3fbf7; color: var(--ds-ok); }
+.lims-note-picker-row .meta.tone-thing   { background: #f3fbf7; color: var(--ds-ok); }
+.lims-note-picker-row .meta.tone-warn    { background: #fff3d0; color: var(--ds-warn); }
+.lims-note-picker-row .meta.tone-danger  { background: #fdeded; color: var(--ds-danger-text); }
+.lims-note-picker-row .meta.tone-primary { background: var(--ds-primary-weak); color: var(--ds-primary); }
+.lims-note-picker-row .meta.tone-person  { background: var(--ds-violet-weak); color: var(--ds-violet); }
+.lims-note-picker-row .meta.tone-muted   { background: var(--ds-line-soft); color: var(--ds-ink-3); }

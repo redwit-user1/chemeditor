@@ -2988,10 +2988,20 @@
          떠 있는 판은 body 에 붙여 편집기 밖으로 나오게 한다(편집기 안에
          두면 스크롤·overflow 에 잘린다).
       --------------------------------------------------------------- */
+      /*
+        슬래시 카탈로그 — 참고 목업(1b)의 판을 따른다: 왼쪽 아이콘, 이름,
+        설명. 목업의 전체 카탈로그 중 이 PoC 가 실제로 넣을 수 있는 세 가지만
+        살아 있고, 나머지는 파일럿 항목으로 흐리게 보여 준다 — 무엇이 더
+        오는지가 판 자체에서 보이되, 되는 척은 하지 않는다.
+      */
       const SLASH_ITEMS = [
-        { g: '기본',   cd: 'TEXT',      nm: '본문',   desc: '일반 서술 문단' },
-        { g: '연구',   cd: 'STRUCTURE', nm: '구조',   desc: '구조를 넣으면 분자식·분자량이 계산된다' },
-        { g: '연구',   cd: 'TABLE',     nm: '반응 시약 표', desc: '당량·mmol 자동 계산' }
+        { g: '기본', cd: 'TEXT',      ico: 'bi-text-paragraph', nm: '본문',        desc: '일반 서술 문단' },
+        { g: '연구', cd: 'STRUCTURE', ico: 'bi-hexagon',        nm: '구조',        desc: '넣는 즉시 분자식·분자량 계산' },
+        { g: '연구', cd: 'TABLE',     ico: 'bi-table',          nm: '반응 시약 표', desc: '당량·mmol 자동 계산' },
+        { g: '파일럿', cd: null, ico: 'bi-check2-square', nm: '프로토콜',   desc: 'SOP 단계 체크리스트' },
+        { g: '파일럿', cd: null, ico: 'bi-grid-3x3',      nm: '결과표(스키마)', desc: '규격 대조·판정 자동' },
+        { g: '파일럿', cd: null, ico: 'bi-calculator',    nm: '수식·계산',  desc: '값이 바뀌면 다시 계산' },
+        { g: '파일럿', cd: null, ico: 'bi-paperclip',     nm: '파일',       desc: '원시 데이터 첨부(해시 고정)' }
       ];
 
       let gPickerHost = null;      /* 판이 열려 있는 편집 영역 */
@@ -3103,10 +3113,14 @@
           return !kw || (it.nm + it.desc).toLowerCase().indexOf(kw) >= 0;
         });
         paintRows(rows, function (it, on) {
-          return '<div class="lims-note-picker-row' + (on ? ' is-on' : '') + '" data-i="'
-            + gPickerRows.indexOf(it) + '">'
+          const off = !it.cd;
+          return '<div class="lims-note-picker-row' + (on ? ' is-on' : '') + (off ? ' is-off' : '')
+            + '" data-i="' + gPickerRows.indexOf(it) + '">'
+            + '<span class="ico"><i class="bi ' + it.ico + '" aria-hidden="true"></i></span>'
             + '<span class="nm">' + esc(it.nm) + '</span>'
-            + '<span class="desc">' + esc(it.desc) + '</span></div>';
+            + '<span class="desc">' + esc(it.desc) + '</span>'
+            + (off ? '<span class="soon">파일럿</span>' : '')
+            + '</div>';
         });
       }
 
@@ -3138,9 +3152,11 @@
         }).map(function (m) {
           return $.extend({ g: kindLabelOf(m.kind) }, m);
         });
+        const KIND_ICO = { REAGENT: 'bi-eyedropper', SAMPLE: 'bi-droplet', INSTRUMENT: 'bi-cpu', USER: 'bi-person' };
         paintRows(rows, function (m, on) {
           return '<div class="lims-note-picker-row is-mention' + (on ? ' is-on' : '')
             + '" data-i="' + gPickerRows.indexOf(m) + '">'
+            + '<span class="ico kind-' + esc(m.kind) + '"><i class="bi ' + (KIND_ICO[m.kind] || 'bi-at') + '" aria-hidden="true"></i></span>'
             + '<span class="mid">' + esc(m.id || '') + '</span>'
             + '<span class="nm">' + esc(m.nm) + '</span>'
             + '<span class="meta tone-' + esc(m.tone) + '">' + esc(m.meta) + '</span></div>';
@@ -3158,6 +3174,16 @@
         const row = gPickerRows[gPickerAt];
         if (!row) { closePicker(); return; }
         const host = gPickerHost;
+        if (gPickerMode === 'slash' && row && !row.cd) {
+          /* 넣지 않는 항목이라도 방아쇠 글자는 지운다 — "/프로토" 가 본문에 남으면
+             안내를 못 본 사람에게는 고장으로 읽힌다 */
+          const trig0 = '/' + gPickerQuery;
+          eatTrigger(host, '/');
+          scrubTrigger(host, trig0);
+          S2Util.toasts(row.nm + ' 블록은 파일럿 항목입니다 — 이 PoC 에는 없습니다.', { class: 'Toast-bottom-web' });
+          closePicker();
+          return;
+        }
         if (gPickerMode === 'slash') {
           const trig = '/' + gPickerQuery;
           eatTrigger(host, '/');
