@@ -2484,448 +2484,99 @@
     <script type="text/javascript">
       /*<![CDATA[*/
 
-      /* 구조 입력기 임베드 URL. 비어 있으면 구조 검색으로 진입할 수 없다. */
-      const gChemEmbedUrl = '/editor';
-
-      /* 현재 화면에 그려진 카드들. 썸네일 렌더링에 MOL블록이 필요해 목록과 함께 보관한다. */
-      let gCards = [];
-      /* 재검색 시 이전 렌더의 늦은 응답이 화면을 덮어쓰지 않도록 하는 시퀀스 */
-      let gRenderSeq = 0;
-      /* 구조 렌더링 서비스 상태: '' (미확인) | 'OK' | 'DOWN' */
-      let gDepictState = '';
-      let gThumbQueue = [];
-      /* 구조검색 질의(MOL블록). 값이 있으면 화면은 구조검색 결과 모드다. */
-      let gStructureQuery = '';
-
-      /* 구조 렌더링 1건의 응답 대기 한계(ms) */
-      const DEPICT_TIMEOUT_MS = 8000;
-
-      function initPage() {
-        if (!gChemEmbedUrl) {
-          /*
-            알려진 결함: lims.chem.embed.url 이 비어 있으면 /lims/chem/chemPopup 은
-            "관리자에게 문의하세요" 만 표시한다. 깨진 팝업을 띄우는 대신 버튼을 잠그고
-            사유를 화면에 남긴다.
-          */
-          $('#btnStructureSearch').prop('disabled', true);
-          $('#structureSearchGuide').text('구조 입력기 주소(lims.chem.embed.url)가 설정되지 않아 구조 검색을 사용할 수 없습니다. 관리자에게 문의하세요.');
-        }
-        getCompoundList();
-      }
-
-      /* ---------------------------------------------------------------
-         텍스트 검색 — 등록번호 / 분자식
-      --------------------------------------------------------------- */
-      function getCompoundList(pageNo) {
-        gStructureQuery = '';
-
-        ajaxPost(
-          '/api/lims/compound/compoundList',
-          {
-            schRegId: $('#schRegId').val().trim(),
-            searchKeyword: $('#searchKeyword').val().trim(),
-            schMolblockYn: 'Y',
-            pageNo: pageNo ? pageNo : 1,
-            pageUnit: 12
-          },
-          '데이터요청중입니다.잠시만 기다려주세요.',
-          function (res) {
-            const info = res.compoundListInfo;
-            const hasRow = info && S2Util.isJSON(info.dataList) && Object.keys(info.dataList).length;
-
-            renderCards(hasRow ? info.dataList : null, '등록된 화합물이 없습니다.');
-            $('#compoundTotalCnt').text(S2Util.comma(info && info.totalRecordCount ? info.totalRecordCount : 0));
-            $('.compound-paging-box').html(hasRow ? S2Util.pagination(info, 'getCompoundList') : '');
-            $('#structureResultBar').addClass('d-none');
-          }
-        );
-      }
-
-      /* ---------------------------------------------------------------
-         구조 검색 — 구조 입력기 팝업이 되돌려준 구조로 Chem Service 를 조회한다.
-         구조 입력기(embed 계약)는 SMILES 가 아니라 MOL블록(molfile)을 내려주며,
-         searchByStructure 는 MOL블록/SMILES 를 모두 받는다.
-      --------------------------------------------------------------- */
-      function openStructureSearch() {
-        if (!gChemEmbedUrl) {
-          return;
-        }
-        window.open(
-          coreCommon.getUrl('/lims/chem/chemPopup?searchYn=Y'),
-          'limsChemSearch',
-          'width=1180,height=880,scrollbars=yes,resizable=yes'
-        );
-      }
-
-      /*
-        구조 입력기 팝업이 호출하는 진입점이다. (opener 측 전역 함수)
-        structure: MOL블록, formula: 표시용 분자식
-      */
-      window.limsApplyStructureQuery = function (structure, formula) {
-        if (!structure) {
-          S2Util.toasts('전달된 구조가 없습니다.', { class: 'Toast-bottom-web' });
-          return;
-        }
-        gStructureQuery = structure;
-        $('#structureQueryFormula').text(formula || '구조 질의');
-        searchByStructure();
+      const DATA_TP = {
+        CDF: '크로마토그램', XLSX: '정량표', IMG: '이미지', CSV: 'CSV'
       };
 
-      function searchByStructure() {
-        if (!gStructureQuery) {
-          return;
-        }
+      const INTEG = {
+        FIXED:    { nm: '해시 고정', cls: 'ok' },
+        RECHECK:  { nm: '점검',      cls: 'warn' },
+        UNLINKED: { nm: '미연동',    cls: 'danger' }
+      };
+
+      let gFilter = 'ALL';
+
+      function initPage() {
+        getDataList();
+        /* 필터 알약 — 종류별 건수는 목록 응답이 준다 */
+        $(document).on('click', '.lims-data-filter button', function () {
+          gFilter = $(this).attr('data-tp');
+          $('.lims-data-filter button').removeClass('active');
+          $(this).addClass('active');
+          getDataList();
+        });
+        $('#schDataKeyword').on('keydown', function (ev) {
+          if (ev.key === 'Enter') { getDataList(); }
+        });
+      }
+
+      function getDataList() {
         ajaxPost(
-          '/api/lims/compound/searchByStructure',
-          {
-            query: gStructureQuery,
-            limit: 100
-          },
-          '데이터요청중입니다.잠시만 기다려주세요.',
-          function (res) {
-            /*
-              응답의 배열은 core.request.js 의 nullToEmpty 가 인덱스를 키로 갖는 객체로
-              바꿔 내려준다. length 는 undefined 이므로 Object.keys 로 센다.
-            */
-            const list = res.compoundList && S2Util.isJSON(res.compoundList)
-              && Object.keys(res.compoundList).length ? res.compoundList : null;
-
-            /*
-              구조검색은 DB 가 아니라 Chem Service 인덱스를 조회한 뒤 REG_ID 로 DB 를 롤업한다.
-              등록 시 인덱스 반영에 실패한 화합물(registerCompound 응답의 indexSyncYn='N')은
-              DB 에는 있어도 이 결과에 나타나지 않는다. 결과가 비었을 때 "없음" 으로만 끝내면
-              인덱스 미반영을 데이터 없음으로 오인하므로 사유를 함께 표시한다.
-            */
-            renderCards(
-              list,
-              '이 구조와 일치하는 화합물이 구조 인덱스에 없습니다. 등록 직후 인덱스 반영에 실패한 화합물(구조 검색 미반영)은 여기에 나타나지 않으니, 등록번호로도 확인해 보세요.'
-            );
-            $('#structureResultCnt').text(list ? S2Util.comma(Object.keys(list).length) : 0);
-            $('#structureResultBar').removeClass('d-none');
-            $('.compound-paging-box').empty();
-          }
-        );
-      }
-
-      function clearStructureSearch() {
-        gStructureQuery = '';
-        $('#structureResultBar').addClass('d-none');
-        getCompoundList();
-      }
-
-      /* ---------------------------------------------------------------
-         결과 카드 그리드
-      --------------------------------------------------------------- */
-      function renderCards(dataList, emptyMessage) {
-        const seq = ++gRenderSeq;
-        const $grid = $('#compoundGrid').empty();
-        gCards = [];
-        gThumbQueue = [];
-
-        if (!dataList) {
-          $grid.html(
-            '<div class="lims-compound-empty"><div class="no-data"><div class="no-data-back"></div>'
-            + `<span>${emptyMessage}</span></div></div>`
-          );
-          return;
-        }
-
-        for (const idx in dataList) {
-          const compound = dataList[idx];
-          const cardIdx = gCards.length;
-
-          gCards.push({ regId: compound.regId, molblock: compound.molblock });
-
-          $grid.append(
-            S2Util.s2Template('template_compound_card', {
-              cardIdx: cardIdx,
-              regId: compound.regId,
-              molFormulaDisp: compound.molFormula || '-',
-              molWtDisp: compound.molWt != null && compound.molWt !== '' ? compound.molWt : '-',
-              noteCntDisp: compound.noteCnt != null && compound.noteCnt !== '' ? compound.noteCnt : 0
-            })
-          );
-
-          if (compound.molblock) {
-            gThumbQueue.push(cardIdx);
-          } else {
-            setThumbPlaceholder(cardIdx, '구조 없음');
-          }
-        }
-
-        nextThumb(seq);
-      }
-
-      /* ---------------------------------------------------------------
-         구조 썸네일 — 한 번에 1건씩 순차 요청한다.
-         카드 수만큼 동시에 던지면 렌더링 서비스 장애 시 카드 수만큼 오류 대화상자가 뜬다.
-      --------------------------------------------------------------- */
-      function nextThumb(seq) {
-        if (seq !== gRenderSeq) {
-          return;
-        }
-        if (gDepictState === 'DOWN') {
-          markThumbsUnavailable();
-          return;
-        }
-        if (!gThumbQueue.length) {
-          return;
-        }
-
-        const cardIdx = gThumbQueue.shift();
-        const card = gCards[cardIdx];
-        let settled = false;
-
-        /*
-          core.request.js 의 singleton 경로는 error 핸들러에서 콜백에 넘길 msg 변수를
-          선언하지 않아 errorCallBack 이 실제로 실행되지는 않는다. 다만 콜백을 넘기면
-          기본 오류 대화상자는 뜨지 않으므로 알림 폭주는 막힌다. 실제 복구는 아래
-          watchdog 타이머가 담당한다.
-        */
-        const watchdog = setTimeout(function () {
-          if (settled) {
-            return;
-          }
-          settled = true;
-          if (seq === gRenderSeq) {
-            markThumbsUnavailable();
-          }
-        }, DEPICT_TIMEOUT_MS);
-
-        const finish = function (svg) {
-          if (settled) {
-            return;
-          }
-          settled = true;
-          clearTimeout(watchdog);
-          if (seq !== gRenderSeq) {
-            return;
-          }
-
-          if (svg) {
-            gDepictState = 'OK';
-            paintThumb(cardIdx, svg);
-            nextThumb(seq);
-            return;
-          }
-
-          if (gDepictState === 'OK') {
-            // 서비스는 살아 있으므로 이 구조 하나만 그리지 못한 것이다.
-            setThumbPlaceholder(cardIdx, '구조 미리보기 없음');
-            nextThumb(seq);
-            return;
-          }
-
-          // 첫 요청부터 실패했다면 서비스 자체가 응답하지 않는 것으로 보고 남은 카드를 마감한다.
-          setThumbPlaceholder(cardIdx, '구조 미리보기 없음');
-          markThumbsUnavailable();
-        };
-
-        ajaxPostSingleton(
-          '/api/lims/chem/depict',
-          { structure: card.molblock },
+          '/api/lims/data/dataList',
+          { schTp: gFilter, schKeyword: $('#schDataKeyword').val() },
           null,
           function (res) {
-            finish(extractSvg(res));
-          },
-          function () {
-            finish(null);
-          },
-          function () {
-            finish(null);
-          }
-        );
-      }
-
-      /* depict 응답에서 SVG 문자열을 꺼낸다. 응답 형태가 달라도 조용히 실패하지 않도록 넓게 받는다. */
-      function extractSvg(res) {
-        const depict = res ? res.depict : null;
-        if (!depict) {
-          return null;
-        }
-        if (typeof depict === 'string') {
-          return depict.indexOf('<svg') >= 0 ? depict : null;
-        }
-        const candidate = depict.svg || depict.svgText || depict.image || depict.data;
-        return typeof candidate === 'string' && candidate.indexOf('<svg') >= 0 ? candidate : null;
-      }
-
-      /*
-        SVG 는 innerHTML 로 붙이지 않는다. DOMParser 로 image/svg+xml 파싱해
-        문서 요소만 옮겨 담으면 스크립트가 실행될 여지가 없다.
-      */
-      function paintThumb(cardIdx, svg) {
-        const holder = document.getElementById('compoundThumb' + cardIdx);
-        if (!holder) {
-          return;
-        }
-        const doc = new DOMParser().parseFromString(svg, 'image/svg+xml');
-        const root = doc.documentElement;
-        if (!root || root.nodeName.toLowerCase() !== 'svg') {
-          setThumbPlaceholder(cardIdx, '구조 미리보기 없음');
-          return;
-        }
-        root.removeAttribute('width');
-        root.removeAttribute('height');
-        holder.innerHTML = '';
-        holder.appendChild(document.importNode(root, true));
-        $(holder).removeClass('is-empty');
-      }
-
-      function setThumbPlaceholder(cardIdx, message) {
-        $('#compoundThumb' + cardIdx).addClass('is-empty').text(message);
-      }
-
-      /* 렌더링 서비스 미가용 — 남은 카드를 모두 대체 표기로 마감하고 사유를 한 번만 안내한다. */
-      function markThumbsUnavailable() {
-        gDepictState = 'DOWN';
-        while (gThumbQueue.length) {
-          setThumbPlaceholder(gThumbQueue.shift(), '구조 미리보기 없음');
-        }
-        $('#depictNotice').removeClass('d-none');
-      }
-
-      /* ---------------------------------------------------------------
-         화합물 상세 모달 (840x560)
-      --------------------------------------------------------------- */
-      function openModalCompoundDetail(cardIdx) {
-        const regId = gCards[cardIdx] ? gCards[cardIdx].regId : '';
-        if (!regId) {
-          return;
-        }
-
-        ajaxPost('/api/lims/compound/compoundDetail', { regId: regId },
-          '데이터요청중입니다.잠시만 기다려주세요.', function (res) {
-            const compound = res.compound;
-            if (!compound || !compound.regId) {
-              S2Util.toasts('화합물 정보를 찾을 수 없습니다.', { class: 'Toast-bottom-web' });
+            const rows = asList(res ? res.dataList : null);
+            paintCounts(res && res.counts ? res.counts : {});
+            const $tb = $('#dataListBody').empty();
+            $('#dataTotal').text(res && res.totalCnt != null ? res.totalCnt : rows.length);
+            if (!rows.length) {
+              $tb.append('<tr><td colspan="7" class="lims-empty">조건에 맞는 데이터가 없습니다.</td></tr>');
               return;
             }
-
-            let noteRows = '';
-            if (res.noteList && S2Util.isJSON(res.noteList) && Object.keys(res.noteList).length) {
-              for (const idx in res.noteList) {
-                const note = res.noteList[idx];
-                noteRows += `
-                  <tr>
-                    <td class="text-left">${note.noteNm || '(삭제된 노트)'}</td>
-                    <td class="text-left">${note.linkUserNm || '-'}</td>
-                    <td class="text-left">${note.linkDtStr || '-'}</td>
-                  </tr>`;
-              }
-            } else {
-              noteRows = '<tr class="emptymessage"><td class="text-center" colspan="3">연계된 연구노트가 없습니다.</td></tr>';
-            }
-
-            $('#modal-lims-compound-detail')
-              .draggable({ handle: '.modal-header' })
-              .modal('show')
-              .find('.modal-content')
-              .html(`
-                <div class="modal-header cursor-move">
-                  <p class="modal-title">화합물 상세</p>
-                  <span class="modal-sub" title="${compound.regId}">${compound.regId}</span>
-                </div>
-                <div class="modal-body">
-                  <div class="lims-compound-detail">
-                    <div class="lims-compound-detail-structure is-empty" id="compoundDetailStructure">구조를 불러오는 중입니다</div>
-                    <div class="lims-compound-detail-props">
-                      <div class="lims-prop-bar">
-                        <div class="prop-item"><span class="prop-label">분자식</span><span class="prop-value">${compound.molFormula || '-'}</span></div>
-                        <div class="prop-item"><span class="prop-label">분자량</span><span class="prop-value">${compound.molWt !== '' && compound.molWt != null ? compound.molWt : '-'}</span></div>
-                      </div>
-                      <div class="lims-prop-bar ma-t10">
-                        <div class="prop-item"><span class="prop-label">Exact Mass</span><span class="prop-value">${compound.exactMolWt !== '' && compound.exactMolWt != null ? compound.exactMolWt : '-'}</span></div>
-                        <div class="prop-item"><span class="prop-label">등록번호</span><span class="prop-value">${compound.regId}</span></div>
-                      </div>
-                      <div class="flex-sty04 ma-t10">
-                        <div class="guidetext-sty01">분자식·분자량은 등록 시 RDKit 이 계산해 저장한 값이며, 구조는 MOL 블록 원본입니다.</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <p class="sub-title-sty01 ma-t20">연계 연구노트</p>
-                  <div class="core-table ma-t10">
-                    <div class="table-responsive core-table-div">
-                      <table class="table table-sty01">
-                        <thead>
-                          <tr class="text-nowrap">
-                            <th scope="col" class="text-left">연구노트</th>
-                            <th scope="col" class="text-left">연계자</th>
-                            <th scope="col" class="text-left">연계일</th>
-                          </tr>
-                        </thead>
-                        <tbody>${noteRows}</tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-                <div class="modal-footer">
-                  <div class="button-wrap02">
-                    <button type="button" class="button-cncl-sty01 button-cncl" data-bs-dismiss="modal">닫기</button>
-                  </div>
-                </div>
-              `);
-
-            loadDetailStructure(compound.molblock);
-          });
-      }
-
-      function loadDetailStructure(molblock) {
-        const holder = document.getElementById('compoundDetailStructure');
-        if (!holder) {
-          return;
-        }
-        if (!molblock) {
-          $(holder).addClass('is-empty').text('구조 정보가 없습니다');
-          return;
-        }
-        if (gDepictState === 'DOWN') {
-          $(holder).addClass('is-empty').text('구조 미리보기를 사용할 수 없습니다');
-          return;
-        }
-
-        let settled = false;
-        const fallback = function () {
-          if (settled) {
-            return;
-          }
-          settled = true;
-          $(holder).addClass('is-empty').text('구조 미리보기를 사용할 수 없습니다');
-        };
-        const watchdog = setTimeout(fallback, DEPICT_TIMEOUT_MS);
-
-        ajaxPostSingleton(
-          '/api/lims/chem/depict',
-          { structure: molblock },
+            rows.forEach(function (d) {
+              const integ = INTEG[d.integrityCcd] || INTEG.FIXED;
+              const link = d.noteMno
+                ? '<a href="/lims/note/noteWrite" class="lims-data-note">' + esc(d.noteNm || ('노트 ' + d.noteMno)) + '</a>'
+                  + (d.sampleNo ? '<span class="sub lims-id">' + esc(d.sampleNo) + '</span>' : '')
+                : '<span class="lims-data-nolink"><i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i> 미연동 — 노트에 연동 필요</span>';
+              $tb.append(
+                '<tr>'
+                + '<td class="lims-id">' + esc(d.dataId) + '</td>'
+                + '<td class="text-left"><span class="lims-data-file">'
+                +   '<i class="bi ' + fileIcon(d.tpCcd) + '" aria-hidden="true"></i> '
+                +   esc(d.fileNm) + '</span>'
+                +   '<span class="lims-data-tp">' + (DATA_TP[d.tpCcd] || d.tpCcd) + '</span></td>'
+                + '<td>' + esc(d.collectCcdNm || '자동') + '</td>'
+                + '<td class="lims-id">' + esc(d.instrumentCd || '-') + '</td>'
+                + '<td class="text-left">' + link + '</td>'
+                + '<td class="text-right lims-mono">' + esc(d.sizeDisp || '-') + '</td>'
+                + '<td><span class="lims-integ is-' + integ.cls + '">' + integ.nm + '</span></td>'
+                + '</tr>');
+            });
+          },
           null,
-          function (res) {
-            if (settled) {
-              return;
-            }
-            settled = true;
-            clearTimeout(watchdog);
-
-            const svg = extractSvg(res);
-            if (!svg) {
-              $(holder).addClass('is-empty').text('구조 미리보기를 사용할 수 없습니다');
-              return;
-            }
-            const doc = new DOMParser().parseFromString(svg, 'image/svg+xml');
-            const root = doc.documentElement;
-            if (!root || root.nodeName.toLowerCase() !== 'svg') {
-              $(holder).addClass('is-empty').text('구조 미리보기를 사용할 수 없습니다');
-              return;
-            }
-            root.removeAttribute('width');
-            root.removeAttribute('height');
-            holder.innerHTML = '';
-            holder.appendChild(document.importNode(root, true));
-            $(holder).removeClass('is-empty');
-          },
-          fallback,
-          fallback
+          function () {
+            $('#dataListBody').html('<tr><td colspan="7" class="lims-empty">데이터 목록을 불러오지 못했습니다.</td></tr>');
+          }
         );
+      }
+
+      /* 목 응답은 배열이 {0:..} 객체로 올 수 있다 — 항상 배열로 편다 */
+      function asList(v) {
+        if (Array.isArray(v)) { return v; }
+        if (!v || typeof v !== 'object') { return []; }
+        return Object.keys(v).map(function (k) { return v[k]; });
+      }
+
+      function fileIcon(tp) {
+        return tp === 'XLSX' ? 'bi-file-earmark-spreadsheet'
+          : tp === 'IMG' ? 'bi-file-earmark-image'
+          : tp === 'CSV' ? 'bi-filetype-csv' : 'bi-graph-up';
+      }
+
+      function paintCounts(c) {
+        $('.lims-data-filter button').each(function () {
+          const tp = $(this).attr('data-tp');
+          const n = c[tp] != null ? c[tp] : 0;
+          $(this).find('.cnt').text(n);
+        });
+      }
+
+      function esc(v) {
+        return String(v == null ? '' : v)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
       }
 
       /*]]*/
@@ -5590,7 +5241,7 @@
                   <a class="menuCd LIMS_REAGENT"
                      href="reagent_list.html">시약</a>
                 
-                  <a class="menuCd LIMS_COMPOUND active"
+                  <a class="menuCd LIMS_COMPOUND"
                      href="compound_list.html">화합물</a>
                 
                   <a class="menuCd LIMS_CHEM"
@@ -5602,7 +5253,7 @@
                   <a class="menuCd LIMS_TEST"
                      href="test_list.html">시험 의뢰</a>
                 
-                  <a class="menuCd LIMS_DATA"
+                  <a class="menuCd LIMS_DATA active"
                      href="data_list.html">데이터</a>
                 
                   <a class="menuCd LIMS_REVIEW"
@@ -6091,106 +5742,53 @@
           <!-- body 영역  -->
           <div class="content-wrapper">
     <div id="main" class="lims-page">
-      <header class="lims-head">
-        <div class="lims-head-main">
-          <nav class="lims-crumb">
-            <a href="index.html">LIMS</a>
-            <span class="sep">/</span>
-            <span>화합물 라이브러리</span>
-          </nav>
-          <h1 class="lims-title">화합물 라이브러리</h1>
-        </div>
-      </header>
-
-      <div class="ma-tm20">
-        
-        <div class="target-info-tab lims-filter flex-sty04 ma-t30">
-          <div class="tabs-box"></div>
-          <div class="flex-sty02 search-box">
-            <input type="text"
-                   id="schRegId"
-                   maxlength="50"
-                   placeholder="등록번호(정확히 일치)"
-                   sch-enter="getCompoundList"
-                   class="input-write-sty02-line w-150 ma-r10" aria-label="등록번호(정확히 일치)" />
-            <div class="select-wrap">
-              <input type="text"
-                     id="searchKeyword"
-                     maxlength="255"
-                     placeholder="등록번호 · 분자식"
-                     sch-enter="getCompoundList"
-                     class="input-write-sty02-line w-250" aria-label="등록번호 · 분자식" />
-              <a href="#"
-                 class="c-pointer" aria-label="검색"
-                 onclick="getCompoundList(); return false;">
-                <i class="fa far fa-m fa-search small"></i>
-              </a>
-            </div>
-            <button class="button-blue-line-sty01 ma-l10"
-                    id="btnStructureSearch"
-                    onclick="openStructureSearch();"><span>구조 검색</span></button>
-          </div>
-        </div>
-
-        <div class="flex-sty04 ma-t10">
-          <div class="guidetext-sty01"
-               id="structureSearchGuide">구조를 그리거나 붙여넣으면 부분구조가 일치하는 화합물을 찾습니다.</div>
-        </div>
-
-        
-        <div class="lims-compound-resultbar ma-t20 d-none"
-             id="structureResultBar">
-          <span class="lims-state normal">구조 검색</span>
-          <span class="lims-compound-resultbar-text">
-            <b id="structureQueryFormula">구조 질의</b> · <span id="structureResultCnt">0</span>건
-          </span>
-          <button class="button-gray-line-sty01"
-                  onclick="clearStructureSearch();"><span>전체 목록으로</span></button>
-        </div>
-
-        
-        <div class="flex-sty04 ma-t10 d-none"
-             id="depictNotice">
-          <div class="guidetext-sty01">구조 렌더링 서비스에 연결할 수 없어 구조 미리보기를 표시하지 못했습니다. 등록번호·분자식·분자량은 정상 조회됩니다.</div>
-        </div>
-
-        <div class="flex-sty04 ma-t20">
-          <div class="guidetext-sty01">전체 <b id="compoundTotalCnt">0</b>건</div>
-        </div>
-
-        <div class="lims-compound-grid ma-t10"
-             id="compoundGrid"></div>
-
-        <div class="compound-paging-box paging-box text-center ma-t20"></div>
-      </div>
-
-      
-      <div id="modal-lims-compound-detail"
-           class="modal fade"
-           data-bs-backdrop="static"
-           data-bs-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-          <div class="modal-pop modal-wrap-sty01 modal-content"></div>
+      <div class="flex-sty04 ma-b20">
+        <h2 class="lims-title">연구 데이터 <span class="title_cnt">(<span id="dataTotal">0</span>)</span></h2>
+        <div class="button-wrap">
+          <button type="button" class="button-gray-line-sty01"
+                  onclick="limsScopeOut('장비 연동 설정');"><span>장비 연동 설정</span></button>
+          <button type="button" class="button-blue-full-sty01"
+                  onclick="limsScopeOut('데이터 업로드');"><span>데이터 업로드</span></button>
         </div>
       </div>
 
-      
-      <script id="template_compound_card"
-              type="text/template">
-        <div class="lims-compound-card" onclick="openModalCompoundDetail('{{=cardIdx}}');">
-          <div class="lims-compound-thumb is-empty" id="compoundThumb{{=cardIdx}}">구조를 불러오는 중입니다</div>
-          <div class="lims-compound-regid lims-mono">{{=regId}}</div>
-          <div class="lims-compound-meta">
-            <span class="lims-compound-meta-label">분자식</span>
-            <span class="lims-compound-meta-value">{{=molFormulaDisp}}</span>
+      <div class="lims-card">
+        <div class="lims-card-head">
+          <div class="lims-data-filter">
+            <button type="button" class="active" data-tp="ALL">전체 <span class="cnt">0</span></button>
+            <button type="button" data-tp="CDF">크로마토그램 <span class="cnt">0</span></button>
+            <button type="button" data-tp="XLSX">정량표 <span class="cnt">0</span></button>
+            <button type="button" data-tp="IMG">이미지 <span class="cnt">0</span></button>
+            <button type="button" data-tp="CSV">CSV <span class="cnt">0</span></button>
           </div>
-          <div class="lims-compound-meta">
-            <span class="lims-compound-meta-label">분자량</span>
-            <span class="lims-compound-meta-value">{{=molWtDisp}}</span>
+          <div class="lims-card-tools">
+            <input type="text" id="schDataKeyword" class="input-write-sty02-line"
+                   placeholder="데이터 ID·파일명·장비 검색" title="데이터 검색" />
           </div>
-          <div class="lims-compound-notecnt">연구노트 {{=noteCntDisp}}건</div>
         </div>
-      </script>
+        <div class="lims-card-body">
+          <table class="core-table lims-table">
+            <colgroup>
+              <col style="width: 120px" /><col /><col style="width: 80px" />
+              <col style="width: 110px" /><col style="width: 260px" />
+              <col style="width: 90px" /><col style="width: 110px" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th>데이터 ID</th><th class="text-left">파일명 · 유형</th><th>수집</th>
+                <th>출처 장비</th><th class="text-left">연동 (노트 · 시료)</th>
+                <th class="text-right">크기</th><th>무결성</th>
+              </tr>
+            </thead>
+            <tbody id="dataListBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <p class="lims-data-footnote">
+        무결성은 수집 시점의 SHA-256 해시로 고정됩니다. 미연동 데이터는 노트에
+        첨부되기 전까지 결과의 근거로 쓸 수 없습니다.
+      </p>
     </div>
   </div>
         </div>

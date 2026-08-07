@@ -823,6 +823,7 @@
     METHODS: METHODS, SPECS: SPECS, INSTRUMENTS: INSTRUMENTS, CALS: CALS,
     LOCATIONS: LOCATIONS, REAGENTS: REAGENTS, CONTAINERS: CONTAINERS,
     NOTE_STATE_LOG: NOTE_STATE_LOG, NOTE_AMENDMENTS: NOTE_AMENDMENTS,
+    DATA_FILES: DATA_FILES,
     NOTE_INSPECTORS: NOTE_INSPECTION.inspectors
   };
 
@@ -1512,6 +1513,79 @@
       return { newNoteMno: note.noteMno, noteMno: note.noteMno, projectNm: project.projectNm };
     },
 
+    /*
+      대시보드 요약 — 화면에 박는 숫자 없이 전부 배열에서 센다.
+      시연 중 승인·반려·시료 등록이 일어나면 다음 진입에서 수가 따라 바뀐다.
+    */
+    '/api/lims/dashboard/summary': function () {
+      var signWait = RESULTS.filter(function (r) {
+        var rv = findReview(r.resultMno);
+        return r.resultStatusCcd === 'SUBMITTED' || (rv && rv.reviewStatusCcd === 'PENDING');
+      }).length;
+      var todaySamples = SAMPLES.filter(function (x) {
+        return String(x.receiveDt || '').indexOf('2026-07') === 0;
+      }).length;
+      var writingNotes = ELN_NOTES.filter(function (n) {
+        return (n.writeStatusCcd || 'WRITING') === 'WRITING';
+      }).length;
+      var instCheck = INSTRUMENTS.filter(function (i) {
+        return i.calState === 'EXPIRED' || i.calState === 'SOON' || i.statusCcd === 'CAL_DUE';
+      }).length;
+
+      var projRows = liveProjects().map(function (pj) {
+        var notes = ELN_NOTES.filter(function (n) { return n.projectMno === pj.projectMno; });
+        var w = notes.filter(function (n) { return (n.writeStatusCcd || 'WRITING') === 'WRITING'; }).length;
+        var i = notes.filter(function (n) { return n.writeStatusCcd === 'INSPECTION'; }).length;
+        var d = notes.filter(function (n) { return n.writeStatusCcd === 'COMPLETE'; }).length;
+        return { projectMno: pj.projectMno, projectNm: pj.projectNm,
+                 writing: w, inspecting: i, done: d, total: notes.length };
+      });
+
+      /* 최근 활동 — 상태 기록·검토·시약 사용을 시간 역순으로 섞는다 */
+      var acts = [];
+      NOTE_STATE_LOG.slice(-4).reverse().forEach(function (l) {
+        var what = l.act === 'INSPECTION_REQ' ? '점검을 요청했습니다'
+          : l.act === 'INSPECTOR_APPROVAL' ? '점검을 승인했습니다'
+          : l.act === 'INSPECTOR_REJECT' ? '반려했습니다'
+          : l.act === 'TSA' ? '시점인증이 찍혔습니다'
+          : l.act === 'AMEND' ? '정정 기록을 남겼습니다' : '노트를 작성했습니다';
+        acts.push({ at: l.at, txt: (l.by || '') + '님이 ' + what,
+          tone: l.act === 'INSPECTOR_REJECT' ? 'danger' : l.act === 'TSA' ? 'ok' : 'info',
+          ico: l.act === 'TSA' ? 'bi-lock-fill' : l.act === 'INSPECTOR_REJECT' ? 'bi-arrow-counterclockwise' : 'bi-pencil-square' });
+      });
+      NOTE_USAGE.slice(-2).reverse().forEach(function (u) {
+        acts.push({ at: u.txnDtStr || '', txt: (u.txnUserNm || '') + '님이 ' + (u.reagentNm || '시약') + ' 사용을 기록했습니다',
+          tone: 'info', ico: 'bi-eyedropper' });
+      });
+      acts = acts.slice(0, 6);
+
+      return {
+        stats: {
+          signWait: signWait, signWaitSub: '검토자 승인 대기',
+          todaySamples: todaySamples, todaySamplesSub: '이번 달 접수 기준',
+          writingNotes: writingNotes, writingNotesSub: '전 프로젝트 합계',
+          instCheck: instCheck, instCheckSub: '교정 만료·임박'
+        },
+        projRows: projRows,
+        activities: acts
+      };
+    },
+
+    '/api/lims/data/dataList': function (p) {
+      var kw = String(p.schKeyword || '').trim().toLowerCase();
+      var tp = String(p.schTp || 'ALL');
+      var rows = DATA_FILES.filter(function (d) {
+        if (tp !== 'ALL' && d.tpCcd !== tp) { return false; }
+        if (!kw) { return true; }
+        return [d.dataId, d.fileNm, d.instrumentCd, d.noteNm].some(function (v) {
+          return v && String(v).toLowerCase().indexOf(kw) >= 0;
+        });
+      });
+      var counts = { ALL: DATA_FILES.length };
+      DATA_FILES.forEach(function (d) { counts[d.tpCcd] = (counts[d.tpCcd] || 0) + 1; });
+      return { dataList: rows, totalCnt: rows.length, counts: counts };
+    },
+
     '/api/lims/note/noteDetail': function () {
       return {
         note: NOTE,
@@ -1659,6 +1733,43 @@
       if (at < 0) { NOTE_BLOCKS.push(block); } else { NOTE_BLOCKS[at] = block; }
       NOTE_BLOCKS.sort(function (a, b) { return a.blockOrd - b.blockOrd; });
       return { blockMno: block.blockMno, noteMno: NOTE.noteMno };
+    }
+  };
+
+  /* ---------------------------------------------------------------
+     연구 데이터 대장 — 참고 목업(연구 데이터 화면)의 표를 그대로 채운다.
+
+     OOS 덱이 참조하는 원자료 DAT-2026-0312 가 여기 있다. 장비가 뱉은
+     파일이 노트·시료와 연동되고 해시로 고정된다는 것을 목록 한 화면으로
+     보여주는 것이 목적이다.
+  --------------------------------------------------------------- */
+  var DATA_FILES = [
+    { dataMno: 1, dataId: 'DAT-2026-0312', fileNm: 'chromatogram_0417_run2.cdf', tpCcd: 'CDF',
+      collectCcdNm: '자동', instrumentCd: 'HPLC-03', noteMno: 9101,
+      noteNm: 'KM00003710 합성 batch A', sampleNo: 'SMP-20260712-001',
+      sizeDisp: '2.4 MB', integrityCcd: 'FIXED' },
+    { dataMno: 2, dataId: 'DAT-2026-0308', fileNm: 'bca_quant_batch3.xlsx', tpCcd: 'XLSX',
+      collectCcdNm: '수동', instrumentCd: 'PLT-RD-01', noteMno: 9101,
+      noteNm: 'KM00003710 합성 batch A', sampleNo: 'SMP-20260712-001',
+      sizeDisp: '86 KB', integrityCcd: 'RECHECK' },
+    { dataMno: 3, dataId: 'DAT-2026-0305', fileNm: 'gel_sds_page_batch3.png', tpCcd: 'IMG',
+      collectCcdNm: '수동', instrumentCd: null, noteMno: 9101,
+      noteNm: 'KM00003710 합성 batch A', sampleNo: null,
+      sizeDisp: '1.1 MB', integrityCcd: 'FIXED' },
+    { dataMno: 4, dataId: 'DAT-2026-0296', fileNm: 'chromatogram_unknown_run6.cdf', tpCcd: 'CDF',
+      collectCcdNm: '자동', instrumentCd: 'HPLC-03', noteMno: null,
+      noteNm: null, sampleNo: null,
+      sizeDisp: '2.2 MB', integrityCcd: 'UNLINKED' },
+    { dataMno: 5, dataId: 'DAT-2026-0290', fileNm: 'purity_trend_2026H1.csv', tpCcd: 'CSV',
+      collectCcdNm: '자동', instrumentCd: 'HPLC-03', noteMno: 9101,
+      noteNm: 'KM00003710 합성 batch A', sampleNo: null,
+      sizeDisp: '12 KB', integrityCcd: 'FIXED' }
+  ];
+
+  /* 범위 밖 동작 — 눌렀을 때 사실을 말한다(기존 관례). 화면들이 공유한다. */
+  window.limsScopeOut = function (what) {
+    if (window.S2Util && S2Util.toasts) {
+      S2Util.toasts((what || '이 기능') + '은(는) 이번 PoC 범위 밖입니다.', { class: 'Toast-bottom-web' });
     }
   };
 
@@ -2302,6 +2413,48 @@
     installChemEditorStub();
     installInlineEditorSwap();
     installOutOfScopeNotice();
+    installSidebarDecor();
+  }
+
+  /* ---------------------------------------------------------------
+     사이드바 장식 — 목업의 배지·하단 사용자 칩.
+
+     배지는 살아 있는 수다. 시험 의뢰 = 진행중 의뢰, 서명 대기 = 판정 대기
+     결과. 목록이 바뀌면(승인/반려) 다음 화면 진입에서 수가 따라 바뀐다.
+  --------------------------------------------------------------- */
+  function installSidebarDecor() {
+    var nav = document.querySelector('.sidenav2');
+    if (!nav) { return; }
+
+    function badge(cd, n) {
+      var a = nav.querySelector('a.menuCd.' + cd);
+      if (!a || !n) { return; }
+      var b = document.createElement('span');
+      b.className = 'lims-nav-badge';
+      b.textContent = n > 99 ? '99+' : String(n);
+      a.appendChild(b);
+    }
+    try {
+      badge('LIMS_TEST', REQUESTS.filter(function (r) {
+        return r.reqstStatusCcd !== 'DONE' && r.reqstStatusCcd !== 'CANCEL';
+      }).length);
+    } catch (e) { /* 픽스처 없는 화면 — 배지 생략 */ }
+    try {
+      badge('LIMS_REVIEW', RESULTS.filter(function (r) {
+        var rv = findReview(r.resultMno);
+        return r.resultStatusCcd === 'SUBMITTED' || (rv && rv.reviewStatusCcd === 'PENDING');
+      }).length);
+    } catch (e) { /* 픽스처 없는 화면 — 배지 생략 */ }
+
+    /* 하단 사용자 칩 */
+    var chip = document.createElement('div');
+    chip.className = 'lims-nav-user';
+    chip.innerHTML = '<span class="avatar">김</span>'
+      + '<span class="who"><span class="nm">김연구</span>'
+      + '<span class="role">책임자 · 신약개발지원센터</span></span>'
+      + '<button type="button" class="gear" aria-label="설정" '
+      + 'onclick="limsScopeOut(\'설정\')"></button>';
+    nav.appendChild(chip);
   }
 
   /* ---------------------------------------------------------------

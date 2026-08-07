@@ -118,8 +118,8 @@
 	   정본과 다르게 둔 곳은 세 군데뿐이고, 아래에 이유를 적었다.
 	   ========================================================================= */
 	--ds-primary: #1761de;        /* primary-500 — 버튼 채움 · 활성 테두리 */
-	--ds-primary-dark: #1557cc;   /* 눌린 파랑·파랑 글자. 정본 #186CE8 은 캔버스(#ECEFF1)에서
-	                                 4.18 로 미달(실측) — 같은 계열에서 5.57 나오는 값으로 */
+	--ds-primary-dark: #186ce8;   /* primary-600 — 홀버·파랑 글자. 캔버스가 정본(#F8F9FA)으로
+	                                 돌아와 4.5 를 다시 넘는다 */
 	--ds-primary-weak: #edf3fd;   /* primary-100 — 선택/홀버 바탕, info 바탕 */
 	--ds-primary-deep: #08204a;   /* GNB·사이드바 바탕 */
 
@@ -139,8 +139,7 @@
 	   흰 5.18 · 캔버스 4.91 · 홀버 4.65 (전부 실측).
 	   정본의 coolgray-600 과 700 사이에 있고 같은 색상각이다.
 	   장식(구분점·아이콘)에는 정본 값을 --ds-ink-soft 로 따로 남겨 둔다. */
-	--ds-ink-4: #61686f;         /* 흐린 글자. 캔버스가 #ECEFF1 로 깊어지며 #666E76 이 4.48 로
-	                                 미달(실측) — 전 바닥(캔버스 4.89 · 홀버 5.08 · 흰 5.65) 통과값으로 */
+	--ds-ink-4: #666e76;
 	--ds-ink-soft: #868e96;       /* coolgray-600 — 글자 아닌 곳(점·구분·비활성 아이콘).
 	                                 흰 바탕 11px 에서 3.32:1 이다. 글자에 쓰지 않는다 —
 	                                 §45·§46 에서 다섯 곳을 이 값으로 썼다가 실측에서 걸렸다. */
@@ -149,10 +148,9 @@
 	--ds-line-2: #ced4da;         /* coolgray-400 — 강한 테두리 */
 	--ds-line-soft: #e9ecef;      /* coolgray-200 — 옅은 채움·표 행 */
 	--ds-surface: #ffffff;
-	/* 참고 HTML(GOONO_LIMS_Ops) 실측 rgb(236,239,241). 50 단계보다 한 단계
-	   깊어야 흰 카드가 바닥에서 뜬다 — 이전의 #F8F9FA 는 카드와 거의 같은
-	   밝기라 화면이 통째로 흰 판으로 읽혔다. */
-	--ds-canvas: #eceff1;
+	/* 정본 --bg-app = coolgray-50. 덱 페이지의 #ECEFF1 은 문서 배경이지
+	   앱 캔버스가 아니다 — colors_and_type.css 가 --bg-app 을 50 으로 못박는다. */
+	--ds-canvas: #f8f9fa;
 	--ds-hover: #f1f3f5;          /* coolgray-100 */
 
 	/* 뜻 색.
@@ -545,16 +543,16 @@ body,
    4) 셸 — 사이드바
 --------------------------------------------------------------------------- */
 /*
-  사이드바는 밝은 테마다. 참고 HTML(ELN Editor 1a)의 왼쪽 패널이 흰 바탕에
-  옅은 경계선이고 GOONO_LIMS_Ops 덱 전체가 밝은 테마다. 한 번 딥네이비로
-  갔다가(제품 style.css 원형이 남색이라 그쪽을 정본으로 오판) "참고 HTML 과
-  전혀 다르다"는 지적을 받고 되돌렸다 — 정본은 첨부된 참고 HTML 이다.
-  아이콘 mask 화(-w/-d 두 벌 불필요)와 목록 PNG 불릿 제거는 유지한다.
+  사이드바는 딥네이비다. 두 근거가 일치한다 —
+    · 정본 토큰: colors_and_type.css 의 --bg-gnb: var(--color-primary-deep)
+    · 재단이 보낸 목업 스크린샷(대시보드·연구 데이터 화면)의 사이드바
+  ELN Editor 덱의 흰 왼쪽 패널은 GNB 가 아니라 에디터의 노트북 트리다.
+  이걸 GNB 로 오독해 라이트로 되돌렸었다(왕복 두 번의 원인).
 */
 .sidenav2 {
 	width: var(--ds-shell);
-	background: var(--ds-surface) !important;
-	border-right: 1px solid var(--ds-line);
+	background: var(--ds-primary-deep) !important;
+	border-right: 0;
 	box-shadow: none;
 }
 
@@ -593,7 +591,7 @@ body,
 .sidenav2 .top-logo img {
 	height: 20px;
 	width: auto;
-	filter: brightness(0) saturate(100%) invert(9%) sepia(12%) saturate(1200%) hue-rotate(190deg);
+	filter: brightness(0) invert(1);
 }
 
 .sidenav2 .ma-l24,
@@ -685,7 +683,7 @@ body,
 	margin: 1px 0;
 	padding: 0 var(--ds-2) 0 var(--ds-8);
 	border-radius: var(--ds-radius);
-	color: var(--ds-ink-3) !important;
+	color: rgba(255, 255, 255, 0.78) !important;
 	font-size: var(--ds-fs-body);
 	font-weight: var(--ds-fw-normal);
 	line-height: var(--ds-lh-tight);
@@ -718,14 +716,14 @@ body,
 }
 
 .nav-menu a.menuCd:hover {
-	background-color: var(--ds-hover);
-	color: var(--ds-ink) !important;
+	background-color: rgba(255, 255, 255, 0.08);
+	color: #fff !important;
 }
 
-/* 활성 = 옅은 파랑 바탕 + 파랑 글자 (참고 1a 의 선택 항목) */
+/* 활성 = primary 채움 + 흰 글자 (목업의 선택 항목) */
 .nav-menu a.menuCd.active {
-	background-color: var(--ds-primary-weak);
-	color: var(--ds-primary) !important;
+	background-color: var(--ds-primary);
+	color: #fff !important;
 	font-weight: var(--ds-fw-medium);
 }
 
@@ -744,6 +742,84 @@ body,
 .nav-menu a.menuCd.MAIN_NOTE_INFO { --nav-ico: url(../img/lucide/file-check-d.svg); }
 .nav-menu a.menuCd.OPMS_RESEARCH_SUPPORT { --nav-ico: url(../img/lucide/life-buoy-d.svg); }
 .nav-menu a.menuCd.MAIN_COMPLETED_PROJECT { --nav-ico: url(../img/lucide/circle-check-d.svg); }
+.nav-menu a.menuCd.LIMS_NOTES { --nav-ico: url(../img/lucide/notebook-d.svg); }
+.nav-menu a.menuCd.LIMS_PROJECT { --nav-ico: url(../img/lucide/folder-d.svg); }
+.nav-menu a.menuCd.LIMS_DATA { --nav-ico: url(../img/lucide/archive-d.svg); }
+.nav-menu a.menuCd.LIMS_REVIEW { --nav-ico: url(../img/lucide/file-check-d.svg); }
+/* history 는 -d 판이 따로 없다 — mask 는 모양만 쓰므로 아무 판이나 된다 */
+.nav-menu a.menuCd.AUDIT_TRAIL { --nav-ico: url(../img/lucide/history.svg); }
+
+/* 메뉴 배지 — 목업의 시험 의뢰·서명 대기 오른쪽 숫자 */
+.nav-menu a.menuCd .lims-nav-badge {
+	margin-left: auto;
+	min-width: 20px;
+	padding: 0 var(--ds-1);
+	border-radius: var(--ds-pill);
+	background: var(--ds-primary);
+	color: #fff;
+	font-size: var(--ds-fs-micro);
+	font-weight: 700;
+	line-height: 20px;
+	text-align: center;
+}
+
+.nav-menu a.menuCd.active .lims-nav-badge {
+	background: #fff;
+	color: var(--ds-primary);
+}
+
+/* ── 하단 사용자 칩 (목업 좌하단) ─────────────────────────────────────── */
+
+.lims-nav-user {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	display: flex;
+	align-items: center;
+	gap: var(--ds-2);
+	padding: var(--ds-3) var(--ds-4);
+	border-top: 1px solid rgba(255, 255, 255, 0.14);
+	color: rgba(255, 255, 255, 0.85);
+}
+
+.lims-nav-user .avatar {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.16);
+	font-size: var(--ds-fs-small);
+	font-weight: 700;
+	color: #fff;
+}
+
+.lims-nav-user .who { flex: 1 1 auto; min-width: 0; }
+.lims-nav-user .who .nm { display: block; font-size: var(--ds-fs-small); font-weight: 700; color: #fff; }
+.lims-nav-user .who .role {
+	display: block;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	font-size: var(--ds-fs-micro);
+	color: rgba(255, 255, 255, 0.62);
+}
+
+.lims-nav-user .gear {
+	flex: none;
+	width: var(--ds-control-sm);
+	height: var(--ds-control-sm);
+	border: 0;
+	background-color: rgba(255, 255, 255, 0.62);
+	-webkit-mask: url(../img/lucide/filter.svg) center / 16px 16px no-repeat;
+	mask: url(../img/lucide/filter.svg) center / 16px 16px no-repeat;
+}
+
+/* 목업의 사이드바에는 프로젝트·노트 바로가기 목록이 없다 — 메뉴(프로젝트·
+   연구노트)가 그 역할을 한다. 같은 것이 두 자리면 어느 쪽이 정본인지 모른다. */
+.sidenav2 .nav-list-wrap { display: none !important; }
 
 /* --- 사이드바 목록 구획 --- */
 .sidenav2 .nav-list-wrap {
@@ -6679,4 +6755,276 @@ td.lims-id,
 	background: #fdeded;
 	font-size: var(--ds-fs-small);
 	color: var(--ds-ink-3);
+}
+
+/* ============================================================================
+   §50 대시보드 · 연구 데이터 — 참고 목업 화면
+
+   대시보드: 인사 배너 → 상태 수치 4 → 프로젝트별 현황(좌) + 활동·공지(우).
+   데이터: 필터 알약 + 대장 표 + 무결성 배지.
+   ========================================================================= */
+
+/* ── 인사 배너 ─────────────────────────────────────────────────────────── */
+
+.lims-dash-hello {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: var(--ds-5);
+	padding: var(--ds-5) var(--ds-6);
+	border: 1px solid var(--ds-line-2);
+	border-radius: var(--ds-radius-lg);
+	background: var(--ds-surface);
+	box-shadow: var(--ds-shadow);
+	overflow: hidden;
+}
+
+.lims-dash-hello .wrap01 { flex: 1 1 auto; min-width: 0; }
+
+.lims-dash-hello .title01 {
+	font-size: var(--ds-fs-title);
+	font-weight: 700;
+	letter-spacing: -0.03em;
+	color: var(--ds-ink);
+}
+
+.lims-dash-hello .txt02 {
+	margin: var(--ds-2) 0 0;
+	font-size: var(--ds-fs-body);
+	color: var(--ds-ink-3);
+}
+
+.lims-dash-hello .acts { flex: none; }
+
+/* 마스코트(card-profile 배경그림)는 배너 오른쪽에 그대로 세운다 */
+.lims-dash-hello .wrap02 {
+	flex: none;
+	width: 120px;
+	height: 96px;
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+/* ── 상태 수치 4 ───────────────────────────────────────────────────────── */
+
+.lims-dash-stats {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: var(--ds-4);
+	margin-top: var(--ds-4);
+}
+
+@media (max-width: 1100px) {
+	.lims-dash-stats { grid-template-columns: repeat(2, 1fr); }
+}
+
+.lims-dash-stat {
+	display: grid;
+	grid-template-columns: auto auto 1fr;
+	grid-template-areas: 'lb lb lb' 'num unit .' 'sub sub sub';
+	align-items: baseline;
+	column-gap: var(--ds-1);
+	padding: var(--ds-4) var(--ds-5);
+	border: 1px solid var(--ds-line-2);
+	border-radius: var(--ds-radius-lg);
+	background: var(--ds-surface);
+	box-shadow: var(--ds-shadow);
+	text-decoration: none;
+	transition: border-color var(--ds-dur) var(--ds-ease), box-shadow var(--ds-dur) var(--ds-ease);
+}
+
+.lims-dash-stat:hover {
+	border-color: var(--ds-primary);
+	box-shadow: var(--ds-shadow-pop);
+	text-decoration: none;
+}
+
+.lims-dash-stat .lb {
+	grid-area: lb;
+	display: flex;
+	align-items: center;
+	gap: var(--ds-2);
+	margin-bottom: var(--ds-2);
+	font-size: var(--ds-fs-small);
+	font-weight: 700;
+	color: var(--ds-ink-3);
+}
+
+.lims-dash-stat .lb .bi { color: var(--ds-primary); font-size: 15px; }
+
+.lims-dash-stat .num {
+	grid-area: num;
+	font-size: 28px;
+	font-weight: 700;
+	line-height: 1.2;
+	letter-spacing: -0.02em;
+	color: var(--ds-ink);
+	font-variant-numeric: tabular-nums;
+}
+
+.lims-dash-stat .unit {
+	grid-area: unit;
+	font-size: var(--ds-fs-small);
+	color: var(--ds-ink-4);
+}
+
+.lims-dash-stat .sub {
+	grid-area: sub;
+	margin-top: var(--ds-1);
+	font-size: var(--ds-fs-micro);
+	color: var(--ds-ink-4);
+}
+
+/* ── 아래 두 칸 ────────────────────────────────────────────────────────── */
+
+.lims-dash-cols {
+	display: grid;
+	grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+	gap: var(--ds-4);
+	align-items: start;
+	margin-top: var(--ds-4);
+}
+
+@media (max-width: 1100px) {
+	.lims-dash-cols { grid-template-columns: 1fr; }
+}
+
+.lims-dash-right { display: flex; flex-direction: column; gap: var(--ds-4); }
+.lims-dash-right .lims-card { margin-top: 0 !important; }
+.lims-dash-cols > .lims-card { margin-top: 0 !important; }
+
+.lims-dash-proj .num {
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+	color: var(--ds-primary-dark);
+	font-weight: 700;
+}
+
+.lims-dash-proj .num.total { color: var(--ds-ink); }
+
+.lims-dash-proj a.lims-dash-proj,
+a.lims-dash-proj { color: var(--ds-ink-2); font-weight: 500; }
+a.lims-dash-proj:hover { color: var(--ds-primary); }
+
+/* 활동 피드 */
+.lims-dash-activity {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.lims-dash-activity li {
+	display: flex;
+	align-items: baseline;
+	gap: var(--ds-2);
+	padding: var(--ds-2) var(--ds-4);
+	border-bottom: 1px solid var(--ds-line-soft);
+	font-size: var(--ds-fs-small);
+	color: var(--ds-ink-3);
+}
+
+.lims-dash-activity li:last-child { border-bottom: 0; }
+.lims-dash-activity .bi { flex: none; font-size: 13px; }
+.lims-dash-activity li.tone-info .bi { color: var(--ds-primary); }
+.lims-dash-activity li.tone-ok .bi { color: var(--ds-ok); }
+.lims-dash-activity li.tone-danger .bi { color: var(--ds-danger-text); }
+.lims-dash-activity .txt { flex: 1 1 auto; min-width: 0; }
+.lims-dash-activity .at { flex: none; font-size: var(--ds-fs-micro); color: var(--ds-ink-4); }
+
+/* 공지 */
+.lims-dash-notice { margin: 0; padding: 0; list-style: none; }
+
+.lims-dash-notice li {
+	padding: var(--ds-2) var(--ds-4);
+	border-bottom: 1px solid var(--ds-line-soft);
+	font-size: var(--ds-fs-small);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.lims-dash-notice li:last-child { border-bottom: 0; }
+.lims-dash-notice a { color: var(--ds-ink-3); }
+.lims-dash-notice a:hover { color: var(--ds-primary); }
+
+.lims-new {
+	display: inline-block;
+	min-width: 16px;
+	border-radius: var(--ds-radius-sm);
+	background: var(--ds-warn-dot);
+	color: #fff;
+	font-size: var(--ds-fs-micro);
+	font-weight: 700;
+	text-align: center;
+}
+
+/* ── 연구 데이터 ───────────────────────────────────────────────────────── */
+
+.lims-data-filter {
+	display: flex;
+	gap: var(--ds-2);
+}
+
+.lims-data-filter button {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--ds-1);
+	height: var(--ds-control-sm);
+	padding: 0 var(--ds-3);
+	border: 1px solid var(--ds-line);
+	border-radius: var(--ds-pill);
+	background: var(--ds-surface);
+	font-size: var(--ds-fs-small);
+	color: var(--ds-ink-3);
+}
+
+.lims-data-filter button .cnt { font-size: var(--ds-fs-micro); color: var(--ds-ink-4); }
+.lims-data-filter button:hover { background: var(--ds-hover); }
+
+.lims-data-filter button.active {
+	border-color: var(--ds-primary);
+	background: var(--ds-primary-weak);
+	color: var(--ds-primary);
+	font-weight: 700;
+}
+
+.lims-data-filter button.active .cnt { color: var(--ds-primary); }
+
+.lims-data-file { font-weight: 500; color: var(--ds-ink-2); }
+.lims-data-file .bi { margin-right: 2px; color: var(--ds-ink-4); }
+
+.lims-data-tp {
+	margin-left: var(--ds-2);
+	padding: 1px var(--ds-2);
+	border-radius: var(--ds-radius-sm);
+	background: var(--ds-line-soft);
+	font-size: var(--ds-fs-micro);
+	color: var(--ds-ink-3);
+}
+
+.lims-data-note { color: var(--ds-primary-dark); }
+.lims-data-note + .sub { display: block; font-size: var(--ds-fs-micro); color: var(--ds-ink-4); }
+
+.lims-data-nolink {
+	font-size: var(--ds-fs-small);
+	color: var(--ds-warn);
+}
+
+.lims-integ {
+	display: inline-block;
+	padding: 2px var(--ds-2);
+	border-radius: var(--ds-radius-sm);
+	font-size: var(--ds-fs-micro);
+	font-weight: 700;
+}
+
+.lims-integ.is-ok     { background: #f3fbf7; color: var(--ds-ok); }
+.lims-integ.is-warn   { background: #fff3d0; color: var(--ds-warn); }
+.lims-integ.is-danger { background: #fdeded; color: var(--ds-danger-text); }
+
+.lims-data-footnote {
+	margin: var(--ds-3) 0 0;
+	font-size: var(--ds-fs-micro);
+	color: var(--ds-ink-4);
 }

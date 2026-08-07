@@ -96,94 +96,117 @@
     
     
     <script type="text/javascript">
-            /*<![CDATA[*/
+      /*<![CDATA[*/
 
-            function initPage() {
-                initData(true);
+      function initPage() {
+        /* reqAjax 는 동시 요청을 조용히 버린다 — 요약이 끝난 뒤에 공지를 읽는다 */
+        getDashboardSummary(getNoticeList);
+      }
+
+      /* 목 응답은 배열이 {0:..,1:..} 객체로 올 수 있다 — 항상 배열로 편다 */
+      function asList(v) {
+        if (Array.isArray(v)) { return v; }
+        if (!v || typeof v !== 'object') { return []; }
+        return Object.keys(v).map(function (k) { return v[k]; });
+      }
+
+      function getDashboardSummary(onDone) {
+        const done = typeof onDone === 'function' ? onDone : function () {};
+        ajaxPost(
+          '/api/lims/dashboard/summary',
+          {},
+          null,
+          function (res) {
+            if (res) {
+              paintStats(res.stats || {});
+              paintProjRows(asList(res.projRows));
+              paintActivities(asList(res.activities));
             }
+            done();
+          },
+          null,
+          function () {
+            $('#dashProjBody').html('<tr><td colspan="5" class="lims-empty">현황을 불러오지 못했습니다.</td></tr>');
+          }
+        );
+      }
 
-            function initData(isFirst) {
-                // 작성중인 연구노트
-                 let notePageUnit = 4;
-                 let projectPageUnit = 3;
+      function paintStats(st) {
+        $('#statSignWait .num').text(st.signWait != null ? st.signWait : '-');
+        $('#statSignWait .sub').text(st.signWaitSub || '');
+        $('#statSamples .num').text(st.todaySamples != null ? st.todaySamples : '-');
+        $('#statSamples .sub').text(st.todaySamplesSub || '');
+        $('#statNotes .num').text(st.writingNotes != null ? st.writingNotes : '-');
+        $('#statNotes .sub').text(st.writingNotesSub || '');
+        $('#statInst .num').text(st.instCheck != null ? st.instCheck : '-');
+        $('#statInst .sub').text(st.instCheckSub || '');
+      }
 
-                 if ($('.content-wrapper').hasClass('small')) {
-                     notePageUnit = 3;
-                     projectPageUnit = 2;
-                 } else if ($('.content-wrapper').hasClass('extra-small')) {
-                     notePageUnit = 2;
-                     projectPageUnit = 2;
-                 }
+      function paintProjRows(rows) {
+        const $tb = $('#dashProjBody').empty();
+        if (!rows.length) {
+          $tb.append('<tr><td colspan="5" class="lims-empty">참여중인 프로젝트가 없습니다.</td></tr>');
+          return;
+        }
+        rows.forEach(function (r) {
+          $tb.append('<tr>'
+            + '<td class="text-left"><a href="javascript:void(0)" class="lims-dash-proj" '
+            + 'onclick="gfn_openProjectDetail(\'/eln/project/projectDetails\', \'' + r.projectMno + '\')">'
+            + esc(r.projectNm) + '</a></td>'
+            + '<td class="num">' + r.writing + '</td>'
+            + '<td class="num">' + r.inspecting + '</td>'
+            + '<td class="num">' + r.done + '</td>'
+            + '<td class="num total">' + r.total + '</td>'
+            + '</tr>');
+        });
+      }
 
-                gfn_noteCardList(
-                    {
-                        url: '/api/eln/note/myNoteList',
-                        schWriteStatusCcd: 'WRITING',
-                        pageUnit: notePageUnit,
-                        orderBy: 'MODIFY_DT DESC'
-                    },
-                    $('.note-card-board'),
-                    function () {
-                        if (isFirst) {
-                            // 참여중인 프로젝트
-                            gfn_projectCardList(
-                                {
-                                    url: '/api/eln/project/myProjectList',
-                                    pageUnit: projectPageUnit,
-                                    pageNo: 1,
-                                    orderBy: 'MODIFY_DT DESC'
-                                },
-                                $('.project-card-board'),
-                                function () {
-                                    if (isFirst) {
-                                        // 공지사항
-                                        getPostsList('NOTICE');
-                                    }
-                                }
-                            );
-                        }
-                    }
-                );
+      function paintActivities(rows) {
+        const $ul = $('#dashActivity').empty();
+        if (!rows.length) {
+          $ul.append('<li class="lims-empty">최근 활동이 없습니다.</li>');
+          return;
+        }
+        rows.forEach(function (a) {
+          $ul.append('<li class="tone-' + (a.tone || 'info') + '">'
+            + '<i class="bi ' + (a.ico || 'bi-clock-history') + '" aria-hidden="true"></i>'
+            + '<span class="txt">' + esc(a.txt) + '</span>'
+            + '<span class="at lims-mono">' + esc(a.at || '') + '</span>'
+            + '</li>');
+        });
+      }
+
+      /* 공지 — 사용 안내서(맨 위 고정)가 여기서 열린다. 없애면 안내서 진입로가 사라진다. */
+      function getNoticeList() {
+        ajaxPost(
+          '/api/system/posts/postsList',
+          { schPostsSeCcd: 'NOTICE', pageUnit: 3, orderBy: 'MODIFY_DT DESC' },
+          null,
+          function (res) {
+            const rows = asList(res && res.postsListInfo ? res.postsListInfo.dataList : null);
+            const $ul = $('#dashNotice').empty();
+            if (!rows.length) {
+              $ul.append('<li class="lims-empty">공지사항이 없습니다.</li>');
+              return;
             }
+            rows.forEach(function (p) {
+              $ul.append('<li><a href="javascript:void(0)" onclick="gfn_openPostsDetail(' + p.postsMno + ')">'
+                + esc(p.subject)
+                + (p.newYn === 'Y' ? ' <span class="lims-new">N</span>' : '')
+                + '</a></li>');
+            });
+          }
+        );
+      }
 
-            function getPostsList(postsSeCcd) {
-                const $target = postsSeCcd === 'NOTICE' ? $('.board-notice') : $('.board-file');
+      function esc(v) {
+        return String(v == null ? '' : v)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
 
-                ajaxPost(
-                    '/api/system/posts/postsList',
-                    {
-                        schPostsSeCcd: postsSeCcd,
-                        pageUnit: 5,
-                        orderBy: 'MODIFY_DT DESC'
-                    },
-                    '데이터요청중입니다.잠시만 기다려주세요.',
-                    function (res) {
-                        if (res.postsListInfo.dataList && Object.keys(res.postsListInfo.dataList).length) {
-                            $target.html('<ul></ul>');
-                            for (const idx in res.postsListInfo.dataList) {
-                                const posts = res.postsListInfo.dataList[idx];
-
-                                $target.find('ul').append(
-                                    S2Util.s2Template(
-                                        `
-                                            <li onclick="gfn_goPostsDetail(${posts.postsMno}); return false;">
-                                                <a class="ce-board cursor-pointer" data-posts-mno="${posts.postsMno}">${posts.subject}</a>
-                                                <p if="isNew" class="badge badge-info icon-notice">N</p>
-                                            </li>
-                                        `,
-                                        {isNew: posts.newPostsYn === 'Y'}
-                                    )
-                                );
-                            }
-                        } else {
-                            $target.html('<div class="data-none"><span> 데이터가 없습니다</span></div>');
-                        }
-                    }
-                );
-            }
-
-            /*]]*/
-        </script>
+      /*]]*/
+    </script>
   
     <script type="text/javascript">
       /*<![CDATA[*/
@@ -2829,30 +2852,50 @@
             
               
                 
+                  <a class="menuCd MAIN_DASHBOARD active"
+                     href="dashboard.html">대시보드</a>
+                
+                  <a class="menuCd LIMS_NOTES"
+                     href="my_research_notes.html">연구노트</a>
+                
+                  <a class="menuCd LIMS_PROJECT"
+                     href="participation_project.html">프로젝트</a>
+                
+                  <a class="menuCd LIMS_SAMPLE"
+                     href="sample_list.html">시료</a>
+                
+                  <a class="menuCd LIMS_REAGENT"
+                     href="reagent_list.html">시약</a>
+                
                   <a class="menuCd LIMS_COMPOUND"
-                     href="compound_list.html">화합물 라이브러리</a>
+                     href="compound_list.html">화합물</a>
                 
                   <a class="menuCd LIMS_CHEM"
                      href="chem_editor.html">구조 입력기</a>
                 
-                  <a class="menuCd LIMS_REAGENT"
-                     href="reagent_list.html">시약/재고 관리</a>
+                  <a class="menuCd LIMS_INSTRUMENT"
+                     href="instrument_list.html">장비</a>
                 
-                  <a class="menuCd LIMS_LOCATION"
-                     href="location_list.html">보관위치 관리</a>
+                  <a class="menuCd LIMS_TEST"
+                     href="test_list.html">시험 의뢰</a>
                 
-                  <a class="menuCd MAIN_DASHBOARD active"
-                     href="dashboard.html">대시보드 홈</a>
+                  <a class="menuCd LIMS_DATA"
+                     href="data_list.html">데이터</a>
                 
-                  <a class="menuCd MAIN_NOTE_INFO"
-                     href="note_management.html">노트 관리 현황</a>
+                  <a class="menuCd LIMS_REVIEW"
+                     href="result_review.html">서명 대기</a>
                 
-                  <a class="menuCd OPMS_RESEARCH_SUPPORT"
-                     href="research_support.html">연구 활동 지원</a>
+                  <a class="menuCd AUDIT_TRAIL"
+                     href="javascript:limsScopeOut(&#39;감사 추적&#39;)">감사 추적</a>
                 
-                  <a class="menuCd MAIN_COMPLETED_PROJECT"
-                     href="completed_project.html">완료 프로젝트</a>
-                
+              
+            
+              
+            
+              
+            
+              
+            
               
             
               
@@ -3326,120 +3369,95 @@
 
           <!-- body 영역  -->
           <div class="content-wrapper">
-    <div id="main">
-      <h1 class="main-title-sty01 dashboard">대시보드</h1>
-      <!-- 01.Note Start -->
-      <div class="main-wrap1">
-        <div class="main-card01">
-          <div class="wrap01">
-            <div class="title01">
-              <span class="txt-blue">김연구</span>
-              <span>님</span>,
-              <span>안녕하세요.</span>
-            </div>
-            <span class="txt01">
-              <span>마지막 연구노트 작성일: <span>2026-07-28 10:03</span></span>
-              
-            </span>
-            <p class="txt02 ma-t20">
-              <span>작성중인 연구노트 잊지 않으셨죠?</span>
-              <br />
-              <span>저희 구노와 함께 쉽고 빠르게 연구노트를 작성해보세요!</span>
-            </p>
+    <div id="main" class="lims-page lims-dash">
+
+      
+      <div class="lims-dash-hello">
+        <div class="wrap01">
+          <div class="title01">
+            <span class="txt-blue">김연구</span>
+            <span>님</span>,
+            <span>안녕하세요.</span>
           </div>
-          <div class="wrap02 card-profile"></div>
+          <p class="txt02">
+            서명 대기 중인 연구노트가 있는지 확인하고, 오늘 작성한 기록을 마무리해 보세요.
+          </p>
         </div>
-        <div class="main-card02 notice_board">
-          <nav class="board-top">
-            <div class="nav nav-tabs tabs-box"
-                 role="tablist">
-              <button onclick="getPostsList(&quot;NOTICE&quot;)"
-                      class="nav-link tap active"
-                      id="nav-notice-tab"
-                      data-bs-toggle="tab"
-                      data-bs-target="#nav-notice"
-                      type="button"
-                      role="tab"
-                      aria-controls="nav-notice"
-                      aria-selected="true">공지사항</button>
-              <button onclick="getPostsList(&quot;RESEARCH_DATA&quot;)"
-                      class="nav-link tap"
-                      id="nav-research-data-room-tab"
-                      data-bs-toggle="tab"
-                      data-bs-target="#nav-research-data-room"
-                      type="button"
-                      role="tab"
-                      aria-controls="nav-research-data-room"
-                      aria-selected="false">연구자료실</button>
+        <div class="acts">
+          <a href="note_write.html"
+             class="button-blue-full-sty01"><span>작성중인 노트 이어가기</span></a>
+        </div>
+        <div class="wrap02 card-profile"></div>
+      </div>
+
+      
+      <div class="lims-dash-stats">
+        <a class="lims-dash-stat" id="statSignWait" href="result_review.html">
+          <span class="lb"><i class="bi bi-vector-pen" aria-hidden="true"></i> 서명 대기</span>
+          <span class="num">-</span><span class="unit">건</span>
+          <span class="sub"></span>
+        </a>
+        <a class="lims-dash-stat" id="statSamples" href="sample_list.html">
+          <span class="lb"><i class="bi bi-droplet" aria-hidden="true"></i> 오늘 입력 시료</span>
+          <span class="num">-</span><span class="unit">Lot</span>
+          <span class="sub"></span>
+        </a>
+        <a class="lims-dash-stat" id="statNotes" href="my_research_notes.html">
+          <span class="lb"><i class="bi bi-journal-text" aria-hidden="true"></i> 작성중 노트</span>
+          <span class="num">-</span><span class="unit">건</span>
+          <span class="sub"></span>
+        </a>
+        <a class="lims-dash-stat" id="statInst" href="instrument_list.html">
+          <span class="lb"><i class="bi bi-tools" aria-hidden="true"></i> 장비 점검</span>
+          <span class="num">-</span><span class="unit">대</span>
+          <span class="sub"></span>
+        </a>
+      </div>
+
+      
+      <div class="lims-dash-cols">
+        <div class="lims-card lims-dash-proj">
+          <div class="lims-card-head">
+            <p class="lims-card-title">프로젝트별 연구노트 현황</p>
+            <a href="participation_project.html"
+               class="button-more-sty02">더보기</a>
+          </div>
+          <div class="lims-card-body">
+            <table class="core-table lims-table">
+              <colgroup>
+                <col /><col style="width:84px" /><col style="width:84px" />
+                <col style="width:84px" /><col style="width:84px" />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th class="text-left">과제</th><th>작성중</th><th>점검중</th><th>완료</th><th>계</th>
+                </tr>
+              </thead>
+              <tbody id="dashProjBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="lims-dash-right">
+          <div class="lims-card">
+            <div class="lims-card-head">
+              <p class="lims-card-title">최근 활동</p>
             </div>
-          </nav>
-          <div class="tab-content"
-               id="nav-tabContent">
-            <div class="tab-pane fade show active"
-                 id="nav-notice"
-                 role="tabpanel"
-                 aria-labelledby="nav-notice-tab"
-                 tabindex="0">
+            <div class="lims-card-body">
+              <ul class="lims-dash-activity" id="dashActivity"></ul>
+            </div>
+          </div>
+          <div class="lims-card">
+            <div class="lims-card-head">
+              <p class="lims-card-title">공지사항</p>
               <a href="#"
                  onclick="gfn_goPostsList(&quot;NOTICE&quot;)"
-                 class="button-more-sty01">더보기</a>
-              <div class="tab-cont board-notice"></div>
+                 class="button-more-sty02">더보기</a>
             </div>
-            <div class="tab-pane fade"
-                 id="nav-research-data-room"
-                 role="tabpanel"
-                 aria-labelledby="nav-research-data-room-tab">
-              <a href="#"
-                 onclick="gfn_goPostsList(&quot;RESEARCH_DATA&quot;)"
-                 class="button-more-sty01">더보기</a>
-              <div class="tab-cont board-file"></div>
+            <div class="lims-card-body">
+              <ul class="lims-dash-notice" id="dashNotice"></ul>
             </div>
           </div>
-        </div>
-      </div>
-
-      <div class="main-wrap2 ma-t30 note-card-board d-none">
-        <div class="title sub-title-sty01">
-          <p class="flex-sty02">
-            <span>작성중인 연구노트</span>&nbsp;
-            <span class="title_cnt">(<span class="noteCnt">0</span>)</span>
-          </p>
-          <a href="my_research_notes.html"
-             class="button-more-sty02">전체 연구노트</a>
-        </div>
-        <div class="note-card wide">
-          <div class="no-data">
-            <div class="no-data-back"></div>
-            <span>작성중인 연구노트가 없습니다.</span>
-          </div>
-          <ul class="d-none"></ul>
-        </div>
-        <div class="flex-sty01">
-          <div class="more_list_data d-none"
-               onclick="gfn_noteCardList();"><span class="remainCnt">1</span> <span>개 더보기</span></div>
-        </div>
-      </div>
-
-      <div class="main-wrap2 project-card-board d-none">
-        <div class="title sub-title-sty01">
-          <p class="flex-sty02">
-            <span>참여중인 프로젝트</span>&nbsp;
-            <span class="title_cnt">(<span class="projectCnt">0</span>)</span>
-          </p>
-          <a href="participation_project.html"
-             class="button-more-sty02">전체 프로젝트</a>
-        </div>
-
-        <div class="project-card">
-          <div class="no-data">
-            <div class="no-data-back"></div>
-            <span>참여중인 프로젝트가 없습니다.</span>
-          </div>
-          <ul class="d-none"></ul>
-        </div>
-        <div class="flex-sty01">
-          <div class="more_list_data d-none"
-               onclick="gfn_projectCardList();"><span class="remainCnt">1</span> <span>개 더보기</span></div>
         </div>
       </div>
     </div>
