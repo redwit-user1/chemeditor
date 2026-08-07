@@ -7302,6 +7302,196 @@ a.lims-dash-proj:hover { color: var(--ds-primary); }
 	background-image: none;
 }
 
+/* ── §53 목업 정렬 — 필터 줄 카드화 · OOS 조사 카드 ────────────────────── */
+
+/*
+  검색 필터 줄. 제목과 표 카드 사이에 입력·셀렉트가 맨몸으로 떠 있었다 —
+  참고 목업(연구 데이터)은 필터가 흰 면 위에 앉는다. 줄을 카드로 세운다.
+*/
+.target-info-tab.lims-filter {
+	padding: var(--ds-3) var(--ds-4);
+	border: 1px solid var(--ds-line-2);
+	border-radius: var(--ds-radius-lg);
+	background: var(--ds-surface);
+	box-shadow: var(--ds-shadow);
+}
+
+/* OOS 조사 카드 — 참고 덱 1a 의 카드 머리·스테퍼·발생원·타임라인 */
+
+.lims-oos-card {
+	margin-top: var(--ds-4);
+	border: 1px solid var(--ds-line-2);
+	border-radius: var(--ds-radius-lg);
+	background: var(--ds-surface);
+	box-shadow: var(--ds-shadow);
+	overflow: hidden;
+}
+
+.lims-oos-head {
+	display: flex;
+	align-items: center;
+	gap: var(--ds-3);
+	padding: var(--ds-4) var(--ds-5);
+}
+
+.lims-oos-head .tile {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: none;
+	width: 40px;
+	height: 40px;
+	border-radius: var(--ds-radius);
+	background: #fdeded;
+	color: var(--ds-danger);
+	font-size: 18px;
+}
+
+.lims-oos-head .tt { flex: 1 1 auto; min-width: 0; }
+
+.lims-oos-head .oid {
+	font-family: var(--ds-font-id);
+	font-size: var(--ds-fs-small);
+	font-weight: 700;
+	color: var(--ds-danger-text);
+}
+
+.lims-oos-head .tl {
+	font-size: 17px;
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	color: var(--ds-ink);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+/* 6단계 스테퍼 — 완료 초록 체크 · 현재 파랑 · 미래 회색 (덱 실측) */
+.lims-oos-steps {
+	display: flex;
+	align-items: center;
+	margin: 0;
+	padding: var(--ds-3) var(--ds-5);
+	border-top: 1px solid var(--ds-line-soft);
+	border-bottom: 1px solid var(--ds-line-soft);
+	list-style: none;
+	overflow-x: auto;
+}
+
+.lims-oos-steps li {
+	display: flex;
+	align-items: center;
+	gap: var(--ds-2);
+	white-space: nowrap;
+	font-size: var(--ds-fs-small);
+	color: var(--ds-ink-4);
+}
+
+.lims-oos-steps li + li::before {
+	content: '';
+	display: block;
+	width: 28px;
+	height: 2px;
+	margin: 0 var(--ds-3);
+	background: var(--ds-line);
+}
+
+.lims-oos-steps li.done + li::before { background: var(--ds-ok-dot); }
+
+.lims-oos-steps .dot {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	border-radius: 50%;
+	background: var(--ds-line-soft);
+	font-size: var(--ds-fs-micro);
+	font-weight: 700;
+	color: var(--ds-ink-3);
+}
+
+.lims-oos-steps li.done .dot { background: var(--ds-ok-dot); color: #fff; }
+.lims-oos-steps li.done { color: var(--ds-ok); font-weight: 700; }
+.lims-oos-steps li.now .dot { background: var(--ds-primary); color: #fff; }
+.lims-oos-steps li.now { color: var(--ds-primary); font-weight: 700; }
+
+.lims-oos-body {
+	display: grid;
+	grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+	gap: var(--ds-5);
+	padding: var(--ds-4) var(--ds-5);
+}
+
+@media (max-width: 1100px) {
+	.lims-oos-body { grid-template-columns: 1fr; }
+}
+
+.lims-oos-sec-title {
+	margin: 0 0 var(--ds-2);
+	font-size: var(--ds-fs-small);
+	font-weight: 700;
+	color: var(--ds-ink-2);
+}
+
+/* 발생원 — 붉은 톤 상자 (덱의 발생원 박스) */
+.lims-oos-origin {
+	padding: var(--ds-3) var(--ds-4);
+	border: 1px solid #f5c6c5;
+	border-radius: var(--ds-radius);
+	background: #fdf7f7;
+	font-size: var(--ds-fs-small);
+	color: var(--ds-ink-3);
+}
+
+.lims-oos-origin .row1 {
+	display: flex;
+	align-items: center;
+	gap: var(--ds-2);
+	margin-bottom: var(--ds-2);
+	font-weight: 700;
+	color: var(--ds-ink-2);
+}
+
+.lims-oos-origin .kv {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--ds-1) var(--ds-5);
+}
+
+.lims-oos-origin .kv b { color: var(--ds-danger-text); font-family: var(--ds-font-id); }
+.lims-oos-origin .kv .lims-id { color: var(--ds-ink-2); }
+
+.lims-oos-meta {
+	margin-top: var(--ds-3);
+	font-size: var(--ds-fs-small);
+	color: var(--ds-ink-4);
+}
+
+/* 타임라인 — 점 + 두 줄 (덱 우측) */
+.lims-oos-tline { margin: 0; padding: 0; list-style: none; }
+
+.lims-oos-tline li {
+	position: relative;
+	padding: 0 0 var(--ds-3) var(--ds-4);
+}
+
+.lims-oos-tline li::before {
+	content: '';
+	position: absolute;
+	left: 3px;
+	top: 6px;
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: var(--ds-line-2);
+}
+
+.lims-oos-tline li:first-child::before { background: var(--ds-primary); }
+
+.lims-oos-tline .tx { font-size: var(--ds-fs-small); color: var(--ds-ink-2); }
+.lims-oos-tline .at { display: block; font-size: var(--ds-fs-micro); color: var(--ds-ink-4); }
+
 /* ── §52 엑셀 매핑 모달 (참고 목업) ─────────────────────────────────────── */
 
 .lims-xls-steps {

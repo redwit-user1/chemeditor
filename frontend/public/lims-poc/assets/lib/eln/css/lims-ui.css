@@ -1431,10 +1431,15 @@ th.lims-num,
 	white-space: nowrap;
 }
 
-.lims-page .lims-state.normal { border-color: var(--ds-primary-line); }
-.lims-page .lims-state.soon { border-color: var(--ds-warn-line); }
-.lims-page .lims-state.expired { border-color: var(--ds-danger-line); }
-.lims-page .lims-state.done { border-color: var(--ds-ok-line); }
+/*
+  상태 알약의 반투명 테두리는 걷었다. 참고 목업의 상태 표시(조사 진행중 ·
+  해시 고정 · 적합)는 전부 틴트 채움만이고 테두리가 없다 — 얹으면 알약이
+  단추처럼 읽힌다. 색은 바탕과 글자 둘이면 충분하다.
+*/
+.lims-page .lims-state.normal,
+.lims-page .lims-state.soon,
+.lims-page .lims-state.expired,
+.lims-page .lims-state.done { border-color: transparent; }
 .lims-page .lims-state.muted { border-color: var(--lims-line-strong); }
 
 /* 옅은 배경 위의 원색 글자는 대비가 모자란다(경고 3.92:1, 위험 3.13:1).

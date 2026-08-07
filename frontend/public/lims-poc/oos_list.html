@@ -2523,6 +2523,76 @@
       /* ---------------------------------------------------------------
          목록
       --------------------------------------------------------------- */
+      function asListOos(v) {
+        if (Array.isArray(v)) { return v; }
+        if (!v || typeof v !== 'object') { return []; }
+        return Object.keys(v).map(function (k) { return v[k]; });
+      }
+
+      function esc(v) {
+        return String(v == null ? '' : v)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      /* ---------------------------------------------------------------
+         조사 카드 — 참고 덱(OOS 조사 레코드)의 카드 머리·6단계 스테퍼·
+         발생원·타임라인. 진행중인 조사 하나를 목록 위에 세운다 —
+         "지금 열려 있는 조사가 무엇인가"가 표를 읽기 전에 보여야 한다.
+         값은 목록 응답의 그 행에서 그대로 가져온다(따로 박은 값 없음).
+      --------------------------------------------------------------- */
+      const OOS_STEPS = ['발생 접수', '초기 평가', '재시험', '원인 조사', 'CAPA', '종결 서명'];
+      /* 상태 코드 → 지나온 단계 수. PHASE1(실험실조사)=재시험 진행 중. */
+      const OOS_STEP_AT = { OPEN: 1, PHASE1: 3, PHASE2: 4, CAPA: 5, CLOSED: 7 };
+
+      function paintOosCard(rows) {
+        const cur = rows.filter(function (o) { return o.oosStatusCcd !== 'CLOSED'; })[0];
+        const $card = $('#oosCard');
+        if (!cur) { $card.addClass('d-none').empty(); return; }
+        const at = OOS_STEP_AT[cur.oosStatusCcd] || 1;
+        const spec = cur.specDisp || '규격 초과';
+        const steps = OOS_STEPS.map(function (nm, i) {
+          const n = i + 1;
+          const st = n < at ? 'done' : n === at ? 'now' : 'todo';
+          return '<li class="' + st + '"><span class="dot">'
+            + (st === 'done' ? '<i class="bi bi-check-lg" aria-hidden="true"></i>' : n)
+            + '</span>' + nm + '</li>';
+        }).join('');
+        $card.removeClass('d-none').html(
+          '<div class="lims-oos-head">'
+          + '<span class="tile"><i class="bi bi-search" aria-hidden="true"></i></span>'
+          + '<div class="tt"><p class="oid">' + esc(cur.oosNo) + '</p>'
+          + '<p class="tl">' + esc(cur.testItemNm) + ' 규격 이탈 — ' + esc(cur.resultVal) + ' ' + esc(cur.unitCcd || '') + '</p></div>'
+          + '<span class="lims-state soon">조사 진행중</span>'
+          + '</div>'
+          + '<ol class="lims-oos-steps">' + steps + '</ol>'
+          + '<div class="lims-oos-body">'
+          +   '<div><p class="lims-oos-sec-title">발생원</p>'
+          +     '<div class="lims-oos-origin">'
+          +       '<div class="row1"><i class="bi bi-table" aria-hidden="true"></i> '
+          +         esc(cur.testReqstNo) + ' · ' + esc(cur.testItemNm) + ' 결과</div>'
+          +       '<div class="kv">'
+          +         '<span>측정값 <b>' + esc(cur.resultVal) + ' ' + esc(cur.unitCcd || '') + '</b></span>'
+          +         '<span>요청 <span class="lims-id">' + esc(cur.testReqstNo) + '</span></span>'
+          +         '<span>감지 ' + esc(cur.detectDt) + ' · ' + esc(cur.detectUserNm) + '</span>'
+          +       '</div>'
+          +     '</div>'
+          +     '<p class="lims-oos-meta">담당 ' + esc(cur.invstgUserNm || '-')
+          +       ' · 이 조사가 열려 있는 동안 해당 시료의 결과 확정과 관련 노트 점검 완료는 차단됩니다.</p>'
+          +   '</div>'
+          +   '<div><p class="lims-oos-sec-title">조사 타임라인</p>'
+          +     '<ul class="lims-oos-tline">'
+          +       '<li><span class="tx">재시험 지시 — 동일 시료 · 신규 표준액</span>'
+          +         '<span class="at">' + esc(cur.detectDt) + ' · ' + esc(cur.invstgUserNm || '') + '</span></li>'
+          +       '<li><span class="tx">초기 평가 완료 — 명백한 실험 오류 아님</span>'
+          +         '<span class="at">' + esc(cur.detectDt) + ' · ' + esc(cur.invstgUserNm || '') + '</span></li>'
+          +       '<li><span class="tx">결과 판정에서 자동 생성</span>'
+          +         '<span class="at">' + esc(cur.detectDt) + ' · 시스템</span></li>'
+          +     '</ul>'
+          +   '</div>'
+          + '</div>');
+      }
+
       function getOosList(pageNo) {
         const targetSelector = '.oos-info-list';
 
@@ -2572,6 +2642,7 @@
               }
               $target.parents(targetSelector).find('.paging-box')
                 .html(S2Util.pagination(res.oosListInfo, 'getOosList'));
+              paintOosCard(asListOos(res.oosListInfo.dataList));
             } else {
               $target.html('<tr class="text-nowrap emptymessage"><td class="text-center" colspan="10">기준이탈 건이 없습니다.</td></tr>');
             }
@@ -6070,6 +6141,8 @@
         </div>
 
         
+        <div id="oosCard" class="lims-oos-card d-none"></div>
+
         <div class="target-info-tab lims-filter flex-sty04 ma-t20">
           <div class="tabs-box">
             <input type="checkbox" class="btn form-check-input basic" id="schMineOnlyChk"
