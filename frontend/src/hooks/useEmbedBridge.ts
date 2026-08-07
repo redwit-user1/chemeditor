@@ -3,6 +3,7 @@ import type { Ketcher } from 'ketcher-core';
 import type { PropertiesResponse } from '../lib/api';
 import {
   type EmbedConfig,
+  buildErrorMessage,
   buildPropertiesMessage,
   buildReadyMessage,
   isOriginTrusted,
@@ -16,6 +17,8 @@ interface BridgeProps {
   status: 'idle' | 'loading' | 'error' | 'empty';
   /** The molfile that produced `properties` (structure of record). */
   molfile: string | null;
+  /** Why the last compute failed, when `status === 'error'`. */
+  error?: string | null;
 }
 
 /**
@@ -31,7 +34,7 @@ interface BridgeProps {
 export function useEmbedBridge(
   config: EmbedConfig,
   ketcher: Ketcher | null,
-  { properties, status, molfile }: BridgeProps,
+  { properties, status, molfile, error }: BridgeProps,
 ): void {
   const { embed, parentOrigin } = config;
 
@@ -59,6 +62,18 @@ export function useEmbedBridge(
     window.addEventListener('message', handler);
     return () => window.removeEventListener('message', handler);
   }, [embed, ketcher, parentOrigin]);
+
+  // iframe → parent: say so when a structure is in but the numbers are not.
+  // Silence here reads as "nothing drawn yet" on the Goono side.
+  useEffect(() => {
+    if (!embed) return;
+    if (window.parent === window) return;
+    if (status !== 'error') return;
+    window.parent.postMessage(
+      buildErrorMessage(error ?? '물성을 계산하지 못했습니다.'),
+      parentOrigin,
+    );
+  }, [embed, parentOrigin, status, error]);
 
   // iframe → parent: forward every successful property update.
   useEffect(() => {

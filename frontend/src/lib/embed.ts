@@ -14,6 +14,16 @@
 /** Message types this iframe SENDS to the parent (Goono). */
 export const MSG_READY = 'chemeditor:ready';
 export const MSG_PROPERTIES = 'chemeditor:properties';
+/**
+ * Sent when a structure IS on the canvas but properties could not be computed
+ * (RDKit backend unreachable, parse error, …).
+ *
+ * Without this the parent has no way to tell "nothing drawn yet" from
+ * "drawn but the compute failed" — both look like an empty property bar.
+ * A KMEDIhub researcher hit exactly that: the structure went in, the formula
+ * never appeared, and the screen said nothing about why.
+ */
+export const MSG_ERROR = 'chemeditor:error';
 /** Message type this iframe RECEIVES from the parent. */
 export const MSG_SET_STRUCTURE = 'chemeditor:set-structure';
 
@@ -86,6 +96,14 @@ export function parseSetStructure(data: unknown): string | null {
 /** Build the mount-time `chemeditor:ready` message. */
 export function buildReadyMessage(): { type: string } {
   return { type: MSG_READY };
+}
+
+/** Build a `chemeditor:error` message. `reason` is safe to show to a user. */
+export function buildErrorMessage(reason: string): {
+  type: string;
+  payload: { reason: string };
+} {
+  return { type: MSG_ERROR, payload: { reason } };
 }
 
 /** Build a `chemeditor:properties` message from a successful property update. */

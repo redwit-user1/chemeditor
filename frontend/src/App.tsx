@@ -34,6 +34,7 @@ export default function App() {
     properties: live.properties,
     status: live.status,
     molfile: live.molfile,
+    error: live.error,
   });
 
   const handleStatus = useCallback((text: string) => {
