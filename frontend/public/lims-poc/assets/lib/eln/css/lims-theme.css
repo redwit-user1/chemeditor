@@ -7556,3 +7556,102 @@ a.lims-dash-proj:hover { color: var(--ds-primary); }
 
 .lims-xls-dev td { background: #fdeded; }
 .lims-xls-dev .dev { color: var(--ds-danger-text); font-weight: 700; }
+
+/* ============================================================================
+   §54 줄 정렬 — 전 화면 실측에서 나온 어긋남 (25화면 × 3검사)
+
+   같은 줄에 선 것들은 세로 중앙이 같아야 한다. 아래는 전부 실측으로 잡힌
+   자리다 — 고친 뒤 같은 검사로 0 을 확인한다.
+   ========================================================================= */
+
+/*
+  페이지 머리(.lims-head) — 왼쪽은 빵부스러기+제목 두 줄, 오른쪽은 버튼
+  한 줄이다. flex-start 라 버튼이 빵부스러기 높이에 떠 있었다(실측 10px).
+  버튼은 제목 줄에 맞춰 선다 — 아래 끝을 같춘다.
+*/
+.lims-page .lims-head {
+	align-items: flex-end;
+}
+
+/* 버튼 바닥과 제목 바닥을 같춘다 — 제목(글줄 34px)과 버튼(36px)의 중심차는
+   1px 로, 보정을 더 얹으면 오히려 어긋난다(실측으로 2px 보정을 뺐다). */
+
+/*
+  제목 줄 — h1(32px, margin-bottom 8)과 버튼·안내문이 한 flex 줄에 서는데
+  줄이 align-items: normal 이라 h1 여백만큼 상대가 위로 떠 있었다(실측 4px).
+  제목이 낀 줄은 가운데로 세우고, 줄 안에서는 제목의 아래 여백을 접는다
+  (줄 간격은 줄 상자가 갖는다).
+*/
+.flex-sty01:has(> h1.main-title-sty01),
+.flex-sty01:has(> .sub-title-sty01),
+.completed-project-title {
+	align-items: center;
+}
+
+.flex-sty01 > h1.main-title-sty01,
+.completed-project-title > h1.main-title-sty01,
+.flex-sty01 > .sub-title-sty01 {
+	margin-bottom: 0;
+}
+
+/* 글자수 세는 줄(안내문 | n/500) — create_project 실측 5px */
+.flex-sty01:has(> .count-wrap),
+div:has(> .guidetext-sty01):has(> .count-wrap) {
+	align-items: center;
+}
+
+/* 기간 입력의 물결표 — 두 달력 사이에서 6px 떠 있었다 */
+.regist-form.form-project-date {
+	align-items: center;
+}
+
+.regist-form .date-dash {
+	align-self: center;
+}
+
+/*
+  프로젝트 생성의 입력 줄 — 입력 36 · 링크 32 · 버튼 46 이 한 줄에 섰다.
+  한 줄의 조작은 한 키(36)로 맞춘다.
+*/
+.add-project-sty01 { align-items: center; }
+
+.add-project-sty01 .button-blue-full-sty03 {
+	height: 36px;
+	min-height: 36px;
+	padding-top: 0;
+	padding-bottom: 0;
+}
+
+.add-project-sty01 a.c-pointer,
+.add-project-sty01 a.ce-add-category {
+	display: inline-flex;
+	align-items: center;
+	min-height: 36px;
+}
+
+/*
+  본문 편집기 도구줄의 글자색 단추 — <label> 이라 부트스트랩의
+  margin-bottom: .5rem 을 물고 와 혼자 4px 높이 떠 있었다(실측).
+*/
+.lims-note-editor .toolbar label,
+.lims-note-editor .toolbar label.color-btn {
+	display: inline-flex;
+	align-items: center;
+	margin: 0;
+	align-self: center;
+}
+
+/*
+  중앙 줄 안의 한쪽 여백 — flex 의 가운데는 margin 을 포함해 계산되므로,
+  자식이 margin-top 을 물고 있으면 줄이 center 여도 내용은 아래로 밀린다
+  (실측: 안내문 10px · 물결표 11px). 줄 간격은 줄이 갖고, 줄 안 여백은 접는다.
+*/
+.flex-sty04 > .guidetext-sty01,
+.flex-sty01 > .guidetext-sty01 {
+	margin-top: 0;
+}
+
+.regist-form .date-dash {
+	margin-top: 0;
+	margin-bottom: 0;
+}
