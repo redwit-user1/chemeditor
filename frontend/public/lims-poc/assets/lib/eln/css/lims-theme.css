@@ -535,10 +535,16 @@ body,
 /* ---------------------------------------------------------------------------
    4) 셸 — 사이드바
 --------------------------------------------------------------------------- */
+/*
+  사이드바는 GOONO 딥네이비다. 제품 원형이 그랬고(style.css 의 흰 글자·흰
+  아이콘, #08204A 접힘 손잡이가 그 흔적) 참고 덱의 아이덴티티도 이 색이다.
+  앞선 정리에서 내가 흰 사이드바로 덮었는데, 그 결과 "아무것도 안 바뀐
+  회색 관리자 화면" 으로 읽혔다. 되돌린다.
+*/
 .sidenav2 {
 	width: var(--ds-shell);
-	background: var(--ds-surface) !important;
-	border-right: 1px solid var(--ds-line);
+	background: var(--ds-primary-deep) !important;
+	border-right: 0;
 	box-shadow: none;
 }
 
@@ -577,7 +583,7 @@ body,
 .sidenav2 .top-logo img {
 	height: 20px;
 	width: auto;
-	filter: brightness(0) saturate(100%) invert(9%) sepia(12%) saturate(1200%) hue-rotate(190deg);
+	filter: brightness(0) invert(1);
 }
 
 .sidenav2 .ma-l24,
@@ -664,56 +670,75 @@ body,
 .nav-menu a.menuCd {
 	display: flex;
 	align-items: center;
+	position: relative;
 	min-height: var(--shell-nav-h);
 	margin: 1px 0;
 	padding: 0 var(--ds-2) 0 var(--ds-8);
 	border-radius: var(--ds-radius);
-	color: var(--ds-ink-3) !important;
+	color: rgba(255, 255, 255, 0.78) !important;
 	font-size: var(--ds-fs-body);
 	font-weight: var(--ds-fw-normal);
 	line-height: var(--ds-lh-tight);
 	opacity: 1;
-	background-repeat: no-repeat !important;
-	background-position: left var(--ds-2) center !important;
-	background-size: var(--shell-nav-icon) var(--shell-nav-icon) !important;
+	/* 아이콘은 아래 ::before(mask)가 그린다 — 남색 위에서 글자색을 따라간다 */
+	background-image: none !important;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	transition: background-color var(--ds-dur) var(--ds-ease), color var(--ds-dur) var(--ds-ease);
 }
 
+/*
+  아이콘을 background-image 에서 mask 로 바꾼다. 남색 바탕에서는 흰 아이콘이
+  필요한데, 흰 판(-w)과 어두운 판(-d)을 상태마다 갈아 끼우면 파일이 두 벌이
+  된다. mask 는 모양만 쓰고 색은 currentColor 에서 받으므로 글자색과 아이콘
+  색이 저절로 같이 움직인다.
+*/
+.nav-menu a.menuCd::before {
+	content: '';
+	position: absolute;
+	left: var(--ds-2);
+	top: 50%;
+	width: var(--shell-nav-icon);
+	height: var(--shell-nav-icon);
+	transform: translateY(-50%);
+	background-color: currentColor;
+	-webkit-mask: var(--nav-ico) center / contain no-repeat;
+	mask: var(--nav-ico) center / contain no-repeat;
+}
+
 .nav-menu a.menuCd:hover {
-	background-color: var(--ds-hover);
-	color: var(--ds-ink) !important;
+	background-color: rgba(255, 255, 255, 0.08);
+	color: #fff !important;
 }
 
 .nav-menu a.menuCd.active {
-	background-color: var(--ds-primary-weak);
-	color: var(--ds-primary) !important;
+	background-color: var(--ds-primary);
+	color: #fff !important;
 	font-weight: var(--ds-fw-medium);
 }
 
-.nav-menu a.menuCd.LIMS_COMPOUND { background-image: url(../img/lucide/hexagon-d.svg) !important; }
-.nav-menu a.menuCd.LIMS_CHEM { background-image: url(../img/lucide/pen-tool-d.svg) !important; }
-.nav-menu a.menuCd.LIMS_REAGENT { background-image: url(../img/lucide/beaker-d.svg) !important; }
-.nav-menu a.menuCd.LIMS_LOCATION { background-image: url(../img/lucide/archive-d.svg) !important; }
-.nav-menu a.menuCd.LIMS_SAMPLE { background-image: url(../img/lucide/flask-conical-d.svg) !important; }
-.nav-menu a.menuCd.LIMS_TEST { background-image: url(../img/lucide/clipboard-list-d.svg) !important; }
-.nav-menu a.menuCd.LIMS_OOS { background-image: url(../img/lucide/triangle-alert-d.svg) !important; }
-.nav-menu a.menuCd.LIMS_METHOD { background-image: url(../img/lucide/file-text-d.svg) !important; }
-.nav-menu a.menuCd.LIMS_SPEC { background-image: url(../img/lucide/ruler-d.svg) !important; }
-.nav-menu a.menuCd.LIMS_INSTRUMENT { background-image: url(../img/lucide/microscope-d.svg) !important; }
-.nav-menu a.menuCd.LIMS_SCAN { background-image: url(../img/lucide/scan-line-d.svg) !important; }
-.nav-menu a.menuCd.MAIN_DASHBOARD { background-image: url(../img/lucide/layout-grid-d.svg) !important; }
-.nav-menu a.menuCd.MAIN_NOTE_INFO { background-image: url(../img/lucide/file-check-d.svg) !important; }
-.nav-menu a.menuCd.OPMS_RESEARCH_SUPPORT { background-image: url(../img/lucide/life-buoy-d.svg) !important; }
-.nav-menu a.menuCd.MAIN_COMPLETED_PROJECT { background-image: url(../img/lucide/circle-check-d.svg) !important; }
+.nav-menu a.menuCd.LIMS_COMPOUND { --nav-ico: url(../img/lucide/hexagon-d.svg); }
+.nav-menu a.menuCd.LIMS_CHEM { --nav-ico: url(../img/lucide/pen-tool-d.svg); }
+.nav-menu a.menuCd.LIMS_REAGENT { --nav-ico: url(../img/lucide/beaker-d.svg); }
+.nav-menu a.menuCd.LIMS_LOCATION { --nav-ico: url(../img/lucide/archive-d.svg); }
+.nav-menu a.menuCd.LIMS_SAMPLE { --nav-ico: url(../img/lucide/flask-conical-d.svg); }
+.nav-menu a.menuCd.LIMS_TEST { --nav-ico: url(../img/lucide/clipboard-list-d.svg); }
+.nav-menu a.menuCd.LIMS_OOS { --nav-ico: url(../img/lucide/triangle-alert-d.svg); }
+.nav-menu a.menuCd.LIMS_METHOD { --nav-ico: url(../img/lucide/file-text-d.svg); }
+.nav-menu a.menuCd.LIMS_SPEC { --nav-ico: url(../img/lucide/ruler-d.svg); }
+.nav-menu a.menuCd.LIMS_INSTRUMENT { --nav-ico: url(../img/lucide/microscope-d.svg); }
+.nav-menu a.menuCd.LIMS_SCAN { --nav-ico: url(../img/lucide/scan-line-d.svg); }
+.nav-menu a.menuCd.MAIN_DASHBOARD { --nav-ico: url(../img/lucide/layout-grid-d.svg); }
+.nav-menu a.menuCd.MAIN_NOTE_INFO { --nav-ico: url(../img/lucide/file-check-d.svg); }
+.nav-menu a.menuCd.OPMS_RESEARCH_SUPPORT { --nav-ico: url(../img/lucide/life-buoy-d.svg); }
+.nav-menu a.menuCd.MAIN_COMPLETED_PROJECT { --nav-ico: url(../img/lucide/circle-check-d.svg); }
 
 /* --- 사이드바 목록 구획 --- */
 .sidenav2 .nav-list-wrap {
 	margin: 0 var(--ds-4);
 	padding-top: var(--ds-3);
-	border-top: 1px solid var(--ds-line);
+	border-top: 1px solid rgba(255, 255, 255, 0.14);
 }
 
 .nav-list-wrap .nav-list-top .nav-list-title-wrap {
@@ -727,14 +752,14 @@ body,
 }
 
 .nav-list-wrap .nav-list-top .nav-list-title-wrap:hover {
-	background-color: var(--ds-hover);
+	background-color: rgba(255, 255, 255, 0.06);
 }
 
 .nav-list-wrap .nav-list-top .nav-list-title-wrap .nav-list-title {
 	font-size: var(--ds-fs-body);
 	font-weight: var(--ds-fw-bold);
 	line-height: var(--ds-lh-tight);
-	color: var(--ds-ink) !important;
+	color: #fff !important;
 }
 
 .nav-list-wrap .nav-list-top .nav-list-cnt {
@@ -743,8 +768,8 @@ body,
 	margin-left: 0;
 	padding: 0 var(--ds-2);
 	border-radius: var(--ds-pill);
-	background: var(--ds-hover);
-	color: var(--ds-ink-3) !important;
+	background: rgba(255, 255, 255, 0.16);
+	color: #fff !important;
 	font-size: var(--ds-fs-micro);
 	font-weight: var(--ds-fw-medium);
 	/* 간격 토큰(--ds-5)을 줄높이로 쓰고 있었다. 값은 맞았지만 뜻이 틀렸고,
@@ -757,7 +782,8 @@ body,
 }
 
 .nav-list-wrap .nav-list-top .nav-list-all {
-	color: var(--ds-primary) !important;
+	/* 남색 위에서 primary 파랑은 3.1:1 이 안 된다 — 밝은 파랑으로 */
+	color: #a9c4f5 !important;
 	font-size: var(--ds-fs-small);
 }
 
@@ -766,6 +792,13 @@ body,
 .sidenav2 .nav-list-wrap .noteList {
 	/* flex 로 두면 text-overflow 가 먹지 않아 글자가 그냥 잘린다. 블록으로 둔다. */
 	display: block;
+	/*
+	  style.css 는 이 줄 앞에 PNG 아이콘을 깔고 padding-left: 35px 로 자리를
+	  비운다. 내가 여백을 8px 로 줄이면서 들여쓰기만 사라져 아이콘이 글자를
+	  덮었다(남색으로 되돌리자 그제서야 보였다 — 흰 사이드바에서는 흰 아이콘이
+	  안 보여서 겹침도 안 보였던 것). 목록은 글자만으로 충분하다.
+	*/
+	background-image: none !important;
 	min-height: var(--ds-8);
 	/*
 	  전에는 padding: calc((var(--ds-8) - 1em * 1.3) / 2) 로 세로 가운데를
@@ -777,7 +810,7 @@ body,
 	padding: var(--ds-2);
 	line-height: var(--ds-4);
 	border-radius: var(--ds-radius-sm);
-	color: var(--ds-ink-3) !important;
+	color: rgba(255, 255, 255, 0.75) !important;
 	font-size: var(--ds-fs-small);
 	white-space: nowrap;
 	overflow: hidden;
@@ -786,8 +819,8 @@ body,
 }
 
 .sidenav2 .nav-list-wrap a:hover {
-	background-color: var(--ds-hover);
-	color: var(--ds-ink) !important;
+	background-color: rgba(255, 255, 255, 0.08);
+	color: #fff !important;
 }
 
 /* ---------------------------------------------------------------------------
