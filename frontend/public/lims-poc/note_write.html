@@ -3070,19 +3070,177 @@
       }
 
       function moveBlock(blockId, delta) {
+        const idx = indexOfBlock(blockId);
+        return reorderBlock(idx, idx + delta, blockId);
+      }
+
+      function indexOfBlock(blockId) {
+        return gBlocks.findIndex(function (b) { return b.blockId === blockId; });
+      }
+
+      /*
+        순서 바꾸기의 유일한 통로. 끌어 옮기기와 화살표 이동이 같은 자리로 모인다.
+
+        renderBlocks() 는 목록을 통째로 다시 그린다 — 텍스트 에디터 인스턴스와
+        구조 iframe 이 날아간다. 그래서 그리기 전에 반드시 syncTextBlocks() 로
+        DOM 의 입력값을 모델로 회수해야 한다. 빠뜨리면 "블록을 옮겼더니 방금 쓴
+        글이 사라졌다" 가 된다.
+
+        toIdx 는 "옮긴 뒤 이 블록이 놓일 자리" 다(뽑아낸 다음의 색인이 아니라).
+      */
+      function reorderBlock(fromIdx, toIdx, focusBlockId) {
+        if (fromIdx < 0 || fromIdx >= gBlocks.length) { return false; }
+        const to = Math.max(0, Math.min(Number(toIdx), gBlocks.length - 1));
+        if (to === fromIdx) { return false; }
+
         syncTextBlocks();
-        const idx = gBlocks.findIndex(function (b) {
-          return b.blockId === blockId;
-        });
-        const next = idx + delta;
-        if (idx < 0 || next < 0 || next >= gBlocks.length) {
-          return;
-        }
-        const moved = gBlocks.splice(idx, 1)[0];
-        gBlocks.splice(next, 0, moved);
+        const moved = gBlocks.splice(fromIdx, 1)[0];
+        gBlocks.splice(to, 0, moved);
         markDirty();
         renderBlocks();
+        announceOrder(moved, to);
+
+        /*
+          다시 그리면 눌렀던 손잡이도 새로 생긴다. 초점을 잃으면 화살표로
+          연달아 옮길 수 없다 — 같은 블록의 손잡이로 초점을 되돌려 준다.
+        */
+        if (focusBlockId) {
+          const el = document.querySelector('.lims-note-block-drag[data-block-id="' + focusBlockId + '"]');
+          if (el) { el.focus(); }
+        }
+        return true;
       }
+
+      /* 화면을 못 보는 사람에게도 결과를 알린다. 끌어 옮기기는 시각적 사건이라
+         이 한 줄이 없으면 무슨 일이 일어났는지 알 방법이 없다. */
+      function announceOrder(block, idx) {
+        const live = document.getElementById('noteBlockLive');
+        if (!live) { return; }
+        live.textContent = kindLabel(block.blockTpCcd) + ' 블록을 '
+          + (idx + 1) + '번째로 옮겼습니다. 전체 ' + gBlocks.length + '개.';
+      }
+
+      function kindLabel(ccd) {
+        return ccd === 'STRUCTURE' ? '구조' : ccd === 'TABLE' ? '표' : '텍스트';
+      }
+
+      /* ---------------------------------------------------------------
+         끌어서 순서 바꾸기
+
+         HTML5 draggable 을 쓰지 않는다. 본문이 contenteditable 이라 편집기가
+         자기 몫의 끌기(문단 안 텍스트 이동)를 이미 처리하고 있고, 둘이 겹치면
+         글자를 끌었는데 블록이 움직이는 일이 생긴다. 손잡이에서 시작한
+         포인터만 본다 — 마우스·펜·손가락이 같은 코드로 처리된다.
+
+         옮기는 동안 블록을 실제로 옮기지 않는다. 놓일 자리에 선 하나를 긋고,
+         손을 뗄 때 한 번만 옮긴다. 끌 때마다 다시 그리면 텍스트 에디터가
+         매 프레임 죽었다 살아난다.
+      --------------------------------------------------------------- */
+      (function bindBlockDrag() {
+        let dragId = null;      /* 끌고 있는 블록 */
+        let dropAt = -1;        /* 놓일 자리(옮긴 뒤의 색인) */
+        let startY = 0;
+        let moved = false;      /* 문턱을 넘었는가 — 그냥 클릭과 가른다 */
+        const THRESHOLD = 4;
+
+        function blockEls() {
+          return Array.prototype.slice.call(document.querySelectorAll('#noteBlocks .lims-note-block'));
+        }
+
+        function clearMarks() {
+          document.querySelectorAll('.lims-note-block.is-drop-before, .lims-note-block.is-drop-after')
+            .forEach(function (el) { el.classList.remove('is-drop-before', 'is-drop-after'); });
+        }
+
+        /* 포인터가 있는 y 로 "몇 번째 자리에 놓을 것인가" 를 정한다.
+           각 블록의 한가운데를 경계로 본다 — 위쪽 절반이면 그 앞, 아래면 그 뒤. */
+        function computeDrop(y) {
+          const els = blockEls();
+          for (let i = 0; i < els.length; i++) {
+            const r = els[i].getBoundingClientRect();
+            if (y < r.top + r.height / 2) { return i; }
+          }
+          return els.length;
+        }
+
+        function paintDrop(at) {
+          clearMarks();
+          const els = blockEls();
+          if (!els.length) { return; }
+          if (at >= els.length) {
+            els[els.length - 1].classList.add('is-drop-after');
+          } else {
+            els[at].classList.add('is-drop-before');
+          }
+        }
+
+        document.addEventListener('pointerdown', function (ev) {
+          const handle = ev.target.closest && ev.target.closest('.lims-note-block-drag');
+          if (!handle || ev.button > 0) { return; }
+          dragId = handle.getAttribute('data-block-id');
+          startY = ev.clientY;
+          moved = false;
+          dropAt = -1;
+          /* 손잡이에 포인터를 묶어 두면 블록 밖으로 나가도 이벤트가 계속 온다 */
+          try { handle.setPointerCapture(ev.pointerId); } catch (e) { /* 지원 안 하면 문서 이벤트로 충분하다 */ }
+          ev.preventDefault();   /* 텍스트 선택이 같이 끌리지 않게 */
+        });
+
+        document.addEventListener('pointermove', function (ev) {
+          if (!dragId) { return; }
+          if (!moved) {
+            if (Math.abs(ev.clientY - startY) < THRESHOLD) { return; }
+            moved = true;
+            document.body.classList.add('is-block-dragging');
+            const el = document.getElementById('block-' + dragId);
+            if (el) { el.classList.add('is-dragging'); }
+          }
+          dropAt = computeDrop(ev.clientY);
+          paintDrop(dropAt);
+        });
+
+        function finish(ev) {
+          if (!dragId) { return; }
+          const id = dragId;
+          const wasMoved = moved;
+          const at = dropAt;
+          dragId = null;
+          moved = false;
+          dropAt = -1;
+          document.body.classList.remove('is-block-dragging');
+          const el = document.getElementById('block-' + id);
+          if (el) { el.classList.remove('is-dragging'); }
+          clearMarks();
+          if (!wasMoved || at < 0) { return; }
+
+          const from = indexOfBlock(id);
+          /* computeDrop 은 "이 블록 앞" 을 뜻한다. 자기보다 아래로 보낼 때는
+             자기 자신이 빠지면서 자리가 하나 당겨진다. */
+          const to = at > from ? at - 1 : at;
+          reorderBlock(from, to, id);
+          if (ev) { ev.preventDefault(); }
+        }
+
+        document.addEventListener('pointerup', finish);
+        document.addEventListener('pointercancel', finish);
+
+        /* 키보드 — 손잡이에 초점을 두고 ↑·↓ 로 옮긴다. Home/End 는 처음·끝으로. */
+        document.addEventListener('keydown', function (ev) {
+          const handle = ev.target.closest && ev.target.closest('.lims-note-block-drag');
+          if (!handle) { return; }
+          const id = handle.getAttribute('data-block-id');
+          const idx = indexOfBlock(id);
+          if (idx < 0) { return; }
+          let to = null;
+          if (ev.key === 'ArrowUp') { to = idx - 1; }
+          else if (ev.key === 'ArrowDown') { to = idx + 1; }
+          else if (ev.key === 'Home') { to = 0; }
+          else if (ev.key === 'End') { to = gBlocks.length - 1; }
+          if (to === null) { return; }
+          ev.preventDefault();
+          reorderBlock(idx, to, id);
+        });
+      })();
 
       /* 텍스트 블록 — 입력은 DOM 이 들고 있다가 저장 직전에 모은다. */
       function syncTextBlocks() {
@@ -3357,7 +3515,18 @@
           */
           const b = blockOf(gEditorBlockId);
           if (b && b.molblock !== msg.payload.molfile) {
-            applyStructure(gEditorBlockId, msg.payload.molfile);
+            /*
+              편집기가 계산해 둔 값도 같이 넘긴다. 정본은 여전히 서버(RDKit)다 —
+              아래 applyStructure 는 늘 서버에 먼저 묻는다. 다만 서버에 닿지
+              못했을 때(배포된 정적 사이트에는 화학 서비스가 없다) 빈 화면 대신
+              편집기 값을 쓰고, 어느 엔진이 낸 값인지 상태줄에 적는다.
+            */
+            applyStructure(gEditorBlockId, msg.payload.molfile, {
+              formula: msg.payload.formula,
+              molWt: msg.payload.molWt,
+              exactMolWt: msg.payload.exactMolWt,
+              source: msg.payload.source || 'rdkit'
+            });
           }
         }
       });
@@ -3368,7 +3537,7 @@
         뒤엣것을 조용히 버려서 "그림은 나오는데 숫자가 안 나온다"가 된다.
         걸린 시간은 실측해 화면에 남긴다.
       */
-      function applyStructure(blockId, structure) {
+      function applyStructure(blockId, structure, fromEditor) {
         const b = blockOf(blockId);
         if (!b) {
           return;
@@ -3409,8 +3578,15 @@
               : (isNum(p.exact_mass) ? p.exact_mass : null);
 
             if (!formula && !isNum(molWt)) {
-              /* RDKit 이 파싱에 실패하면 물성이 비어 온다. 0 이나 빈칸으로 넘기지 않고 사유를 적는다. */
-              failCalc(b, '구조를 해석하지 못했습니다. SMILES 또는 MOL 블록인지 확인하세요.');
+              /*
+                물성이 비어 왔다. 두 가지가 섞여 있다 — 구조가 잘못됐거나,
+                계산 서비스에 닿지 못했거나. 예전에는 둘 다 "구조를 해석하지
+                못했습니다" 로 적었다. 배포된 정적 사이트에는 그 서비스가 아예
+                없으므로, 멀쩡한 아스피린을 붙여넣어도 사용자가 자기 입력을
+                의심하게 만드는 문구였다. 편집기가 이미 계산해 둔 값이 있으면
+                그것을 쓰고, 없으면 원인을 서비스 쪽으로 정확히 적는다.
+              */
+              unreachable(b, fromEditor, startedAt);
               return;
             }
 
@@ -3428,12 +3604,43 @@
             depictBlock(b);
           },
           function () {
-            failCalc(b, '화학 계산 서비스에 연결할 수 없습니다. 관리자에게 문의하세요.');
+            unreachable(b, fromEditor, startedAt);
           },
           function () {
-            failCalc(b, '화학 계산 서비스에 연결할 수 없습니다. 관리자에게 문의하세요.');
+            unreachable(b, fromEditor, startedAt);
           }
         );
+      }
+
+      /*
+        화학 계산 서비스에 닿지 못했다.
+
+        배포된 프로토타입은 정적 사이트라 그 서비스가 아예 없다. 예전에는 여기서
+        블록을 비우고 "연결할 수 없습니다" 로 끝냈다 — 그런데 블록 안 편집기는
+        같은 구조를 이미 계산해서 보내 준 상태다. 그 숫자를 버리고 빈 칸을
+        보여 주는 것은, 값이 있는데 없다고 말하는 것이다.
+
+        정본은 바뀌지 않는다. 서버가 답하면 언제나 서버 값을 쓴다. 서버가 없을
+        때만 편집기 값을 쓰고, 어느 엔진이 냈는지 상태줄에 그대로 적는다.
+      */
+      function unreachable(b, fromEditor, startedAt) {
+        const usable = fromEditor && (fromEditor.formula || isNum(fromEditor.molWt));
+        if (!usable) {
+          failCalc(b, '화학 계산 서비스에 연결할 수 없습니다. 관리자에게 문의하세요.');
+          return;
+        }
+        b.molFormula = fromEditor.formula || '';
+        b.molWt = isNum(fromEditor.molWt) ? Number(fromEditor.molWt) : null;
+        b.exactMolWt = isNum(fromEditor.exactMolWt) ? Number(fromEditor.exactMolWt) : null;
+        b.calcMs = new Date().getTime() - startedAt;
+        $('#calc-' + b.blockId).removeClass('is-calculating').addClass('is-fresh');
+        paintProps(b, true);
+        setStructStatus(b,
+          fromEditor.source === 'indigo'
+            ? '분자식·분자량 계산 완료 — RDKit 서비스에 닿지 못해 편집기 내장 Indigo 값입니다'
+            : '분자식·분자량 계산 완료 (편집기 계산값)',
+          'warn');
+        depictBlock(b);
       }
 
       function failCalc(b, message) {
@@ -3475,8 +3682,10 @@
       function setStructStatus(b, message, tone) {
         $('#struct-status-' + b.blockId)
           .text(message)
-          .removeClass('is-ok is-danger')
-          .addClass(tone === 'ok' ? 'is-ok' : (tone === 'danger' ? 'is-danger' : ''));
+          .removeClass('is-ok is-danger is-warn')
+          .addClass(tone === 'ok' ? 'is-ok'
+            : tone === 'danger' ? 'is-danger'
+            : tone === 'warn' ? 'is-warn' : '');
       }
 
       /* ---------------------------------------------------------------
@@ -6385,12 +6594,14 @@
             <div class="lims-card-head">
               <p class="lims-card-title">본문</p>
               <div class="lims-card-tools">
-                <button class="button-gray-line-sty01"
-                        onclick="addBlock('TEXT');"><span>텍스트 블록</span></button>
-                <button class="button-blue-line-sty01"
-                        onclick="addBlock('STRUCTURE');"><span>구조 블록</span></button>
-                <button class="button-gray-line-sty01"
-                        onclick="addBlock('TABLE');"><span>표 블록</span></button>
+                
+                <span class="lims-note-addlabel">블록 추가</span>
+                <button class="button-gray-line-sty01" aria-label="텍스트 블록 추가"
+                        onclick="addBlock('TEXT');"><span>텍스트</span></button>
+                <button class="button-gray-line-sty01" aria-label="구조 블록 추가"
+                        onclick="addBlock('STRUCTURE');"><span>구조</span></button>
+                <button class="button-gray-line-sty01" aria-label="표 블록 추가"
+                        onclick="addBlock('TABLE');"><span>표</span></button>
                 
                 <span id="noteSaveState"
                       class="lims-note-savestate"
@@ -6403,6 +6614,8 @@
             <div class="lims-card-body">
               <div class="lims-note-blocks"
                    id="noteBlocks"></div>
+              
+              <p id="noteBlockLive" class="visually-hidden" role="status" aria-live="polite"></p>
             </div>
           </div>
         </div>
@@ -6424,13 +6637,16 @@
               type="text/template">
         <section class="lims-note-block" id="block-{{=blockId}}">
           <div class="lims-note-block-head">
+            
+            <button type="button" class="lims-note-block-drag"
+                    data-block-id="{{=blockId}}"
+                    aria-label="블록 순서 바꾸기 — 끌거나, 위·아래 화살표를 누르세요"
+                    title="끌어서 순서 변경 (↑ ↓ 로도 이동)"><span aria-hidden="true">⠿</span></button>
             <span class="lims-note-block-ord">{{=ordDisp}}</span>
             <span class="lims-note-block-kind">텍스트</span>
             
             <button type="button" class="lims-note-block-more" aria-label="블록 조작 열기">⋯</button>
             <div class="lims-note-block-tools">
-              <button class="button-gray-line-sty01" onclick="moveBlock('{{=blockId}}', -1);"><span>위로</span></button>
-              <button class="button-gray-line-sty01" onclick="moveBlock('{{=blockId}}', 1);"><span>아래로</span></button>
               <button class="button-gray-line-sty01" onclick="removeBlock('{{=blockId}}');"><span>삭제</span></button>
             </div>
           </div>
@@ -6445,14 +6661,17 @@
               type="text/template">
         <section class="lims-note-block is-struct" id="block-{{=blockId}}">
           <div class="lims-note-block-head">
+            
+            <button type="button" class="lims-note-block-drag"
+                    data-block-id="{{=blockId}}"
+                    aria-label="블록 순서 바꾸기 — 끌거나, 위·아래 화살표를 누르세요"
+                    title="끌어서 순서 변경 (↑ ↓ 로도 이동)"><span aria-hidden="true">⠿</span></button>
             <span class="lims-note-block-ord">{{=ordDisp}}</span>
             <span class="lims-note-block-kind is-struct">구조</span>
             
             <button type="button" class="lims-note-block-more" aria-label="블록 조작 열기">⋯</button>
             <div class="lims-note-block-tools">
               <button class="button-blue-full-sty01" id="editor-btn-{{=blockId}}" onclick="openStructEditor('{{=blockId}}');"><span>구조 입력기</span></button>
-              <button class="button-gray-line-sty01" onclick="moveBlock('{{=blockId}}', -1);"><span>위로</span></button>
-              <button class="button-gray-line-sty01" onclick="moveBlock('{{=blockId}}', 1);"><span>아래로</span></button>
               <button class="button-gray-line-sty01" onclick="removeBlock('{{=blockId}}');"><span>삭제</span></button>
             </div>
           </div>
@@ -6481,9 +6700,9 @@
                     </div>
                   </div>
                 </div>
-                <div class="lims-note-struct-status" id="struct-status-{{=blockId}}">구조를 넣으면 여기에 분자식·분자량이 즉시 채워집니다.</div>
                 
-                <div class="guidetext-sty01 lims-note-editor-guide">구조 입력기에서 그린 구조가 이 블록으로 들어옵니다.</div>
+                <div class="lims-note-struct-status lims-note-editor-guide"
+                     id="struct-status-{{=blockId}}">구조를 넣으면 분자식·분자량이 즉시 채워집니다.</div>
                 <input type="text" id="caption-{{=blockId}}" maxlength="200"
                        class="input-write-sty02-line wp-100 ma-t10"
                        placeholder="구조 설명 (선택) 예) 목적화합물 KM00003710" value="{{=captionVal}}" aria-label="구조 설명 (선택) 예) 목적화합물 KM00003710" />
@@ -6497,14 +6716,17 @@
               type="text/template">
         <section class="lims-note-block" id="block-{{=blockId}}">
           <div class="lims-note-block-head">
+            
+            <button type="button" class="lims-note-block-drag"
+                    data-block-id="{{=blockId}}"
+                    aria-label="블록 순서 바꾸기 — 끌거나, 위·아래 화살표를 누르세요"
+                    title="끌어서 순서 변경 (↑ ↓ 로도 이동)"><span aria-hidden="true">⠿</span></button>
             <span class="lims-note-block-ord">{{=ordDisp}}</span>
             <span class="lims-note-block-kind">표 · 반응 시약</span>
             
             <button type="button" class="lims-note-block-more" aria-label="블록 조작 열기">⋯</button>
             <div class="lims-note-block-tools">
               <button class="button-blue-line-sty01" onclick="openModalReagentPick('{{=blockId}}');"><span>시약 넣기</span></button>
-              <button class="button-gray-line-sty01" onclick="moveBlock('{{=blockId}}', -1);"><span>위로</span></button>
-              <button class="button-gray-line-sty01" onclick="moveBlock('{{=blockId}}', 1);"><span>아래로</span></button>
               <button class="button-gray-line-sty01" onclick="removeBlock('{{=blockId}}');"><span>삭제</span></button>
             </div>
           </div>

@@ -1,4 +1,5 @@
 import type { PropertiesResponse } from '../lib/api';
+import type { PropSource } from '../lib/localProps';
 import { splitFormula } from '../lib/formula';
 
 interface PropertyBarProps {
@@ -8,6 +9,10 @@ interface PropertyBarProps {
   inputFormat: string | null;
   elapsedMs: number | null;
   serverMs: number | null;
+  /** Engine behind the numbers. Shown, never assumed. */
+  source: PropSource;
+  /** Why RDKit was skipped, when source === 'indigo'. */
+  fallbackReason: string | null;
 }
 
 /**
@@ -23,6 +28,8 @@ export default function PropertyBar({
   inputFormat,
   elapsedMs,
   serverMs,
+  source,
+  fallbackReason,
 }: PropertyBarProps) {
   return (
     <div className={`prop-bar prop-bar--${status}`}>
@@ -71,7 +78,7 @@ export default function PropertyBar({
         />
       </div>
 
-      <div className="prop-bar__engine">
+      <div className={`prop-bar__engine${source === 'indigo' ? ' prop-bar__engine--fallback' : ''}`}>
         <span className="engine-dot" aria-hidden />
         <span>
           {status === 'loading'
@@ -80,7 +87,17 @@ export default function PropertyBar({
               ? `Cannot compute: ${error ?? 'parse error'}`
               : status === 'empty'
                 ? 'Draw or paste a structure'
-                : `RDKit · ${inputFormat ?? '—'}`}
+                : source === 'indigo'
+                  /*
+                    Say plainly which engine answered. RDKit is the engine of
+                    record for this PoC; when it cannot be reached the numbers
+                    come from Ketcher's bundled Indigo instead, and a value
+                    whose origin is unstated cannot be checked against anything.
+                  */
+                  ? `Indigo (in-browser) · RDKit backend unreachable${
+                      fallbackReason ? ` — ${fallbackReason}` : ''
+                    }`
+                  : `RDKit · ${inputFormat ?? '—'}`}
         </span>
         {elapsedMs != null && status === 'idle' && (
           <span className="engine-latency" title={`server compute ${serverMs ?? '?'} ms`}>

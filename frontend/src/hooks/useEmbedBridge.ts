@@ -19,6 +19,8 @@ interface BridgeProps {
   molfile: string | null;
   /** Why the last compute failed, when `status === 'error'`. */
   error?: string | null;
+  /** Engine behind `properties` — forwarded so the parent can label the values. */
+  source?: 'rdkit' | 'indigo';
 }
 
 /**
@@ -34,7 +36,7 @@ interface BridgeProps {
 export function useEmbedBridge(
   config: EmbedConfig,
   ketcher: Ketcher | null,
-  { properties, status, molfile, error }: BridgeProps,
+  { properties, status, molfile, error, source }: BridgeProps,
 ): void {
   const { embed, parentOrigin } = config;
 
@@ -75,6 +77,31 @@ export function useEmbedBridge(
     );
   }, [embed, parentOrigin, status, error]);
 
+  /*
+    iframe → parent: the canvas went empty (user deleted the structure, or the
+    parent pushed an empty set-structure).
+
+    Without this the parent keeps showing the previous molecule's numbers —
+    measured: clear the canvas and the popup still read C6H6 / 78.114, with
+    "화합물 등록" still enabled. You could register a structure you had just
+    deleted. Silence is not "nothing changed"; it has to be said.
+  */
+  useEffect(() => {
+    if (!embed) return;
+    if (window.parent === window) return;
+    if (status !== 'empty') return;
+    lastSentRef.current = null;
+    window.parent.postMessage(
+      buildPropertiesMessage({
+        molfile: null,
+        formula: null,
+        molWt: null,
+        exactMolWt: null,
+      }),
+      parentOrigin,
+    );
+  }, [embed, parentOrigin, status]);
+
   // iframe → parent: forward every successful property update.
   useEffect(() => {
     if (!embed) return;
@@ -86,11 +113,12 @@ export function useEmbedBridge(
       formula: properties.formula,
       molWt: properties.mol_weight,
       exactMolWt: properties.exact_mass,
+      source: source ?? 'rdkit',
     };
     const fingerprint = JSON.stringify(payload);
     if (fingerprint === lastSentRef.current) return;
     lastSentRef.current = fingerprint;
 
     window.parent.postMessage(buildPropertiesMessage(payload), parentOrigin);
-  }, [embed, parentOrigin, status, properties, molfile]);
+  }, [embed, parentOrigin, status, properties, molfile, source]);
 }

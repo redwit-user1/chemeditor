@@ -8,6 +8,8 @@
   --accent-dark: #135a97;
   --error: #c0392b;
   --ok: #34a853;
+  /* 대체 엔진 표시 — 성공(초록)도 실패(빨강)도 아닌 '다른 출처' */
+  --warn: #8a6208;
   --shadow: 0 2px 10px rgba(20, 40, 70, 0.12);
   --header-h: 52px;
   --status-h: 30px;
@@ -785,4 +787,23 @@ body {
   cursor: pointer;
   font-size: 12px;
   text-decoration: underline;
+}
+
+/*
+  In-browser fallback engine.
+
+  RDKit is the engine of record for this PoC. When its backend cannot be
+  reached — which is the case on the static deployment, where there is no
+  /api/v1 at all — the numbers above come from Ketcher's bundled Indigo
+  instead. That is a different engine with different rounding and different
+  handling of salts and tautomers, so it must never look like the normal case.
+  Amber, not green, and the text says which engine answered.
+*/
+.prop-bar__engine--fallback {
+  color: var(--warn);
+  white-space: normal;
+}
+
+.prop-bar__engine--fallback .engine-dot {
+  background: var(--warn);
 }

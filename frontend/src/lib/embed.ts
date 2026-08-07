@@ -45,6 +45,13 @@ export interface PropertiesMessagePayload {
   formula: string | null;
   molWt: number | null;
   exactMolWt: number | null;
+  /**
+   * Which engine produced these numbers — 'rdkit' (engine of record) or
+   * 'indigo' (in-browser fallback, used when the RDKit backend is unreachable).
+   * The embedding screen must show this next to the values: a number whose
+   * origin is not stated cannot be checked against anything.
+   */
+  source?: 'rdkit' | 'indigo';
 }
 
 /**

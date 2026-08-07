@@ -35,6 +35,7 @@ export default function App() {
     status: live.status,
     molfile: live.molfile,
     error: live.error,
+    source: live.source,
   });
 
   const handleStatus = useCallback((text: string) => {
@@ -97,6 +98,8 @@ export default function App() {
         status={live.status}
         error={live.error}
         inputFormat={live.inputFormat}
+        source={live.source}
+        fallbackReason={live.fallbackReason}
         elapsedMs={live.elapsedMs}
         serverMs={live.serverMs}
       />

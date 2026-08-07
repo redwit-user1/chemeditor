@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Ketcher } from 'ketcher-core';
 import { fetchProperties, type PropertiesResponse } from '../lib/api';
+import { computeLocally, type PropSource } from '../lib/localProps';
 
 export type PropStatus = 'idle' | 'loading' | 'error' | 'empty';
 
@@ -15,6 +16,14 @@ interface LiveProperties {
   elapsedMs: number | null;
   /** Server-side compute latency reported by the API, ms. */
   serverMs: number | null;
+  /**
+   * Which engine produced `properties`. RDKit is the engine of record; 'indigo'
+   * means the backend could not be reached and the in-browser fallback ran.
+   * Every surface that shows the numbers must also show this.
+   */
+  source: PropSource;
+  /** Why RDKit was skipped, when source === 'indigo'. Kept for the status line. */
+  fallbackReason: string | null;
 }
 
 const DEBOUNCE_MS = 150; // SPEC §6.1
@@ -35,6 +44,8 @@ export function useLiveProperties(ketcher: Ketcher | null): LiveProperties {
     molfile: null,
     elapsedMs: null,
     serverMs: null,
+    source: 'rdkit',
+    fallbackReason: null,
   });
 
   const timerRef = useRef<number | null>(null);
@@ -62,6 +73,8 @@ export function useLiveProperties(ketcher: Ketcher | null): LiveProperties {
           molfile: null,
           elapsedMs: null,
           serverMs: null,
+          source: 'rdkit',
+          fallbackReason: null,
         });
         return;
       }
@@ -84,8 +97,14 @@ export function useLiveProperties(ketcher: Ketcher | null): LiveProperties {
             molfile,
             elapsedMs: Math.round(elapsed),
             serverMs: res.elapsed_ms,
+            source: 'rdkit',
+            fallbackReason: null,
           });
         } else {
+          /*
+            RDKit answered and said no. That is a verdict about the structure,
+            not about reachability — do not paper over it with a second engine.
+          */
           setState({
             properties: null,
             status: 'error',
@@ -94,18 +113,44 @@ export function useLiveProperties(ketcher: Ketcher | null): LiveProperties {
             molfile: null,
             elapsedMs: Math.round(elapsed),
             serverMs: res.elapsed_ms,
+            source: 'rdkit',
+            fallbackReason: null,
           });
         }
       } catch (err) {
         if (controller.signal.aborted) return;
+        const why = err instanceof Error ? err.message : String(err);
+        /*
+          We never reached RDKit (no backend on the static deployment, network
+          down, closed network). Fall back to the in-browser engine so the
+          headline feature still works — and record which engine it was.
+        */
+        const local = ketcher ? await computeLocally(ketcher, molfile) : null;
+        if (controller.signal.aborted) return;
+        if (local) {
+          setState({
+            properties: local,
+            status: 'idle',
+            error: null,
+            inputFormat: local.input_format,
+            molfile,
+            elapsedMs: Math.round(performance.now() - t0),
+            serverMs: null,
+            source: 'indigo',
+            fallbackReason: why,
+          });
+          return;
+        }
         setState({
           properties: null,
           status: 'error',
-          error: err instanceof Error ? err.message : String(err),
+          error: why,
           inputFormat: null,
           molfile: null,
           elapsedMs: null,
           serverMs: null,
+          source: 'rdkit',
+          fallbackReason: null,
         });
       }
     };
