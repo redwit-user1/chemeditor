@@ -2554,6 +2554,10 @@
          let 이면 선언 줄에 닿기 전에 부르는 순간 TDZ 로 터진다. */
       var gDirty = false;
       var gLastSavedAt = null;
+      /* 노트 상태. 서버(목)가 정본이고 화면은 받아 적기만 한다. */
+      var gNoteState = 'DRAFT';
+      var gStateLog = [];
+      var gAmends = [];
 
       /* ---------------------------------------------------------------
          진입점
@@ -2723,12 +2727,15 @@
               .toggleClass('is-empty', false);
             $('#noteMnoDisp').text(gNoteMno ? gNoteMno : '(임시)');
             paintNoteSample(note);
-            /* 상태 라벨은 공통코드 어휘를 그대로 쓴다 — 화면마다 다른 말을 쓰지 않는다. */
-            const STATUS_NM = {
-              DRAFT: '임시저장', WRITING: '작성중', INSPECTION: '점검중',
-              REJECT: '반려', COMPLETE: '작성완료'
-            };
-            $('#noteStatusNm').text(STATUS_NM[note.statusCcd] || '작성중');
+            /*
+              상태. 예전에는 여기서 #noteStatusNm 에 글자를 찍었는데 그
+              엘리먼트가 화면에 없었다 — 아무 데도 안 나오는 값이었다.
+              이제는 상태 띠가 받는다.
+            */
+            gNoteState = res && res.state ? res.state : 'DRAFT';
+            gStateLog = asList(res ? res.stateLog : null);
+            gAmends = asList(res ? res.amendList : null);
+            paintNoteState();
 
             gBlocks = asList(res ? res.blockList : null).map(toBlock);
             if (!gBlocks.length) {
@@ -4476,7 +4483,7 @@
       function openModalReagentPick(blockId) {
         gPickTargetId = blockId;
 
-        $('#modal-lims-note-reagent')
+        limsModal('modal-lims-note-reagent')
           .draggable({ handle: '.modal-header' })
           .modal('show')
           .find('.modal-content')
@@ -4709,6 +4716,328 @@
           .removeClass('is-dirty').addClass('is-saved');
       }
 
+
+      /* ===============================================================
+         노트 상태 — 초안 · 검토 대기 · 검토 중 · 서명 완료 · 반려
+
+         이 화면에는 상태가 없었다. [저장] 하나로 끝났고, 저장 후 안내문이
+         "결재·서명 워크플로는 범위 밖이라 상태만 제출로 둡니다" 라고 말했다.
+         그런데 재단이 대체하려는 시스템의 핵심이 바로 그 결재·서명이다.
+         전부는 못 만들더라도, 상태가 어떻게 흐르고 서명 뒤에 기록이 어떻게
+         보호되는지는 눌러 볼 수 있어야 한다.
+
+           초안 ─검토 요청→ 검토 대기 ─리뷰 시작→ 검토 중 ─승인 및 서명→ 서명 완료
+                    ↑ 요청 취소            └──────── 반려 ─→ 반려됨 ─수정 후 재요청─┘
+
+         서명 완료는 종착이다. 본문 편집이 잠기고, 남는 쓰기는 정정 기록뿐이다.
+         전이 가능 여부는 목이 판정한다 — 화면이 버튼을 감추는 것만으로는
+         감사 추적이 성립하지 않는다.
+         =============================================================== */
+
+      const NOTE_STATES = {
+        /*
+          아이콘은 bootstrap-icons 를 쓴다. 참고 설계는 Material Symbols 이름을
+          쓰지만(hourglass_top·rate_review·assignment_return) 그 글꼴은 이
+          제품에 실려 있지 않다 — 그대로 두면 빈 네모가 나온다. 뜻이 같은
+          것으로 바꾼다. 없는 글꼴을 CDN 에서 받아 오지 않는다(폐쇄망).
+        */
+        DRAFT:      { nm: '초안',      cls: 'is-draft',     ico: 'bi-pencil-square' },
+        REVIEW_REQ: { nm: '검토 대기', cls: 'is-reviewreq', ico: 'bi-hourglass-split' },
+        IN_REVIEW:  { nm: '검토 중',   cls: 'is-inreview',  ico: 'bi-eye' },
+        SIGNED:     { nm: '서명 완료', cls: 'is-signed',    ico: 'bi-lock-fill' },
+        REJECTED:   { nm: '반려',      cls: 'is-rejected',  ico: 'bi-arrow-counterclockwise' }
+      };
+
+      function stateChipHtml(cd) {
+        const st = NOTE_STATES[cd] || NOTE_STATES.DRAFT;
+        return '<span class="lims-note-state ' + st.cls + '">'
+          + '<i class="bi ' + st.ico + ' ico" aria-hidden="true"></i>'
+          + esc(st.nm) + '</span>';
+      }
+
+      /* 기록의 마지막 줄 — 누가 언제 그렇게 했는지. 없으면 빈 문자열. */
+      function lastAct(cd) {
+        for (let i = gStateLog.length - 1; i >= 0; i--) {
+          if (gStateLog[i].act === cd) { return gStateLog[i]; }
+        }
+        return null;
+      }
+
+      function paintNoteState() {
+        const $bar = $('#noteStateBar');
+        if (!$bar.length) { return; }
+        const cd = gNoteState;
+        const chip = stateChipHtml(cd);
+        let tone = '';
+        let ico = 'bi-info-circle';
+        let msg = '';
+        let acts = '';
+        let block = false;
+        let why = '';
+
+        if (cd === 'DRAFT') {
+          tone = '';
+          ico = 'bi-pencil-square';
+          msg = chip + ' 작성 중입니다. 다 쓰고 나면 검토를 요청하세요.';
+          acts = '<button type="button" class="button-blue-full-sty01"'
+               + ' onclick="noteStateGo(\'REVIEW_REQ\');"><span>검토 요청</span></button>';
+        } else if (cd === 'REVIEW_REQ') {
+          tone = 'tone-warn';
+          ico = 'bi-hourglass-split';
+          const a = lastAct('REVIEW_REQ');
+          msg = chip + ' ' + (a ? esc(a.by) + '님이 ' + esc(a.at) + '에 검토를 요청했습니다.' : '검토를 기다리는 중입니다.')
+              + ' 검토자가 리뷰를 시작하면 본문은 잠기지 않지만 변경 이력이 남습니다.';
+          acts = '<button type="button" class="button-gray-line-sty01"'
+               + ' onclick="noteStateGo(\'DRAFT\');"><span>요청 취소</span></button>'
+               + '<button type="button" class="button-blue-full-sty01"'
+               + ' onclick="noteStateGo(\'IN_REVIEW\');"><span>리뷰 시작</span></button>';
+        } else if (cd === 'IN_REVIEW') {
+          tone = 'tone-info';
+          ico = 'bi-eye';
+          const a = lastAct('IN_REVIEW');
+          msg = chip + ' ' + (a ? esc(a.by) + '님이 검토 중입니다.' : '검토 중입니다.')
+              + ' 승인하면 서명이 찍히고 본문은 더 이상 고칠 수 없습니다.';
+          /*
+            참고 설계의 [승인 및 서명] 은 초록 채움이다. 이 제품의 버튼 체계에
+            초록 채움이 없고, 하나 만들면 "주 동작 = 파랑" 규칙이 화면마다
+            달라진다. 초록은 상태 알약이 이미 내고 있으므로 버튼은 체계를
+            따른다 — 위험 동작(반려)만 빨강 계열.
+          */
+          acts = '<button type="button" class="button-remove-sty01"'
+               + ' onclick="noteStateReject();"><span>반려</span></button>'
+               + '<button type="button" class="button-blue-full-sty01"'
+               + ' onclick="noteStateGo(\'SIGNED\');"><span>승인 및 서명</span></button>';
+        } else if (cd === 'SIGNED') {
+          tone = 'tone-ok';
+          ico = 'bi-lock-fill';
+          const a = lastAct('SIGNED');
+          msg = chip + ' ' + (a ? esc(a.by) + '님이 ' + esc(a.at) + '에 승인·서명했습니다.' : '서명이 완료되었습니다.')
+              + ' 본문은 잠겼습니다. 바로잡을 것이 있으면 원문을 두고 정정 기록을 덧붙이세요.';
+          acts = '<button type="button" class="button-gray-line-sty01"'
+               + ' onclick="openAmendModal();"><span>정정 기록 추가</span></button>';
+        } else if (cd === 'REJECTED') {
+          tone = 'tone-danger';
+          ico = 'bi-arrow-counterclockwise';
+          block = true;
+          const a = lastAct('REJECTED');
+          msg = chip + ' <strong>' + (a ? esc(a.by) + '님이 ' + esc(a.at) + '에 반려했습니다.' : '반려되었습니다.') + '</strong>';
+          why = a && a.memo ? esc(a.memo) : '사유가 기록되지 않았습니다.';
+          acts = '<button type="button" class="button-blue-full-sty01"'
+               + ' onclick="noteStateGo(\'REVIEW_REQ\');"><span>수정 후 재요청</span></button>';
+        }
+
+        const icoHtml = '<i class="bi ' + ico + ' ico" aria-hidden="true"></i>';
+        $bar.removeClass('d-none tone-warn tone-info tone-ok tone-danger is-block')
+          .addClass(tone);
+        if (block) {
+          $bar.addClass('is-block').html(
+            '<div class="lims-note-statebar-head">' + icoHtml
+            + '<div class="lims-note-statebar-msg">' + msg + '</div></div>'
+            + '<p class="lims-note-statebar-why">' + why + '</p>'
+            + '<div class="lims-note-statebar-acts">' + acts + '</div>');
+        } else {
+          $bar.html(icoHtml
+            + '<div class="lims-note-statebar-msg">' + msg + '</div>'
+            + '<div class="lims-note-statebar-acts">' + acts + '</div>');
+        }
+
+        applyLock();
+        paintAmends();
+      }
+
+      /*
+        서명 완료면 본문을 잠근다. 편집기를 없애지 않고 읽기 전용으로 둔다 —
+        없애면 "기록이 사라진" 것처럼 보이고, 서명된 노트에서 그건 최악이다.
+      */
+      function applyLock() {
+        const locked = gNoteState === 'SIGNED';
+        $('.lims-note-main').toggleClass('lims-note-locked', locked);
+        for (const key in gTextEditors) {
+          const h = gTextEditors[key];
+          if (h && typeof h.setReadOnly === 'function') {
+            try { h.setReadOnly(locked); } catch (e) { /* 이미 정리된 인스턴스 */ }
+          }
+        }
+        $('.lims-note-canvas textarea, .lims-note-canvas input').prop('disabled', locked);
+      }
+
+      /* 상태를 옮긴다. 판정은 목이 한다 — 실패하면 사유를 그대로 보여 준다. */
+      function noteStateGo(to, memo) {
+        ajaxPost(
+          '/api/lims/note/changeNoteState',
+          { noteMno: gNoteMno, toStateCd: to, memo: memo || '' },
+          null,
+          function (res) {
+            if (!res || !res.state) {
+              S2Util.toasts((res && res.message) || '상태를 바꾸지 못했습니다.', { class: 'Toast-bottom-web' });
+              return;
+            }
+            gNoteState = res.state;
+            gStateLog = asList(res.stateLog);
+            paintNoteState();
+            S2Util.toasts((NOTE_STATES[gNoteState] || {}).nm + ' 상태로 바꿨습니다.', { class: 'Toast-bottom-web' });
+          },
+          null,
+          function () { S2Util.toasts('상태를 바꾸지 못했습니다.', { class: 'Toast-bottom-web' }); }
+        );
+      }
+      window.noteStateGo = noteStateGo;
+
+      /* 반려에는 사유가 있어야 한다. 사유 없는 반려는 받는 쪽이 할 일이 없다. */
+      function noteStateReject() {
+        bootbox.prompt({
+          title: '반려 사유',
+          message: '무엇을 어떻게 고쳐야 하는지 적어 주세요. 작성자에게 그대로 전달됩니다.',
+          inputType: 'textarea',
+          buttons: { confirm: { label: '반려' }, cancel: { label: '취소' } },
+          callback: function (memo) {
+            if (memo === null) { return; }
+            if (!String(memo).trim()) {
+              S2Util.toasts('반려 사유를 입력하세요.', { class: 'Toast-bottom-web' });
+              return;
+            }
+            noteStateGo('REJECTED', String(memo).trim());
+          }
+        });
+      }
+      window.noteStateReject = noteStateReject;
+
+      /* ---------------------------------------------------------------
+         정정 기록
+
+         서명된 본문은 고치지 않는다. 원문을 그대로 두고 바로잡는 글을 뒤에
+         덧붙인다 — 무엇이(원문) 어떻게(정정문) 왜(사유) 바뀌었는지 셋이
+         한자리에 있어야 감사에서 쓸 수 있다.
+      --------------------------------------------------------------- */
+
+      /*
+        모달을 body 로 옮겨 놓고 연다.
+
+        이 화면의 모달은 전부 백드롭 아래에 깔려서 아무것도 누를 수 없었다.
+        시약 선택 팝업(P0 기능)도 마찬가지였다 — 열리기는 하는데 열린 뒤에
+        클릭이 백드롭에 먹혔다.
+
+        원인은 이 화면의 골격이다. layout.css 의
+
+          #main-body #main-body-right { position: fixed; }        (1100px 초과)
+          #main-body #main-body-right { position: sticky; }       (1100px 이하)
+
+        position: fixed 와 sticky 는 z-index 값과 무관하게 쌓임 맥락(stacking
+        context)을 만든다. 모달은 그 안에 선언돼 있으므로 z-index: 1060 이
+        #main-body-right 안에서만 유효하고, 바깥에서 이 덩어리는 z-index: auto
+        로 취급된다. 부트스트랩은 백드롭을 <body> 바로 밑에 붙이고 z-index 를
+        1050 으로 준다 — 그래서 1050 짜리 백드롭이 1060 짜리 모달 위에 온다.
+        두 폭 모두에서 그렇다.
+
+        (쌓임 맥락은 "position 이 static 이 아니고 z-index 가 auto 가 아닐 때"
+        만들어진다고 외우기 쉬운데, fixed·sticky 는 z-index 가 auto 여도 만든다.
+        내 첫 점검 스크립트도 그 규칙으로 짜서 "쌓임 맥락 없음" 이라고 답했다.)
+
+        layout.css 를 고치면 구노 제품 전체의 노트 화면 배치가 흔들린다.
+        모달만 <body> 로 옮긴다 — 백드롭과 같은 맥락에 서면 1060 이 이긴다.
+      */
+      function limsModal(id) {
+        const el = document.getElementById(id);
+        if (el && el.parentElement !== document.body) {
+          document.body.appendChild(el);
+        }
+        return $('#' + id);
+      }
+
+      function paintAmends() {
+        const $wrap = $('#noteAmends');
+        if (!$wrap.length) { return; }
+        if (!gAmends.length) { $wrap.addClass('d-none').empty(); return; }
+        let html = '<div class="lims-note-amends-head">정정 기록'
+          + '<span class="cnt">' + gAmends.length + '건</span></div>';
+        gAmends.forEach(function (a) {
+          html += '<div class="lims-note-amend">'
+            + '<div class="lims-note-amend-meta">'
+            + '<span class="who">' + esc(a.by || '') + '</span>'
+            + '<span class="at">' + esc(a.at || '') + '</span>'
+            + (a.targetTxt ? '<span>' + esc(a.targetTxt) + '</span>' : '')
+            + '</div>'
+            + '<dl class="lims-note-amend-diff">'
+            + '<dt>원문</dt><dd>' + esc(a.originalTxt || '(없음)') + '</dd>'
+            + '<dt>정정</dt><dd class="is-new">' + esc(a.newTxt || '') + '</dd>'
+            + '</dl>'
+            + '<p class="lims-note-amend-why"><span class="lb">사유</span> '
+            + esc(a.reasonTxt || '') + '</p>'
+            + '</div>';
+        });
+        $wrap.removeClass('d-none').html(html);
+      }
+
+      function openAmendModal() {
+        limsModal('modal-lims-note-amend')
+          .draggable({ handle: '.modal-header' })
+          .modal('show')
+          .find('.modal-content')
+          .html(
+            '<div class="modal-header cursor-move">'
+            + '<p class="modal-title">정정 기록 추가</p>'
+            + '<span class="modal-sub">서명된 본문은 고치지 않습니다. 원문을 남긴 채 정정 내용을 덧붙입니다.</span>'
+            + '</div>'
+            + '<div class="modal-body">'
+            + '<div class="lims-amend-form">'
+            + '<div class="lims-amend-field">'
+            + '<label for="amendTarget">정정 위치 <span class="hint">어느 대목인지 알아볼 수 있게</span></label>'
+            + '<input type="text" id="amendTarget" maxlength="100" placeholder="예) 절차 · 3번째 문단" />'
+            + '</div>'
+            + '<div class="lims-amend-field is-mono">'
+            + '<label for="amendOriginal">원문</label>'
+            + '<textarea id="amendOriginal" maxlength="500" placeholder="서명된 본문에 적힌 그대로"></textarea>'
+            + '</div>'
+            + '<div class="lims-amend-field is-mono">'
+            + '<label for="amendNew">정정문</label>'
+            + '<textarea id="amendNew" maxlength="500" placeholder="바로잡은 내용"></textarea>'
+            + '</div>'
+            + '<div class="lims-amend-field is-required">'
+            + '<label for="amendReason">정정 사유</label>'
+            + '<textarea id="amendReason" maxlength="500"'
+            + ' placeholder="왜 바로잡는지. 감사 추적에 그대로 남습니다."></textarea>'
+            + '</div>'
+            + '</div>'
+            + '</div>'
+            + '<div class="modal-footer">'
+            + '<button type="button" class="button-gray-line-sty02" data-bs-dismiss="modal"><span>취소</span></button>'
+            + '<button type="button" class="button-blue-full-sty02 button-cnfm"><span>정정 기록 남기기</span></button>'
+            + '</div>');
+
+        $('#modal-lims-note-amend').find('button.button-cnfm').off('click').on('click', function () {
+          const reason = $('#amendReason').val().trim();
+          if (!reason) {
+            S2Util.toasts('정정 사유를 입력하세요.', { class: 'Toast-bottom-web' });
+            $('#amendReason').focus();
+            return;
+          }
+          ajaxPost(
+            '/api/lims/note/addAmendment',
+            {
+              noteMno: gNoteMno,
+              targetTxt: $('#amendTarget').val().trim(),
+              originalTxt: $('#amendOriginal').val().trim(),
+              newTxt: $('#amendNew').val().trim(),
+              reasonTxt: reason
+            },
+            null,
+            function (res) {
+              if (!res || !res.amend) {
+                S2Util.toasts((res && res.message) || '정정 기록을 남기지 못했습니다.', { class: 'Toast-bottom-web' });
+                return;
+              }
+              gAmends = asList(res.amendList);
+              gStateLog = asList(res.stateLog);
+              $('#modal-lims-note-amend').modal('hide');
+              paintAmends();
+              S2Util.toasts('정정 기록을 남겼습니다.', { class: 'Toast-bottom-web' });
+            },
+            null,
+            function () { S2Util.toasts('정정 기록을 남기지 못했습니다.', { class: 'Toast-bottom-web' }); }
+          );
+        });
+      }
+      window.openAmendModal = openAmendModal;
 
       function saveNote(submitYn) {
         syncTextBlocks();
@@ -7095,6 +7424,11 @@
                         onclick="saveNote('N');"><span>저장</span></button>
               </div>
             </div>
+            
+            <div id="noteStateBar"
+                 class="lims-note-statebar d-none"
+                 role="status"
+                 aria-live="polite"></div>
             <div class="lims-card-body lims-note-canvas">
               
               <nav class="lims-note-outline" aria-label="문서 아웃라인">
@@ -7105,6 +7439,8 @@
                    id="noteBlocks"></div>
               
               <p id="noteBlockLive" class="visually-hidden" role="status" aria-live="polite"></p>
+              
+              <div id="noteAmends" class="lims-note-amends d-none"></div>
             </div>
           </div>
         </div>
@@ -7117,6 +7453,16 @@
            data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered modal-lg">
           <div class="modal-pop modal-wrap-sty01 modal-content"></div>
+        </div>
+      </div>
+
+      
+      <div id="modal-lims-note-amend"
+           class="modal fade"
+           data-bs-backdrop="static"
+           data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-pop modal-wrap-sty02 modal-content"></div>
         </div>
       </div>
 

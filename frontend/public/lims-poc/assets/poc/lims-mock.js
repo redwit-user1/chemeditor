@@ -547,6 +547,28 @@
     sampleMno: 5001, sampleNo: 'SMP-20260712-001', sampleNm: 'KM00003710 합성 원료 (batch A)'
   };
 
+  /*
+    노트 상태.
+
+    구노 ELN 의 공통코드는 임시저장·작성중·점검중·반려·작성완료 다섯이지만,
+    화면은 그 값을 글자로 찍기만 했다(#noteStatusNm 은 쓰는 코드만 있고 그
+    엘리먼트가 화면에 없었다 — 아무 데도 안 나오는 상태였다). 재단 요건의
+    핵심은 "누가 언제 무엇을 승인했는가" 이므로 상태를 흐름으로 다룬다.
+
+    현재 상태는 따로 들지 않고 기록의 마지막 줄에서 읽는다. 상태와 이력이
+    어긋날 수 없다 — 어긋나면 감사 추적이 성립하지 않는다.
+
+    DRAFT ─검토 요청→ REVIEW_REQ ─리뷰 시작→ IN_REVIEW ─승인 및 서명→ SIGNED
+              ↑ 취소            └───────── 반려 ─→ REJECTED ─수정 후 재요청─┘
+    SIGNED 은 종착이다. 그 뒤의 유일한 쓰기는 정정 기록(원문은 그대로 두고
+    바로잡는 글을 덧붙인다) 이다 — 서명된 기록을 고쳐 쓰면 서명의 뜻이 없다.
+  */
+  var NOTE_STATE_LOG = [
+    { at: '2026-07-12 17:40', by: '이연구', act: 'DRAFT', memo: '' }
+  ];
+
+  var NOTE_AMENDMENTS = [];
+
   var NOTE_SEED = (window.LIMS_POC_COMPOUNDS || [])[0] || {};
 
   /*
@@ -791,7 +813,8 @@
     SAMPLES: SAMPLES, ALIQUOTS: ALIQUOTS, WORKLIST: WORKLIST, REQUESTS: REQUESTS,
     TEST_ITEMS: TEST_ITEMS, RESULTS: RESULTS, REVIEWS: REVIEWS, OOS: OOS,
     METHODS: METHODS, SPECS: SPECS, INSTRUMENTS: INSTRUMENTS, CALS: CALS,
-    LOCATIONS: LOCATIONS, REAGENTS: REAGENTS, CONTAINERS: CONTAINERS
+    LOCATIONS: LOCATIONS, REAGENTS: REAGENTS, CONTAINERS: CONTAINERS,
+    NOTE_STATE_LOG: NOTE_STATE_LOG, NOTE_AMENDMENTS: NOTE_AMENDMENTS
   };
 
   function stateStore() {
@@ -833,6 +856,23 @@
     if (st) st.removeItem(STATE_KEY);
     window.location.reload();
   };
+
+  /* 갈 수 있는 곳. 여기에 없으면 못 간다. */
+  var NOTE_STATE_NEXT = {
+    DRAFT:      ['REVIEW_REQ'],
+    REVIEW_REQ: ['IN_REVIEW', 'DRAFT'],
+    IN_REVIEW:  ['SIGNED', 'REJECTED'],
+    REJECTED:   ['REVIEW_REQ'],
+    SIGNED:     []
+  };
+
+  /* 현재 상태는 기록의 마지막 줄이다. 정정 기록(AMEND)은 상태를 바꾸지 않는다. */
+  function noteState() {
+    for (var i = NOTE_STATE_LOG.length - 1; i >= 0; i--) {
+      if (NOTE_STATE_LOG[i].act !== 'AMEND') { return NOTE_STATE_LOG[i].act; }
+    }
+    return 'DRAFT';
+  }
 
   /* ---------------------------------------------------------------
      엔드포인트 → 응답
@@ -1459,7 +1499,63 @@
     },
 
     '/api/lims/note/noteDetail': function () {
-      return { note: NOTE, blockList: NOTE_BLOCKS };
+      return {
+        note: NOTE,
+        blockList: NOTE_BLOCKS,
+        state: noteState(),
+        stateLog: NOTE_STATE_LOG.slice(),
+        amendList: NOTE_AMENDMENTS.slice()
+      };
+    },
+
+    /*
+      상태를 옮긴다. 어디서 어디로 갈 수 있는지는 목이 정한다 — 화면이 버튼을
+      감춰 두는 것만으로는 부족하다. 화면을 우회해서 부르면 그대로 통과하는
+      전이는 감사 추적에서 신뢰할 수 없다.
+    */
+    '/api/lims/note/changeNoteState': function (p) {
+      var to = String(p.toStateCd || '');
+      var from = noteState();
+      if (!NOTE_STATE_NEXT[from] || NOTE_STATE_NEXT[from].indexOf(to) < 0) {
+        return { resultCode: 'FAIL', message: from + ' 에서 ' + to + ' 로는 옮길 수 없습니다.' };
+      }
+      /* 반려에는 사유가 있어야 한다. 사유 없는 반려는 받은 쪽이 할 일이 없다. */
+      if (to === 'REJECTED' && !String(p.memo || '').trim()) {
+        return { resultCode: 'FAIL', message: '반려 사유를 입력하세요.' };
+      }
+      NOTE_STATE_LOG.push({
+        at: stampNow(),
+        by: p.actorNm || POC_ME,
+        act: to,
+        memo: String(p.memo || '').trim()
+      });
+      NOTE.statusCcd = to;
+      return { state: to, stateLog: NOTE_STATE_LOG.slice() };
+    },
+
+    /*
+      정정 기록. 서명된 본문은 건드리지 않고 뒤에 덧붙인다.
+      원문·정정문·사유 셋을 다 받는다 — 무엇이 어떻게 왜 바뀌었는지가
+      한 줄에서 읽혀야 감사에서 쓸 수 있다.
+    */
+    '/api/lims/note/addAmendment': function (p) {
+      if (noteState() !== 'SIGNED') {
+        return { resultCode: 'FAIL', message: '서명 완료된 노트에만 정정 기록을 남길 수 있습니다.' };
+      }
+      var reason = String(p.reasonTxt || '').trim();
+      if (!reason) { return { resultCode: 'FAIL', message: '정정 사유를 입력하세요.' }; }
+      var row = {
+        amendMno: seq.amend++,
+        at: stampNow(),
+        by: p.actorNm || POC_ME,
+        targetTxt: String(p.targetTxt || '').trim(),
+        originalTxt: String(p.originalTxt || '').trim(),
+        newTxt: String(p.newTxt || '').trim(),
+        reasonTxt: reason
+      };
+      NOTE_AMENDMENTS.push(row);
+      NOTE_STATE_LOG.push({ at: row.at, by: row.by, act: 'AMEND', memo: reason });
+      return { amend: row, amendList: NOTE_AMENDMENTS.slice(), stateLog: NOTE_STATE_LOG.slice() };
     },
     /*
       블록 저장. 화면은 블록 수만큼 이 경로를 순서대로 부르고, 새 블록에는
@@ -1476,6 +1572,9 @@
         blockMno: Number(p.blockMno) || nextBlockMno++,
         blockOrd: ord,
         blockTpCcd: p.blockTpCcd || 'TEXT',
+        /* 화면은 sectionCd 를 실어 보내는데 여기서 받지 않고 있었다 — 저장하고
+           다시 열면 모든 블록이 기본 섹션(절차)으로 몰렸다. */
+        sectionCd: p.sectionCd || 'PROCEDURE',
         textVal: p.textVal || '',
         molblock: p.molblock || '',
         molFormula: p.molFormula || '',
@@ -1713,7 +1812,7 @@
   --------------------------------------------------------------- */
   var seq = { sample: 5100, aliquot: 90, reqst: 7100, item: 8100, result: 100,
               method: 450, spec: 550, instrument: 650, location: 50,
-              reagent: 250, container: 350, compound: 10, cal: 80 };
+              reagent: 250, container: 350, compound: 10, cal: 80, amend: 1 };
 
   function nextNo(prefix, n) {
     return prefix + '-20260729-' + String(n % 1000).padStart(3, '0');
