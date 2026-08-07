@@ -264,8 +264,9 @@
 
    :where() 는 특이도 0 이라 원본이 직접 박아 둔 값(제목 32px, .lims-title
    20px)에 진다. 실제로 값을 옮겨야 하는 것들은 보통 선택자로 쓴다. */
-.project_simple_info p.main-title-sty01,
-p.main-title-sty01,
+.project_simple_info h1.main-title-sty01,
+h1.main-title-sty01,
+h1.lims-title,
 h2.lims-title,
 .lims-title,
 .page-title,
@@ -1874,10 +1875,18 @@ a.note-card-title {
 #dropdown_alarm.dropdown-menu,
 .dropdown_member.dropdown-menu,
 #dropdown_history.dropdown-menu,
-#dropdown_note_history.dropdown-menu,
-#dropdown_search.dropdown-menu {
+#dropdown_note_history.dropdown-menu {
 	padding: 0;
 	overflow: hidden;             /* 스크롤은 안쪽 본문이 갖는다 */
+}
+
+/* 상세검색은 같은 꼴이지만 성질이 다르다. 이 판 안에서 또 드롭다운이 열린다
+   (기간 선택·참여자 검색). overflow: hidden 을 물리면 그것들이 판 밖으로 못
+   나와 잘린다 — 기간의 시작일·종료일 입력과 [선택] 버튼이 통째로 안 보여
+   기간 검색 자체가 불가능했다. 안쪽에 스크롤이 필요한 본문도 없다. */
+#dropdown_search.dropdown-menu {
+	padding: 0;
+	overflow: visible;
 }
 
 /* — 내 계정 메뉴 */
@@ -2997,7 +3006,19 @@ a.note-card-title {
    위로 내려앉았다(실측: 헤더 상자는 48px 인데 내용이 95px 까지 흘렀다).
    한 줄을 지키게 하고, 자리를 못 만들면 부가 정보부터 내린다. */
 @media (max-width: 900px) {
+	/*
+	   style.css:2951 이 이 폭에서 .navbar-collapse 를 display:block !important 로
+	   되돌린다. 그러면 검색칸과 오른쪽 묶음이 두 줄로 쌓이는데(40 + 36 = 76px),
+	   헤더 상자는 --ds-header(48px)에 고정돼 있어 둘째 줄이 상자 밖으로 흘러
+	   페이지 제목과 [프로젝트 생성] 버튼 위에 얹혔다. 실측으로 버튼 한가운데를
+	   가려 클릭이 안 됐다(768px).
+
+	   아래 규칙들이 이미 이 폭에서 세션 타이머·이름·권한 뱃지를 감춰 자리를
+	   만들어 두었다. 한 줄을 지키는 편이 헤더 높이 하나로 사는 이 체계에 맞는다.
+	*/
 	.sticky-sty-01 .navbar-collapse {
+		display: flex !important;
+		align-items: center;
 		flex-wrap: nowrap;
 		gap: var(--ds-2);
 	}
@@ -3012,8 +3033,13 @@ a.note-card-title {
 		flex-wrap: nowrap;
 	}
 
-	/* 세션 타이머는 데모에서 읽을 일이 없다. 폭을 양보한다. */
-	.sticky-sty-01 .auth_time {
+	/*
+	   세션 타이머. 예전엔 통째로 감췄는데, 그러면 언제 만료되는지 알 방법이
+	   없다 — 작성 중에 세션이 끊기는 시스템에서 이건 정보가 아니라 안전장치다.
+	   "세션만료 남은시간" 이라는 긴 이름표만 내리고 숫자는 남긴다.
+	   (제목만으로도 무엇인지 알 수 있게 a 에 title="세션 연장" 이 붙어 있다)
+	*/
+	.sticky-sty-01 .auth_time .session_txt {
 		display: none;
 	}
 
@@ -5435,4 +5461,68 @@ span.folder_name[tabindex]::after,
 	padding: var(--ds-4);
 	border-bottom: 1px solid var(--ds-line);
 	background: var(--ds-warn-weak);
+}
+
+/* ------------------------------------------------------------------
+   §38 상세검색 패널의 2×2 필터 버튼
+
+   패널 안에 토글 네 개가 2×2 로 놓이고, 각자의 판이 자기 버튼 바로 아래로
+   떨어진다. 판은 200~400px 이고 버튼 사이 간격은 10px 이다 — 윗줄을 열면
+   아랫줄 버튼이 판 밑에 깔린다. 깔린 버튼은 눌리지 않으므로, 카테고리를
+   열어 둔 채로는 부서를 고를 방법이 아예 없었다.
+
+   판을 줄이지 않는다. 기간의 달력과 참여자의 결과 목록은 그만한 자리가
+   필요하고, 좁히면 예전처럼 잘린다. 대신 버튼 넉 장을 판 위로 올린다.
+   그러면 판이 열려 있어도 네 조건이 계속 보이고, 다른 걸 누르면 바로
+   그쪽이 열린다(먼저 열린 판은 lims-search-panel.js 가 닫는다).
+------------------------------------------------------------------ */
+.selectSortBox .dropdown-select-btn {
+	position: relative;
+	z-index: 1001;   /* .dropdown-menu 는 1000 */
+}
+
+/* ------------------------------------------------------------------
+   §39 알림 상자의 뜻과 아이콘
+
+   coreDialog.alert 은 성공에도 실패에도 같은 창을 쓴다. 그런데 그 창은
+   본문 위에 늘 빨간 경고 원(icon_alert.png 42px)을 얹었다 — "정상
+   처리되었습니다." 위에 경고가 뜨니, 성공했는데도 뭔가 잘못된 것처럼
+   읽힌다. 아이콘은 문구보다 먼저 눈에 들어오므로 그냥 잘못 읽힌다.
+
+   core.dialog.js 가 창에 core-dialog-ok / core-dialog-warn 을 붙인다
+   (판단은 낱말 짐작이 아니라 화면이 쓰는 성공 메시지와의 글자 대조다).
+   성공일 때만 기호와 색을 바꾼다. 실패·경고는 원래대로 둔다.
+------------------------------------------------------------------ */
+.core-dialog-ok .modal-dialog .modal-body:before {
+	background-image: none;
+	background-color: var(--ds-ok);
+	-webkit-mask-image: url(../img/lucide/circle-check-d.svg);
+	mask-image: url(../img/lucide/circle-check-d.svg);
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-size: 42px 42px;
+	mask-size: 42px 42px;
+}
+
+/* 480 아래 — 남은시간 숫자까지 놓을 자리가 없다. 이때만 통째로 내린다. */
+@media (max-width: 480px) {
+	.sticky-sty-01 .auth_time {
+		display: none;
+	}
+}
+
+/* 카드 밑줄의 "작성중 N건 / 점검중 N건 / 완료 N건". 숫자와 단위가 갈라져
+   "1" 과 "건" 이 다른 줄에 서면 세는 값이 순간 둘로 읽힌다. 묶어 둔다. */
+.wrap-note-cnt,
+.wrap-note-cnt > div {
+	white-space: nowrap;
+}
+
+/* 카드의 ⋮ 메뉴는 카드 안에서 아래로 열려 본문 대부분을 덮는다. 떠 있는 판이
+   아래 것을 가리는 것 자체는 정상이지만, 카드가 여럿 늘어선 격자에서는 "지금
+   어느 카드의 메뉴인가"를 놓치기 쉽다. 열려 있는 동안 그 카드를 표시한다. */
+.project-card-cont:has(.dropdown_option.show) {
+	outline: 2px solid var(--ds-primary);
+	outline-offset: -2px;
+	border-radius: var(--ds-radius);
 }

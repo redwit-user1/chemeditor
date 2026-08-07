@@ -608,19 +608,19 @@
   --------------------------------------------------------------- */
   var ELN_PROJECTS = [
     { projectMno: 301, keywords: '저해제,합성,인돌', projectId: 'KM-2026-014', projectNm: '표적단백질 저해제 발굴',
-      categoryNm: '신약개발', gnrlUserNm: '김연구', beginDe: '20260302', endDe: '20261231', cmpltnDe: null,
+      categoryCd: 'CAT_DISCOVERY', categoryNm: '신약개발', orztCd: 'ORZT_SYNTH', orztNm: '합성팀', gnrlUserNm: '김연구', beginDe: '20260302', endDe: '20261231', cmpltnDe: null,
       noteCnt: 3, memberCnt: 4, writingNoteCnt: 1, inspectionNoteCnt: 1, completeNoteCnt: 1,
       crrntProcessNm: '2단계 · 합성', projectPrgrstCcd: 'PROGRESS', projectPrgrstCcdNm: '진행' },
     { projectMno: 302, keywords: '간독성,HepG2,스크리닝', projectId: 'KM-2026-021', projectNm: '간독성 스크리닝',
-      categoryNm: '안전성평가', gnrlUserNm: '박연구', beginDe: '20260401', endDe: '20261130', cmpltnDe: null,
+      categoryCd: 'CAT_SAFETY', categoryNm: '안전성평가', orztCd: 'ORZT_ANAL', orztNm: '분석팀', gnrlUserNm: '박연구', beginDe: '20260401', endDe: '20261130', cmpltnDe: null,
       noteCnt: 2, memberCnt: 3, writingNoteCnt: 0, inspectionNoteCnt: 0, completeNoteCnt: 2,
       crrntProcessNm: '1단계 · 스크리닝', projectPrgrstCcd: 'PROGRESS', projectPrgrstCcdNm: '진행' },
     { projectMno: 303, keywords: '밸리데이션,HPLC', projectId: 'KM-2026-030', projectNm: '시험법 검증 (KM-3719)',
-      categoryNm: '분석', gnrlUserNm: '김연구', beginDe: '20260511', endDe: '20261031', cmpltnDe: null,
+      categoryCd: 'CAT_ANALYSIS', categoryNm: '분석', orztCd: 'ORZT_ANAL', orztNm: '분석팀', gnrlUserNm: '김연구', beginDe: '20260511', endDe: '20261031', cmpltnDe: null,
       noteCnt: 1, memberCnt: 2, writingNoteCnt: 0, inspectionNoteCnt: 0, completeNoteCnt: 1,
       crrntProcessNm: '2단계 · 밸리데이션', projectPrgrstCcd: 'PROGRESS', projectPrgrstCcdNm: '진행' },
     { projectMno: 304, keywords: '안정성,장기보관', projectId: 'KM-2025-118', projectNm: '장기 안정성 시험',
-      categoryNm: '안정성', gnrlUserNm: '이연구', beginDe: '20250901', endDe: '20260630', cmpltnDe: '20260630',
+      categoryCd: 'CAT_STABILITY', categoryNm: '안정성', orztCd: 'ORZT_QA', orztNm: '품질보증', gnrlUserNm: '이연구', beginDe: '20250901', endDe: '20260630', cmpltnDe: '20260630',
       noteCnt: 6, memberCnt: 5, writingNoteCnt: 0, inspectionNoteCnt: 0, completeNoteCnt: 6,
       crrntProcessNm: '종료', projectPrgrstCcd: 'COMPLETE', projectPrgrstCcdNm: '완료' }
   ];
@@ -643,9 +643,16 @@
     그쪽은 :578 의 대체 블록용이고, :566 블록이 gnrlAuthYn 으로 살아나므로
     화면에는 트리거가 하나만 선다 — 원래 의도대로다.
   */
+  /*
+    총괄 권한. 예전엔 전 프로젝트에 'Y' 를 박아 두었다 — 트리거가 안 보여서
+    켜 두었던 것인데, 그 결과 총괄이 박연구인 프로젝트에도 로그인 사용자에게
+    수정·위임·완료·삭제가 다 열렸다. 권한 없는 사람에게 권한 메뉴를 보여 주는
+    화면은 시연에서 곧바로 지적당한다. 총괄인 프로젝트에서만 연다.
+  */
   ELN_PROJECTS.forEach(function (p) {
-    p.gnrlAuthYn = 'Y';
-    p.gnrlYn = p.gnrlUserNm === '김연구' ? 'Y' : 'N';
+    p.gnrlYn = p.gnrlUserNm === POC_ME ? 'Y' : 'N';
+    p.gnrlAuthYn = p.gnrlYn;
+    p.delYn = 'N';
   });
 
   /* 노트는 프로젝트에 매달린다. projectMno 로 걸러 프로젝트 상세에 뿌린다. */
@@ -699,11 +706,13 @@
       createUserNm: '박연구', modifyDtStr: '2026-07-14 09:05', writeStatusCcd: 'WRITING' }
   ];
 
+  /* 메일 주소는 여기 한 곳에만 둔다 — 참여자 팝오버와 검색 결과가 서로 다른
+     주소를 보여 주던 원인이 각자 만들어 쓰던 데 있었다. */
   var USERS = [
-    { userMno: 1024, userNm: '김연구', orztNm: '분석팀', authGrpNm: '책임자' },
-    { userMno: 1025, userNm: '박연구', orztNm: '분석팀', authGrpNm: '연구원' },
-    { userMno: 1026, userNm: '이연구', orztNm: '합성팀', authGrpNm: '연구원' },
-    { userMno: 1030, userNm: '최QA', orztNm: '품질보증', authGrpNm: '운영관리자' }
+    { userMno: 1024, userNm: '김연구', orztNm: '분석팀', authGrpNm: '책임자',   email: 'kim@kmedihub.re.kr' },
+    { userMno: 1025, userNm: '박연구', orztNm: '분석팀', authGrpNm: '연구원',   email: 'park@kmedihub.re.kr' },
+    { userMno: 1026, userNm: '이연구', orztNm: '합성팀', authGrpNm: '연구원',   email: 'lee@kmedihub.re.kr' },
+    { userMno: 1030, userNm: '최QA',   orztNm: '품질보증', authGrpNm: '운영관리자', email: 'qa@kmedihub.re.kr' }
   ];
 
   /* 노트 관리 현황이 쓰는 요청 목록. 점검·공유·다운로드 세 갈래를 한 건씩
@@ -741,6 +750,69 @@
     "<rect width='200' height='150' fill='#f4f6f8'/>" +
     "<text x='100' y='70' font-size='12' fill='#98a2b3' text-anchor='middle'>구조식 미리보기</text>" +
     "<text x='100' y='90' font-size='11' fill='#c1c7d0' text-anchor='middle'>(RDKit 렌더 — PoC 미연결)</text></svg>";
+
+  /* ---------------------------------------------------------------
+     상태 보존 — 새로고침·화면 이동에도 남는다.
+
+     지금까지 목의 데이터는 순수 메모리였다. 그런데 구노의 실제 화면들은
+     처리에 성공하면 대부분 location.reload() 를 부른다(프로젝트 완료·삭제,
+     총괄 위임 …). 그래서 "정상 처리되었습니다"가 뜬 직후 새로고침이 걸리고,
+     목이 초기값으로 되살아나 목록은 그대로였다 — 보는 사람에게는
+     "성공했다고 해 놓고 아무것도 안 바뀐" 화면으로 읽힌다.
+
+     한 탭 안에서만 사는 sessionStorage 에 담는다. 탭을 닫으면 초기값으로
+     돌아가므로 다음 시연은 늘 같은 자리에서 시작한다.
+     (주소에 ?reset=1 을 붙이거나 콘솔에서 limsPocReset() 을 불러도 된다)
+  --------------------------------------------------------------- */
+  var STATE_KEY = 'lims-poc-state-v1';
+  var STATE_SETS = {
+    ELN_PROJECTS: ELN_PROJECTS, ELN_NOTES: ELN_NOTES, NOTE_BLOCKS: NOTE_BLOCKS,
+    NOTE_USAGE: NOTE_USAGE, NOTE_RESULT_LOG: NOTE_RESULT_LOG, STOICH_ROWS: STOICH_ROWS,
+    SAMPLES: SAMPLES, ALIQUOTS: ALIQUOTS, WORKLIST: WORKLIST, REQUESTS: REQUESTS,
+    TEST_ITEMS: TEST_ITEMS, RESULTS: RESULTS, REVIEWS: REVIEWS, OOS: OOS,
+    METHODS: METHODS, SPECS: SPECS, INSTRUMENTS: INSTRUMENTS, CALS: CALS,
+    LOCATIONS: LOCATIONS, REAGENTS: REAGENTS, CONTAINERS: CONTAINERS
+  };
+
+  function stateStore() {
+    try { return window.sessionStorage; } catch (e) { return null; }   /* 파일 프로토콜·차단 환경 */
+  }
+
+  function saveState() {
+    var st = stateStore();
+    if (!st) return;
+    var dump = { nextNoteMno: nextNoteMno, seq: seq, sets: {} };
+    for (var k in STATE_SETS) { dump.sets[k] = STATE_SETS[k]; }
+    try { st.setItem(STATE_KEY, JSON.stringify(dump)); } catch (e) { /* 용량 초과는 무시 — 다음 저장에서 다시 시도한다 */ }
+  }
+
+  function restoreState() {
+    var st = stateStore();
+    if (!st) return;
+    if (/[?&]reset=1\b/.test(window.location.search)) { st.removeItem(STATE_KEY); return; }
+    var raw = st.getItem(STATE_KEY);
+    if (!raw) return;
+    var dump;
+    try { dump = JSON.parse(raw); } catch (e) { st.removeItem(STATE_KEY); return; }
+    if (!dump || !dump.sets) return;
+    /* 배열은 새로 만들지 않고 제자리에서 갈아 끼운다 — 다른 곳이 잡고 있는
+       참조가 그대로 살아 있어야 한다. */
+    for (var k in STATE_SETS) {
+      var saved = dump.sets[k];
+      if (!Array.isArray(saved)) continue;
+      var arr = STATE_SETS[k];
+      arr.length = 0;
+      Array.prototype.push.apply(arr, saved);
+    }
+    if (typeof dump.nextNoteMno === 'number') { nextNoteMno = dump.nextNoteMno; }
+    if (dump.seq) { for (var q in dump.seq) { if (q in seq) seq[q] = dump.seq[q]; } }
+  }
+
+  window.limsPocReset = function () {
+    var st = stateStore();
+    if (st) st.removeItem(STATE_KEY);
+    window.location.reload();
+  };
 
   /* ---------------------------------------------------------------
      엔드포인트 → 응답
@@ -1166,17 +1238,30 @@
       return { postsListInfo: page(rows, p.pageNo, p.pageUnit) };
     },
     '/api/eln/project/myProjectList': function (p) {
-      var rows = applyFilter(ELN_PROJECTS, p, {
+      var live = liveProjects();
+      var rows = applyFilter(live, p, {
         searchKeyword: ['projectNm', 'projectId', 'gnrlUserNm'],
-        schProjectPrgrstCcd: 'projectPrgrstCcd'
+        schProjectPrgrstCcd: 'projectPrgrstCcd',
+        schCategoryCd: 'categoryCd',
+        schOrztCd: 'orztCd'
       });
+      rows = filterByPeriod(rows, p);
+      rows = filterByMembers(rows, p);
+      rows = sortProjects(rows, p.orderBy);
       rows = rows.map(function (r) {
         // 화면이 그대로 찍는 표시용 문자열. 서버가 만들어 내려주는 값이다.
         return Object.assign({}, r, {
           noteCntStr: String(r.noteCnt), memberCntStr: String(r.memberCnt)
         });
       });
-      return { projectListInfo: page(rows, p.pageNo, p.pageUnit) };
+      /*
+        탭 숫자는 지금 걸린 상태 필터를 빼고 센다 — "진행중" 탭을 보는 동안에도
+        완료·중단 탭의 숫자가 맞아야 하기 때문이다. 화면은 셋을 한꺼번에 갱신한다.
+      */
+      return {
+        projectListInfo: page(rows, p.pageNo, p.pageUnit),
+        projectInfo: projectTabCounts(p)
+      };
     },
     '/api/eln/project/projectList': function (p) {
       return HANDLERS['/api/eln/project/myProjectList'](p);
@@ -1247,10 +1332,71 @@
       같은 값이 둘로 갈리는 것이라, 보는 사람은 어느 쪽을 믿어야 할지 모른다.
       배지가 곧 이 목록의 길이가 되게 프로젝트별로 잘라 준다.
     */
+    /*
+      카테고리·부서 드롭다운(s2.util.js 의 setDropdownCategory/setDropdownOrzt)이
+      트리를 채우는 두 경로다. 목에 없어서 흰 상자만 열렸다 — 화면에는 "필터가
+      고장났다"로 보인다. 뿌리 노드(코드 1)는 화면 규약상 '전체'로, 고르면
+      조건을 걸지 않는다(participation_project.html: `cd == 1 ? null : cd`).
+    */
+    '/api/eln/category/categoryTreeList': function () {
+      return { data: [
+        { upperCd: '', categoryCd: '1', categoryNm: '전체', useYn: 'Y' },
+        { upperCd: '1', categoryCd: 'CAT_DISCOVERY', categoryNm: '신약개발', useYn: 'Y' },
+        { upperCd: '1', categoryCd: 'CAT_SAFETY',    categoryNm: '안전성평가', useYn: 'Y' },
+        { upperCd: '1', categoryCd: 'CAT_ANALYSIS',  categoryNm: '분석', useYn: 'Y' },
+        { upperCd: '1', categoryCd: 'CAT_STABILITY', categoryNm: '안정성', useYn: 'Y' }
+      ] };
+    },
+    /*
+      부서 트리에는 "전체" 뿌리를 두지 않는다. 코드 1 이 그 자리인데, 카테고리
+      트리도 같은 규약(화면이 `cd == 1 ? null : cd` 로 본다)을 쓴다. 두 트리가
+      한 화면에 같이 서면 jstree 가 코드를 그대로 DOM id 로 쓰므로 id="1" 이
+      둘이 된다 — 문서 안에서 같은 id 가 둘이면 어느 쪽이 잡힐지 정해지지 않는다.
+      부서는 팀 셋을 나란히 뿌리로 둔다. 조건을 지우는 것은 필터 칩의 × 다.
+    */
+    '/api/eln/project/orztTreeList': function () {
+      return { data: [
+        { upperCd: '', orztCd: 'ORZT_SYNTH', orztNm: '합성팀', useYn: 'Y' },
+        { upperCd: '', orztCd: 'ORZT_ANAL',  orztNm: '분석팀', useYn: 'Y' },
+        { upperCd: '', orztCd: 'ORZT_QA',    orztNm: '품질보증', useYn: 'Y' }
+      ] };
+    },
     '/api/eln/member/projectMemberList': function (p) {
       var mno = Number(p.schProjectMno || p.projectMno) || 301;
       var rows = projectMembers(mno);
+      /*
+        총괄 위임 모달이 이 경로를 두 개의 조건과 함께 부른다. 목이 둘 다
+        무시하고 있었다 — 그래서 위임 대상 목록에 위임하는 본인이 그대로 뜨고
+        (자기 자신에게 위임할 수는 없다), 화면 안내가 말하는 "책임자 또는
+        책임연구원"이 아니라 연구원까지 다 나왔다.
+      */
+      rows = filterByRole(rows, p.schProjectMemberRoleCcdArr);
+      rows = excludeUsers(rows, p.schNotUserMnoArr);
+      var kw = String(p.searchKeyword || '').trim().toLowerCase();
+      if (kw) {
+        rows = rows.filter(function (m) {
+          return (m.userNm || '').toLowerCase().indexOf(kw) >= 0
+            || (m.email || '').toLowerCase().indexOf(kw) >= 0;
+        });
+      }
       return { memberListInfo: page(rows, p.pageNo, p.pageUnit) };
+    },
+    /*
+      상세검색의 참여자 필터. 실제 컨트롤러(ElnProjectMemberController#getMemberList)는
+      model 에 memberList 로 담아 내려주는데, 이 목에는 이 경로가 없어서 사용자 선택
+      팝업용 기본 응답(userListInfo)으로 흘러갔다 — 화면은 res.memberList 를 읽으니
+      늘 "검색결과가 없습니다"였다. 실제 서버와 같은 키로 답한다.
+    */
+    '/api/eln/member/getProjectMemberList': function (p) {
+      var kw = String(p.searchKeyword || '').trim().toLowerCase();
+      var rows = allMembers().filter(function (m) {
+        if (!kw) return true;
+        return (m.userNm || '').toLowerCase().indexOf(kw) >= 0
+          || (m.email || '').toLowerCase().indexOf(kw) >= 0
+          || (m.orztNm || '').toLowerCase().indexOf(kw) >= 0;
+      });
+      rows.sort(function (a, b) { return String(a.userNm).localeCompare(String(b.userNm), 'ko'); });
+      return { memberList: rows };
     },
     /*
       에디터로 연구노트 만들기. 여기서 실제로 목록에 넣어야 "만들었는데 없다"가
@@ -1324,6 +1470,120 @@
     첫 사람이 책임자(role1), 나머지는 연구원(role0)이다. 화면의
     template_project_card_member 가 쓰는 필드를 그대로 채운다.
   */
+  function asList(v) {
+    if (v == null || v === '') return [];
+    return (Array.isArray(v) ? v : String(v).split(',')).map(function (x) {
+      return String(x).trim();
+    }).filter(Boolean);
+  }
+
+  function filterByRole(rows, roleArr) {
+    var want = asList(roleArr);
+    if (!want.length) return rows;
+    return rows.filter(function (m) { return want.indexOf(m.projectMemberRoleCcd) >= 0; });
+  }
+
+  function excludeUsers(rows, notArr) {
+    var skip = asList(notArr).map(Number).filter(Boolean);
+    if (!skip.length) return rows;
+    return rows.filter(function (m) { return skip.indexOf(Number(m.userMno)) < 0; });
+  }
+
+  /* 삭제된 프로젝트는 목록에서 빠진다 — delYn 을 남겨 두는 것은 실제 스키마 모양이다. */
+  function liveProjects() {
+    return ELN_PROJECTS.filter(function (r) { return r.delYn !== 'Y'; })
+      .map(function (r) {
+        /* 노트 건수는 여기서 센다. 카드 배지(3)와 상세의 목록(4)이 달랐던 것은
+           프로젝트 행에 박아 둔 숫자와 실제 노트 배열이 따로 놀았기 때문이다. */
+        r.noteCnt = noteCountOf(r.projectMno);
+        return r;
+      });
+  }
+
+  /* 연구노트 건수는 세지 않고 저장해 두면 반드시 어긋난다(노트를 만들면 늘어나므로).
+     ELN_NOTES 한 곳에서 센다. */
+  function noteCountOf(projectMno) {
+    return ELN_NOTES.filter(function (n) { return n.projectMno === Number(projectMno); }).length;
+  }
+
+  function filterByPeriod(rows, p) {
+    var b = String(p.beginDe || '').replace(/-/g, '');
+    var e = String(p.endDe || '').replace(/-/g, '');
+    if (!b && !e) return rows;
+    return rows.filter(function (r) {
+      /* 기간이 겹치면 걸린다 — 프로젝트를 점이 아니라 구간으로 본다. */
+      if (b && String(r.endDe || '') < b) return false;
+      if (e && String(r.beginDe || '') > e) return false;
+      return true;
+    });
+  }
+
+  function filterByMembers(rows, p) {
+    var raw = p.schMemberMnoArr;
+    if (!raw) return rows;
+    var want = (Array.isArray(raw) ? raw : String(raw).split(',')).map(Number).filter(Boolean);
+    if (!want.length) return rows;
+    return rows.filter(function (r) {
+      var ids = projectMembers(r.projectMno).map(function (m) { return m.userMno; });
+      return want.some(function (w) { return ids.indexOf(w) >= 0; });
+    });
+  }
+
+  /*
+    정렬. 화면은 서버 컬럼명(PROJECT_NM ASC 등)을 그대로 실어 보낸다 —
+    목이 이걸 안 읽어서 라벨만 바뀌고 순서는 그대로였다.
+  */
+  var ORDER_FIELD = {
+    PROJECT_NM: 'projectNm', BEGIN_DE: 'beginDe', END_DE: 'endDe',
+    NOTE_CNT: 'noteCnt', MODIFY_DT: 'modifyDt', CREATE_DT: 'createDt',
+    /* 목록 보기의 컬럼 정렬(thead 의 sort-nm)이 보내는 이름들 */
+    CATEGORY_NM: 'categoryNm', PROJECT_ID: 'projectId',
+    GNRL_USER_NM: 'gnrlUserNm', CMPLTN_DE: 'cmpltnDe', MEMBER_CNT: 'memberCnt'
+  };
+
+  function sortProjects(rows, orderBy) {
+    var parts = String(orderBy || 'PROJECT_NM ASC').trim().split(/\s+/);
+    var field = ORDER_FIELD[parts[0]];
+    if (!field) return rows;
+    var dir = (parts[1] || 'ASC').toUpperCase() === 'DESC' ? -1 : 1;
+    return rows.slice().sort(function (a, b) {
+      var x = a[field], y = b[field];
+      if (typeof x === 'number' || typeof y === 'number') {
+        return ((Number(x) || 0) - (Number(y) || 0)) * dir;
+      }
+      return String(x == null ? '' : x)
+        .localeCompare(String(y == null ? '' : y), 'ko', { numeric: true }) * dir;
+    });
+  }
+
+  /* 탭 세 개의 숫자. 상태 필터만 빼고 나머지 조건은 그대로 적용한다. */
+  function projectTabCounts(p) {
+    var base = applyFilter(liveProjects(), p, {
+      searchKeyword: ['projectNm', 'projectId', 'gnrlUserNm'],
+      schCategoryCd: 'categoryCd',
+      schOrztCd: 'orztCd'
+    });
+    base = filterByMembers(filterByPeriod(base, p), p);
+    function n(ccd) {
+      return base.filter(function (r) { return r.projectPrgrstCcd === ccd; }).length;
+    }
+    return {
+      projectPrgrstProgressCnt: n('PROGRESS'),
+      projectPrgrstCompleteCnt: n('COMPLETE'),
+      projectPrgrstStopCnt: n('STOP')
+    };
+  }
+
+  /* 참여자 검색이 훑는 모집단. USERS 한 곳에서 나와야 팝오버·필터가 어긋나지 않는다. */
+  function allMembers() {
+    return USERS.map(function (u) {
+      return {
+        userMno: u.userMno, userNm: u.userNm, orztNm: u.orztNm,
+        authGrpNm: u.authGrpNm, fileId: '', email: u.email
+      };
+    });
+  }
+
   function projectMembers(projectMno) {
     var project = null;
     for (var i = 0; i < ELN_PROJECTS.length; i++) {
@@ -1336,17 +1596,18 @@
       var lead = k === 0;
       out.push({
         userMno: u.userMno, userNm: u.userNm, orztNm: u.orztNm,
-        email: u.userNm === '김연구' ? 'kim@kmedihub.re.kr'
-          : u.userNm === '박연구' ? 'park@kmedihub.re.kr'
-          : u.userNm === '이연구' ? 'lee@kmedihub.re.kr' : 'qa@kmedihub.re.kr',
+        email: u.email,
         fileId: '',
         /* 코드값은 지어내면 안 된다. 화면이 member_role_{코드} 로 클래스를
            만들고 CSS 가 그 클래스로 색을 고르므로, 없는 코드를 주면 어떤
            규칙에도 안 걸려 기본값(예전엔 흰 글자 + 연회색)으로 떨어진다.
            style.css:4402 이하가 아는 코드는 PJ_MANAGER / PJ_LEAD_RESEARCHER /
            PJ_RESEARCHER 다. */
-        projectMemberRoleCcd: lead ? 'PJ_MANAGER' : 'PJ_RESEARCHER',
-        projectMemberRoleCcdNm: lead ? '책임자' : '연구원',
+        /* 첫 사람이 책임자, 둘째가 책임연구원, 나머지는 연구원이다.
+           책임연구원이 하나도 없으면 총괄 위임 대상 목록이 늘 비어 있고,
+           화면 안내("책임자 또는 책임연구원 대상")와 목록이 서로 다른 말을 한다. */
+        projectMemberRoleCcd: lead ? 'PJ_MANAGER' : (k === 1 ? 'PJ_LEAD_RESEARCHER' : 'PJ_RESEARCHER'),
+        projectMemberRoleCcdNm: lead ? '책임자' : (k === 1 ? '책임연구원' : '연구원'),
         authGrpNm: u.authGrpNm
       });
     }
@@ -1381,6 +1642,49 @@
   }
 
   var WRITERS = {
+    /*
+      프로젝트 완료 / 중단 / 삭제 / 총괄 위임.
+      네 가지 모두 성공만 돌려주고 데이터는 그대로였다. 화면은 성공하면
+      location.reload() 를 부르므로, 새로고침 뒤에도 목록·탭 숫자·사이드바가
+      처리 전과 똑같았다 — "정상 처리되었습니다"만 뜨고 아무 일도 안 일어난 셈이다.
+    */
+    '/api/eln/project/updatePrgrstComplete': function (p) {
+      var r = findBy(ELN_PROJECTS, 'projectMno', Number(p.projectMno));
+      if (r) {
+        r.projectPrgrstCcd = 'COMPLETE';
+        r.projectPrgrstCcdNm = '완료';
+        r.cmpltnDe = '20260807';
+        r.crrntProcessNm = '종료';
+        if (p.pblcYn) r.pblcYn = p.pblcYn;
+      }
+      return {};
+    },
+    '/api/eln/project/updatePrgrstStop': function (p) {
+      var r = findBy(ELN_PROJECTS, 'projectMno', Number(p.projectMno));
+      if (r) { r.projectPrgrstCcd = 'STOP'; r.projectPrgrstCcdNm = '중단'; }
+      return {};
+    },
+    '/api/eln/project/deleteProject': function (p) {
+      var mno = Number(p.projectMno);
+      var r = findBy(ELN_PROJECTS, 'projectMno', mno);
+      if (r) { r.delYn = 'Y'; }
+      /* 노트도 같이 사라져야 한다 — 안 그러면 프로젝트 없는 노트가 목록에 남는다. */
+      for (var i = ELN_NOTES.length - 1; i >= 0; i--) {
+        if (ELN_NOTES[i].projectMno === mno) ELN_NOTES.splice(i, 1);
+      }
+      return {};
+    },
+    '/api/eln/member/modifyProjectGnrl': function (p) {
+      var r = findBy(ELN_PROJECTS, 'projectMno', Number(p.projectMno));
+      var u = findBy(USERS, 'userMno', Number(p.userMno));
+      if (r && u) {
+        r.gnrlUserNm = u.userNm;
+        /* 넘겨준 사람은 더 이상 총괄이 아니다 — 관리 메뉴가 그 자리에서 사라져야 한다. */
+        r.gnrlYn = u.userNm === POC_ME ? 'Y' : 'N';
+        r.gnrlAuthYn = r.gnrlYn;
+      }
+      return {};
+    },
     '/api/lims/sample/createSample': function (p) {
       var mno = ++seq.sample;
       var no = nextNo('SMP', mno);
@@ -1536,6 +1840,12 @@
     } else {
       body = JSON.parse(JSON.stringify(WRITE_DEFAULT));
     }
+    /*
+      바로 저장한다. 미뤄 두면(디바운스) 안 된다 — 구노의 처리 화면들은 성공
+      알림을 닫는 즉시 location.reload() 를 부르고, 그게 저장보다 먼저 일어나면
+      방금 바꾼 것이 통째로 사라진다. 실제로 프로젝트 완료 처리가 그래서 안 남았다.
+    */
+    saveState();
     return envelope(body);
   }
 
@@ -1576,6 +1886,7 @@
      설치 — jQuery 와 core 스크립트가 모두 올라온 뒤에 끼워넣는다.
   --------------------------------------------------------------- */
   function install() {
+    restoreState();   /* 앞선 화면에서 바꾼 것부터 이어받는다 */
     var origAjax = $.ajax;
 
     $.ajax = function (options) {
@@ -1681,7 +1992,15 @@
           if (qs) { full += (url.indexOf('?') < 0 ? '?' : '&') + qs; }
         }
         var target = toStaticUrl(full);
-        if (!target) { window.location.href = '#'; return; }
+        if (!target) {
+          /*
+            프로토타입이 안 그린 화면이다(프로젝트 수정·마이페이지 등).
+            예전에는 여기서 '#' 로 보내고 끝냈다 — 화면이 아무 반응도 안 하니
+            보는 사람은 클릭이 먹었는지조차 알 수 없었다. 말을 해 준다.
+          */
+          toast('이 화면(' + url + ')은 이번 LIMS PoC 범위에 없습니다.');
+          return;
+        }
         /*
           연구노트 작성·상세는 새 창으로 연다. 그 화면에는 GNB·헤더가 없고
           (노트 전용 레이아웃) 본문에 집중하는 자리이므로, 목록 화면을 덮어쓰지
@@ -1730,6 +2049,7 @@
       시연에서 설명할 것은 말로 하고, 화면은 화면만 보여준다.
       (흐름 바 코드는 남겨 두었다. 필요하면 installFlowBar() 한 줄만 되살리면 된다.)
     */
+    installExcelDownload();
     installChemEditorStub();
     installInlineEditorSwap();
     installOutOfScopeNotice();
@@ -1743,7 +2063,95 @@
      눌러도 아무 일이 없다 — 시연에서는 "고장난 것"으로 읽힌다.
      범위 밖이라는 사실을 눌렀을 때 말해 준다.
   --------------------------------------------------------------- */
+  /* ---------------------------------------------------------------
+     엑셀 내려받기.
+
+     화면은 S2Util.fetch(..., responseType:'blob') 로 서버에 파일을 달라고 한다.
+     그건 네이티브 fetch 라 $.ajax 대역을 지나지 않는다 — 그래서 버튼을 켜도
+     아무 파일도 안 떨어진다. 같은 자리에서 목이 직접 파일을 만들어 준다.
+
+     xlsx 바이너리는 만들지 않는다(라이브러리 없이 쓸 수 있는 형식이 아니다).
+     CSV 로 내려주되 UTF-8 BOM 을 앞에 붙인다 — 안 붙이면 엑셀이 한글을 깨서 연다.
+  --------------------------------------------------------------- */
+  var EXCEL_PATHS = {
+    '/api/eln/project/participation-project-download-excel': function (p) {
+      var rows = applyFilter(liveProjects(), p, {
+        searchKeyword: ['projectNm', 'projectId', 'gnrlUserNm'],
+        schProjectPrgrstCcd: 'projectPrgrstCcd',
+        schCategoryCd: 'categoryCd',
+        schOrztCd: 'orztCd'
+      });
+      rows = sortProjects(filterByMembers(filterByPeriod(rows, p), p), p.orderBy);
+      return {
+        head: ['프로젝트명', '카테고리', '과제번호', '총괄', '시작일', '종료일', '참여자', '연구노트'],
+        body: rows.map(function (r) {
+          return [r.projectNm, r.categoryNm, r.projectId, r.gnrlUserNm,
+            dateDash(r.beginDe), dateDash(r.endDe), r.memberCnt, r.noteCnt];
+        })
+      };
+    }
+  };
+
+  function dateDash(v) {
+    var t = String(v || '');
+    return t.length === 8 ? t.slice(0, 4) + '-' + t.slice(4, 6) + '-' + t.slice(6) : t;
+  }
+
+  function csvCell(v) {
+    var t = v == null ? '' : String(v);
+    return /[",\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
+  }
+
+  function installExcelDownload() {
+    if (typeof S2Util === 'undefined' || !S2Util || typeof S2Util.fetch !== 'function') return;
+    var orig = S2Util.fetch;
+    S2Util.fetch = function (url, param, success, fail) {
+      var path = String(url || '').split('?')[0].replace(/^https?:\/\/[^/]+/, '');
+      var build = EXCEL_PATHS[path];
+      if (!build) return orig.apply(this, arguments);
+
+      var p = param || {};
+      var table = build(p);
+      var csv = '﻿' + [table.head].concat(table.body)
+        .map(function (row) { return row.map(csvCell).join(','); })
+        .join('\r\n');
+      var name = (p.fileName || 'export') + '.csv';
+      var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+      if (typeof success === 'function') success();
+      return undefined;
+    };
+  }
+
   function installOutOfScopeNotice() {
+    /*
+      헤더의 전체 검색창. input.search_write.ce-search-note 인데, 이 클래스를
+      참조하는 스크립트가 구노 전체에 하나도 없다 — 즉 제품 쪽에서도 아직
+      붙지 않은 자리다(옆에 /eln/search 로 가려던 주석이 남아 있다).
+      쳐 넣고 엔터를 눌러도 주소에 # 만 붙어서, 검색이 고장난 것으로 읽혔다.
+
+      없는 검색을 이 프로토타입이 지어내지는 않는다. 다만 아무 일도 안 일어나는
+      대신 왜 아무 일도 안 일어나는지는 말한다.
+    */
+    var searchBox = document.querySelector('input.ce-search-note');
+    if (searchBox) {
+      var say = function (e) {
+        if (e) e.preventDefault();
+        toast('전체 검색은 이번 LIMS PoC 범위 밖입니다. 화면별 검색창을 써 주세요.');
+      };
+      searchBox.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') say(e);
+      });
+      var btn = searchBox.parentElement && searchBox.parentElement.querySelector('.search_btn');
+      if (btn) btn.addEventListener('click', say);
+    }
+
     document.querySelectorAll('.nav-menu a.menuCd').forEach(function (a) {
       var href = a.getAttribute('href');
       if (href && href !== '#') return;
