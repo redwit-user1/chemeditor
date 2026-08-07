@@ -6259,16 +6259,6 @@ td.lims-id,
 	line-height: 1;
 }
 
-/*
-  띠 안의 알약. 점검중 알약(파랑 약배경)이 tone-info 띠(같은 약배경) 위에
-  놓이면 형태가 사라진다 — 실제로 그랬다. 띠 안에서는 흰 바탕을 깐다.
-*/
-.lims-note-statebar .lims-note-state.is-draft,
-.lims-note-statebar .lims-note-state.is-inreview {
-	background: #fff;
-	box-shadow: inset 0 0 0 1px var(--ds-line);
-}
-
 /* 작성중 · 점검중 · 점검완료 · 반려 — WRITE_STATUS_CCD 그대로 */
 .lims-note-state.is-draft     { background: #e5f6fe; color: #026e9b; }
 .lims-note-state.is-inreview  { background: var(--ds-primary-weak); color: var(--ds-primary); }
@@ -6285,114 +6275,6 @@ td.lims-id,
   그대로 두고 명도만 내렸다 — 알약 다섯 개를 나란히 놓으면 계열이 유지된다.
   점(dot)처럼 글자가 아닌 곳에는 정본 색(#1CB56C)을 그대로 쓴다.
 */
-
-/* ── 상태 띠 ───────────────────────────────────────────────────────────── */
-
-.lims-note-statebar {
-	padding: var(--ds-3) var(--ds-4);
-	border-bottom: 1px solid var(--ds-line);
-	background: var(--ds-canvas);
-	font-size: var(--ds-fs-small);
-	color: var(--ds-ink-3);
-}
-
-/* 스테퍼 줄 — 왼쪽 단계, 오른쪽 상태 알약 (덱의 OOS 카드 머리) */
-.lims-note-statebar-top {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: var(--ds-4);
-	margin-bottom: var(--ds-3);
-}
-
-/*
-  덱의 스테퍼. 완료 = 초록 원 + 체크, 현재 = 파랑 원 + 숫자, 미래 = 회색 원.
-  단계 사이 선은 지나온 구간만 색을 받는다.
-*/
-.lims-note-steps {
-	display: flex;
-	flex: 1 1 auto;
-	align-items: center;
-	margin: 0;
-	padding: 0;
-	list-style: none;
-	min-width: 0;
-}
-
-.lims-note-steps li {
-	display: flex;
-	align-items: center;
-	gap: var(--ds-2);
-	white-space: nowrap;
-}
-
-.lims-note-steps li + li::before {
-	content: '';
-	display: block;
-	width: 34px;
-	height: 2px;
-	margin: 0 var(--ds-3);
-	background: var(--ds-line);
-}
-
-.lims-note-steps li.done + li::before { background: var(--ds-ok-dot); }
-.lims-note-steps li.now + li::before  { background: var(--ds-line); }
-
-.lims-note-steps .dot {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 22px;
-	height: 22px;
-	border-radius: 50%;
-	background: var(--ds-line-soft);
-	font-size: var(--ds-fs-micro);
-	font-weight: 700;
-	/* 회색 원 위 숫자 — --ds-ink-4 는 이 바탕에서 4.37 로 미달(실측). 한 단계 진하게. */
-	color: var(--ds-ink-3);
-}
-
-.lims-note-steps .nm {
-	font-size: var(--ds-fs-small);
-	color: var(--ds-ink-4);
-}
-
-.lims-note-steps li.done .dot { background: var(--ds-ok-dot); color: #fff; }
-.lims-note-steps li.done .nm  { color: var(--ds-ok); font-weight: 700; }
-.lims-note-steps li.now .dot  { background: var(--ds-primary); color: #fff; }
-.lims-note-steps li.now .nm   { color: var(--ds-primary); font-weight: 700; }
-
-.lims-note-statebar-msg {
-	flex: 1 1 auto;
-	min-width: 0;
-}
-
-.lims-note-statebar-msg strong {
-	font-weight: 700;
-	color: var(--ds-ink-2);
-}
-
-.lims-note-statebar-acts {
-	display: flex;
-	flex: none;
-	gap: var(--ds-2);
-	align-items: center;
-}
-
-.lims-note-statebar.tone-warn   { border-bottom-color: #ffe29a; background: #fff6dc; color: var(--ds-warn); }
-.lims-note-statebar.tone-info   { border-bottom-color: #c9dbf8; background: var(--ds-primary-weak); color: var(--ds-ink-3); }
-.lims-note-statebar.tone-ok     { border-bottom-color: #a9e4c8; background: #f3fbf7; color: var(--ds-ok); }
-.lims-note-statebar.tone-danger { border-bottom-color: #f5c6c5; background: #fdeded; color: var(--ds-danger-text); }
-
-/* 스테퍼는 톤이 어두워져도 제 색을 유지한다 — 진행 정보가 톤에 묻히면 안 된다 */
-
-.lims-note-statebar-msg { margin-bottom: var(--ds-2); }
-
-.lims-note-statebar-acts {
-	display: flex;
-	gap: var(--ds-2);
-	align-items: center;
-}
 
 /* ── 점검자별 진행 (제품 inspection-status-box 의 이 화면 판) ─────────── */
 
@@ -6490,9 +6372,7 @@ td.lims-id,
 .lims-note-locked .lims-note-block-more,
 .lims-note-locked .lims-note-insert,
 .lims-note-locked .lims-note-addlabel,
-.lims-note-locked .lims-card-tools .button-gray-line-sty01,
-.lims-note-locked #limsNoteSaveBtn,
-.lims-note-locked .lims-note-savestate {
+.lims-note-locked .lims-card-tools .button-gray-line-sty01 {
 	display: none !important;
 }
 
@@ -6657,4 +6537,101 @@ td.lims-id,
 	border-color: var(--ds-primary);
 	box-shadow: var(--ds-ring);
 	outline: 0;
+}
+
+/* ============================================================================
+   §48 노트 상단 바 — 참고 크롬(ELN Editor 1a)
+
+   뒤로(아이콘) · 프로젝트 › 노트명 브레드크럼 · 상태 알약 · 저장 시각.
+   "이전 페이지" 글자 버튼과 편집기 종류 아이콘이 차지하던 폭을 문서 맥락에
+   돌려준다. 저장 시각은 상단 바 한 곳에만 둔다 — 같은 정보가 두 곳에 있으면
+   어느 쪽이 맞는지 묻게 된다.
+   ========================================================================= */
+
+.lims-note-back {
+	min-width: var(--ds-control);
+	width: var(--ds-control);
+	padding: 0;
+	justify-content: center;
+}
+
+.lims-note-crumb {
+	margin-left: var(--ds-3);
+	max-width: 220px;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	font-size: var(--ds-fs-small);
+	color: var(--ds-ink-4);
+}
+
+.lims-note-crumb::after {
+	content: '›';
+	margin-left: var(--ds-2);
+	color: var(--ds-line-2);
+}
+
+/* 상단 바 안의 저장 상태 — 카드 머리에서 이 자리로 옮겼다 */
+.main-title-sty03 .lims-note-savestate { flex: none; }
+
+/* ── 좌측 패널의 점검 상자 ─────────────────────────────────────────────── */
+
+/*
+  좁은 패널(약 340px)이다. 본문 폭 기준으로 만든 행(가로 나열)을 그대로 두면
+  버튼이 밀려 떨어진다 — 이름 줄과 판정 줄을 위아래로 편다.
+*/
+.note-info-box .lims-note-inspcnt {
+	margin: 0 0 var(--ds-2);
+	font-size: var(--ds-fs-small);
+	color: var(--ds-ink-3);
+}
+
+.note-info-box .lims-note-insplist {
+	margin: 0;
+	border: 0;
+	border-radius: 0;
+}
+
+.note-info-box .lims-note-insplist li {
+	flex-wrap: wrap;
+	gap: var(--ds-1) var(--ds-2);
+	padding: var(--ds-2) 0;
+	min-height: 0;
+}
+
+.note-info-box .lims-note-insplist .act {
+	width: 100%;
+	margin-left: 0;
+	justify-content: flex-end;
+}
+
+.note-info-box .lims-note-insplist .at { margin-left: auto; }
+
+.note-info-box .lims-note-inspdone {
+	margin: 0 0 var(--ds-1);
+	font-size: var(--ds-fs-small);
+	font-weight: 700;
+	color: var(--ds-ok);
+}
+
+.note-info-box .lims-note-insphash {
+	margin: 0 0 var(--ds-2);
+	font-size: var(--ds-fs-micro);
+	color: var(--ds-ink-4);
+	word-break: break-all;
+}
+
+.note-info-box .lims-note-inspreject {
+	margin: 0 0 var(--ds-1);
+	font-size: var(--ds-fs-small);
+	color: var(--ds-danger-text);
+}
+
+.note-info-box .lims-note-inspwhy {
+	margin: 0;
+	padding: var(--ds-2) var(--ds-3);
+	border-radius: var(--ds-radius-sm);
+	background: #fdeded;
+	font-size: var(--ds-fs-small);
+	color: var(--ds-ink-3);
 }
