@@ -8,6 +8,7 @@ Oracle-portable implementation whose numbers go into the feasibility report).
 
 from __future__ import annotations
 
+import logging
 import time
 
 from fastapi import FastAPI, Query, UploadFile
@@ -44,6 +45,8 @@ from .reagents.containers import (
     search_containers_by_structure,
 )
 from .search.service import build_index
+
+logger = logging.getLogger("chemeditor")
 
 app = FastAPI(
     title="KMEDIhub ELN PoC API",
@@ -324,7 +327,17 @@ def depict(
     h: int = Query(100, ge=32, le=600),
 ):
     """2D structure depiction as SVG (search-result thumbnails)."""
-    svg = _depict_svg(smiles, w, h)
+    # Deployed-env failures (e.g. a shared library missing from the container)
+    # must not surface as a bare 500 — name the exception so the deployment is
+    # self-diagnosing, and log the full traceback per the no-silent-RDKit-
+    # failure rule.
+    try:
+        svg = _depict_svg(smiles, w, h)
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("depict failed for smiles=%r", smiles)
+        return PlainTextResponse(
+            f"depict failed: {type(exc).__name__}: {exc}", status_code=500
+        )
     if svg is None:
         return PlainTextResponse("bad structure", status_code=422)
     return PlainTextResponse(svg, media_type="image/svg+xml")
