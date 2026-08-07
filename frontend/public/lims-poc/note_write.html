@@ -2563,10 +2563,23 @@
         /* 상단 바 저장 버튼(노트 레이아웃) — 이 화면의 저장으로 잇는다.
            layout 의 클래스 none 이 감춰 두므로 여기서 편다. */
         $('#note-save-btn').removeClass('none').off('click').on('click', function () { saveNote('N'); });
+        /* 점검 동작은 상단 바의 주 버튼이다(목업 1a). 우측 패널의 점검 탭은
+           진행·판정만 보여 준다 — 같은 동작을 두 자리에 두지 않는다. */
+        if (!$('#noteInspectTop').length) {
+          $('<button type="button" id="noteInspectTop" class="button-blue-line-sty01 ma-l10 d-none"><span></span></button>')
+            .insertBefore('#note-save-btn');
+        }
+        buildSidePanel();
         bindSaveState();
-        /* reqAjax 는 동시 요청을 조용히 버린다. 노트 → 시약 사용 이력 순서로 이어붙인다. */
+        /* reqAjax 는 동시 요청을 조용히 버린다. 노트 → 시약 사용 → 트리 순서로
+           이어붙인다. (트리를 initPage 에서 바로 쐈다가 noteDetail 이 통째로
+           버려져 화면이 골격만 남은 적이 있다 — 세 번째로 밟은 함정이다.) */
         loadNoteDetail(function () {
-          loadReagentUsage();
+          loadLinkedData(function () {
+            loadReagentUsage(function () {
+              buildNoteTree();
+            });
+          });
         });
       }
 
@@ -2721,6 +2734,7 @@
             $('#limsNoteNm').val(note.noteNm || '');
             /* 상단 바 브레드크럼 — 프로젝트 › 노트명 (참고 크롬 1a) */
             if (note.projectNm) { $('#noteCrumb').text(note.projectNm).removeClass('d-none'); }
+            paintDocHead(note);
             $('#noteProjectNm').text(note.projectNm || '연결 안 함')
               .toggleClass('is-empty', !note.projectNm);
             $('#noteWriterNm').text(note.writerNm || '-')
@@ -4793,20 +4807,28 @@
         $('#noteStatusNm').text(st.nm);
         $('#noteStatusPill').html(statusPill());
 
-        /* 좌측 패널 버튼 — 제품의 checkFileIdAndOpenModal 자리를 이 흐름으로 잇는다 */
-        const $btn = $('#noteInspectBtn');
+        /* 제품이 좌측 패널에 두던 점검 요청 버튼은 접는다 — 동작은 상단 바 하나 */
+        $('#noteInspectBtn').hide();
+
+        const $btn = $('#noteInspectTop');
         if ($btn.length) {
-          $btn.attr('onclick', null).off('click');
+          $btn.removeClass('d-none').off('click');
           if (cd === 'WRITING') {
-            $btn.text('점검 요청').show().on('click', openInspectorModal);
+            $btn.find('span').text('점검 요청');
+            $btn.on('click', openInspectorModal);
           } else if (cd === 'REJECT') {
-            $btn.text('수정 후 재점검 요청').show().on('click', openInspectorModal);
+            $btn.find('span').text('수정 후 재점검 요청');
+            $btn.on('click', openInspectorModal);
           } else if (cd === 'INSPECTION') {
             const acted = gInsp.inspectors.some(function (x) { return x.statusCcd !== 'UNCONFIRM'; });
-            if (acted) { $btn.hide(); }
-            else { $btn.text('점검 요청 철회').show().on('click', cancelInspection); }
+            if (acted) { $btn.addClass('d-none'); }
+            else {
+              $btn.find('span').text('점검 요청 철회');
+              $btn.on('click', cancelInspection);
+            }
           } else { /* COMPLETE */
-            $btn.text('정정 기록 추가').show().on('click', openAmendModal);
+            $btn.find('span').text('정정 기록 추가');
+            $btn.on('click', openAmendModal);
           }
         }
 
@@ -4815,7 +4837,7 @@
         if (!$box.length) {
           const $usage = $('#note-reagent-usage');
           if ($usage.length) {
-            $box = $('<div id="noteInspBox" class="note-info-box ma-t20 d-none">'
+            $box = $('<div id="noteInspBox" class="note-info-box ma-t20 d-none" data-side="inspect">'
               + '<div class="title">점검</div><div class="cont"></div></div>');
             $usage.before($box);
           }
@@ -4906,6 +4928,8 @@
         gInsp = { statusCcd: res.statusCcd, inspectors: asList(res.inspectors),
                   tsa: res.tsa || null, rejectMemo: res.rejectMemo || '' };
         paintNoteState();
+        /* 방금 점검 관련 행동을 했다 — 진행이 보이는 탭으로 데려간다 */
+        $('.lims-note-sidetabs [data-tab="inspect"]').trigger('click');
         return true;
       }
 
@@ -5017,6 +5041,139 @@
          덧붙인다 — 무엇이(원문) 어떻게(정정문) 왜(사유) 바뀌었는지 셋이
          한자리에 있어야 감사에서 쓸 수 있다.
       --------------------------------------------------------------- */
+
+      /* ===============================================================
+         우측 개요 패널 4탭 · 좌측 노트북 트리 · 문서 머리 — 참고 목업 1a
+
+         구노 노트 레이아웃은 정보 패널을 왼쪽에 fixed 로 세운다. 목업은
+         왼쪽에 노트북 트리, 오른쪽에 개요·시약·점검·데이터 4탭을 둔다.
+         레이아웃 템플릿은 제품 전체가 쓰므로 손대지 않고, 이 화면이
+         자기 DOM 을 다시 편성한다(§51 CSS 가 자리를 잡는다).
+         =============================================================== */
+
+      function buildSidePanel() {
+        const $scroll = $('#main-body-left .note-side-scroll');
+        if (!$scroll.length || $scroll.attr('data-side-tab')) { return; }
+
+        /* 상자마다 소속 탭을 적는다 */
+        $scroll.children('.note-info-box').first().attr('data-side', 'overview');
+        $('#note-reagent-usage, #note-stoich').attr('data-side', 'reagent');
+        /* 점검 요청 버튼을 싼 div.ma-t20 — 점검 탭으로 */
+        const $btnWrap = $('#noteInspectBtn').closest('div');
+        $btnWrap.addClass('lims-note-sidewrap').attr('data-side', 'inspect');
+
+        /* 연동 데이터 상자(신설) */
+        $('<div class="note-info-box lims-note-databox" data-side="data" id="noteDataBox">'
+          + '<div class="title">연동 데이터</div><div class="cont"><ul></ul>'
+          + '<p class="lims-note-insphint">장비에서 수집된 원시 파일이 이 노트에 연결된 것입니다. '
+          + '전체 대장은 왼쪽 메뉴 [데이터]에 있습니다.</p></div></div>')
+          .insertAfter($btnWrap.length ? $btnWrap : $scroll.children().last());
+
+        /* 탭 머리 */
+        const $tabs = $('<div class="lims-note-sidetabs" role="tablist">'
+          + '<button type="button" data-tab="overview" class="active">개요</button>'
+          + '<button type="button" data-tab="reagent">시약</button>'
+          + '<button type="button" data-tab="inspect">점검</button>'
+          + '<button type="button" data-tab="data">데이터<span class="b d-none">0</span></button>'
+          + '</div>');
+        $scroll.prepend($tabs).attr('data-side-tab', 'overview');
+
+        $tabs.on('click', 'button', function () {
+          $tabs.find('button').removeClass('active');
+          $(this).addClass('active');
+          $scroll.attr('data-side-tab', $(this).attr('data-tab'));
+        });
+      }
+
+      /* 점검 상자가 생기는 시점이 늦다(paintNoteState) — 탭 소속을 그때도 적는다 */
+      function tagInspectBox() {
+        $('#noteInspBox').attr('data-side', 'inspect');
+      }
+
+      /* 이 노트에 연동된 원시 데이터 — 우측 [데이터] 탭 */
+      function loadLinkedData(onDone) {
+        const done = typeof onDone === 'function' ? onDone : function () {};
+        ajaxPost('/api/lims/data/dataList', { schTp: 'ALL' }, null, function (res) {
+          const rows = asList(res ? res.dataList : null).filter(function (d) {
+            return Number(d.noteMno) === Number(gNoteMno);
+          });
+          const $box = $('#noteDataBox');
+          if (!$box.length) { done(); return; }
+          const $ul = $box.find('ul').empty();
+          $('.lims-note-sidetabs [data-tab="data"] .b')
+            .toggleClass('d-none', !rows.length).text(rows.length);
+          if (!rows.length) {
+            $ul.append('<li class="lims-note-insphint">연동된 데이터가 없습니다.</li>');
+            done();
+            return;
+          }
+          rows.forEach(function (d) {
+            $ul.append('<li><span class="nm"><i class="bi bi-file-earmark" aria-hidden="true"></i>'
+              + esc(d.fileNm) + '</span>'
+              + '<span class="lims-integ is-' + (d.integrityCcd === 'FIXED' ? 'ok' : d.integrityCcd === 'RECHECK' ? 'warn' : 'danger') + '">'
+              + (d.integrityCcd === 'FIXED' ? '해시 고정' : d.integrityCcd === 'RECHECK' ? '점검' : '미연동') + '</span></li>');
+          });
+          done();
+        }, null, function () { done(); });
+      }
+
+      /* 문서 머리 — EXP ID · 제목 · 메타 칩 (목업의 문서 상단) */
+      function paintDocHead(note) {
+        let $head = $('#noteDocHead');
+        if (!$head.length) {
+          $head = $('<div class="lims-note-dochead" id="noteDocHead"></div>');
+          $('.lims-note-main > .lims-card > .lims-card-head').after($head);
+        }
+        const docId = 'EXP-2026-' + String(gNoteMno || 0).padStart(4, '0');
+        const tags = String(note.keywords || 'HPLC,합성').split(',').filter(Boolean);
+        $head.html(
+          '<p class="docid">' + esc(docId) + '</p>'
+          + '<h1>' + esc(note.noteNm || '(제목 없음)') + '</h1>'
+          + '<div class="meta">'
+          + '<span><i class="bi bi-person" aria-hidden="true"></i>' + esc(note.writerNm || '-') + '</span>'
+          + '<span><i class="bi bi-calendar3" aria-hidden="true"></i>실험일 ' + esc((note.writeDtStr || '').slice(0, 10) || '-') + '</span>'
+          + tags.map(function (t) { return '<span class="tag">' + esc(t.trim()) + '</span>'; }).join('')
+          + '</div>');
+      }
+
+      /* 좌측 노트북 트리 — EntryTree 참고본의 골격. 프로젝트=폴더, 노트=잎. */
+      function buildNoteTree() {
+        if ($('#noteTree').length) { return; }
+        const $tree = $('<nav id="noteTree" aria-label="노트북 트리"><div class="lims-tree-inner">'
+          + '<div class="lims-tree-search"><i class="bi bi-search" aria-hidden="true"></i>노트 검색</div>'
+          + '<div class="lims-tree-body"></div>'
+          + '</div></nav>');
+        $('#main-body').prepend($tree);
+
+        ajaxPost('/api/eln/note/myNoteList', { pageUnit: 50, orderBy: 'MODIFY_DT DESC' }, null, function (res) {
+          const list = asList(res && res.noteListInfo ? res.noteListInfo.dataList : null);
+          const $body = $tree.find('.lims-tree-body').empty();
+          const byProj = {};
+          list.forEach(function (n) {
+            const k = n.projectNm || '(프로젝트 없음)';
+            (byProj[k] = byProj[k] || []).push(n);
+          });
+          Object.keys(byProj).forEach(function (pj) {
+            const notes = byProj[pj];
+            $body.append('<div class="lims-tree-folder">'
+              + '<i class="bi bi-chevron-down" aria-hidden="true"></i>'
+              + '<i class="bi bi-folder2-open" aria-hidden="true"></i>'
+              + '<span>' + esc(pj) + '</span><span class="cnt">(' + notes.length + ')</span></div>');
+            notes.forEach(function (n) {
+              const active = Number(n.noteMno) === Number(gNoteMno);
+              const $it = $('<div class="lims-tree-note' + (active ? ' active' : '') + '">'
+                + '<span class="dot st-' + esc(n.writeStatusCcd || 'WRITING') + '"></span>'
+                + '<span>' + esc(n.noteNm || '') + '</span></div>');
+              if (!active) {
+                $it.on('click', function () {
+                  S2Util.toasts('프로토타입은 이 노트 하나만 편집할 수 있습니다.', { class: 'Toast-bottom-web' });
+                });
+              }
+              $body.append($it);
+            });
+          });
+        });
+      }
 
       /*
         모달을 body 로 옮겨 놓고 연다.

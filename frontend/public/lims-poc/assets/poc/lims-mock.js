@@ -2096,6 +2096,30 @@
       });
       return { resultSeqNo: seqNo, resultVerNo: 1, judgeCcd: judge };
     },
+    /*
+      엑셀 매핑 가져오기 — 참고 목업(엑셀 업로드 — 결과표 매핑)의 마지막 단계.
+      파일 파싱은 하지 않는다(모의라는 사실을 화면이 말한다). 값 세 개를
+      createResult 와 같은 판정 경로로 넣는다 — 97.65 는 규격(≥98.0) 미달이라
+      이탈 배너·OOS 흐름과 그대로 이어진다.
+    */
+    '/api/lims/result/importExcel': function () {
+      var vals = ['98.42', '97.65', '98.91'];
+      var added = [];
+      vals.forEach(function (val) {
+        var seqNo = RESULTS.length + 1;
+        var judge = judgeAgainstSpec(val, SPECS[0]);
+        RESULTS.push({
+          resultMno: ++seq.result, resultSeqNo: seqNo, resultVerNo: 1, resultVal: val,
+          unitCcd: SPECS[0].unitCcd, specJudgeTpCcd: SPECS[0].judgeTpCcd,
+          specLowerVal: SPECS[0].lowerVal, specUpperVal: SPECS[0].upperVal, specExpectVal: null,
+          judgeCcd: judge, judgeRsn: null, inputUserNm: '김연구',
+          inputDt: stampNow(), importSrc: 'bca_quant_batch3.xlsx'
+        });
+        added.push({ resultSeqNo: seqNo, judgeCcd: judge });
+      });
+      return { addedCnt: added.length, added: added };
+    },
+
     '/api/lims/method/createMethod': function (p) {
       var mno = ++seq.method;
       METHODS.unshift({

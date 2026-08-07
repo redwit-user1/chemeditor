@@ -7028,3 +7028,341 @@ a.lims-dash-proj:hover { color: var(--ds-primary); }
 	font-size: var(--ds-fs-micro);
 	color: var(--ds-ink-4);
 }
+
+/* ============================================================================
+   §51 노트 에디터 3단 — 트리(좌) · 문서(중) · 개요(우)
+
+   참고 목업(ELN Editor 1a)의 골격이다. 구노 노트 레이아웃은 정보 패널을
+   왼쪽에 fixed 로 세우는데, 목업은 왼쪽에 노트북 트리, 오른쪽에 개요 4탭을
+   둔다. layout.css 를 고치면 제품 전체가 흔들리므로 노트 화면에서만
+   덮는다(.note-detail 범위).
+   ========================================================================= */
+
+.note-detail #main-body {
+	flex-wrap: nowrap;
+	align-items: stretch;
+	gap: 0;
+}
+
+/* 정보 패널 → 오른쪽 개요 패널 */
+.note-detail #main-body #main-body-left {
+	position: static !important;
+	order: 3;
+	flex: none;
+	width: 320px !important;
+	height: auto;
+	margin: 0 !important;
+	padding: 0 var(--ds-4) 0 0;
+	z-index: auto;
+}
+
+.note-detail #main-body #main-body-left .note-side-scroll {
+	position: sticky;
+	top: calc(var(--ds-header) + var(--ds-4));
+	max-height: calc(100vh - var(--ds-header) - var(--ds-8));
+	overflow-y: auto;
+	overscroll-behavior: contain;
+}
+
+.note-detail #main-body #main-body-right {
+	position: static !important;
+	order: 2;
+	flex: 1 1 auto;
+	min-width: 0;
+	width: auto !important;
+	max-width: none !important;
+	height: auto !important;
+	margin-left: 0 !important;
+}
+
+/* fixed 패널 여닫이 손잡이 — 3단에서는 패널이 항상 보이므로 뺀다 */
+.note-detail #note-open-btn,
+.note-detail #note-close-btn { display: none !important; }
+
+/* ── 좌측 노트북 트리 (EntryTree 참고) ─────────────────────────────────── */
+
+#noteTree {
+	order: 1;
+	flex: none;
+	width: 236px;
+	padding: 0 var(--ds-4) 0 0;
+}
+
+#noteTree .lims-tree-inner {
+	position: sticky;
+	top: calc(var(--ds-header) + var(--ds-4));
+	max-height: calc(100vh - var(--ds-header) - var(--ds-8));
+	overflow-y: auto;
+	border: 1px solid var(--ds-line);
+	border-radius: var(--ds-radius-lg);
+	background: var(--ds-surface);
+	box-shadow: var(--ds-shadow);
+	padding: var(--ds-3);
+}
+
+#noteTree .lims-tree-search {
+	display: flex;
+	align-items: center;
+	gap: var(--ds-2);
+	margin-bottom: var(--ds-3);
+	padding: 0 var(--ds-3);
+	height: var(--ds-control-sm);
+	border: 1px solid var(--ds-line);
+	border-radius: var(--ds-radius);
+	background: var(--ds-canvas);
+	font-size: var(--ds-fs-small);
+	color: var(--ds-ink-4);
+}
+
+#noteTree .lims-tree-folder {
+	display: flex;
+	align-items: center;
+	gap: var(--ds-1);
+	min-height: var(--ds-7);
+	padding: 0 var(--ds-1);
+	font-size: var(--ds-fs-small);
+	font-weight: 700;
+	color: var(--ds-ink-2);
+}
+
+#noteTree .lims-tree-folder .bi { color: var(--ds-ink-4); font-size: 12px; }
+#noteTree .lims-tree-folder .cnt { margin-left: auto; font-weight: 400; font-size: var(--ds-fs-micro); color: var(--ds-ink-4); }
+
+#noteTree .lims-tree-note {
+	display: flex;
+	align-items: center;
+	gap: var(--ds-2);
+	min-height: var(--ds-7);
+	margin: 1px 0 1px var(--ds-4);
+	padding: 0 var(--ds-2);
+	border-radius: var(--ds-radius-sm);
+	font-size: var(--ds-fs-small);
+	color: var(--ds-ink-3);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	cursor: pointer;
+}
+
+#noteTree .lims-tree-note:hover { background: var(--ds-hover); color: var(--ds-ink); }
+
+#noteTree .lims-tree-note.active {
+	background: var(--ds-primary-weak);
+	color: var(--ds-primary);
+	font-weight: 700;
+}
+
+/* 상태 점 — 작성중 파랑 · 점검중 주황 · 완료 초록 · 반려 빨강 */
+#noteTree .lims-tree-note .dot {
+	flex: none;
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: var(--ds-info-dot);
+}
+
+#noteTree .lims-tree-note .dot.st-INSPECTION { background: var(--ds-warn-dot); }
+#noteTree .lims-tree-note .dot.st-COMPLETE { background: var(--ds-ok-dot); }
+#noteTree .lims-tree-note .dot.st-REJECT { background: var(--ds-danger); }
+
+/* 좁은 화면: 트리를 접고, 개요 패널은 본문 아래로 */
+@media (max-width: 1280px) {
+	#noteTree { display: none; }
+}
+
+@media (max-width: 1100px) {
+	.note-detail #main-body { flex-wrap: wrap; }
+	.note-detail #main-body #main-body-left {
+		order: 3;
+		width: 100% !important;
+		padding: 0;
+	}
+	.note-detail #main-body #main-body-left .note-side-scroll {
+		position: static;
+		max-height: none;
+	}
+}
+
+/* ── 우측 개요 패널 4탭 ────────────────────────────────────────────────── */
+
+.lims-note-sidetabs {
+	display: flex;
+	gap: 0;
+	margin-bottom: var(--ds-3);
+	border-bottom: 1px solid var(--ds-line);
+}
+
+.lims-note-sidetabs button {
+	flex: 1;
+	padding: var(--ds-2) 0;
+	border: 0;
+	border-bottom: 2px solid transparent;
+	background: none;
+	font-size: var(--ds-fs-small);
+	font-weight: 500;
+	color: var(--ds-ink-4);
+}
+
+.lims-note-sidetabs button:hover { color: var(--ds-ink-2); }
+
+.lims-note-sidetabs button.active {
+	border-bottom-color: var(--ds-primary);
+	color: var(--ds-primary);
+	font-weight: 700;
+}
+
+.lims-note-sidetabs button .b {
+	display: inline-block;
+	min-width: 16px;
+	margin-left: 2px;
+	border-radius: var(--ds-radius-sm);
+	background: var(--ds-primary-weak);
+	font-size: var(--ds-fs-micro);
+	color: var(--ds-primary);
+	text-align: center;
+}
+
+/* 탭 본문 — data-side-tab 값에 맞는 상자만 보인다 */
+.note-side-scroll[data-side-tab] .note-info-box,
+.note-side-scroll[data-side-tab] .lims-note-sidewrap { display: none; }
+.note-side-scroll[data-side-tab="overview"] [data-side="overview"],
+.note-side-scroll[data-side-tab="reagent"] [data-side="reagent"],
+.note-side-scroll[data-side-tab="inspect"] [data-side="inspect"],
+.note-side-scroll[data-side-tab="data"] [data-side="data"] { display: block; }
+
+/* 연동 데이터 탭 */
+.lims-note-databox li {
+	display: flex;
+	align-items: baseline;
+	gap: var(--ds-2);
+	padding: var(--ds-2) 0;
+	border-bottom: 1px solid var(--ds-line-soft);
+	font-size: var(--ds-fs-small);
+}
+
+.lims-note-databox li:last-child { border-bottom: 0; }
+.lims-note-databox .nm { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ds-ink-2); }
+.lims-note-databox .nm .bi { margin-right: 2px; color: var(--ds-ink-4); }
+
+/* ── 문서 머리 (EXP ID · 제목 · 메타 칩) ───────────────────────────────── */
+
+.lims-note-dochead {
+	padding: var(--ds-5) var(--ds-6) var(--ds-4);
+	border-bottom: 1px solid var(--ds-line-soft);
+}
+
+.lims-note-dochead .docid {
+	font-family: var(--ds-font-id);
+	font-size: var(--ds-fs-small);
+	color: var(--ds-ink-4);
+}
+
+.lims-note-dochead h1 {
+	margin: var(--ds-1) 0 var(--ds-2);
+	font-size: var(--ds-fs-title);
+	font-weight: 700;
+	letter-spacing: -0.03em;
+	line-height: var(--ds-lh-tight);
+	color: var(--ds-ink);
+}
+
+.lims-note-dochead .meta {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--ds-2) var(--ds-4);
+	font-size: var(--ds-fs-small);
+	color: var(--ds-ink-3);
+}
+
+.lims-note-dochead .meta .bi { margin-right: 2px; color: var(--ds-ink-4); font-size: 13px; }
+
+.lims-note-dochead .meta .tag {
+	padding: 1px var(--ds-2);
+	border-radius: var(--ds-radius-sm);
+	background: var(--ds-line-soft);
+	font-size: var(--ds-fs-micro);
+	color: var(--ds-ink-3);
+}
+
+/* ── 섹션 머리 목업화 — 셰브론 + 굵은 제목 ─────────────────────────────── */
+
+.lims-page .lims-note-section-head .chev {
+	flex: none;
+	color: var(--ds-ink-soft);
+	font-size: 12px;
+}
+
+/*
+  모달 바닥의 회색 선 버튼. 제품의 button-gray-line-sty02 는 "추가" 버튼이라
+  + 아이콘(icon_add_blue.png)이 클래스에 박혀 있다 — 취소·이전에 쓰면
+  취소 옆에 +가 뜬다(엑셀 모달에서 실제로 떴다). 바닥 버튼에서는 뗀다.
+*/
+.modal-footer .button-gray-line-sty02 {
+	background-image: none;
+}
+
+/* ── §52 엑셀 매핑 모달 (참고 목업) ─────────────────────────────────────── */
+
+.lims-xls-steps {
+	display: flex;
+	align-items: center;
+	gap: var(--ds-5);
+	margin: 0 0 var(--ds-4);
+	padding: 0 0 var(--ds-3);
+	border-bottom: 1px solid var(--ds-line-soft);
+	list-style: none;
+	font-size: var(--ds-fs-small);
+	color: var(--ds-ink-4);
+}
+
+.lims-xls-steps li { display: flex; align-items: center; gap: var(--ds-2); }
+
+.lims-xls-steps .dot {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	background: var(--ds-line-soft);
+	font-size: var(--ds-fs-micro);
+	font-weight: 700;
+	color: var(--ds-ink-3);
+}
+
+.lims-xls-steps li.now { color: var(--ds-primary); font-weight: 700; }
+.lims-xls-steps li.now .dot { background: var(--ds-primary); color: #fff; }
+.lims-xls-steps li.done { color: var(--ds-ok); }
+.lims-xls-steps li.done .dot { background: var(--ds-ok-dot); color: #fff; }
+
+.lims-xls-file {
+	display: flex;
+	align-items: center;
+	gap: var(--ds-3);
+	margin-bottom: var(--ds-4);
+	padding: var(--ds-3) var(--ds-4);
+	border: 1px solid var(--ds-line);
+	border-radius: var(--ds-radius);
+	background: var(--ds-canvas);
+}
+
+.lims-xls-file .bi { font-size: 22px; color: var(--ds-ok); }
+.lims-xls-file .sub { display: block; font-size: var(--ds-fs-micro); color: var(--ds-ink-4); }
+
+.lims-xls-radio {
+	display: flex;
+	align-items: center;
+	gap: var(--ds-2);
+	min-height: var(--ds-control-sm);
+	margin: 0;
+	font-weight: 400;
+	cursor: pointer;
+}
+
+.lims-xls-radio .sub { font-size: var(--ds-fs-micro); color: var(--ds-ink-4); }
+
+.lims-xls-map .arr { text-align: center; color: var(--ds-ink-soft); }
+
+.lims-xls-dev td { background: #fdeded; }
+.lims-xls-dev .dev { color: var(--ds-danger-text); font-weight: 700; }
