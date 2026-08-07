@@ -64,7 +64,7 @@
 .lims-state {
 	display: inline-block;
 	padding: calc(var(--ds-unit) / 2) var(--ds-2);
-	border-radius: calc(var(--ds-radius) - 6px);
+	border-radius: var(--ds-radius-sm);
 	font-size: var(--ds-fs-small);
 	font-weight: var(--ds-fw-medium);
 	line-height: var(--ds-lh);
@@ -74,7 +74,7 @@
 
 .lims-state.expired {
 	background: var(--ds-danger-weak);
-	color: var(--ds-danger);
+	color: var(--ds-danger-text);
 }
 
 .lims-state.soon {

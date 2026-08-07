@@ -106,8 +106,15 @@ h1, h2, h3, h4, h5, h6,
 /* lims-ui.css 가 !important 로 Noto 를 박아 두었던 자리 — 그 선언은 지웠지만,
    벤더들이 각자 더 높은 우선순위로 서체를 박아 두는 곳이 남아 있어 방어망은
    유지한다. 서체의 출처는 이 파일 하나다. */
-.lims-page *:not([class*='fa-']):not([class*='bi-']):not([class*='flag-icon']),
-.modal[id^='modal-lims-'] *:not([class*='fa-']):not([class*='bi-']):not([class*='flag-icon']) {
+/*
+  식별자(.lims-id · .lims-cas · 칩 안의 .id)는 이 방어망에서 뺀다.
+  GOONO 정본(구축형 GOONO_디자인.fig)이 ID 를 고정폭 + 자간 0 으로 두는데,
+  이 규칙이 특이도 (0,4,0) 으로 본문 글꼴을 덮어 씌워 그게 먹지 않았다.
+  특이도를 더 쌓아 이기는 대신, 예외를 여기 한 곳에 적는다 —
+  "왜 이것만 다른 글꼴인가" 의 답이 규칙 옆에 있어야 한다.
+*/
+.lims-page *:not([class*='fa-']):not([class*='bi-']):not([class*='flag-icon']):not(.lims-id):not(.lims-cas):not(.lims-mono),
+.modal[id^='modal-lims-'] *:not([class*='fa-']):not([class*='bi-']):not([class*='flag-icon']):not(.lims-id):not(.lims-cas):not(.lims-mono) {
 	font-family: var(--ds-font) !important;
 }
 
