@@ -465,13 +465,20 @@
       storageCondNm: '건조 · 밀폐' }
   ];
 
+  /* 용기는 시약 품목에 매달린다. reagentMno 가 없으면 본문 @멘션이 "무슨
+     시약의 Lot 인지" 를 말할 수 없다 — 바코드만으로는 사람이 못 읽는다.
+     노트가 실제로 쓴 세 가지(RGT-000302·304·305)도 여기 있어야 멘션에 뜬다. */
   var CONTAINERS = [
-    { containerMno: 301, barcode: 'RGT-000301', lotNo: 'A2026-113', amount: 800, unitCcd: 'mL',
+    { containerMno: 301, reagentMno: 201, barcode: 'RGT-000301', lotNo: 'A2026-113', amount: 800, unitCcd: 'mL',
       locationNm: '3층 시약실 > 냉동고 B > 1단', expiryDt: '2027-02-28', expiredYn: 'N', statusCcd: 'IN_USE' },
-    { containerMno: 302, barcode: 'RGT-000302', lotNo: 'A2025-908', amount: 120, unitCcd: 'mL',
+    { containerMno: 302, reagentMno: 205, barcode: 'RGT-000302', lotNo: 'A2025-908', amount: 120, unitCcd: 'g',
       locationNm: '2층 분석실 > 상온 선반 1', expiryDt: '2026-06-30', expiredYn: 'Y', statusCcd: 'IN_USE' },
-    { containerMno: 303, barcode: 'RGT-000303', lotNo: null, amount: 0, unitCcd: 'g',
-      locationNm: '3층 시약실 > 냉동고 B > 1단', expiryDt: null, expiredYn: 'N', statusCcd: 'DEPLETED' }
+    { containerMno: 303, reagentMno: 202, barcode: 'RGT-000303', lotNo: null, amount: 0, unitCcd: 'g',
+      locationNm: '3층 시약실 > 냉동고 B > 1단', expiryDt: null, expiredYn: 'N', statusCcd: 'DEPLETED' },
+    { containerMno: 304, reagentMno: 204, barcode: 'RGT-000304', lotNo: 'B2026-041', amount: 480, unitCcd: 'mL',
+      locationNm: '2층 분석실 > 상온 선반 2', expiryDt: '2027-01-15', expiredYn: 'N', statusCcd: 'IN_USE' },
+    { containerMno: 305, reagentMno: 203, barcode: 'RGT-000305', lotNo: 'B2026-077', amount: 95, unitCcd: 'mL',
+      locationNm: '2층 분석실 > 상온 선반 2', expiryDt: '2026-12-01', expiredYn: 'N', statusCcd: 'IN_USE' }
   ];
 
   /* 화합물 라이브러리 — mkcompounds.py 가 RDKit 으로 만든 값이다.
@@ -542,17 +549,30 @@
 
   var NOTE_SEED = (window.LIMS_POC_COMPOUNDS || [])[0] || {};
 
+  /*
+    섹션(sectionCd)은 화면이 문서를 목적·재료·절차·결과·고찰로 묶어 그리는 근거다.
+    서버가 아직 이 값을 안 내려주면 화면이 전부 '절차' 로 몰아넣는데, 그러면
+    시약 표와 구조가 절차 밑에 붙어 섹션 구조 자체가 안 보인다. 실제 노트가
+    어떻게 나뉘는지를 목이 보여 준다.
+  */
   var NOTE_BLOCKS = [
-    { blockMno: 1, blockOrd: 1, blockTpCcd: 'TEXT',
+    { blockMno: 10, blockOrd: 1, blockTpCcd: 'TEXT', sectionCd: 'PURPOSE',
+      textVal: '인돌 아민(KM00003719)과 4-벤질옥시벤조산의 커플링으로 목적물 KM00003710 을 합성한다.\n'
+        + '2차 합성 대비 EDC/HOBt 당량을 낮춘 조건의 수율을 확인하는 것이 이번 배치의 목적이다.' },
+    { blockMno: 1, blockOrd: 4, blockTpCcd: 'TEXT', sectionCd: 'PROCEDURE',
       textVal: '인돌 아민(KM00003719)과 4-벤질옥시벤조산을 EDC/HOBt 조건에서 커플링했다.\n'
         + 'DCM 20 mL, 0 °C 에서 30분 교반 후 상온으로 올려 밤새 반응시켰다.' },
-    { blockMno: 2, blockOrd: 2, blockTpCcd: 'STRUCTURE',
+    { blockMno: 11, blockOrd: 5, blockTpCcd: 'TEXT', sectionCd: 'RESULT',
+      textVal: 'TLC(EA:Hex = 1:2)에서 출발물질 소실 확인. 컬럼 정제 후 백색 고체 312 mg 회수.' },
+    { blockMno: 12, blockOrd: 6, blockTpCcd: 'TEXT', sectionCd: 'DISCUSSION',
+      textVal: '당량을 낮춰도 전환율에 큰 차이가 없었다. 다음 배치는 이 조건을 기준으로 한다.' },
+    { blockMno: 2, blockOrd: 2, blockTpCcd: 'STRUCTURE', sectionCd: 'MATERIAL',
       molblock: NOTE_SEED.molblock || '',
       molFormula: NOTE_SEED.molFormula || '',
       molWt: NOTE_SEED.molWt === undefined ? null : NOTE_SEED.molWt,
       exactMolWt: NOTE_SEED.exactMolWt === undefined ? null : NOTE_SEED.exactMolWt,
       caption: '목적물 ' + (NOTE_SEED.regId || '') },
-    { blockMno: 3, blockOrd: 3, blockTpCcd: 'TABLE', caption: '반응 시약',
+    { blockMno: 3, blockOrd: 3, blockTpCcd: 'TABLE', sectionCd: 'MATERIAL', caption: '반응 시약',
       rowList: [
         { reagentMno: 205, reagentNm: '탄산칼륨 (무수)', casNo: '584-08-7', molFormula: 'K2CO3',
           molWt: 138.21, density: null, roleCcd: 'REACTANT', amount: 276, unitCcd: 'MG' },
@@ -563,7 +583,7 @@
       ] }
   ];
 
-  var nextBlockMno = 4;
+  var nextBlockMno = 20;
 
   var NOTE_USAGE = [
     { reagentNm: '디클로로메탄', barcode: 'RGT-000304', deltaAmount: -20, unitCcd: 'mL',
@@ -1361,6 +1381,18 @@
         { upperCd: '', orztCd: 'ORZT_QA',    orztNm: '품질보증', useYn: 'Y' }
       ] };
     },
+    /* 본문의 @멘션. 한 번에 다 주고 화면이 걸러 낸다 — 목록이 수십 건이라
+       서버 왕복을 글자마다 할 이유가 없다. */
+    '/api/lims/note/mentionList': function (p) {
+      var kw = String(p.keyword || '').trim().toLowerCase();
+      var rows = mentionPool();
+      if (kw) {
+        rows = rows.filter(function (m) {
+          return (m.id + ' ' + m.nm).toLowerCase().indexOf(kw) >= 0;
+        });
+      }
+      return { mentionList: rows.slice(0, 20) };
+    },
     '/api/eln/member/projectMemberList': function (p) {
       var mno = Number(p.schProjectMno || p.projectMno) || 301;
       var rows = projectMembers(mno);
@@ -1458,6 +1490,52 @@
       return { blockMno: block.blockMno, noteMno: NOTE.noteMno };
     }
   };
+
+  /* ---------------------------------------------------------------
+     @멘션이 훑는 모집단.
+
+     참고 설계(ELN Editor 1b)의 중심 생각은 "본문에 삽입되는 시료·장비·시약·
+     측정값이 전부 DB 레코드와 연결된 살아 있는 객체" 다. 그래서 멘션 결과는
+     이름만 주지 않고 그 레코드가 지금 어떤 상태인지를 함께 준다 —
+     시약은 유효기간과 잔량, 시료는 보관위치와 잔량, 장비는 가용 여부.
+     그 값이 있어야 "만료된 시약을 본문에 적었다" 를 그 자리에서 잡는다.
+  --------------------------------------------------------------- */
+  function mentionPool() {
+    var out = [];
+    /* 시약은 품목이 아니라 용기(Lot) 단위로 멘션한다 — 본문에 "무슨 시약을
+       썼다" 가 아니라 "어느 Lot 을 썼다" 가 남아야 추적이 된다. */
+    CONTAINERS.forEach(function (c) {
+      var item = findBy(REAGENTS, 'reagentMno', c.reagentMno) || null;
+      var nm = (item ? item.reagentNm : c.barcode) + (c.lotNo ? ' · Lot ' + c.lotNo : '');
+      var expired = c.expiredYn === 'Y';
+      out.push({
+        kind: 'REAGENT', id: c.barcode, nm: nm,
+        meta: expired ? '유효기간 만료 (' + (c.expiryDt || '') + ')'
+          : '유효 ' + (c.expiryDt || '-') + ' · 잔량 ' + c.amount + ' ' + (c.unitCcd || ''),
+        tone: expired ? 'danger' : 'warn'
+      });
+    });
+    SAMPLES.forEach(function (x) {
+      out.push({
+        kind: 'SAMPLE', id: x.sampleNo, nm: x.sampleNm,
+        meta: (x.projectNm || '') + ' · 분주 ' + x.activeAliquotCnt + '/' + x.aliquotCnt,
+        tone: 'primary'
+      });
+    });
+    INSTRUMENTS.forEach(function (i) {
+      var bad = i.calState && i.calState !== 'VALID';
+      out.push({
+        kind: 'INSTRUMENT', id: i.instrumentCd, nm: i.instrumentNm,
+        meta: bad ? '교정 기한 경과' : (i.locationNm || '') + ' · 사용 가능',
+        tone: bad ? 'danger' : 'thing'
+      });
+    });
+    USERS.forEach(function (u) {
+      out.push({ kind: 'USER', id: '', nm: u.userNm,
+        meta: u.authGrpNm + ' · ' + u.orztNm, tone: 'person' });
+    });
+    return out;
+  }
 
   /* 사용자 선택 팝업 — 여러 화면이 같은 응답 키를 쓴다. */
   function userListResponse(p) {

@@ -5977,3 +5977,242 @@ td.lims-id,
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
+
+/* ------------------------------------------------------------------
+   §45 섹션 + 아웃라인 (연구노트 본문)
+   출처: 구축형 GOONO_디자인.fig / ELN Editor 심화 설계 1a
+
+   참고 설계의 첫 문장이 "자유 문서가 아니라 섹션+블록 구조" 다. 실험 기록은
+   매번 같은 순서로 읽힌다 — 목적 · 재료 및 시약 · 실험 절차 · 결과 · 고찰.
+   그 순서를 화면이 미리 세워 두면 쓰는 사람은 구조를 매번 다시 만들지 않고,
+   읽는 사람(점검자·감사)은 늘 같은 자리에서 같은 것을 찾는다.
+------------------------------------------------------------------ */
+.lims-page .lims-note-canvas {
+	display: grid;
+	grid-template-columns: 190px minmax(0, 1fr);
+	align-items: start;
+}
+
+/* --- 아웃라인 레일 --- */
+.lims-page .lims-note-outline {
+	position: sticky;
+	top: var(--ds-4);
+	padding: var(--ds-8) var(--ds-2) 0 var(--ds-5);
+}
+
+.lims-page .lims-note-outline-label {
+	margin: 0 0 var(--ds-2) var(--ds-3);
+	font-size: var(--ds-fs-micro);
+	font-weight: var(--ds-fw-bold);
+	color: var(--ds-ink-4);
+	letter-spacing: 0.02em;
+}
+
+.lims-page .lims-outline-item {
+	display: flex;
+	align-items: center;
+	gap: var(--ds-2);
+	width: 100%;
+	padding: 5px var(--ds-3);
+	/* 활성 표시가 자리를 밀지 않도록, 안 켜졌을 때도 같은 두께를 비워 둔다 */
+	border: 0;
+	border-left: 2px solid transparent;
+	border-radius: 0 var(--ds-radius-sm) var(--ds-radius-sm) 0;
+	background: transparent;
+	color: var(--ds-ink-4);
+	font-size: var(--ds-fs-small);
+	text-align: left;
+	cursor: pointer;
+	transition: background-color var(--ds-dur) var(--ds-ease), color var(--ds-dur) var(--ds-ease);
+}
+
+.lims-page .lims-outline-item .nm { flex: 1; }
+
+.lims-page .lims-outline-item .cnt {
+	font-size: var(--ds-fs-micro);
+	font-variant-numeric: tabular-nums;
+	color: var(--ds-ink-soft);
+}
+
+/* 아직 아무것도 안 쓴 섹션. 지운 것이 아니라 남은 일이다. */
+.lims-page .lims-outline-item.is-empty { color: var(--ds-ink-soft); }
+
+.lims-page .lims-outline-item:hover { background: var(--ds-hover); color: var(--ds-ink-3); }
+
+.lims-page .lims-outline-item.is-active {
+	border-left-color: var(--ds-primary);
+	background: var(--ds-primary-weak);
+	color: var(--ds-primary);
+	font-weight: var(--ds-fw-bold);
+}
+
+.lims-page .lims-outline-item.is-active .cnt { color: var(--ds-primary); }
+
+.lims-page .lims-outline-item:focus-visible {
+	outline: none;
+	box-shadow: var(--ds-ring);
+}
+
+/* --- 섹션 --- */
+.lims-page .lims-note-section + .lims-note-section {
+	margin-top: var(--ds-6);
+}
+
+.lims-page .lims-note-section-head {
+	display: flex;
+	align-items: center;
+	gap: var(--ds-2);
+	padding: 0 var(--ds-6);
+	margin-bottom: var(--ds-1);
+}
+
+.lims-page h2.lims-note-section-title,
+.lims-page .lims-note-section-title {
+	margin: 0;
+	font-size: var(--ds-fs-h3, 18px);
+	font-weight: var(--ds-fw-bold);
+	line-height: var(--ds-lh-tight);
+	color: var(--ds-ink);
+}
+
+.lims-page .lims-note-section-count {
+	margin-left: auto;
+	font-size: var(--ds-fs-micro);
+	color: var(--ds-ink-soft);
+}
+
+/* 섹션 사이는 선이 아니라 여백으로 가른다 — 참고 설계도 섹션 제목에는
+   구분선을 두지 않는다. 선이 늘어나면 문서가 표처럼 읽힌다. */
+.lims-page .lims-note-section-body {
+	position: relative;
+}
+
+/* 비어 있는 섹션도 자리를 지킨다. 넣기 줄 하나만 남아 높이가 0 에 가까우면
+   "여기에 쓸 수 있다" 가 안 보인다. */
+.lims-page .lims-note-section-body:not(:has(.lims-note-block)) {
+	min-height: var(--ds-row);
+}
+
+/* ------------------------------------------------------------------
+   §46 삽입 판 (/ 슬래시 · @ 멘션)
+   출처: 구축형 GOONO_디자인.fig / ELN Editor 심화 설계 1b
+
+   판은 body 에 붙는다. 편집기 안에 두면 그쪽 overflow 에 잘린다.
+   폭은 슬래시 400 · 멘션 520 이지만 한 판을 돌려 쓰므로 최대에 맞추고
+   내용이 좁으면 알아서 줄어들게 둔다.
+------------------------------------------------------------------ */
+.lims-note-picker {
+	position: absolute;
+	z-index: 1200;
+	display: none;
+	width: 520px;
+	max-width: calc(100vw - 16px);
+	padding: var(--ds-2) var(--ds-2) 0;
+	border: 1px solid var(--ds-line);
+	border-radius: var(--ds-radius);
+	background: var(--ds-surface);
+	box-shadow: var(--ds-shadow-pop);
+	font-family: var(--ds-font);
+	overflow: hidden;
+}
+
+.lims-note-picker.is-open { display: block; }
+
+.lims-note-picker-group {
+	margin: var(--ds-2) 0 var(--ds-1) var(--ds-3);
+	font-size: var(--ds-fs-micro);
+	font-weight: var(--ds-fw-bold);
+	color: var(--ds-ink-soft);
+}
+
+.lims-note-picker-row {
+	display: flex;
+	align-items: center;
+	gap: var(--ds-3);
+	padding: var(--ds-2) var(--ds-3);
+	border-radius: var(--ds-radius-sm);
+	cursor: pointer;
+}
+
+.lims-note-picker-row .nm {
+	font-size: var(--ds-fs-cell);
+	font-weight: var(--ds-fw-bold);
+	color: var(--ds-ink);
+}
+
+.lims-note-picker-row .desc {
+	flex: 1;
+	font-size: var(--ds-fs-small);
+	color: var(--ds-ink-4);
+}
+
+/* 멘션 줄 — 식별자가 고정 너비로 왼쪽에 서야 세로로 훑힌다 */
+.lims-note-picker-row.is-mention .mid {
+	flex: none;
+	width: 126px;
+	font-family: var(--ds-font-id);
+	letter-spacing: 0;
+	font-size: var(--ds-fs-small);
+	color: var(--ds-ink-3);
+}
+
+.lims-note-picker-row.is-mention .nm {
+	flex: 1;
+	font-weight: var(--ds-fw-normal);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.lims-note-picker-row.is-mention .meta {
+	flex: none;
+	font-size: var(--ds-fs-small);
+	color: var(--ds-ink-4);
+	white-space: nowrap;
+}
+
+/* 만료·기한 경과는 고르기 전에 보여야 한다. 본문에 적히고 나서 잡으면 늦다. */
+.lims-note-picker-row .meta.tone-danger { color: var(--ds-danger-text); font-weight: var(--ds-fw-medium); }
+.lims-note-picker-row .meta.tone-thing  { color: var(--ds-ok); }
+
+.lims-note-picker-row.is-on {
+	background: var(--ds-primary-weak);
+}
+
+.lims-note-picker-row.is-on .nm,
+.lims-note-picker-row.is-on .mid { color: var(--ds-primary); }
+.lims-note-picker-row.is-on .desc { color: var(--ds-primary); }
+
+.lims-note-picker-empty {
+	padding: var(--ds-4) var(--ds-3);
+	font-size: var(--ds-fs-small);
+	color: var(--ds-ink-4);
+}
+
+.lims-note-picker-foot {
+	display: flex;
+	gap: var(--ds-4);
+	margin-top: var(--ds-2);
+	padding: var(--ds-2) var(--ds-3);
+	border-top: 1px solid var(--ds-line-soft);
+	font-size: var(--ds-fs-micro);
+	color: var(--ds-ink-soft);
+}
+
+.lims-note-picker-foot kbd {
+	margin-right: 2px;
+	padding: 0 var(--ds-1);
+	border-radius: 3px;
+	background: var(--ds-hover);
+	font-family: var(--ds-font-id);
+	font-size: var(--ds-fs-micro);
+	color: var(--ds-ink-4);
+}
+
+/* 본문 안에 앉은 칩 — 글줄 사이에 끼므로 기준선을 맞춘다 */
+.lims-note-editor .lims-chip {
+	vertical-align: -3px;
+	margin: 0 1px;
+	cursor: default;
+	user-select: none;
+}

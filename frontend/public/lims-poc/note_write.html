@@ -2762,12 +2762,63 @@
 
       /* 서버 블록 → 화면 블록. 화면이 쓰는 필드를 여기서 한 번에 채워 두면
          이후 렌더 코드가 null 검사로 뒤덮이지 않는다. */
+      /* ---------------------------------------------------------------
+         섹션 — 자유 문서가 아니라 정해진 뼈대
+
+         참고 설계(구축형 GOONO_디자인.fig / ELN Editor 1a)의 첫 문장이
+         "자유 문서가 아니라 섹션+블록 구조" 다. 실험 기록은 매번 같은 순서로
+         읽힌다 — 무엇을 하려 했고(목적), 무엇을 썼고(재료), 어떻게 했고(절차),
+         무엇이 나왔고(결과), 그래서 무슨 뜻인가(고찰). 그 순서를 화면이 미리
+         세워 두면 쓰는 사람이 구조를 매번 다시 만들지 않아도 되고, 읽는
+         사람(점검자·감사)은 늘 같은 자리에서 같은 것을 찾는다.
+
+         블록은 여전히 평평한 배열 하나(gBlocks)로 들고, 각자 sectionCd 를
+         가진다. 렌더가 섹션 순서로 묶어 그린다 — 두 배열을 따로 들면 순서가
+         어긋나는 자리가 생긴다.
+      --------------------------------------------------------------- */
+      const SECTIONS = [
+        { cd: 'PURPOSE',    nm: '목적' },
+        { cd: 'MATERIAL',   nm: '재료 및 시약' },
+        { cd: 'PROCEDURE',  nm: '실험 절차' },
+        { cd: 'RESULT',     nm: '결과' },
+        { cd: 'DISCUSSION', nm: '고찰' }
+      ];
+
+      function sectionIdx(cd) {
+        for (let i = 0; i < SECTIONS.length; i++) {
+          if (SECTIONS[i].cd === cd) { return i; }
+        }
+        return SECTIONS.length - 1;   /* 모르는 값은 마지막 섹션으로 */
+      }
+
+      function sectionNm(cd) {
+        return SECTIONS[sectionIdx(cd)].nm;
+      }
+
+      /* gBlocks 는 언제나 섹션 순서로 정렬돼 있다. 안정 정렬이라 섹션 안의
+         순서는 건드리지 않는다 — 사용자가 끌어 놓은 순서가 곧 그 순서다. */
+      function sortBlocks() {
+        gBlocks = gBlocks
+          .map(function (b, i) { return { b: b, i: i }; })
+          .sort(function (x, y) {
+            const d = sectionIdx(x.b.sectionCd) - sectionIdx(y.b.sectionCd);
+            return d !== 0 ? d : x.i - y.i;
+          })
+          .map(function (x) { return x.b; });
+      }
+
+      function blocksOfSection(cd) {
+        return gBlocks.filter(function (b) { return b.sectionCd === cd; });
+      }
+
       function toBlock(raw) {
         const b = raw || {};
         return {
           blockId: 'b' + (++gBlockSeq),
           blockMno: b.blockMno || null,
           blockTpCcd: b.blockTpCcd || 'TEXT',
+          /* 서버가 아직 섹션을 안 내려주면 절차로 둔다 — 대부분의 본문이 거기다 */
+          sectionCd: b.sectionCd || 'PROCEDURE',
           textVal: b.textVal || '',
           caption: b.caption || '',
           molblock: b.molblock || '',
@@ -2801,10 +2852,13 @@
         빈 화면으로 시작하면 "무엇을 넣는 곳인지" 를 화면이 말해주지 못한다.
       */
       function seedDefaultBlocks() {
+        /* 섹션 다섯이 늘 서 있고, 그 안에 이 PoC 가 보여 줘야 할 세 블록이
+           제자리에 들어간다 — 구조는 재료, 시약 표도 재료, 절차는 글이다. */
         gBlocks = [
-          toBlock({ blockTpCcd: 'TEXT', textVal: '' }),
-          toBlock({ blockTpCcd: 'STRUCTURE', caption: '' }),
-          toBlock({ blockTpCcd: 'TABLE', caption: '', rowList: [] })
+          toBlock({ blockTpCcd: 'TEXT', sectionCd: 'PURPOSE', textVal: '' }),
+          toBlock({ blockTpCcd: 'STRUCTURE', sectionCd: 'MATERIAL', caption: '' }),
+          toBlock({ blockTpCcd: 'TABLE', sectionCd: 'MATERIAL', caption: '', rowList: [] }),
+          toBlock({ blockTpCcd: 'TEXT', sectionCd: 'PROCEDURE', textVal: '' })
         ];
       }
 
@@ -2815,52 +2869,63 @@
         /* 블록 목록을 다시 그리면 iframe 이 통째로 날아간다 — 그리던 구조가 사라진다. */
         closeStructEditor();
         destroyTextEditors();
+        sortBlocks();
         const $wrap = $('#noteBlocks').empty();
 
-        /* 블록 사이(그리고 맨 위·맨 아래)에 넣기 자리를 깐다. 평소에는 실선
-           하나로만 보이고, 그 위에 마우스가 오면 버튼 셋이 나타난다. */
-        function insertRow(at) {
+        /* 블록 사이(그리고 섹션의 맨 위·맨 아래)에 넣기 자리를 깐다. 평소에는
+           실선 하나로만 보이고, 그 위에 마우스가 오면 버튼 셋이 나타난다.
+           at 은 gBlocks 안의 절대 위치이고, sec 는 넣을 섹션이다 — 섹션이
+           비어 있어도 어디에 넣는지가 정해져 있어야 한다. */
+        function insertRow(at, sec) {
+          const a = "'" + sec + "'";
           return ''
             + '<div class="lims-note-insert" data-at="' + at + '">'
             + '  <span class="lims-note-insert-line"></span>'
             /*
               손가락에는 홀버가 없다. 터치 기기에서는 이 "+" 를 눌러야 선택지가
               열린다. 마우스 기기에서는 CSS 가 이 버튼을 감추고 홀버로 연다.
-              JS 를 쓰지 않는 이유 — :focus-within 이 탭에도 걸리므로 상태를
-              따로 들고 있을 필요가 없다.
             */
             + '  <button type="button" class="lims-note-insert-toggle"'
             + '          aria-label="여기에 블록 넣기">+</button>'
             + '  <span class="lims-note-insert-actions">'
             + '    <button type="button" class="lims-note-insert-btn"'
-            + '            onclick="insertBlockAt(' + at + ', \'TEXT\');">텍스트</button>'
+            + '            onclick="insertBlockAt(' + at + ', \'TEXT\', ' + a + ');">텍스트</button>'
             + '    <button type="button" class="lims-note-insert-btn"'
-            + '            onclick="insertBlockAt(' + at + ', \'STRUCTURE\');">구조</button>'
+            + '            onclick="insertBlockAt(' + at + ', \'STRUCTURE\', ' + a + ');">구조</button>'
             + '    <button type="button" class="lims-note-insert-btn"'
-            + '            onclick="insertBlockAt(' + at + ', \'TABLE\');">표</button>'
+            + '            onclick="insertBlockAt(' + at + ', \'TABLE\', ' + a + ');">표</button>'
             + '  </span>'
             + '</div>';
         }
 
-        gBlocks.forEach(function (b, idx) {
-          const common = {
-            blockId: b.blockId,
-            ordDisp: idx + 1,
-            captionVal: esc(b.caption)
-          };
+        let at = 0;
+        SECTIONS.forEach(function (sec) {
+          const mine = blocksOfSection(sec.cd);
+          const $sec = $(S2Util.s2Template('template_note_section', {
+            sectionCd: sec.cd,
+            sectionNm: sec.nm,
+            countDisp: mine.length ? mine.length + '개 블록' : '비어 있음'
+          }));
+          const $body = $sec.find('.lims-note-section-body');
 
-          $wrap.append(insertRow(idx));
-
-          if (b.blockTpCcd === 'STRUCTURE') {
-            $wrap.append(S2Util.s2Template('template_note_block_struct', common));
-          } else if (b.blockTpCcd === 'TABLE') {
-            $wrap.append(S2Util.s2Template('template_note_block_table', common));
-          } else {
-            $wrap.append(S2Util.s2Template('template_note_block_text',
-              $.extend({ textVal: esc(b.textVal) }, common)));
-          }
+          mine.forEach(function (b) {
+            $body.append(insertRow(at, sec.cd));
+            const common = { blockId: b.blockId, ordDisp: at + 1, captionVal: esc(b.caption) };
+            if (b.blockTpCcd === 'STRUCTURE') {
+              $body.append(S2Util.s2Template('template_note_block_struct', common));
+            } else if (b.blockTpCcd === 'TABLE') {
+              $body.append(S2Util.s2Template('template_note_block_table', common));
+            } else {
+              $body.append(S2Util.s2Template('template_note_block_text',
+                $.extend({ textVal: esc(b.textVal) }, common)));
+            }
+            at += 1;
+          });
+          $body.append(insertRow(at, sec.cd));
+          $wrap.append($sec);
         });
-        $wrap.append(insertRow(gBlocks.length));
+
+        renderOutline();
 
         /* 렌더가 끝난 뒤 블록별 내용을 채운다. 구조 썸네일은 한 번에 1건씩 순차로 요청한다
            — 블록 수만큼 동시에 던지면 reqAjax 가 뒤엣것을 조용히 버린다. */
@@ -2880,6 +2945,398 @@
         applyEditorGuards();
         paintNextThumb(0);
       }
+
+      /* ---------------------------------------------------------------
+         슬래시 커맨드 · @멘션
+         출처: 구축형 GOONO_디자인.fig / ELN Editor 심화 설계 1b
+
+         "삽입 가능한 모든 것이 하나의 문법(/, @)으로 통일" — 참고 설계의
+         두 번째 원칙이다. 블록을 넣으려고 위로 손을 뻗어 버튼을 찾는 대신,
+         쓰던 자리에서 / 를 치면 블록이, @ 를 치면 DB 레코드가 들어온다.
+
+         @ 가 넣는 것은 글자가 아니라 칩이다. 칩은 그 레코드를 가리키고,
+         만료된 시약이나 교정 기한이 지난 장비는 목록에서 이미 붉게 나온다 —
+         본문에 적히기 전에 걸린다.
+
+         본문 편집기(NewEditor)는 contenteditable 이다. 그 안에서 키를 보고,
+         떠 있는 판은 body 에 붙여 편집기 밖으로 나오게 한다(편집기 안에
+         두면 스크롤·overflow 에 잘린다).
+      --------------------------------------------------------------- */
+      const SLASH_ITEMS = [
+        { g: '기본',   cd: 'TEXT',      nm: '본문',   desc: '일반 서술 문단' },
+        { g: '연구',   cd: 'STRUCTURE', nm: '구조',   desc: '구조를 넣으면 분자식·분자량이 계산된다' },
+        { g: '연구',   cd: 'TABLE',     nm: '반응 시약 표', desc: '당량·mmol 자동 계산' }
+      ];
+
+      let gPickerHost = null;      /* 판이 열려 있는 편집 영역 */
+      let gPickerMode = null;      /* 'slash' | 'mention' */
+      let gPickerQuery = '';
+      let gPickerRows = [];
+      let gPickerAt = 0;
+
+      function pickerEl() {
+        let el = document.getElementById('limsNotePicker');
+        if (!el) {
+          el = document.createElement('div');
+          el.id = 'limsNotePicker';
+          el.className = 'lims-note-picker';
+          el.setAttribute('role', 'listbox');
+          document.body.appendChild(el);
+        }
+        return el;
+      }
+
+      function closePicker() {
+        const el = document.getElementById('limsNotePicker');
+        if (el) { el.classList.remove('is-open'); }
+        gPickerHost = null;
+        gPickerMode = null;
+        gPickerQuery = '';
+        gPickerRows = [];
+        gPickerAt = 0;
+      }
+
+      /*
+        방아쇠 뒤에 이미 쳐 놓은 글자를 읽는다.
+
+        판은 keydown 뒤 setTimeout(0) 으로 연다 — 그 글자가 먼저 문서에 들어가야
+        자리를 잡을 수 있기 때문이다. 그런데 빠르게 치면 판이 열리기 전에 뒷
+        글자들이 다 들어가 버리고, 그 사이의 input 이벤트는 gPickerHost 가 아직
+        없어 무시된다. 그래서 열자마자 검색어를 문서에서 직접 읽는다.
+        (사람이 천천히 치면 안 드러나고 빨리 치면 드러나는 종류의 결함이라
+         실제로 연속으로 세 번 넣어 보고 나서야 알았다 — 셋 다 첫 줄이 들어갔다)
+      */
+      function readQuery(mode) {
+        const sel = window.getSelection();
+        if (!sel || !sel.rangeCount) { return null; }
+        const range = sel.getRangeAt(0);
+        const node = range.startContainer;
+        if (node.nodeType !== 3) { return null; }
+        const upto = node.textContent.slice(0, range.startOffset);
+        const at = upto.lastIndexOf(mode === 'slash' ? '/' : '@');
+        if (at < 0) { return null; }
+        const q = upto.slice(at + 1);
+        return /\s/.test(q) ? null : q;
+      }
+
+      function openPickerAt(host, mode) {
+        gPickerHost = host;
+        gPickerMode = mode;
+        gPickerQuery = readQuery(mode) || '';
+        gPickerAt = 0;
+        const el = pickerEl();
+        el.classList.add('is-open');
+        placePicker();
+        if (mode === 'slash') { paintSlash(); } else { loadMentions(); }
+      }
+
+      /* 판은 커서 자리에 붙는다. 커서를 못 찾으면 편집 영역 왼쪽 아래로. */
+      function placePicker() {
+        const el = pickerEl();
+        let r = null;
+        const sel = window.getSelection();
+        if (sel && sel.rangeCount) {
+          const rects = sel.getRangeAt(0).getClientRects();
+          r = rects.length ? rects[rects.length - 1] : null;
+        }
+        if (!r && gPickerHost) { r = gPickerHost.getBoundingClientRect(); }
+        if (!r) { return; }
+        const top = r.bottom + window.scrollY + 6;
+        const left = Math.min(r.left + window.scrollX, window.innerWidth - 440);
+        el.style.top = top + 'px';
+        el.style.left = Math.max(8, left) + 'px';
+      }
+
+      function paintRows(rows, render) {
+        gPickerRows = rows;
+        if (gPickerAt >= rows.length) { gPickerAt = Math.max(0, rows.length - 1); }
+        const el = pickerEl();
+        if (!rows.length) {
+          el.innerHTML = '<div class="lims-note-picker-empty">일치하는 항목이 없습니다</div>';
+          return;
+        }
+        let html = '';
+        let group = null;
+        rows.forEach(function (row, i) {
+          if (row.g && row.g !== group) {
+            group = row.g;
+            html += '<p class="lims-note-picker-group">' + esc(group) + '</p>';
+          }
+          html += render(row, i === gPickerAt);
+        });
+        html += '<div class="lims-note-picker-foot">'
+          + '<span><kbd>↑</kbd><kbd>↓</kbd> 이동</span>'
+          + '<span><kbd>↵</kbd> 넣기</span>'
+          + '<span><kbd>esc</kbd> 닫기</span></div>';
+        el.innerHTML = html;
+      }
+
+      function paintSlash() {
+        const kw = gPickerQuery.toLowerCase();
+        const rows = SLASH_ITEMS.filter(function (it) {
+          return !kw || (it.nm + it.desc).toLowerCase().indexOf(kw) >= 0;
+        });
+        paintRows(rows, function (it, on) {
+          return '<div class="lims-note-picker-row' + (on ? ' is-on' : '') + '" data-i="'
+            + gPickerRows.indexOf(it) + '">'
+            + '<span class="nm">' + esc(it.nm) + '</span>'
+            + '<span class="desc">' + esc(it.desc) + '</span></div>';
+        });
+      }
+
+      /*
+        멘션 모집단은 열 때 한 번만 받고, 글자를 칠 때마다 브라우저에서 거른다.
+
+        글자마다 서버에 물으면 안 된다 — 이 코드베이스의 요청 계층(reqAjax)은
+        같은 엔드포인트로 동시에 나간 요청 중 뒤엣것을 조용히 버린다(파일
+        곳곳에 같은 주의가 적혀 있다). 실제로 그래서 첫 요청(빈 검색어)만
+        살아남고 이후 타자가 목록에 반영되지 않았다. 목록은 스무 건 남짓이라
+        받아 두고 거르는 편이 더 빠르기도 하다.
+      */
+      let gMentionPool = null;
+
+      function loadMentions() {
+        if (gMentionPool) { paintMentions(); return; }
+        ajaxPost('/api/lims/note/mentionList', { keyword: '' }, null,
+          function (res) {
+            gMentionPool = asList(res ? res.mentionList : null);
+            if (gPickerMode === 'mention') { paintMentions(); }
+          },
+          function () { gMentionPool = []; paintMentions(); });
+      }
+
+      function paintMentions() {
+        const kw = gPickerQuery.trim().toLowerCase();
+        const rows = (gMentionPool || []).filter(function (m) {
+          return !kw || ((m.id || '') + ' ' + (m.nm || '')).toLowerCase().indexOf(kw) >= 0;
+        }).map(function (m) {
+          return $.extend({ g: kindLabelOf(m.kind) }, m);
+        });
+        paintRows(rows, function (m, on) {
+          return '<div class="lims-note-picker-row is-mention' + (on ? ' is-on' : '')
+            + '" data-i="' + gPickerRows.indexOf(m) + '">'
+            + '<span class="mid">' + esc(m.id || '') + '</span>'
+            + '<span class="nm">' + esc(m.nm) + '</span>'
+            + '<span class="meta tone-' + esc(m.tone) + '">' + esc(m.meta) + '</span></div>';
+        });
+      }
+
+      function kindLabelOf(kind) {
+        return kind === 'REAGENT' ? '시약 Lot'
+          : kind === 'SAMPLE' ? '시료'
+          : kind === 'INSTRUMENT' ? '장비' : '사람';
+      }
+
+      /* 고른 것을 넣는다. 슬래시는 블록을, 멘션은 칩을. */
+      function commitPicker() {
+        const row = gPickerRows[gPickerAt];
+        if (!row) { closePicker(); return; }
+        const host = gPickerHost;
+        if (gPickerMode === 'slash') {
+          const trig = '/' + gPickerQuery;
+          eatTrigger(host, '/');
+          scrubTrigger(host, trig);
+          const sec = host && host.closest('.lims-note-section');
+          insertBlockAt(gBlocks.length, row.cd, sec ? sec.getAttribute('data-section') : 'PROCEDURE');
+        } else {
+          eatTrigger(host, '@');
+          insertChip(host, row);
+        }
+        closePicker();
+      }
+
+      /* 방아쇠 글자(/ 또는 @)와 그 뒤에 친 검색어를 지운다 — 칩만 남아야 한다. */
+      function eatTrigger(host, ch) {
+        const sel = window.getSelection();
+        if (!host || !sel || !sel.rangeCount) { return; }
+        const range = sel.getRangeAt(0);
+        const node = range.startContainer;
+        if (node.nodeType !== 3) { return; }
+        const upto = node.textContent.slice(0, range.startOffset);
+        const at = upto.lastIndexOf(ch);
+        if (at < 0) { return; }
+        node.textContent = node.textContent.slice(0, at) + node.textContent.slice(range.startOffset);
+        const r2 = document.createRange();
+        r2.setStart(node, at);
+        r2.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(r2);
+      }
+
+      /*
+        방아쇠를 편집기 '모델'에서도 지운다.
+
+        eatTrigger 는 DOM 만 고친다. 본문 편집기는 DOM 변화를 관찰해 뒤늦게
+        모델에 반영하는데, 슬래시 경로는 곧바로 renderBlocks() 로 편집기를
+        헐고 다시 세운다. 다시 세울 때 쓰는 값이 b.textVal — 아직 방아쇠가
+        남아 있는 옛 모델값이다. 그래서 블록은 제대로 들어가는데 본문에
+        "/구조" 가 그대로 남았다(실제로 그랬다). 멘션 경로는 다시 그리지
+        않으므로 이 문제가 없다.
+
+        모델에 직접 써 두면 뒤따르는 syncTextBlocks 가 몇 번을 읽든 같은
+        값을 본다. 이미 반영돼 있으면 찾지 못하고 아무것도 하지 않는다.
+      */
+      function scrubTrigger(host, text) {
+        const wrap = host && host.closest && host.closest('.lims-note-block');
+        if (!wrap || !text) { return; }
+        const id = (wrap.id || '').replace(/^block-/, '');
+        if (!id) { return; }
+        const handle = gTextEditors[id];
+        if (!handle) {
+          /* 에디터가 뜨지 못해 textarea 로 내려간 경우 */
+          const $ta = $('#text-' + id);
+          if ($ta.length) { $ta.val(cutLast($ta.val(), text)); }
+          return;
+        }
+        const html = handle.getHTML();
+        /* 돌려받는 것은 HTML 이다 — 검색어에 & < 가 섞였으면 그쪽 모양으로 찾는다 */
+        let next = cutLast(html, text);
+        if (next === html) { next = cutLast(html, esc(text)); }
+        if (next !== html) { handle.setHTML(next); }
+      }
+
+      function cutLast(s, needle) {
+        const str = (s == null) ? '' : String(s);
+        const at = str.lastIndexOf(needle);
+        return at < 0 ? str : str.slice(0, at) + str.slice(at + needle.length);
+      }
+
+      /*
+        본문에 넣는 참조 표기.
+
+        참고 설계(1b)는 본문 안에 배경색·모서리를 가진 칩을 그린다. 이 화면의
+        본문 편집기(NewEditor)에서는 그렇게 할 수 없다 — 실제로 넣어 보고 알았다.
+        편집기의 스키마가 인라인 마크로 색·글꼴·크기만 남기고 나머지를 버린다:
+
+          넣은 것   display / padding / border-radius / background / color / font-size
+          남은 것                                                    color / font-size
+
+        class 도 지워진다(넣은 class="lims-chip" 이 getHTML 에 없다). 편집기는
+        미리 빌드된 번들이고 플러그인 API 가 노출돼 있지 않아 스키마를 늘릴 수
+        없다. 그래서 본문 안에서는 살아남는 것 — 종류별 색 — 으로 표시한다.
+        식별자를 앞에 두어 기계가 다시 찾을 수 있게 한다.
+
+        칩의 온전한 모습(배경·모서리·아이콘)은 우리가 마크업을 쥐고 있는 곳에서
+        쓴다: 시약 표, 사용 시약 패널, 이 삽입 판. 그쪽은 §44 의 .lims-chip 이다.
+      */
+      const MENTION_INK = {
+        REAGENT: '#8a5a00', SAMPLE: '#1761de', INSTRUMENT: '#1e7f76', USER: '#5b51c0'
+      };
+
+      function insertChip(host, m) {
+        const ink = m.tone === 'danger' ? '#b01b1a' : (MENTION_INK[m.kind] || '#1761de');
+        const label = (m.id ? m.id + ' ' : '') + m.nm;
+        const html = '<span style="color:' + ink + ';">' + esc(label) + '</span>&nbsp;';
+        document.execCommand('insertHTML', false, html);
+        markDirty();
+      }
+
+      /* 본문에서 키를 본다. 편집기가 contenteditable 이라 위임으로 잡는다. */
+      document.addEventListener('keydown', function (ev) {
+        const host = ev.target.closest && ev.target.closest('.lims-note-editor [contenteditable="true"]');
+        if (gPickerHost) {
+          if (ev.key === 'Escape') { ev.preventDefault(); closePicker(); return; }
+          if (ev.key === 'ArrowDown') { ev.preventDefault(); gPickerAt = Math.min(gPickerAt + 1, gPickerRows.length - 1); repaintPicker(); return; }
+          if (ev.key === 'ArrowUp') { ev.preventDefault(); gPickerAt = Math.max(gPickerAt - 1, 0); repaintPicker(); return; }
+          if (ev.key === 'Enter') { ev.preventDefault(); commitPicker(); return; }
+          if (ev.key === 'Backspace' && !gPickerQuery) { closePicker(); return; }
+        }
+        if (!host) { return; }
+        if (ev.key === '/' || ev.key === '@') {
+          /* 한 박자 뒤에 연다 — 그 글자가 먼저 들어가야 자리를 잡을 수 있다 */
+          const mode = ev.key === '/' ? 'slash' : 'mention';
+          window.setTimeout(function () { openPickerAt(host, mode); }, 0);
+        }
+      }, true);
+
+      /* 방아쇠 뒤에 치는 글자는 검색어다 */
+      document.addEventListener('input', function (ev) {
+        if (!gPickerHost) { return; }
+        if (!ev.target.closest || !ev.target.closest('.lims-note-editor')) { return; }
+        const q = readQuery(gPickerMode);
+        if (q === null) { closePicker(); return; }
+        gPickerQuery = q;
+        gPickerAt = 0;
+        repaintPicker();
+        placePicker();
+      }, true);
+
+      function repaintPicker() {
+        if (gPickerMode === 'slash') { paintSlash(); } else { paintMentions(); }
+      }
+
+      /* 판 밖을 누르면 닫는다. 판 안의 줄을 누르면 그것을 고른다. */
+      document.addEventListener('mousedown', function (ev) {
+        if (!gPickerHost) { return; }
+        const row = ev.target.closest && ev.target.closest('.lims-note-picker-row');
+        if (row) {
+          ev.preventDefault();
+          gPickerAt = Number(row.getAttribute('data-i')) || 0;
+          commitPicker();
+          return;
+        }
+        if (!ev.target.closest || !ev.target.closest('#limsNotePicker')) { closePicker(); }
+      }, true);
+
+      /* ---------------------------------------------------------------
+         아웃라인 레일 — 구조를 상시 노출한다
+
+         참고 설계에서 본문 왼쪽에 늘 붙어 있는 것. 지금 어느 섹션을 쓰고
+         있는지, 전체가 어떻게 생겼는지를 스크롤하지 않고 알 수 있다.
+         비어 있는 섹션도 지운 것이 아니라 아직 안 쓴 것이므로 흐리게 남긴다.
+      --------------------------------------------------------------- */
+      function renderOutline() {
+        const $list = $('#noteOutline').empty();
+        SECTIONS.forEach(function (sec) {
+          const n = blocksOfSection(sec.cd).length;
+          $list.append(
+            '<button type="button" class="lims-outline-item' + (n ? '' : ' is-empty') + '"'
+            + ' data-section="' + sec.cd + '">'
+            + '<span class="nm">' + esc(sec.nm) + '</span>'
+            + (n ? '<span class="cnt">' + n + '</span>' : '')
+            + '</button>'
+          );
+        });
+        markOutlineActive();
+      }
+
+      /* 화면에 보이는 섹션을 아웃라인에서 짚어 준다. 스크롤에 따라 바뀐다. */
+      function markOutlineActive() {
+        const scroller = document.getElementById('noteScroll') || document.scrollingElement;
+        const top = scroller.getBoundingClientRect
+          ? (document.getElementById('noteScroll') ? scroller.getBoundingClientRect().top : 0)
+          : 0;
+        let active = SECTIONS[0].cd;
+        document.querySelectorAll('.lims-note-section').forEach(function (el) {
+          if (el.getBoundingClientRect().top - top <= 80) {
+            active = el.getAttribute('data-section');
+          }
+        });
+        document.querySelectorAll('.lims-outline-item').forEach(function (el) {
+          el.classList.toggle('is-active', el.getAttribute('data-section') === active);
+        });
+      }
+
+      /*
+        아웃라인을 누르면 그 섹션으로 간다.
+
+        jQuery 로 쓰지 않는다 — 이 인라인 스크립트는 jquery.min.js 보다 먼저
+        파싱된다(빌드 결과에서 2779행 vs 7594행). 최상위에서 $(…) 를 부르면
+        그 한 줄이 던지고 아래 초기화가 통째로 죽는다. 이 파일 위쪽에 같은
+        내용의 경고가 이미 적혀 있는데 그대로 밟았다.
+      */
+      document.addEventListener('click', function (ev) {
+        const item = ev.target.closest && ev.target.closest('.lims-outline-item');
+        if (!item) { return; }
+        const cd = item.getAttribute('data-section');
+        const el = document.querySelector('.lims-note-section[data-section="' + cd + '"]');
+        if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      });
+
+      /* 스크롤에 따라 아웃라인의 짚는 자리를 옮긴다 */
+      document.addEventListener('scroll', function () {
+        if (document.getElementById('noteOutline')) { markOutlineActive(); }
+      }, true);
 
       /* ---------------------------------------------------------------
          본문 에디터 — NewEditor(@redwit/editor-ai) 스탠드얼론 번들.
@@ -2980,9 +3437,13 @@
         전에는 반드시 syncTextBlocks() 로 DOM 의 입력값을 모델에 회수해야 한다 —
         빠뜨리면 "블록 하나 추가했더니 방금 쓴 글이 사라졌다"가 된다.
       */
+      /* 머리줄의 [텍스트][구조][표] — 지금 보고 있는 섹션 끝에 붙인다.
+         예전처럼 문서 맨 끝에 붙이면 고찰 뒤에 시약 표가 생긴다. */
       function addBlock(blockTpCcd) {
         syncTextBlocks();
-        gBlocks.push(toBlock({ blockTpCcd: blockTpCcd }));
+        const active = document.querySelector('.lims-outline-item.is-active');
+        const sec = active ? active.getAttribute('data-section') : 'PROCEDURE';
+        gBlocks.push(toBlock({ blockTpCcd: blockTpCcd, sectionCd: sec }));
         markDirty();
         renderBlocks();
       }
@@ -2997,10 +3458,10 @@
         idx 는 "이 자리 앞에" 넣는다는 뜻이다 — 0 이면 맨 위, gBlocks.length
         면 맨 아래.
       */
-      function insertBlockAt(idx, blockTpCcd) {
+      function insertBlockAt(idx, blockTpCcd, sectionCd) {
         syncTextBlocks();
         const at = Math.max(0, Math.min(Number(idx) || 0, gBlocks.length));
-        gBlocks.splice(at, 0, toBlock({ blockTpCcd: blockTpCcd }));
+        gBlocks.splice(at, 0, toBlock({ blockTpCcd: blockTpCcd, sectionCd: sectionCd }));
         markDirty();
         renderBlocks();
       }
@@ -3163,6 +3624,18 @@
           return els.length;
         }
 
+        /* 놓일 자리가 속한 섹션. 그 자리의 블록(또는 바로 앞 블록)이 있는
+           섹션을 따르고, 섹션이 통째로 비어 있으면 포인터 아래 섹션을 본다. */
+        function sectionAtDrop(at, from) {
+          const els = blockEls();
+          const ref = els[at] || els[at - 1] || null;
+          if (ref) {
+            const sec = ref.closest('.lims-note-section');
+            if (sec) { return sec.getAttribute('data-section'); }
+          }
+          return gBlocks[from] ? gBlocks[from].sectionCd : null;
+        }
+
         function paintDrop(at) {
           clearMarks();
           const els = blockEls();
@@ -3217,6 +3690,16 @@
           /* computeDrop 은 "이 블록 앞" 을 뜻한다. 자기보다 아래로 보낼 때는
              자기 자신이 빠지면서 자리가 하나 당겨진다. */
           const to = at > from ? at - 1 : at;
+          /*
+            섹션을 가로질러 끌었으면 그 섹션으로 옮겨 간다. 자리만 바뀌고
+            소속이 안 바뀌면, 다시 그릴 때 정렬이 원래 섹션으로 되돌려
+            놓는다 — 끌어다 놨는데 제자리로 튕기는 것처럼 보인다.
+          */
+          const target = sectionAtDrop(at, from);
+          const moving = gBlocks[from];
+          if (moving && target && moving.sectionCd !== target) {
+            moving.sectionCd = target;
+          }
           reorderBlock(from, to, id);
           if (ev) { ev.preventDefault(); }
         }
@@ -4266,6 +4749,7 @@
           blockMno: b.blockMno,
           blockOrd: idx + 1,
           blockTpCcd: b.blockTpCcd,
+          sectionCd: b.sectionCd,
           textVal: b.textVal,
           caption: b.caption
         };
@@ -6611,7 +7095,12 @@
                         onclick="saveNote('N');"><span>저장</span></button>
               </div>
             </div>
-            <div class="lims-card-body">
+            <div class="lims-card-body lims-note-canvas">
+              
+              <nav class="lims-note-outline" aria-label="문서 아웃라인">
+                <p class="lims-note-outline-label">아웃라인</p>
+                <div id="noteOutline"></div>
+              </nav>
               <div class="lims-note-blocks"
                    id="noteBlocks"></div>
               
@@ -6632,6 +7121,17 @@
       </div>
 
       
+
+      <script id="template_note_section"
+              type="text/template">
+        <section class="lims-note-section" data-section="{{=sectionCd}}">
+          <div class="lims-note-section-head">
+            <h2 class="lims-note-section-title">{{=sectionNm}}</h2>
+            <span class="lims-note-section-count">{{=countDisp}}</span>
+          </div>
+          <div class="lims-note-section-body"></div>
+        </section>
+      </script>
 
       <script id="template_note_block_text"
               type="text/template">
