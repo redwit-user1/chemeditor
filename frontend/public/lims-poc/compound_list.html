@@ -2485,7 +2485,7 @@
       /*<![CDATA[*/
 
       /* 구조 입력기 임베드 URL. 비어 있으면 구조 검색으로 진입할 수 없다. */
-      const gChemEmbedUrl = '/lims/chem/chemPopup';
+      const gChemEmbedUrl = '/editor';
 
       /* 현재 화면에 그려진 카드들. 썸네일 렌더링에 MOL블록이 필요해 목록과 함께 보관한다. */
       let gCards = [];
@@ -4671,7 +4671,18 @@
               S2Util.queryStringToJson($('#createSidebarNoteEditorForm').serialize()),
               null,
               function (res) {
-                coreDialog.confirm('정상 처리되었습니다.\n생성한 연구노트로 이동하시겠습니까?', function (result) {
+                /*
+                  "정상 처리되었습니다" 만으로는 어디에 생겼는지 알 수 없다.
+                  사이드바에서 만든 노트는 열려 있는 프로젝트 문맥으로 귀속되는데,
+                  대시보드처럼 문맥이 없는 화면에서 만들면 사용자는 그 사실을
+                  알 길이 없다 — 실제로 "만들었는데 어디에 있는지 모르겠다" 는
+                  문의를 받았다. 귀속처를 문장에 넣는다.
+                */
+                const where = res && res.projectNm
+                  ? '\n\n\'' + res.projectNm + '\' 프로젝트에 만들어졌습니다.'
+                  : '';
+                coreDialog.confirm('정상 처리되었습니다.' + where
+                  + '\n생성한 연구노트로 이동하시겠습니까?', function (result) {
                   if (result) {
                     // 연구노트 상세 페이지로 이동
                     gfn_openNoteDetail('/eln/note/noteDetails', res['newNoteMno']);

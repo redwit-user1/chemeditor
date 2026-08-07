@@ -42,6 +42,14 @@
   function toStaticUrl(url) {
     if (!url) return null;
     var path = String(url).split('?')[0];
+    /*
+      공지 목록의 첫 줄은 사용 안내서다. 게시글 상세 화면은 프로토타입에 없고,
+      만들 것도 아니다 — 안내서 자체로 보낸다.
+      ("매뉴얼이 따로 있을까요?" 라는 문의를 받아 사람이 찾는 자리에 둔 것이다)
+    */
+    if (path === '/eln/postsDetails' && /schPostsMno=3(\D|$)/.test(String(url))) {
+      return 'manual.html';
+    }
     return Object.prototype.hasOwnProperty.call(ROUTES, path) ? ROUTES[path] : null;
   }
 
@@ -1142,10 +1150,14 @@
        화면이 res.postsListInfo.dataList 에서 그대로 터진다. */
     '/api/system/posts/postsList': function (p) {
       var notice = String(p.schPostsSeCcd || '').indexOf('RESEARCH') < 0;
+      /* "매뉴얼이 따로 있을까요?" 라는 문의를 받았다. 사람이 찾아볼 자리에
+         없으면 없는 것과 같다 — 공지 맨 위에 둔다. */
       var rows = notice ? [
-        { rn: 1, postsMno: 1, subject: 'KMEDIhub ELN 시스템 점검 안내', writerUserNm: '운영팀',
+        { rn: 1, postsMno: 3, subject: '[안내] 프로토타입 사용 안내서 — 되는 것과 안 되는 것',
+          writerUserNm: '레드윗', modifyDe: '2026-08-07', hitCnt: 0, fileId: null, newPostsYn: 'Y' },
+        { rn: 2, postsMno: 1, subject: 'KMEDIhub ELN 시스템 점검 안내', writerUserNm: '운영팀',
           modifyDe: '2026-07-24', hitCnt: 41, fileId: null, newPostsYn: 'Y' },
-        { rn: 2, postsMno: 2, subject: '연구노트 작성 가이드 개정(v2.1)', writerUserNm: '운영팀',
+        { rn: 3, postsMno: 2, subject: '연구노트 작성 가이드 개정(v2.1)', writerUserNm: '운영팀',
           modifyDe: '2026-07-11', hitCnt: 128, fileId: null, newPostsYn: 'N' }
       ] : [
         { rn: 1, postsMno: 11, subject: '전자연구노트 표준 양식.hwp', writerUserNm: '운영팀',
@@ -1264,7 +1276,8 @@
       };
       ELN_NOTES.unshift(note);
       project.noteCnt += 1;
-      return { newNoteMno: note.noteMno, noteMno: note.noteMno };
+      /* 화면이 "어느 프로젝트에 생겼는지" 를 말할 수 있게 이름도 돌려준다 */
+      return { newNoteMno: note.noteMno, noteMno: note.noteMno, projectNm: project.projectNm };
     },
 
     '/api/lims/note/noteDetail': function () {
@@ -1536,6 +1549,17 @@
 
   function parseParams(data) {
     if (!data) return {};
+    /*
+      연구노트 생성은 $.ajax 가 아니라 coreFileUpload 을 거치고, 그쪽은 본문을
+      FormData 로 싣는다. 여기서 문자열만 풀고 있었던 탓에 FormData 가 그대로
+      넘어가 p.noteNm 이 undefined 였다 — 만든 노트에 이름이 안 붙고, 화면은
+      "어디에 만들어졌는지" 를 말할 수 없었다. 재단 문의의 두 번째 건이다.
+    */
+    if (typeof FormData !== 'undefined' && data instanceof FormData) {
+      var fd = {};
+      data.forEach(function (v, k) { fd[k] = typeof v === 'string' ? v : (v && v.name) || ''; });
+      return fd;
+    }
     if (typeof data !== 'string') return data;
     var out = {};
     data.split('&').forEach(function (pair) {
@@ -1646,8 +1670,17 @@
     }
 
     if (typeof S2Util !== 'undefined' && S2Util) {
-      S2Util.goPage = function (url) {
-        var target = toStaticUrl(url);
+      S2Util.goPage = function (url, param) {
+        /* 두 번째 인자가 질의 문자열이다 — 안 읽으면 어느 글을 여는지 알 수 없다 */
+        var full = url;
+        if (param && typeof param === 'object') {
+          var qs = Object.keys(param)
+            .filter(function (k) { return k !== 'method'; })
+            .map(function (k) { return k + '=' + encodeURIComponent(param[k]); })
+            .join('&');
+          if (qs) { full += (url.indexOf('?') < 0 ? '?' : '&') + qs; }
+        }
+        var target = toStaticUrl(full);
         if (!target) { window.location.href = '#'; return; }
         /*
           연구노트 작성·상세는 새 창으로 연다. 그 화면에는 GNB·헤더가 없고
@@ -1784,24 +1817,54 @@
         우리 스크립트가 그보다 뒤에 실리므로 ready 큐 맨 끝에 붙여 마지막에 덮는다.
         (지금 바로 넣으면 잠시 뒤 initPage 가 다시 서버 경로로 되돌려 놓는다.)
 
-        편집기가 8초 안에 아무 말도 하지 않으면 붙지 않은 것이다. 빈 사각형만
-        남겨 두지 않고 RDKit 대역으로 내려간다 — 시연 중 "화면이 비었다"가
-        제일 나쁜 결과다.
+        편집기가 붙지 않으면 빈 사각형만 남는다. 그건 시연에서 제일 나쁜 결과라
+        RDKit 대역으로 내려가도록 해 두었는데, 그 판단을 8초로 잡은 것이 화근이었다.
+
+        편집기 번들은 24MB(Ketcher + RDKit WASM)다. 아무것도 캐시되지 않은 첫
+        방문에서는 8초를 우습게 넘긴다. 로컬(지연 0)에서 재도 5.6초가 걸린다.
+        그래서 재단에서 열었을 때는 아직 내려받는 중인 편집기가 대역으로
+        갈아치워졌고, 화면에는 "구조는 그려져 있는데 입력은 안 되는" 것이
+        남았다. 실제로 받은 문의가 그것이다.
+
+        고쳐서 세 가지로 나눈다.
+          · 시간으로 실패를 단정하지 않는다. iframe 의 load 이벤트가 오면
+            내려받기는 끝난 것이고, 그 뒤 준비 신호(chemeditor:ready)를 기다린다.
+          · 오래 걸리는 것은 실패가 아니다 — 왜 오래 걸리는지 적어 준다.
+          · 정말 안 되면 조용히 바꿔치기하지 않는다. 사용자가 고르게 한다.
       */
       $(function () {
-        frame.src = url;
         var status = document.getElementById('chem-status');
-        if (status) status.textContent = '편집기 불러오는 중';
+        var say = function (t) { if (status) status.textContent = t; };
+
         var alive = false;
+        var loaded = false;
         window.addEventListener('message', function (ev) {
           if (ev.data && typeof ev.data.type === 'string'
               && ev.data.type.indexOf('chemeditor:') === 0) alive = true;
         });
+        frame.addEventListener('load', function () { loaded = true; });
+
+        say('편집기 불러오는 중 — 처음 열 때는 20초 남짓 걸립니다');
+        frame.src = url;
+
+        /* 오래 기다리는 동안 아무 말도 없으면 멈춘 것처럼 보인다 */
+        var waited = 0;
+        var tick = setInterval(function () {
+          waited += 5;
+          if (alive || !document.getElementById('chem-frame')) { clearInterval(tick); return; }
+          say(loaded
+            ? '편집기를 준비하는 중입니다 (' + waited + '초)'
+            : '편집기를 내려받는 중입니다 — 24MB, ' + waited + '초 경과');
+        }, 5000);
+
+        /* 60초는 "느린 것"이 아니라 "안 되는 것"으로 본다. 그래도 갈아치우지 않고
+           고르게 한다 — 기다리면 되는 상황에서 화면을 뺏기는 것이 더 나쁘다. */
         setTimeout(function () {
+          clearInterval(tick);
           if (alive || !document.getElementById('chem-frame')) return;
-          if (status) status.textContent = '편집기에 연결하지 못해 RDKit 구조로 대신 표시합니다';
-          installRdkitFallback();
-        }, 8000);
+          say('편집기가 아직 응답하지 않습니다.');
+          offerFallback(frame, status);
+        }, 60000);
       });
       return;
     }
@@ -1858,6 +1921,38 @@
     return wrap;
   }
 
+  /*
+    편집기가 응답하지 않을 때. 예전에는 말없이 RDKit 대역으로 바꿔치웠는데,
+    그러면 아직 내려받는 중이었을 뿐인 사람의 편집기를 빼앗는다. 고르게 한다.
+  */
+  function offerFallback(frame, status) {
+    if (document.getElementById('chem-retry-bar')) return;
+    var bar = document.createElement('div');
+    bar.id = 'chem-retry-bar';
+    bar.className = 'lims-chem-retry';
+    var again = document.createElement('button');
+    again.type = 'button';
+    again.className = 'button-blue-line-sty01';
+    again.innerHTML = '<span>다시 시도</span>';
+    again.onclick = function () {
+      bar.parentNode && bar.parentNode.removeChild(bar);
+      if (status) status.textContent = '편집기 다시 불러오는 중';
+      frame.src = frame.src;                       /* 같은 주소로 재요청 */
+    };
+    var stub = document.createElement('button');
+    stub.type = 'button';
+    stub.className = 'button-gray-line-sty01 ma-l10';
+    stub.innerHTML = '<span>등록된 구조로 보기</span>';
+    stub.onclick = function () {
+      bar.parentNode && bar.parentNode.removeChild(bar);
+      if (status) status.textContent = 'RDKit 구조로 표시 중 — 편집은 되지 않습니다';
+      installRdkitFallback();
+    };
+    bar.appendChild(again);
+    bar.appendChild(stub);
+    frame.parentNode.insertBefore(bar, frame);
+  }
+
   /* 편집기가 없을 때 그 자리를 채우는 RDKit 대역. */
   function installRdkitFallback() {
     var frame = document.getElementById('chem-frame');
@@ -1872,8 +1967,9 @@
       '<div class="lims-chem-stub-canvas" id="chemStubCanvas"></div>' +
       '<div class="lims-chem-stub-side">' +
       '  <div class="lims-chem-stub-title">구조 불러오기</div>' +
-      '  <div class="lims-chem-stub-note">여기에 구조 편집기가 열립니다. ' +
-      '구조를 그리거나 ChemDraw 에서 복사해 붙여넣으면 아래 물성이 즉시 갱신됩니다.</div>' +
+      '  <div class="lims-chem-stub-note">구조 편집기를 불러오지 못해 등록된 구조를 ' +
+      '대신 보여 주고 있습니다. 여기서는 그리기·붙여넣기가 되지 않습니다 — ' +
+      '아래에서 구조를 고르면 물성만 확인할 수 있습니다.</div>' +
       '  <div class="lims-chem-stub-list" id="chemStubList"></div>' +
       '</div>';
     frame.parentNode.replaceChild(wrap, frame);

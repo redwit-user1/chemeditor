@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>사용 안내 — KMEDIhub ELN LIMS 프로토타입</title>
+<link rel="stylesheet" href="assets/lib/eln/css/pretendard.css">
+<link rel="stylesheet" href="assets/lib/eln/css/lims-theme.css">
+<style>
+  body { margin: 0; background: var(--ds-canvas); color: var(--ds-ink-2);
+         font-family: var(--ds-font); font-size: var(--ds-fs-body); line-height: var(--ds-lh); }
+  .doc { max-width: 860px; margin: 0 auto; padding: var(--ds-8) var(--ds-5) calc(var(--ds-unit) * 20);
+          background: var(--ds-surface); min-height: 100vh; }
+  h1 { font-size: var(--ds-fs-metric); font-weight: var(--ds-fw-bold); color: var(--ds-ink);
+        margin: 0 0 var(--ds-5); line-height: var(--ds-lh-tight); }
+  h2 { font-size: var(--ds-fs-title); font-weight: var(--ds-fw-bold); color: var(--ds-ink);
+        margin: var(--ds-10) 0 var(--ds-4); line-height: var(--ds-lh-tight); }
+  h3 { font-size: var(--ds-fs-lead); font-weight: var(--ds-fw-medium); color: var(--ds-ink);
+        margin: var(--ds-8) 0 var(--ds-3); line-height: var(--ds-lh-tight); }
+  p, ul, ol { margin: 0 0 var(--ds-4); }
+  li { margin-bottom: var(--ds-1); }
+  hr { border: 0; border-top: 1px solid var(--ds-line); margin: var(--ds-8) 0; }
+  code { padding: 0 var(--ds-1); border-radius: calc(var(--ds-radius) - 6px);
+          background: var(--ds-hover); font-size: var(--ds-fs-cell); }
+  pre { padding: var(--ds-4); border-radius: var(--ds-radius); overflow-x: auto;
+         background: var(--ds-hover); }
+  pre code { padding: 0; background: none; line-height: var(--ds-lh); }
+  blockquote { margin: 0 0 var(--ds-4); padding: var(--ds-3) var(--ds-4);
+                border-left: 3px solid var(--ds-primary); border-radius: 0 var(--ds-radius) var(--ds-radius) 0;
+                background: var(--ds-primary-weak); color: var(--ds-ink-2); }
+  table { width: 100%; margin: 0 0 var(--ds-5); border-collapse: separate; border-spacing: 0; }
+  th, td { padding: var(--ds-2) var(--ds-3); text-align: left; vertical-align: top;
+            line-height: var(--ds-lh-cell); box-shadow: inset 0 -1px 0 var(--ds-line); }
+  th { background: var(--ds-canvas); color: var(--ds-ink-4);
+        font-size: var(--ds-fs-small); font-weight: var(--ds-fw-medium); }
+  td { font-size: var(--ds-fs-cell); }
+  a { color: var(--ds-primary); }
+  .back { display: inline-block; margin-bottom: var(--ds-5); font-size: var(--ds-fs-cell);
+           color: var(--ds-ink-4); text-decoration: none; }
+  .back:hover { color: var(--ds-primary); }
+</style>
+</head>
+<body>
+<main class="doc">
+<a class="back" href="dashboard.html">← 프로토타입으로 돌아가기</a>
+<h1>KMEDIhub ELN LIMS 프로토타입 — 사용 안내</h1>
+<p>주소: <a href="https://chemeditor.vercel.app/lims-poc/">https://chemeditor.vercel.app/lims-poc/</a><br>(뿌리 주소로 들어와도 이 화면으로 옵니다)</p>
+<p>이 문서는 <strong>지금 올라가 있는 프로토타입에서 실제로 눌러 본 것</strong>만 적었습니다.<br>&quot;이렇게 될 예정&quot; 은 쓰지 않았고, 안 되는 것은 3장에 따로 모았습니다.</p>
+<hr>
+<h2>0. 먼저, 처음 열 때 20초쯤 걸립니다</h2>
+<p>구조 편집기(Ketcher + RDKit)는 <strong>24MB</strong> 입니다. 처음 여는 브라우저에서는 다<br>내려받는 데 시간이 걸리고, 그동안 화면 위쪽에 이렇게 나옵니다.</p>
+<blockquote>편집기를 내려받는 중입니다 — 24MB, 15초 경과</blockquote>
+<p><strong>이때 기다리시면 됩니다.</strong> 한 번 받고 나면 다음부터는 즉시 뜹니다.<br>60초가 지나도 안 뜨면 <code>다시 시도</code> 와 <code>등록된 구조로 보기</code> 를 고르는 줄이 나옵니다.</p>
+<blockquote>2026-08-06 에 알려 주신 &quot;구조가 그려지긴 하는데 입력이 안 된다&quot; 는 이 대기<br>시간 때문이었습니다. 그 전 판은 8초만 기다리고 편집기를 포기한 뒤, 미리<br>그려 둔 그림으로 바꿔치기했습니다. 그림만 있고 입력은 안 되는 화면이 그것입니다.<br>지금은 시간으로 포기하지 않습니다.</blockquote>
+<hr>
+<h2>1. 구조를 넣고 분자식·분자량 보기</h2>
+<p>이 프로토타입이 증명하려는 핵심입니다. <strong>넣는 자리가 두 군데</strong> 있고, 쓰임이 다릅니다.</p>
+<h3>1-1. 연구노트 안에서 — 실제 기록을 남길 때 (권장)</h3>
+<pre><code>왼쪽 메뉴 [대시보드 홈] → 카드에서 연구노트 하나 클릭
+  → 새 창으로 노트가 열림
+  → 본문의 &quot;구조&quot; 블록에서 파란 점선 상자를 클릭
+  → Ctrl+V</code></pre>
+<p>ChemDraw·PubChem·위키백과에서 복사한 <strong>SMILES 또는 MOL 블록</strong>을 그대로 붙여넣습니다.<br>붙여넣는 즉시 아래 줄이 채워집니다.</p>
+<table><thead><tr><th>넣은 것</th><th>나오는 것</th></tr></thead><tbody><tr><td><code>CC(=O)Oc1ccccc1C(=O)O</code></td><td>분자식 <strong>C9H8O4</strong> · 분자량 <strong>180.159</strong> · Exact Mass <strong>180.0423</strong></td></tr></tbody></table>
+<p>블록 오른쪽 <code>구조 입력기</code> 버튼을 누르면 편집기 창이 열려 <strong>그려서</strong> 넣을 수도 있습니다.</p>
+<h3>1-2. 구조 입력기 화면에서 — 그려 보거나 검색할 때</h3>
+<pre><code>왼쪽 메뉴 [구조 입력기]</code></pre>
+<p>Ketcher 편집기가 통째로 열립니다. 그리기, <code>Paste</code> 버튼, Ctrl+V 모두 됩니다.<br>화면 맨 위 띠에 분자식·분자량·Exact Mass 가 따라 갱신됩니다.</p>
+<p><strong>여기서 SMILES 를 넣는 방법</strong>은 세 가지입니다.</p>
+<ol><li>캔버스를 한 번 클릭해 초점을 준 뒤 <strong>Ctrl+V</strong></li><li>편집기 위쪽 도구줄의 <strong><code>Paste</code></strong> 버튼</li><li><strong><code>Open…</code></strong> → 텍스트 붙여넣기</li></ol>
+<blockquote>캔버스를 클릭하지 않고 Ctrl+V 를 누르면 브라우저가 붙여넣기를 편집기로<br>보내지 않습니다. 안 될 때는 먼저 흰 캔버스를 한 번 클릭해 보세요.</blockquote>
+<hr>
+<h2>2. 연구노트 만들기 — 어디에 생기는지</h2>
+<pre><code>왼쪽 위 [+ 연구노트 생성] → &quot;에디터 작성&quot;
+  → 연구노트명 입력 → [확인]</code></pre>
+<p>확인을 누르면 이렇게 나옵니다.</p>
+<blockquote>정상 처리되었습니다.<br><strong>&#x27;표적단백질 저해제 발굴&#x27; 프로젝트에 만들어졌습니다.</strong><br>생성한 연구노트로 이동하시겠습니까?</blockquote>
+<p><strong><code>확인</code> 을 누르면 그 노트로 바로 갑니다.</strong> <code>닫기</code> 를 눌렀다면<br><code>왼쪽 메뉴 [노트 관리 현황]</code> 또는 왼쪽 아래 <code>내 연구노트</code> 목록에서 찾습니다.</p>
+<blockquote>생성 모달에는 프로젝트를 고르는 칸이 없습니다. 원래 제품이 그렇습니다 —<br>노트는 &quot;열려 있는 프로젝트&quot; 문맥에 귀속되고, 대시보드처럼 문맥이 없는<br>화면에서 만들면 참여 중인 첫 프로젝트로 들어갑니다.<br>알려 주신 &quot;어디에 만들어진 건지 모르겠다&quot; 는, 그 안내 문구가 귀속처를<br>말해 주지 않았고 <strong>이름조차 저장되지 않던 결함</strong> 때문이었습니다. 지금은<br>이름이 저장되고 어느 프로젝트인지 문장에 나옵니다.</blockquote>
+<p>특정 프로젝트 밑에 만들려면 그 프로젝트를 먼저 여는 쪽이 확실합니다.</p>
+<pre><code>왼쪽 [참여프로젝트]에서 프로젝트 클릭 → [연구노트] 탭 → [연구노트 생성]</code></pre>
+<hr>
+<h2>3. 지금 프로토타입에서 <strong>안 되는 것</strong></h2>
+<p>여기부터가 중요합니다. 아래는 화면에 없거나, 있어도 시늉만 하는 것들입니다.</p>
+<h3>3-1. 저장이 남지 않습니다</h3>
+<p><strong>새로고침하면 만든 것이 전부 사라집니다.</strong> 데이터베이스가 없고 브라우저<br>메모리에만 있습니다. 노트 생성·시료 등록·결과 입력 모두 마찬가지입니다.<br>한 번의 시연 안에서는 앞뒤가 이어지지만, 창을 닫으면 처음 상태로 돌아갑니다.</p>
+<h3>3-2. SDF 가져오기 / 내보내기 — 화면에 없습니다</h3>
+<p>재단 SDF(5,342건)를 읽어 분자식·분자량을 대조하는 검증은 <strong>명령줄에서</strong><br>수행했고 결과는 <code>reports/parity.md</code> 에 있습니다. 화면에서 파일을 올리거나<br>내려받는 단추는 만들지 않았습니다.</p>
+<h3>3-3. 구조 검색은 &quot;검색 방식&quot; 을 고를 수 없습니다</h3>
+<p><code>화합물 라이브러리 → 구조 검색</code> 은 편집기 창을 열고, 그린 구조를 되돌려<br>받아 목록을 거릅니다. 그러나 <strong>부분구조 / 정확일치 / 유사도</strong> 를 고르는<br>칸이 화면에 없습니다. 백엔드에는 세 가지가 다 있지만 화면이 아직 하나만 씁니다.</p>
+<p>성능 측정(≤3초 p95)은 화면이 아니라 API 기준으로 쟀습니다 — <code>reports/bench.md</code>.</p>
+<h3>3-4. 임의의 구조는 인터넷이 필요합니다</h3>
+<p>프로토타입에 <strong>미리 계산해 둔 구조가 14개</strong> 있습니다. 이 구조들은 인터넷<br>없이도 즉시 계산됩니다.</p>
+<blockquote>재단 화합물 4종(KM00003710/11/19/22) · 아스피린 · 카페인 · 이부프로펜 ·<br>벤젠 · 에탄올 · 살리실산 · 니코틴 · 포도당 · 아세트아미노펜 · 그 외 1종</blockquote>
+<p><strong>이 목록에 없는 구조</strong>를 넣으면 RDKit 계산 서버로 물어보러 나갑니다.<br>서버에 닿지 못하면 물성 자리가 비고, 이제는 이유가 화면에 뜹니다.</p>
+<blockquote>구조는 인식했으나 물성을 계산하지 못했습니다 — …</blockquote>
+<p>시연 자리에서 인터넷이 불안하면 위 14개로 보여 주시는 편이 안전합니다.</p>
+<h3>3-5. 로그인·권한이 없습니다</h3>
+<p>항상 <code>김연구(책임자)</code> 로 들어갑니다. 사용자 전환, 권한별 화면 차이,<br>부서 구분은 구현하지 않았습니다. 화면 오른쪽 위 세션 만료 타이머는 표시만 합니다.</p>
+<h3>3-6. 서명·입회(Sign &amp; Close / Witness)가 없습니다</h3>
+<p>전자서명, 입회자 확인, TSA 타임스탬프는 <strong>문서(명세)로만</strong> 다뤘습니다.<br><code>점검 요청</code> · <code>승인</code> · <code>반려</code> 버튼은 상태만 바꿉니다.</p>
+<h3>3-7. 파일 업로드가 실제로 올라가지 않습니다</h3>
+<p><code>연구노트 생성 → 파일 업로드</code>, 첨부파일, 엑셀 다운로드는 화면만 있습니다.</p>
+<h3>3-8. 그 밖에</h3>
+<ul><li><strong>DN 등록 · Batch Explorer</strong> — 범위 밖입니다.</li><li><strong><code>.cdx</code> 바이너리</strong> — 읽지 않습니다. ChemDraw 가 클립보드에 함께 올리는</li></ul>
+<p>  SMILES/MOL 텍스트를 받습니다. 실무에서는 이 경로로 충분합니다.</p>
+<ul><li><strong>인쇄 · PDF 출력</strong> — 없습니다.</li><li><strong>알림(종 아이콘)</strong> — 목록만 있고 실제로 오지 않습니다.</li></ul>
+<hr>
+<h2>4. 화면 목록</h2>
+<table><thead><tr><th>왼쪽 메뉴</th><th>화면</th><th>할 수 있는 것</th></tr></thead><tbody><tr><td>화합물 라이브러리</td><td>등록 화합물 4종</td><td>등록번호·분자식 검색, 구조 검색, 화합물 등록</td></tr><tr><td>구조 입력기</td><td>Ketcher 편집기</td><td>그리기 · 붙여넣기 · 물성 확인</td></tr><tr><td>시약/재고 관리</td><td>시약 5종</td><td>시약 등록, 재고 보기, 입출고</td></tr><tr><td>보관위치 관리</td><td>위치 트리 5개</td><td>위치 등록(최상위/하위), 수정, 삭제</td></tr><tr><td>대시보드 홈</td><td>요약</td><td>작성중 노트, 참여 프로젝트, 공지</td></tr><tr><td>노트 관리 현황</td><td>점검·공유 진행</td><td>진도 관리, 점검 요청 접수</td></tr><tr><td>연구 활동 지원</td><td>공지 2 · 자료실 1</td><td>목록 보기</td></tr><tr><td>완료 프로젝트</td><td>완료 2건</td><td>목록 보기</td></tr></tbody></table>
+<p>LIMS 상세 화면(왼쪽 메뉴에는 없고 목록에서 들어갑니다):</p>
+<table><thead><tr><th>화면</th><th>할 수 있는 것</th></tr></thead><tbody><tr><td>시료 관리 · 시료 상세</td><td>시료 등록, 분주, 계통도, 시험 이력, 연계 노트</td></tr><tr><td>시험 요청 · 시험 상세</td><td>요청 등록, 담당자 배정, 항목 추가, 착수·완료<br>(<code>시료 관리</code> 목록 → 시료 상세, 또는 시험 목록의 <code>시험 요청</code>)</td></tr><tr><td>결과 입력</td><td>측정값 입력, 판정, 확정, 정정</td></tr><tr><td>결과 검토</td><td>승인 · 반려 (승인하면 연구노트에 자동 기록)</td></tr><tr><td>기준이탈(OOS)</td><td>조사 착수, 원인·조치 기록</td></tr><tr><td>시험법 관리 · 상세</td><td>시험법 등록, 버전 개정, 판정기준 등록</td></tr><tr><td>장비 관리</td><td>장비 등록, 교정 이력, 폐기</td></tr></tbody></table>
+<hr>
+<h2>5. 자주 막히는 곳</h2>
+<p><strong>Q. 구조 입력기가 흰 화면입니다.</strong><br>아직 내려받는 중입니다(24MB). 위쪽 상태 줄의 경과 초를 보세요. 60초가 지나면<br><code>다시 시도</code> 가 나옵니다.</p>
+<p><strong>Q. Ctrl+V 를 눌러도 구조가 안 들어갑니다.</strong><br>캔버스를 먼저 한 번 클릭하세요. 그래도 안 되면 도구줄의 <code>Paste</code> 버튼을 쓰세요.</p>
+<p><strong>Q. 구조는 그려졌는데 분자식이 <code>-</code> 입니다.</strong><br>3-4 를 보세요. 미리 계산해 둔 14개 밖의 구조이고 계산 서버에 닿지 못한 것입니다.<br>화면 위쪽 상태 줄에 사유가 나옵니다.</p>
+<p><strong>Q. 만든 노트가 안 보입니다.</strong><br><code>노트 관리 현황</code> 또는 왼쪽 아래 <code>내 연구노트</code> 를 보세요.<br><strong>새로고침했다면 사라진 것이 맞습니다</strong>(3-1).</p>
+<p><strong>Q. 표가 &quot;목록을 불러오지 못했습니다&quot; 라고 합니다.</strong><br><code>다시 시도</code> 를 누르세요. 계속 그러면 새로고침해 주세요.</p>
+<hr>
+<h2>6. 문의</h2>
+<p>이 프로토타입에 대한 문의는 레드윗으로 주시면 됩니다.<br>버그로 보이는 것은 <strong>어느 화면에서 무엇을 눌렀는지</strong>만 적어 주셔도 재현할 수 있습니다.</p>
+</main>
+</body>
+</html>

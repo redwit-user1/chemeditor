@@ -5425,3 +5425,14 @@ span.folder_name[tabindex]::after,
 	margin-left: var(--ds-3);
 	vertical-align: middle;
 }
+
+/* 구조 편집기가 응답하지 않을 때 뜨는 고르기 줄 */
+.lims-chem-retry {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--ds-2);
+	padding: var(--ds-4);
+	border-bottom: 1px solid var(--ds-line);
+	background: var(--ds-warn-weak);
+}
