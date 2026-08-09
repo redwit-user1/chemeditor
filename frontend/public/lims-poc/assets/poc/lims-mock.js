@@ -2516,6 +2516,19 @@
       }).length);
     } catch (e) { /* 픽스처 없는 화면 — 배지 생략 */ }
 
+    /* 헤더 아바타 — 기본 프로필 이미지(만화 캐릭터)는 연구소 도구의
+       얼굴이 아니다. 이름 머리글자 칩으로 바꿔 끼운다. */
+    try {
+      var hdrImg = document.querySelector('.nav-profile img#myImg, .nav-profile .profile-info > img');
+      var hdrNm = document.querySelector('.nav-profile h6');
+      if (hdrImg && hdrNm && hdrNm.textContent.trim()) {
+        var ini = document.createElement('span');
+        ini.className = 'lims-hdr-avatar';
+        ini.textContent = hdrNm.textContent.trim().charAt(0);
+        hdrImg.replaceWith(ini);
+      }
+    } catch (e) { /* 헤더 없는 화면(에디터 등) — 생략 */ }
+
     /* 하단 사용자 칩 */
     var chip = document.createElement('div');
     chip.className = 'lims-nav-user';

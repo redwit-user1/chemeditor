@@ -375,7 +375,9 @@ h2.title {
 	color: var(--ds-ink);
 }
 
-/* 제목 옆 개수 — 제목과 같은 줄에 서므로 크기를 따라간다 */
+/* 제목 옆 개수 — 제목과 같은 줄에 서므로 크기를 따라간다.
+   전에는 fs-title(26) 고정이라 18px 구획 제목("최근 열어본 연구노트") 옆에서
+   개수만 26 으로 튀었다. 1em 이면 페이지 제목(26) 옆은 26, 구획(18) 옆은 18. */
 .title_cnt,
 .noteCnt,
 .projectCnt,
@@ -383,7 +385,7 @@ h2.title {
 .sub-title-sty01 .title_cnt,
 .sub-title-sty02 .title_cnt,
 .modal .modal-pop .modal-body .title_cnt {
-	font-size: var(--ds-fs-title);
+	font-size: 1em;
 	font-weight: var(--ds-fw-medium);
 }
 
@@ -8062,4 +8064,62 @@ h1.main-title-sty02 {
 #main .input-group-text,
 .add-project-sty01 .button-blue-full-sty03 {
 	font-size: var(--ds-fs-body);
+}
+
+
+/* --- §57 추가: 같은 줄, 같은 문법 (참여 프로젝트 우상단 실측) --- */
+
+/* 정렬 드롭다운이 40h/r4, 보기 토글이 36h/r8 로 한 줄에 두 규격이었다 */
+.board-top .dropdown-toggle,
+.board-top .btn.dropdown-toggle {
+	height: var(--ds-control);
+	border-radius: var(--ds-radius);
+}
+
+/* 탭 줄 오른쪽의 조작(정렬·토글)은 줄 세로 중앙에 */
+.board-top {
+	align-items: center;
+}
+
+/* 아이콘 버튼 문법 통일 — 채움 버튼(생성·노트)은 배경그림을 왼끝에 고정하고
+   글자만 밀어 두어, 같은 줄의 선 버튼(mask 아이콘+중앙)과 해부가 달랐다.
+   흰 SVG/PNG 도 mask 는 알파만 보므로 그대로 mask 원판이 된다. */
+.button-blue-full-sty01.create,
+.button-blue-full-sty01.note {
+	justify-content: center;
+	padding-left: var(--ds-4);
+	background-image: none !important;
+}
+
+.button-blue-full-sty01.create::before,
+.button-blue-full-sty01.note::before {
+	content: '';
+	flex: none;
+	width: var(--ds-icon-sm);
+	height: var(--ds-icon-sm);
+	margin-right: var(--ds-2);
+	background: currentColor;
+	-webkit-mask: url(../img/icon_create.svg) center / contain no-repeat;
+	mask: url(../img/icon_create.svg) center / contain no-repeat;
+}
+
+.button-blue-full-sty01.note::before {
+	-webkit-mask-image: url(../img/icon_new_note_white.png);
+	mask-image: url(../img/icon_new_note_white.png);
+}
+
+/* 헤더 아바타 — 기본 프로필(만화 펭귄)은 연구소 도구의 얼굴이 아니다.
+   목 레이어가 이름 머리글자 칩으로 바꿔 끼운다(아래 .lims-hdr-avatar). */
+.lims-hdr-avatar {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--ds-av);
+	height: var(--ds-av);
+	border-radius: 50%;
+	background: var(--ds-primary-weak);
+	color: var(--ds-primary-dark);
+	font-size: var(--ds-fs-small);
+	font-weight: var(--ds-fw-bold);
+	flex: none;
 }

@@ -4512,13 +4512,14 @@ label.form-check-label2 {
 .dropdown-select-sty01 {
     max-width: 210px;
     min-width: 130px;
-    height: 40px;
+    /* 40h/r4/16px 이 한 줄의 토글(36h/r8/14px)과 두 규격이었다 — 한 키로 */
+    height: var(--ds-control);
     padding: 0px 14px;
-    border-radius: var(--ds-radius-sm);
+    border-radius: var(--ds-radius);
     border: 1px solid var(--ds-line);
-    background-color: #fff;
+    background-color: var(--ds-surface);
     color: var(--ds-ink);
-    font-size: 16px;
+    font-size: var(--ds-fs-body);
     font-weight: var(--ds-fw-normal);
 }
 .dropdown-select-sty01.full {
