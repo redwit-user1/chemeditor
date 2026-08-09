@@ -804,9 +804,11 @@
      구조가 사실인 척하지 않도록 화합물 그림 대신 회색 상자로 둔다. */
   var PLACEHOLDER_SVG =
     "<svg xmlns='http://www.w3.org/2000/svg' width='200' height='150' viewBox='0 0 200 150'>" +
-    "<rect width='200' height='150' fill='#f4f6f8'/>" +
-    "<text x='100' y='70' font-size='12' fill='#98a2b3' text-anchor='middle'>구조식 미리보기</text>" +
-    "<text x='100' y='90' font-size='11' fill='#c1c7d0' text-anchor='middle'>(RDKit 렌더 — PoC 미연결)</text></svg>";
+    "<rect width='200' height='150' fill='#edefea'/>" +
+    "<text x='100' y='70' font-size='12' fill='#636a72' text-anchor='middle'>구조식 미리보기</text>" +
+    "<text x='100' y='90' font-size='11' fill='#868e96' text-anchor='middle'>(RDKit 렌더 — PoC 미연결)</text></svg>";
+  /* ↑ data URI 로도 쓰일 수 있어 var() 대신 값을 박되, 토큰과 같은 값으로 맞춘다:
+     canvas #EDEFEA · ink-4 #636A72 · ink-soft #868E96 (구 coolgray 잔재를 교체) */
 
   /* ---------------------------------------------------------------
      상태 보존 — 새로고침·화면 이동에도 남는다.

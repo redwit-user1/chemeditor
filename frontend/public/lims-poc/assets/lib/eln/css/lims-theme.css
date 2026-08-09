@@ -98,6 +98,14 @@
 	--ds-icon-sm: calc(var(--ds-unit) * 4);   /* 16 */
 	--ds-icon: calc(var(--ds-unit) * 5);      /* 20 */
 	--ds-icon-lg: calc(var(--ds-unit) * 6);   /* 24 */
+
+	/* 반복 컴포넌트의 고정 치수 — 화면마다 값이 조금씩 달랐던 것들을
+	   여기서 한 번만 정한다(단계점 20/22 혼용, 점 7px 3곳 산재가 계기). */
+	--ds-dot: 7px;                            /* 타임라인·트리의 상태 점 */
+	--ds-step-dot: 22px;                      /* 단계 진행(스텝퍼) 숫자 점 */
+	--ds-av: 28px;                            /* 아바타 */
+	--ds-av-sm: 22px;                         /* 아바타 겹침 목록용 */
+	--ds-count: 20px;                         /* 숫자 배지(카운트 알약) 한 변 */
 	--ds-ls: -0.02em;
 
 	/* 조작 요소 — 한 줄에 서면 높이가 같아야 한다 */
@@ -106,6 +114,8 @@
 
 	/* 셸 */
 	--ds-shell: 232px;
+	--ds-pane: 320px;             /* 에디터 우측 정보 패널(개요 4탭) */
+	--ds-pane-tree: 236px;        /* 에디터 좌측 노트북 트리 */
 	--ds-header: calc(var(--ds-unit) * 14);     /* 56 */
 
 	/* 색 — 출처: 구축형 GOONO_디자인.fig (REDWIT, 2024) / colors_and_type.css
@@ -182,6 +192,21 @@
 	--ds-ok-weak: #e7f4f2;        /* 엔티티 칩 청록 바탕 */
 	--ds-violet: #5b51c0;         /* 엔티티 칩 보라 — 의뢰·과제 */
 	--ds-violet-weak: #f1effb;
+	--ds-info-weak: #e5f6fe;      /* 초안 상태 바탕 — info 파랑의 약면 */
+	--ds-info-text: #026e9b;      /* 초안 상태 글자. #03A9F4 는 2.51 로 미달(실측) */
+
+	/* 채움 면 위 글자 — 주 파랑·상태색·새시 활성처럼 짙게 칠한 면 위의 흰색.
+	   순백 #fff 를 곳곳에 직접 박으면 어느 것이 "채움 위"이고 어느 것이
+	   "표면"인지 구분이 사라진다. 표면은 --ds-surface(웜 화이트)다. */
+	--ds-on-fill: #fff;
+
+	/* 새시(짙은 사이드바) 전용 알파 — 새시 위의 글자·선·면은 전부
+	   흰색의 알파로 만든다. 남색이 바뀌어도 따라오도록 토큰으로 묶는다. */
+	--ds-sash-ink: rgba(255, 255, 255, 0.85);      /* 본문 글자 */
+	--ds-sash-ink-dim: rgba(255, 255, 255, 0.62);  /* 보조 글자·비활성 아이콘 */
+	--ds-sash-hover: rgba(255, 255, 255, 0.08);    /* 홀버 면 */
+	--ds-sash-line: rgba(255, 255, 255, 0.14);     /* 구분선 */
+	--ds-sash-chip: rgba(255, 255, 255, 0.16);     /* 아바타 등 살짝 뜬 면 */
 
 	/* 옅은 테두리는 뜻 색 위에 알파 하나로만 만든다.
 	   전에는 같은 자리에 .22 / .24 / .45 세 알파가 섞여 있었고, 게다가
@@ -207,6 +232,7 @@
 	--ds-shadow: none;            /* 모듈은 테두리 하나로 선다(craft-floor: 고스트 카드 금지).
 	                                 떠 있는 판만 --ds-shadow-pop 을 쓴다. */
 	--ds-shadow-pop: 0 4px 24px rgba(33, 37, 41, 0.10);
+	--ds-veil: rgba(253, 253, 251, 0.92); /* 반투명 표면 — surface 의 알파판(sticky 머리) */
 	--ds-ring: 0 0 0 3px rgba(23, 97, 222, 0.20);
 
 	/* 이전 파일들이 쓰는 이름을 여기로 잇는다 — 값의 출처를 하나로 모은다. */
@@ -620,7 +646,7 @@ body,
 	border-radius: var(--ds-radius);
 	background: var(--ds-primary) !important;
 	background-image: none !important;
-	color: #fff !important;
+	color: var(--ds-on-fill) !important;
 	font-size: var(--ds-fs-body);
 	font-weight: var(--ds-fw-medium);
 	/*
@@ -634,8 +660,8 @@ body,
 .sidenav2 a.button-sty001::before {
 	content: '';
 	flex: none;
-	width: 16px;
-	height: 16px;
+	width: var(--ds-icon-sm);
+	height: var(--ds-icon-sm);
 	background-color: currentColor;
 	-webkit-mask: url(../img/lucide/plus.svg) center / contain no-repeat;
 	mask: url(../img/lucide/plus.svg) center / contain no-repeat;
@@ -686,7 +712,7 @@ body,
 	margin: 1px 0;
 	padding: 0 var(--ds-2) 0 var(--ds-8);
 	border-radius: var(--ds-radius);
-	color: rgba(255, 255, 255, 0.78) !important;
+	color: var(--ds-sash-ink) !important;
 	font-size: var(--ds-fs-body);
 	font-weight: var(--ds-fw-normal);
 	line-height: var(--ds-lh-tight);
@@ -719,14 +745,14 @@ body,
 }
 
 .nav-menu a.menuCd:hover {
-	background-color: rgba(255, 255, 255, 0.08);
-	color: #fff !important;
+	background-color: var(--ds-sash-hover);
+	color: var(--ds-on-fill) !important;
 }
 
 /* 활성 = primary 채움 + 흰 글자 (목업의 선택 항목) */
 .nav-menu a.menuCd.active {
 	background-color: var(--ds-primary);
-	color: #fff !important;
+	color: var(--ds-on-fill) !important;
 	font-weight: var(--ds-fw-medium);
 }
 
@@ -755,19 +781,19 @@ body,
 /* 메뉴 배지 — 목업의 시험 의뢰·서명 대기 오른쪽 숫자 */
 .nav-menu a.menuCd .lims-nav-badge {
 	margin-left: auto;
-	min-width: 20px;
+	min-width: var(--ds-count);
 	padding: 0 var(--ds-1);
 	border-radius: var(--ds-pill);
 	background: var(--ds-primary);
-	color: #fff;
+	color: var(--ds-on-fill);
 	font-size: var(--ds-fs-micro);
 	font-weight: 700;
-	line-height: 20px;
+	line-height: var(--ds-count);
 	text-align: center;
 }
 
 .nav-menu a.menuCd.active .lims-nav-badge {
-	background: #fff;
+	background: var(--ds-on-fill);
 	color: var(--ds-primary);
 }
 
@@ -782,32 +808,32 @@ body,
 	align-items: center;
 	gap: var(--ds-2);
 	padding: var(--ds-3) var(--ds-4);
-	border-top: 1px solid rgba(255, 255, 255, 0.14);
-	color: rgba(255, 255, 255, 0.85);
+	border-top: 1px solid var(--ds-sash-line);
+	color: var(--ds-sash-ink);
 }
 
 .lims-nav-user .avatar {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 28px;
-	height: 28px;
+	width: var(--ds-av);
+	height: var(--ds-av);
 	border-radius: 50%;
-	background: rgba(255, 255, 255, 0.16);
+	background: var(--ds-sash-chip);
 	font-size: var(--ds-fs-small);
 	font-weight: 700;
-	color: #fff;
+	color: var(--ds-on-fill);
 }
 
 .lims-nav-user .who { flex: 1 1 auto; min-width: 0; }
-.lims-nav-user .who .nm { display: block; font-size: var(--ds-fs-small); font-weight: 700; color: #fff; }
+.lims-nav-user .who .nm { display: block; font-size: var(--ds-fs-small); font-weight: 700; color: var(--ds-on-fill); }
 .lims-nav-user .who .role {
 	display: block;
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	font-size: var(--ds-fs-micro);
-	color: rgba(255, 255, 255, 0.62);
+	color: var(--ds-sash-ink-dim);
 }
 
 .lims-nav-user .gear {
@@ -815,7 +841,7 @@ body,
 	width: var(--ds-control-sm);
 	height: var(--ds-control-sm);
 	border: 0;
-	background-color: rgba(255, 255, 255, 0.62);
+	background-color: var(--ds-sash-ink-dim);
 	-webkit-mask: url(../img/lucide/filter.svg) center / 16px 16px no-repeat;
 	mask: url(../img/lucide/filter.svg) center / 16px 16px no-repeat;
 }
@@ -854,7 +880,7 @@ body,
 
 .nav-list-wrap .nav-list-top .nav-list-cnt {
 	width: auto;
-	min-width: 20px;
+	min-width: var(--ds-count);
 	margin-left: 0;
 	padding: 0 var(--ds-2);
 	border-radius: var(--ds-pill);
@@ -993,7 +1019,7 @@ body,
 	outline: none;
 	border-color: var(--ds-primary);
 	background: var(--ds-surface);
-	box-shadow: 0 0 0 3px rgba(47, 91, 245, 0.14);
+	box-shadow: var(--ds-ring); /* 구 파랑 rgba(47,91,245) 가 남아 있었다 — 링 토큰으로 */
 }
 
 /* 아이콘은 18px 이 맞지만 누르는 자리가 18×18 이면 작다(기준 24).
@@ -1272,7 +1298,7 @@ a.button-more-sty01 {
 .button-sty-darkblue {
 	border-color: var(--ds-primary);
 	background-color: var(--ds-primary);
-	color: #fff !important;
+	color: var(--ds-on-fill) !important;
 }
 
 .button-blue-full-sty01:hover,
@@ -1326,7 +1352,7 @@ a.button-more-sty01 {
 .button-remove-sty01 {
 	border-color: var(--ds-danger);
 	background-color: var(--ds-danger);
-	color: #fff !important;
+	color: var(--ds-on-fill) !important;
 }
 
 /* --- 크기 ---
@@ -1435,8 +1461,8 @@ a.button-more-sty01 {
 /* ::before 로 아이콘을 그리는 변형 — 25px 짜리 그림을 버튼 높이에 맞춘다 */
 .button-blue-full-sty01.folder:before,
 .button-blue-full-sty01.step:before {
-	width: 16px;
-	height: 16px;
+	width: var(--ds-icon-sm);
+	height: var(--ds-icon-sm);
 	margin-right: var(--ds-2);
 	background-size: 16px 16px;
 	background-position: center;
@@ -1750,7 +1776,9 @@ a.note-card-title {
 }
 
 .modal .modal-wrap-sty02.preview {
-	width: min(720px, 92vw);
+	/* 720 은 모달 3단(460/560/880) 밖의 네 번째 폭이었다 — 표(lg)단으로 */
+	width: var(--modal-w-lg);
+	max-height: var(--modal-h-lg);
 }
 
 /* --- 확인·경고(sm) ---
@@ -1850,7 +1878,7 @@ a.note-card-title {
 	height: var(--ds-6);
 	border-radius: var(--ds-pill);
 	background: var(--ds-primary);
-	color: #fff;
+	color: var(--ds-on-fill);
 	font-size: var(--ds-fs-small);
 	font-weight: var(--ds-fw-medium);
 	flex: none;
@@ -2483,7 +2511,7 @@ a.note-card-title {
 	padding: var(--ds-3) var(--ds-6);
 	border-bottom: 1px solid var(--ds-line);
 	border-radius: var(--ds-radius-lg) var(--ds-radius-lg) 0 0;
-	background: rgba(255, 255, 255, 0.92);
+	background: var(--ds-veil);
 	backdrop-filter: blur(6px);
 }
 
@@ -3008,7 +3036,7 @@ a.note-card-title {
 	button,
 	a,
 	[role='button'] {
-		-webkit-tap-highlight-color: rgba(47, 91, 245, 0.12);
+		-webkit-tap-highlight-color: rgba(23, 97, 222, 0.12); /* 정본 파랑. var() 를 못 받는 속성이라 값만 맞춘다 */
 	}
 }
 
@@ -5365,7 +5393,7 @@ input.form-check-input.btn {
 #ui-datepicker-div td .ui-state-active,
 #ui-datepicker-div td a.ui-state-active {
 	background: var(--ds-primary);
-	color: #fff;
+	color: var(--ds-on-fill);
 }
 
 #ui-datepicker-div td.ui-datepicker-today a {
@@ -6240,7 +6268,7 @@ td.lims-id,
 	position: absolute;
 	z-index: 1200;
 	display: none;
-	width: 520px;
+	width: var(--pop-w-card); /* 520 하드코딩이던 것 — 판 체계 card 단으로 */
 	max-width: calc(100vw - 16px);
 	padding: var(--ds-2) var(--ds-2) 0;
 	border: 1px solid var(--ds-line);
@@ -6337,7 +6365,7 @@ td.lims-id,
 .lims-note-picker-foot kbd {
 	margin-right: 2px;
 	padding: 0 var(--ds-1);
-	border-radius: 3px;
+	border-radius: var(--ds-radius-sm);
 	background: var(--ds-hover);
 	font-family: var(--ds-font-id);
 	font-size: var(--ds-fs-micro);
@@ -6372,7 +6400,7 @@ td.lims-id,
 .lims-note-state {
 	display: inline-flex;
 	align-items: center;
-	gap: 4px;
+	gap: var(--ds-1);
 	padding: 2px var(--ds-2);
 	/* 참고 실측: 상태 표시는 둥근 알약이 아니라 각진 알약(radius 4)이다 */
 	border-radius: var(--ds-radius-sm);
@@ -6383,15 +6411,15 @@ td.lims-id,
 }
 
 .lims-note-state .ico {
-	font-size: 13px;
+	font-size: var(--ds-fs-cell);
 	line-height: 1;
 }
 
 /* 작성중 · 점검중 · 점검완료 · 반려 — WRITE_STATUS_CCD 그대로 */
-.lims-note-state.is-draft     { background: #e5f6fe; color: #026e9b; }
+.lims-note-state.is-draft     { background: var(--ds-info-weak); color: var(--ds-info-text); }
 .lims-note-state.is-inreview  { background: var(--ds-primary-weak); color: var(--ds-primary); }
-.lims-note-state.is-signed    { padding: 2px 9px; background: var(--ds-ok-deep); color: #fff; }
-.lims-note-state.is-rejected  { padding: 2px 9px; background: var(--ds-danger); color: #fff; }
+.lims-note-state.is-signed    { padding: 2px 9px; background: var(--ds-ok-deep); color: var(--ds-on-fill); }
+.lims-note-state.is-rejected  { padding: 2px 9px; background: var(--ds-danger); color: var(--ds-on-fill); }
 
 /*
   참고 설계의 색을 두 곳에서 내렸다. 둘 다 재서 알았다.
@@ -6412,7 +6440,7 @@ td.lims-id,
 	list-style: none;
 	border: 1px solid var(--ds-line);
 	border-radius: var(--ds-radius);
-	background: #fff;
+	background: var(--ds-surface);
 }
 
 .lims-note-insplist li {
@@ -6421,7 +6449,7 @@ td.lims-id,
 	gap: var(--ds-3);
 	padding: var(--ds-2) var(--ds-3);
 	border-bottom: 1px solid var(--ds-line-soft);
-	min-height: 44px;
+	min-height: var(--ds-row);
 }
 
 .lims-note-insplist li:last-child { border-bottom: 0; }
@@ -6445,8 +6473,8 @@ td.lims-id,
 }
 
 .lims-note-inspst.is-unconfirm { background: var(--ds-line-soft); color: var(--ds-ink-3); }
-.lims-note-inspst.is-approval  { background: #f3fbf7; color: var(--ds-ok); }
-.lims-note-inspst.is-reject    { background: #fdeded; color: var(--ds-danger-text); }
+.lims-note-inspst.is-approval  { background: var(--ds-ok-weak); color: var(--ds-ok); }
+.lims-note-inspst.is-reject    { background: var(--ds-danger-weak); color: var(--ds-danger-text); }
 
 .lims-note-insphint {
 	margin: var(--ds-2) 0 0;
@@ -6475,7 +6503,7 @@ td.lims-id,
 	gap: var(--ds-3);
 	margin: 0;
 	padding: var(--ds-2) var(--ds-3);
-	min-height: 44px;
+	min-height: var(--ds-row);
 	cursor: pointer;
 }
 
@@ -6514,7 +6542,7 @@ td.lims-id,
 	margin-top: var(--ds-4);
 	border: 1px solid var(--ds-line);
 	border-radius: var(--ds-radius);
-	background: #fff;
+	background: var(--ds-surface);
 }
 
 .lims-note-amends-head {
@@ -6609,7 +6637,7 @@ td.lims-id,
 .lims-amend-form {
 	display: flex;
 	flex-direction: column;
-	gap: 14px;
+	gap: var(--ds-4); /* 14 는 눈금 밖 — 16 으로 */
 }
 
 .lims-amend-field {
@@ -6645,7 +6673,7 @@ td.lims-id,
 	padding: var(--ds-2) var(--ds-3);
 	border: 1px solid var(--ds-line-2);
 	border-radius: var(--ds-radius-sm);
-	background: #fff;
+	background: var(--ds-surface);
 	font-size: var(--ds-fs-small);
 	color: var(--ds-ink);
 }
@@ -6759,7 +6787,7 @@ td.lims-id,
 	margin: 0;
 	padding: var(--ds-2) var(--ds-3);
 	border-radius: var(--ds-radius-sm);
-	background: #fdeded;
+	background: var(--ds-danger-weak);
 	font-size: var(--ds-fs-small);
 	color: var(--ds-ink-3);
 }
@@ -6862,7 +6890,7 @@ td.lims-id,
 
 .lims-dash-stat .num {
 	grid-area: num;
-	font-size: 28px;
+	font-size: var(--ds-fs-metric);
 	font-weight: 700;
 	line-height: 1.2;
 	letter-spacing: -0.02em;
@@ -6957,10 +6985,10 @@ a.lims-dash-proj:hover { color: var(--ds-primary); }
 
 .lims-new {
 	display: inline-block;
-	min-width: 16px;
+	min-width: var(--ds-4);
 	border-radius: var(--ds-radius-sm);
 	background: var(--ds-warn-dot);
-	color: #fff;
+	color: var(--ds-on-fill);
 	font-size: var(--ds-fs-micro);
 	font-weight: 700;
 	text-align: center;
@@ -7026,9 +7054,9 @@ a.lims-dash-proj:hover { color: var(--ds-primary); }
 	font-weight: 700;
 }
 
-.lims-integ.is-ok     { background: #f3fbf7; color: var(--ds-ok); }
-.lims-integ.is-warn   { background: #fff3d0; color: var(--ds-warn); }
-.lims-integ.is-danger { background: #fdeded; color: var(--ds-danger-text); }
+.lims-integ.is-ok     { background: var(--ds-ok-weak); color: var(--ds-ok); }
+.lims-integ.is-warn   { background: var(--ds-warn-weak); color: var(--ds-warn); }
+.lims-integ.is-danger { background: var(--ds-danger-weak); color: var(--ds-danger-text); }
 
 .lims-data-footnote {
 	margin: var(--ds-3) 0 0;
@@ -7056,7 +7084,7 @@ a.lims-dash-proj:hover { color: var(--ds-primary); }
 	position: static !important;
 	order: 3;
 	flex: none;
-	width: 320px !important;
+	width: var(--ds-pane) !important;
 	height: auto;
 	margin: 0 !important;
 	padding: 0 var(--ds-4) 0 0;
@@ -7091,7 +7119,7 @@ a.lims-dash-proj:hover { color: var(--ds-primary); }
 #noteTree {
 	order: 1;
 	flex: none;
-	width: 236px;
+	width: var(--ds-pane-tree);
 	padding: 0 var(--ds-4) 0 0;
 }
 
@@ -7162,8 +7190,8 @@ a.lims-dash-proj:hover { color: var(--ds-primary); }
 /* 상태 점 — 작성중 파랑 · 점검중 주황 · 완료 초록 · 반려 빨강 */
 #noteTree .lims-tree-note .dot {
 	flex: none;
-	width: 7px;
-	height: 7px;
+	width: var(--ds-dot);
+	height: var(--ds-dot);
 	border-radius: 50%;
 	background: var(--ds-info-dot);
 }
@@ -7220,7 +7248,7 @@ a.lims-dash-proj:hover { color: var(--ds-primary); }
 
 .lims-note-sidetabs button .b {
 	display: inline-block;
-	min-width: 16px;
+	min-width: var(--ds-4);
 	margin-left: 2px;
 	border-radius: var(--ds-radius-sm);
 	background: var(--ds-primary-weak);
@@ -7297,7 +7325,7 @@ a.lims-dash-proj:hover { color: var(--ds-primary); }
 .lims-page .lims-note-section-head .chev {
 	flex: none;
 	color: var(--ds-ink-soft);
-	font-size: 12px;
+	font-size: var(--ds-fs-small);
 }
 
 /*
@@ -7346,12 +7374,12 @@ a.lims-dash-proj:hover { color: var(--ds-primary); }
 	align-items: center;
 	justify-content: center;
 	flex: none;
-	width: 40px;
-	height: 40px;
+	width: var(--ds-10);
+	height: var(--ds-10);
 	border-radius: var(--ds-radius);
-	background: #fdeded;
+	background: var(--ds-danger-weak);
 	color: var(--ds-danger);
-	font-size: 18px;
+	font-size: var(--ds-fs-lead);
 }
 
 .lims-oos-head .tt { flex: 1 1 auto; min-width: 0; }
@@ -7364,7 +7392,7 @@ a.lims-dash-proj:hover { color: var(--ds-primary); }
 }
 
 .lims-oos-head .tl {
-	font-size: 17px;
+	font-size: var(--ds-fs-lead);
 	font-weight: 700;
 	letter-spacing: -0.02em;
 	color: var(--ds-ink);
@@ -7397,7 +7425,7 @@ a.lims-dash-proj:hover { color: var(--ds-primary); }
 .lims-oos-steps li + li::before {
 	content: '';
 	display: block;
-	width: 28px;
+	width: var(--ds-7);
 	height: 2px;
 	margin: 0 var(--ds-3);
 	background: var(--ds-line);
@@ -7409,8 +7437,8 @@ a.lims-dash-proj:hover { color: var(--ds-primary); }
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 22px;
-	height: 22px;
+	width: var(--ds-step-dot);
+	height: var(--ds-step-dot);
 	border-radius: 50%;
 	background: var(--ds-line-soft);
 	font-size: var(--ds-fs-micro);
@@ -7418,9 +7446,9 @@ a.lims-dash-proj:hover { color: var(--ds-primary); }
 	color: var(--ds-ink-3);
 }
 
-.lims-oos-steps li.done .dot { background: var(--ds-ok-dot); color: #fff; }
+.lims-oos-steps li.done .dot { background: var(--ds-ok-dot); color: var(--ds-on-fill); }
 .lims-oos-steps li.done { color: var(--ds-ok); font-weight: 700; }
-.lims-oos-steps li.now .dot { background: var(--ds-primary); color: #fff; }
+.lims-oos-steps li.now .dot { background: var(--ds-primary); color: var(--ds-on-fill); }
 .lims-oos-steps li.now { color: var(--ds-primary); font-weight: 700; }
 
 .lims-oos-body {
@@ -7444,9 +7472,9 @@ a.lims-dash-proj:hover { color: var(--ds-primary); }
 /* 발생원 — 붉은 톤 상자 (덱의 발생원 박스) */
 .lims-oos-origin {
 	padding: var(--ds-3) var(--ds-4);
-	border: 1px solid #f5c6c5;
+	border: 1px solid var(--ds-danger-line);
 	border-radius: var(--ds-radius);
-	background: #fdf7f7;
+	background: var(--ds-danger-weak);
 	font-size: var(--ds-fs-small);
 	color: var(--ds-ink-3);
 }
@@ -7488,8 +7516,8 @@ a.lims-dash-proj:hover { color: var(--ds-primary); }
 	position: absolute;
 	left: 3px;
 	top: 6px;
-	width: 7px;
-	height: 7px;
+	width: var(--ds-dot);
+	height: var(--ds-dot);
 	border-radius: 50%;
 	background: var(--ds-line-2);
 }
@@ -7519,8 +7547,8 @@ a.lims-dash-proj:hover { color: var(--ds-primary); }
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 20px;
-	height: 20px;
+	width: var(--ds-step-dot); /* 20 이던 것을 OOS 쪽 22 와 통일 */
+	height: var(--ds-step-dot);
 	border-radius: 50%;
 	background: var(--ds-line-soft);
 	font-size: var(--ds-fs-micro);
@@ -7529,9 +7557,9 @@ a.lims-dash-proj:hover { color: var(--ds-primary); }
 }
 
 .lims-xls-steps li.now { color: var(--ds-primary); font-weight: 700; }
-.lims-xls-steps li.now .dot { background: var(--ds-primary); color: #fff; }
+.lims-xls-steps li.now .dot { background: var(--ds-primary); color: var(--ds-on-fill); }
 .lims-xls-steps li.done { color: var(--ds-ok); }
-.lims-xls-steps li.done .dot { background: var(--ds-ok-dot); color: #fff; }
+.lims-xls-steps li.done .dot { background: var(--ds-ok-dot); color: var(--ds-on-fill); }
 
 .lims-xls-file {
 	display: flex;
@@ -7561,7 +7589,7 @@ a.lims-dash-proj:hover { color: var(--ds-primary); }
 
 .lims-xls-map .arr { text-align: center; color: var(--ds-ink-soft); }
 
-.lims-xls-dev td { background: #fdeded; }
+.lims-xls-dev td { background: var(--ds-danger-weak); }
 .lims-xls-dev .dev { color: var(--ds-danger-text); font-weight: 700; }
 
 /* ============================================================================
@@ -7623,8 +7651,8 @@ div:has(> .guidetext-sty01):has(> .count-wrap) {
 .add-project-sty01 { align-items: center; }
 
 .add-project-sty01 .button-blue-full-sty03 {
-	height: 36px;
-	min-height: 36px;
+	height: var(--ds-control);
+	min-height: var(--ds-control);
 	padding-top: 0;
 	padding-bottom: 0;
 }
@@ -7633,7 +7661,7 @@ div:has(> .guidetext-sty01):has(> .count-wrap) {
 .add-project-sty01 a.ce-add-category {
 	display: inline-flex;
 	align-items: center;
-	min-height: 36px;
+	min-height: var(--ds-control);
 }
 
 /*
@@ -7670,18 +7698,18 @@ div:has(> .guidetext-sty01):has(> .count-wrap) {
 	align-items: center;
 	justify-content: center;
 	flex: none;
-	width: 24px;
-	height: 24px;
+	width: var(--ds-icon-lg);
+	height: var(--ds-icon-lg);
 	border-radius: var(--ds-radius-sm);
 	background: var(--ds-hover);
 	color: var(--ds-ink-3);
-	font-size: 13px;
+	font-size: var(--ds-fs-cell);
 }
 
 /* 멘션 종류별 아이콘 타일 — 본문 칩과 같은 계열색 */
-.lims-note-picker-row .ico.kind-REAGENT   { background: #fbf3e1; color: #8a5a00; }
+.lims-note-picker-row .ico.kind-REAGENT   { background: var(--ds-warn-weak); color: var(--ds-warn); }
 .lims-note-picker-row .ico.kind-SAMPLE    { background: var(--ds-primary-weak); color: var(--ds-primary); }
-.lims-note-picker-row .ico.kind-INSTRUMENT{ background: #eef8f7; color: var(--ds-ok); }
+.lims-note-picker-row .ico.kind-INSTRUMENT{ background: var(--ds-ok-weak); color: var(--ds-ok); }
 .lims-note-picker-row .ico.kind-USER      { background: var(--ds-violet-weak); color: var(--ds-violet); }
 
 /* 파일럿 항목 — 보이되 되는 척하지 않는다 */
@@ -7708,10 +7736,10 @@ div:has(> .guidetext-sty01):has(> .count-wrap) {
 	white-space: nowrap;
 }
 
-.lims-note-picker-row .meta.tone-ok      { background: #f3fbf7; color: var(--ds-ok); }
-.lims-note-picker-row .meta.tone-thing   { background: #f3fbf7; color: var(--ds-ok); }
-.lims-note-picker-row .meta.tone-warn    { background: #fff3d0; color: var(--ds-warn); }
-.lims-note-picker-row .meta.tone-danger  { background: #fdeded; color: var(--ds-danger-text); }
+.lims-note-picker-row .meta.tone-ok      { background: var(--ds-ok-weak); color: var(--ds-ok); }
+.lims-note-picker-row .meta.tone-thing   { background: var(--ds-ok-weak); color: var(--ds-ok); }
+.lims-note-picker-row .meta.tone-warn    { background: var(--ds-warn-weak); color: var(--ds-warn); }
+.lims-note-picker-row .meta.tone-danger  { background: var(--ds-danger-weak); color: var(--ds-danger-text); }
 .lims-note-picker-row .meta.tone-primary { background: var(--ds-primary-weak); color: var(--ds-primary); }
 .lims-note-picker-row .meta.tone-person  { background: var(--ds-violet-weak); color: var(--ds-violet); }
 .lims-note-picker-row .meta.tone-muted   { background: var(--ds-line-soft); color: var(--ds-ink-3); }
@@ -7735,10 +7763,10 @@ div:has(> .guidetext-sty01):has(> .count-wrap) {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 22px;
-	height: 22px;
+	width: var(--ds-av-sm);
+	height: var(--ds-av-sm);
 	margin-left: -6px;
-	border: 2px solid #fff;
+	border: 2px solid var(--ds-surface);
 	border-radius: 50%;
 	background: var(--ds-primary-weak);
 	font-size: var(--ds-fs-micro);
@@ -7748,7 +7776,7 @@ div:has(> .guidetext-sty01):has(> .count-wrap) {
 
 .lims-ov-avs .av:first-child { margin-left: 0; }
 .lims-ov-avs .av:nth-child(2n) { background: var(--ds-violet-weak); color: var(--ds-violet); }
-.lims-ov-avs .av:nth-child(3n) { background: #eef8f7; color: var(--ds-ok); }
+.lims-ov-avs .av:nth-child(3n) { background: var(--ds-ok-weak); color: var(--ds-ok); }
 .lims-ov-avs .cnt { margin-left: var(--ds-2); font-size: var(--ds-fs-micro); color: var(--ds-ink-4); }
 
 .lims-ov-hist { font-size: var(--ds-fs-small); color: var(--ds-primary); }
@@ -7770,8 +7798,8 @@ div:has(> .guidetext-sty01):has(> .count-wrap) {
 	position: absolute;
 	left: var(--ds-3);
 	top: 18px;
-	width: 7px;
-	height: 7px;
+	width: var(--ds-dot);
+	height: var(--ds-dot);
 	border-radius: 50%;
 	background: var(--ds-primary);
 }
@@ -7919,7 +7947,7 @@ div:has(> .guidetext-sty01):has(> .count-wrap) {
 .lims-page ::-webkit-scrollbar-thumb,
 .note-detail ::-webkit-scrollbar-thumb {
 	border: 3px solid transparent;
-	border-radius: 999px;
+	border-radius: var(--ds-pill);
 	background: var(--ds-line-2);
 	background-clip: padding-box;
 }

@@ -5494,7 +5494,7 @@
 
       window.gfn_openModalProjectPerformanceUnregister = function (projectMno, projectNm) {
         coreDialog.confirm(
-          `'${projectNm}' 프로젝트를 진도관리프로젝트에서 제외하시겠습니까?<br><br><small style="color:#d9534f;">※ 주의 : 해당 프로젝트의 진도 관련 모든 내용 및 파일이 삭제됩니다.</small>`,
+          `'${projectNm}' 프로젝트를 진도관리프로젝트에서 제외하시겠습니까?<br><br><small style="color:var(--ds-danger-text);">※ 주의 : 해당 프로젝트의 진도 관련 모든 내용 및 파일이 삭제됩니다.</small>`,
           function (result) {
             if (!result) return;
 
