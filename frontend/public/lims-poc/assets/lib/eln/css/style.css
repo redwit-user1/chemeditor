@@ -4397,38 +4397,35 @@ label.form-check-label2 {
 .authGrpTxt02.role {
     margin: 0 10px;
 }
-.authGrpTxt.role.ROLE_USER_RESEARCHER {
-    background: var(--ds-ink-4);
-    color: #fff;
-}
+/* 권한 배지는 신원 표식이지 동작이 아니다 — 주 동작 파랑을 채워 버리면
+   같은 줄의 진짜 버튼(프로젝트 생성 등)과 경쟁한다. 약면 칩으로 내린다. */
+.authGrpTxt.role.ROLE_USER_RESEARCHER,
 .authGrpTxt02.role.ROLE_USER_RESEARCHER {
-     background: var(--ds-line);
-     color: var(--ds-ink-4);
+    background: var(--ds-line);
+    color: var(--ds-ink-3);
 }
 .authGrpTxt.role.ROLE_USER_RSPNSBLTY,
 .authGrpTxt02.role.ROLE_USER_RSPNSBLTY {
-    background: var(--ds-primary);    color: #fff;
+    background: var(--ds-primary-weak);    color: var(--ds-primary-dark);
 }
 .authGrpTxt.role.ROLE_OPMS_ADMIN,
 .authGrpTxt02.role.ROLE_OPMS_ADMIN,
 .authGrpTxt.role.ROLE_USER_MANAGER,
 .authGrpTxt02.role.ROLE_USER_MANAGER {
-    background: #009688;    color: #fff;
+    background: var(--ds-ok-weak);    color: var(--ds-ok);
 }
 .authGrpTxt.role.member_role_PJ_MANAGER,
 .authGrpTxt02.role.member_role_PJ_MANAGER {
-    background: var(--ds-primary);    color: #fff;
+    background: var(--ds-primary-weak);    color: var(--ds-primary-dark);
 }
 .authGrpTxt.role.member_role_PJ_LEAD_RESEARCHER,
 .authGrpTxt02.role.member_role_PJ_LEAD_RESEARCHER {
-    background: #455a64;    color: #fff;
+    background: var(--ds-violet-weak);    color: var(--ds-violet);
 }
-.authGrpTxt.role.member_role_PJ_RESEARCHER {
-    background: var(--ds-ink-4);    color: #fff;
-}
+.authGrpTxt.role.member_role_PJ_RESEARCHER,
 .authGrpTxt02.role.member_role_PJ_RESEARCHER {
     background: var(--ds-line);
-    color: var(--ds-ink-4);
+    color: var(--ds-ink-3);
 }
 .authGrpTxt02.gnrl {
     height: 20px;
@@ -5550,17 +5547,22 @@ label.form-check-label2 {
     margin-bottom: 1rem;
 }
 .text-board .project-regist-title span {
+    /* 단계 표식이 제목만큼 컸다(20) — 표식답게 13/700. Step 숫자는
+       마법사의 순서 정보라 남긴다. */
     display: block;
-    font-size: 20px;
-    color: var(--ds-primary);
+    font-size: var(--ds-fs-cell);
+    font-weight: var(--ds-fw-bold);
+    color: var(--ds-primary-dark);
     line-height: var(--ds-lh);
     letter-spacing: 0;
     text-align: left;
 }
 .text-board .project-regist-title p {
-    font-size: var(--ds-fs-title);
-    color: var(--ds-ink);
+    /* 구획 제목이 페이지 제목과 같은 26 이었다 — 위계상 lead(18) */
+    font-size: var(--ds-fs-lead);
+    color: var(--ds-ink-2);
     font-weight: var(--ds-fw-bold);
+    letter-spacing: var(--ds-ls);
     margin-bottom: 0;
 }
 

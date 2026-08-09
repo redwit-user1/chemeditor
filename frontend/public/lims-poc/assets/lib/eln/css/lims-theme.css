@@ -2605,6 +2605,8 @@ a.note-card-title {
 	height: var(--ds-control-sm);
 	padding: 0 var(--ds-3);
 	font-size: var(--ds-fs-micro);
+	/* 소단(28)은 작은 모서리다 — 이게 빠져서 28h 에 r8 이 새고 있었다(실측) */
+	border-radius: var(--ds-radius-sm);
 }
 
 .lims-page .lims-note-block-body {
@@ -7962,4 +7964,102 @@ div:has(> .guidetext-sty01):has(> .count-wrap) {
 .lims-page .core-table td,
 .lims-page .lims-table td {
 	font-variant-numeric: tabular-nums;
+}
+
+
+/* ============================================================================
+   §57 폴리시 패스 — 27화면 흐름 실측(comp1/type1/flow1)에서 나온 것들
+   ① 페이지 탭: 밑줄이 허공에 떠 있었고(레일 없음), 활성 강조가 화면마다
+      달랐다(참여 프로젝트 500 vs 시험 대기열 700). 한 규칙으로 묶는다.
+   ② 다운로드 버튼: 한 줄에 primary 채움이 둘(생성+엑셀) — 내려받기는
+      어디서도 주 동작이 아니다. 선 버튼으로 내린다.
+   ③ 마법사(프로젝트 생성)가 눈금 밖 크기(24/20/16)로 따로 놀았다.
+   ========================================================================== */
+
+/* --- ① 페이지 탭 --- */
+/* style.css 의 .tab-board-styNN … .nav-tabs 가 !important 로 레일을 지운다 —
+   같은 무게로 되받는다. soft 선은 캔버스와 거의 같은 값이라 line 을 쓴다. */
+.nav-tabs.tabs-box,
+.board-top .nav-tabs.tabs-box {
+	border-bottom: 1px solid var(--ds-line) !important;
+}
+
+/* 보기 전환 토글(목록/카드)은 탭 마크업을 빌려 쓸 뿐 탭이 아니다 */
+.list-block-btn-box .nav-tabs.tabs-box {
+	border-bottom: 0 !important;
+}
+
+/* 카드 머리 안의 공지 탭 — 카드 테두리가 이미 경계라 레일이 겹줄이 된다 */
+.main-card02.notice_board .board-top .nav-tabs.tabs-box {
+	border-bottom: 0 !important;
+}
+
+.nav-tabs.tabs-box .nav-link.tab,
+.nav-tabs.tabs-box .tab.test-tab {
+	display: inline-flex;
+	align-items: center;
+	height: var(--ds-row);
+	padding: 0 var(--ds-4);
+	font-size: var(--ds-fs-body);
+	font-weight: var(--ds-fw-medium);
+}
+
+/* 활성은 색과 밑줄에 굵기까지 — 두 탭 계열의 규칙을 통일 */
+.nav-tabs.tabs-box .nav-link.tab.active,
+.nav-tabs.tabs-box .tab.test-tab.active {
+	font-weight: var(--ds-fw-bold);
+}
+
+/* nav-link 계열은 이미 r4 를 받는다(§부트스트랩 동률 규칙) — test-tab 도 같이 */
+.nav-tabs.tabs-box .tab.test-tab {
+	border-radius: var(--ds-radius-sm);
+}
+
+/* --- ② 내려받기 = 보조 동작 --- */
+.button-blue-full-sty01.down,
+.button-blue-full-sty01.excel-down,
+.button-blue-full-sty01.note-down {
+	border-color: var(--ds-primary);
+	background-color: var(--ds-surface);
+	background-image: none; /* 흰 PNG 아이콘 — 선 버튼에서는 안 보인다 */
+	color: var(--ds-primary-dark) !important;
+	justify-content: center;
+	padding-left: var(--ds-4);
+}
+
+.button-blue-full-sty01.down:hover,
+.button-blue-full-sty01.excel-down:hover,
+.button-blue-full-sty01.note-down:hover {
+	background-color: var(--ds-primary-weak);
+}
+
+/* 아이콘은 mask 로 글자색을 따른다 — 채움/선 어느 쪽이 되어도 맞는 색 */
+.button-blue-full-sty01.down::before,
+.button-blue-full-sty01.excel-down::before,
+.button-blue-full-sty01.note-down::before {
+	content: '';
+	flex: none;
+	width: var(--ds-icon-sm);
+	height: var(--ds-icon-sm);
+	margin-right: var(--ds-2);
+	background: currentColor;
+	-webkit-mask: url(../img/lucide/download.svg) center / contain no-repeat;
+	mask: url(../img/lucide/download.svg) center / contain no-repeat;
+}
+
+/* --- ③ 마법사 눈금 --- */
+/* 페이지 제목 — 24 는 눈금에 없다. 다른 화면과 같은 title(26) */
+h1.main-title-sty02 {
+	font-size: var(--ds-fs-title);
+	font-weight: var(--ds-fw-bold);
+	letter-spacing: var(--ds-ls);
+}
+
+/* 단계 표식·구획 제목은 style.css 의 (0,2,1) 규칙이 정본이라 그쪽에서 고쳤다 */
+
+/* 입력 그룹 접두 라벨·중복확인 버튼 — 부트스트랩 1rem(16) 잔재 */
+.lims-page .input-group-text,
+#main .input-group-text,
+.add-project-sty01 .button-blue-full-sty03 {
+	font-size: var(--ds-fs-body);
 }
