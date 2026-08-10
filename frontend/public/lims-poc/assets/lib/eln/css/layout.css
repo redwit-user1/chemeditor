@@ -120,7 +120,7 @@ a:active {
 }
 .sticky-sty-01 {
 	height: 60px;
-	background-color: #fff;
+	background-color: var(--ds-surface); /* 순백은 채움 위 글자의 것 — 면은 웜 화이트 */
 	padding-top: 8px;
 	border-bottom: 1px solid var(--ds-line);
 }
@@ -159,7 +159,7 @@ a:active {
     height: 72px;
     padding: 16px 30px;
     border-bottom: 1px solid var(--ds-line);
-    background: #fff !important;
+    background: var(--ds-surface) !important;
     /* z-index: 1100; */
 }
 #main-body {
@@ -174,7 +174,7 @@ a:active {
 	height: calc(100% - 72px);
 	margin: 0 auto;
 	padding: 18px;
-	background: #fff !important;
+	background: var(--ds-surface) !important;
 	border-right: 1px solid var(--ds-line);
 	box-shadow: var(--ds-shadow);
 	transition: margin-left var(--ds-dur-lg) var(--ds-ease);

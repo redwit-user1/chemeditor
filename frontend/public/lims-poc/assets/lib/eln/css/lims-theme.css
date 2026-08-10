@@ -1628,12 +1628,11 @@ a.note-card-title {
 .tab-board-sty01 .board-top .tab.active .title_cnt,
 .tab-board-sty02 .board-top .tab:hover .title_cnt,
 .tab-board-sty02 .board-top .tab.active .title_cnt,
-.project-card-board .project-card .project-card-cont .wrap-note-cnt,
-.project-card-board .project-card .project-card-cont.project-prgrst-PROGRESS .wrap-note-cnt,
 .txt-blue,
 .txt_blue {
 	color: var(--ds-primary-dark) !important;
 }
+/* 집계 띠(wrap-note-cnt)는 §57-색에서 중립 띠로 내렸다 — 파랑 글자 목록에서 뺌 */
 
 .tab-board-sty06 .board-top .tab:hover,
 .tab-board-sty06 .board-top .tab.active {
@@ -8178,4 +8177,26 @@ h1.main-title-sty02 {
 	font-size: var(--ds-fs-small);
 	font-weight: var(--ds-fw-bold);
 	flex: none;
+}
+
+
+/* --- §57-색: 웜 월드에 남아 있던 쿨 면 (참여 프로젝트 카드 실측) --- */
+/* 카드 면이 순백(#fff·쿨)으로 남아 웜 캔버스와 충돌했다. 면은 표면 하나다. */
+.project-card-board .project-card .project-card-cont,
+.note-card-board .note-card .note-card-cont,
+.search-filter-box {
+	background: var(--ds-surface) !important;
+}
+
+/* 카드 하단 집계 띠 — 중립 정보 띠에 선택/홀버용 파랑 약면(#EDF3FD)이
+   칠해져 있었다. 색은 상태의 언어다: 집계는 중립(hover 면 + 먹 글자)로,
+   완료/중단 변형도 같은 띠에 글자 톤만 다르게 둔다. */
+.project-card-board .project-card .project-card-cont .wrap-note-cnt,
+.project-card-board .project-card .project-card-cont.project-prgrst-PROGRESS .wrap-note-cnt,
+.project-card-board .project-card .project-card-cont.project-prgrst-COMPLETE .wrap-note-cnt,
+.project-card-board .project-card .project-card-cont.project-prgrst-STOP .wrap-note-cnt,
+.note-card-board .note-card .note-card-cont .wrap-note-cnt {
+	background: var(--ds-hover) !important;
+	border-top: 1px solid var(--ds-line-soft);
+	color: var(--ds-ink-3) !important;
 }
