@@ -1144,6 +1144,13 @@ body,
 	color: var(--ds-ink);
 }
 
+/* 라벨(12/lh18)과 값(13/lh19.5)의 줄상자가 달라 행마다 1px 씩 어긋났다 —
+   표 칸과 같은 정수 줄높이(20) 하나로 */
+.txt-info .flex-sty01 .txt-info-txt,
+.txt-info .flex-sty01 .txt-info-cont {
+	line-height: var(--ds-lh-cell);
+}
+
 /* 카드 자체 */
 /* overflow: hidden 으로 아래 띠를 둥근 모서리에 맞춰 잘라내고 있었다.
    그런데 이 카드 안에는 참여자 팝오버가 들어 있다 — 잘라내기의 대상이
@@ -4700,16 +4707,14 @@ table th {
 	padding-right: var(--ds-2);
 }
 
-/* 카드 안쪽 — 아이콘 자리로 벌려 둔 23px, 오른쪽 6px */
-.project-card-board .project-card .project-card-cont .txt-title .txt-box3 {
-	padding-left: var(--ds-6);
-	padding-right: var(--ds-2);
-}
-
+/* 칩이 mask 아이콘 + flex 문법이 되면서(style.css) 배경그림 자리 패딩은
+   필요 없어졌다 — 노트 카드 쪽도 같은 문법을 따른다 */
 .note-card-board .note-card .note-card-cont .txt-title .txt-box3,
 .note-card-board .note-card .note-card-cont .txt-box3 {
-	padding-left: var(--ds-6);
-	padding-right: var(--ds-2);
+	display: inline-flex;
+	align-items: center;
+	gap: var(--ds-1);
+	padding: 0 var(--ds-2);
 }
 
 /* 더보기 단추의 화살표 자리는 §8 에서 직접 고쳤다(22→24, 18→20) */
