@@ -193,6 +193,13 @@ class ReactionResponse(BaseModel):
     ok: bool
     reactants: list[SpeciesPayload] = []
     products: list[SpeciesPayload] = []
+    # 화살표 위 시약(커플링 시약·염기·촉매·용매). 반응물도 생성물도 아니지만
+    # 합성 노트에는 반드시 남아야 하는 종이다.
+    agents: list[SpeciesPayload] = []
+    input_format: str | None = None  # 'smiles' | 'rxnblock'
+    # RXN 블록에는 agent 자리가 없다(V2000·V3000 모두). 빈 목록이 "안 그렸다"인지
+    # "포맷이 못 담는다"인지 호출자가 구분할 수 있어야 한다.
+    agents_unsupported_in_format: bool = False
     error: str | None = None
 
 

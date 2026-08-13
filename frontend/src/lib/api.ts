@@ -134,7 +134,8 @@ export function computeStoich(
 // ---------- reaction species extraction ----------
 
 export interface Species {
-  role: 'reactant' | 'product';
+  /** 'agent' = drawn above the arrow (coupling reagent, base, catalyst, solvent). */
+  role: 'reactant' | 'agent' | 'product';
   smiles: string;
   mol_formula: string;
   mol_weight: number;
@@ -144,6 +145,16 @@ export interface ReactionResponse {
   ok: boolean;
   reactants: Species[];
   products: Species[];
+  agents: Species[];
+  input_format: 'smiles' | 'rxnblock' | null;
+  /**
+   * An MDL Rxnfile has no agent block in either V2000 or V3000, so above-arrow
+   * species are lost in that format before the server ever sees them. Send
+   * reaction SMILES (`ketcher.getSmiles()`) instead — it carries them in the
+   * middle field. This flag exists so an empty agent list can be explained
+   * rather than mistaken for "the chemist drew none".
+   */
+  agents_unsupported_in_format: boolean;
   error: string | null;
 }
 

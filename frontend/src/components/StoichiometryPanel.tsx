@@ -6,6 +6,7 @@ import {
   type StoichRowIn,
   type StoichRowOut,
 } from '../lib/api';
+import { isSolventSmiles } from '../lib/solvents';
 
 interface StoichiometryPanelProps {
   ketcher: Ketcher | null;
@@ -71,13 +72,28 @@ export default function StoichiometryPanel({
 
   const loadReaction = async () => {
     if (!ketcher) return;
+    // Reaction SMILES, not getRxn(). An MDL Rxnfile has no agent block in
+    // either V2000 or V3000, so everything drawn ABOVE the arrow — coupling
+    // reagent, base, catalyst, solvent — is destroyed by the serialisation
+    // itself, before any parser sees it. Reaction SMILES carries those species
+    // in its middle field (`reactants>agents>products`), which is the only
+    // format here that can round-trip them.
+    if (!ketcher.containsReaction()) {
+      onError('Draw a reaction (reactants → products) on the canvas first.');
+      return;
+    }
     let rxn = '';
     try {
-      rxn = await ketcher.getRxn();
-    } catch {
-      /* no reaction on canvas */
+      rxn = await ketcher.getSmiles();
+    } catch (err) {
+      onError(
+        `Could not read the reaction from the canvas: ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+      );
+      return;
     }
-    if (!rxn || !rxn.includes('$RXN')) {
+    if (!rxn.includes('>')) {
       onError('Draw a reaction (reactants → products) on the canvas first.');
       return;
     }
@@ -86,6 +102,13 @@ export default function StoichiometryPanel({
       if (!res.ok) {
         onError(`Reaction parse failed: ${res.error ?? 'unknown'}`);
         return;
+      }
+      if (res.agents_unsupported_in_format) {
+        // 여기 오면 안 되지만, 왔다면 조용히 빈 목록을 보여 주지는 않는다.
+        onError(
+          'Above-arrow reagents could not be read: this reaction was sent in a ' +
+            'format (MDL Rxnfile) that has no place for them.',
+        );
       }
       const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
       const initial: RowState[] = [
@@ -101,6 +124,33 @@ export default function StoichiometryPanel({
           mass_g: i === 0 ? 0.5 : null,
           eq: i === 0 ? null : 1.0,
         })),
+        // 화살표 위 종. 용매는 부피만 쓰는 행으로, 그 밖(커플링 시약·염기·촉매)은
+        // 당량으로 넣는 행으로 간다 — 합성 노트의 표가 원래 그렇게 읽힌다.
+        // 한계 시약이 되지는 않는다(한계는 반응물 중에서 고른다).
+        ...res.agents.map((s) =>
+          isSolventSmiles(s.smiles)
+            ? {
+                id: nextId++,
+                rxn_id: '',
+                role: 'solvent' as const,
+                name: s.mol_formula,
+                formula: s.mol_formula,
+                fw: s.mol_weight,
+                volume_ml: 5,
+              }
+            : {
+                id: nextId++,
+                rxn_id: '',
+                role: 'reactant' as const,
+                name: s.mol_formula,
+                formula: s.mol_formula,
+                fw: s.mol_weight,
+                is_limiting: false,
+                given: 'eq' as const,
+                mass_g: null,
+                eq: 1.0,
+              },
+        ),
         ...res.products.map((s, i) => ({
           id: nextId++,
           rxn_id: `P${i + 1}`,

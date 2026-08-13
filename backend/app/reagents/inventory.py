@@ -38,7 +38,12 @@ _RAW: list[tuple[str, str, str]] = [
     ("Ethanol", "64-17-5", "CCO"),
     ("Ethyl acetate", "141-78-6", "CCOC(C)=O"),
     ("Formic acid", "64-18-6", "OC=O"),
-    ("HATU", "148893-10-1", "CN(C)C(On1nnc2ccccc21)=[N+](C)C"),
+    # HATU 는 트리아졸로[4,5-b]피리디늄 — 고리에 질소가 하나 더 있다(아자벤조트리아졸).
+    # 여기 등록돼 있던 SMILES 는 벤조트리아졸이라 실제로는 HBTU 였다: 이름은 HATU 인데
+    # 삽입되는 구조는 다른 물질이었다(C11H16N5O+ 234.28 vs 참값 C10H15N6O+ 235.27).
+    # 재단이 이름을 짚어 요청한 시약이라 조용히 두면 틀린 구조가 노트에 남는다.
+    ("HATU", "148893-10-1", "CN(C)C(On1nnc2cccnc21)=[N+](C)C"),
+    ("HBTU", "94790-37-1", "CN(C)C(On1nnc2ccccc21)=[N+](C)C"),
     ("Imidazole", "288-32-4", "c1c[nH]cn1"),
     ("Methanol", "67-56-1", "CO"),
     ("Methyl iodide", "74-88-4", "CI"),

@@ -287,6 +287,9 @@ def chem_reaction(request: ReactionRequest) -> ReactionResponse:
         ok=result.ok,
         reactants=[SpeciesPayload(**vars(s)) for s in result.reactants],
         products=[SpeciesPayload(**vars(s)) for s in result.products],
+        agents=[SpeciesPayload(**vars(s)) for s in result.agents],
+        input_format=result.input_format,
+        agents_unsupported_in_format=result.agents_unsupported_in_format,
         error=result.error,
     )
 
