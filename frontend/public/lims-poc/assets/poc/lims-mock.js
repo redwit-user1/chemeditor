@@ -443,23 +443,23 @@
     출처와 동기화 시각을 함께 둔다.
   */
   var REAGENTS = [
-    { reagentMno: 201, reagentNm: '아세토니트릴 (HPLC grade)', casNo: '75-05-8', molFormula: 'C2H3N',
+    { reagentMno: 201, reagentNm: 'Acetonitrile (HPLC grade)', casNo: '75-05-8', molFormula: 'C2H3N',
       molWt: 41.05, density: 0.786, ghsCcd: 'GHS02', containerCnt: 4, totalAmountDisp: '3.2 L',
       vendorNm: 'Sigma-Aldrich', msdsYn: 'Y', msdsSrc: '공급사', msdsSyncDtStr: '2026-06-30',
       storageCondNm: '상온 · 인화성' },
-    { reagentMno: 202, reagentNm: '5-메톡시트립타민', casNo: '608-07-1', molFormula: 'C11H14N2O',
+    { reagentMno: 202, reagentNm: '5-Methoxytryptamine', casNo: '608-07-1', molFormula: 'C11H14N2O',
       molWt: 190.24, density: null, ghsCcd: 'GHS07', containerCnt: 2, totalAmountDisp: '4.1 g',
       vendorNm: 'TCI', msdsYn: 'Y', msdsSrc: '안전보건공단', msdsSyncDtStr: '2026-05-18',
       storageCondNm: '냉장 2~8℃' },
-    { reagentMno: 203, reagentNm: '트리에틸아민', casNo: '121-44-8', molFormula: 'C6H15N',
+    { reagentMno: 203, reagentNm: 'Triethylamine', casNo: '121-44-8', molFormula: 'C6H15N',
       molWt: 101.19, density: 0.726, ghsCcd: 'GHS02', containerCnt: 1, totalAmountDisp: '500 mL',
       vendorNm: 'Alfa Aesar', msdsYn: 'N', msdsSrc: null, msdsSyncDtStr: null,
       storageCondNm: '상온 · 인화성' },
-    { reagentMno: 204, reagentNm: '디클로로메탄', casNo: '75-09-2', molFormula: 'CH2Cl2',
+    { reagentMno: 204, reagentNm: 'Dichloromethane', casNo: '75-09-2', molFormula: 'CH2Cl2',
       molWt: 84.93, density: 1.326, ghsCcd: 'GHS08', containerCnt: 3, totalAmountDisp: '2.5 L',
       vendorNm: 'Merck', msdsYn: 'Y', msdsSrc: '공급사', msdsSyncDtStr: '2026-07-02',
       storageCondNm: '상온 · 환기' },
-    { reagentMno: 205, reagentNm: '탄산칼륨 (무수)', casNo: '584-08-7', molFormula: 'K2CO3',
+    { reagentMno: 205, reagentNm: 'Potassium carbonate (anhydrous)', casNo: '584-08-7', molFormula: 'K2CO3',
       molWt: 138.21, density: null, ghsCcd: 'GHS07', containerCnt: 2, totalAmountDisp: '1.8 kg',
       vendorNm: 'Daejung', msdsYn: 'Y', msdsSrc: '공급사', msdsSyncDtStr: '2026-04-11',
       storageCondNm: '건조 · 밀폐' }
@@ -594,11 +594,11 @@
   */
   var NOTE_BLOCKS = [
     { blockMno: 10, blockOrd: 1, blockTpCcd: 'TEXT', sectionCd: 'PURPOSE',
-      textVal: '인돌 아민(KM00003719)과 4-벤질옥시벤조산의 커플링으로 목적물 KM00003710 을 합성한다.\n'
+      textVal: '5-Methoxytryptamine(KM00003719)과 4-(benzyloxy)benzoic acid 의 커플링으로 목적물 KM00003710 을 합성한다.\n'
         + '2차 합성 대비 EDC/HOBt 당량을 낮춘 조건의 수율을 확인하는 것이 이번 배치의 목적이다.' },
     { blockMno: 1, blockOrd: 4, blockTpCcd: 'TEXT', sectionCd: 'PROCEDURE',
-      textVal: '인돌 아민(KM00003719)과 4-벤질옥시벤조산을 EDC/HOBt 조건에서 커플링했다.\n'
-        + 'DCM 20 mL, 0 °C 에서 30분 교반 후 상온으로 올려 밤새 반응시켰다.' },
+      textVal: '5-Methoxytryptamine(KM00003719)과 4-(benzyloxy)benzoic acid 를 EDC/HOBt 조건에서 커플링했다.\n'
+        + 'Dichloromethane 20 mL, 0 °C 에서 30분 교반 후 상온으로 올려 밤새 반응시켰다.' },
     { blockMno: 11, blockOrd: 5, blockTpCcd: 'TEXT', sectionCd: 'RESULT',
       textVal: 'TLC(EA:Hex = 1:2)에서 출발물질 소실 확인. 컬럼 정제 후 백색 고체 312 mg 회수.' },
     { blockMno: 12, blockOrd: 6, blockTpCcd: 'TEXT', sectionCd: 'DISCUSSION',
@@ -611,11 +611,11 @@
       caption: '목적물 ' + (NOTE_SEED.regId || '') },
     { blockMno: 3, blockOrd: 3, blockTpCcd: 'TABLE', sectionCd: 'MATERIAL', caption: '반응 시약',
       rowList: [
-        { reagentMno: 205, reagentNm: '탄산칼륨 (무수)', casNo: '584-08-7', molFormula: 'K2CO3',
+        { reagentMno: 205, reagentNm: 'Potassium carbonate (anhydrous)', casNo: '584-08-7', molFormula: 'K2CO3',
           molWt: 138.21, density: null, roleCcd: 'REACTANT', amount: 276, unitCcd: 'MG' },
-        { reagentMno: 203, reagentNm: '트리에틸아민', casNo: '121-44-8', molFormula: 'C6H15N',
+        { reagentMno: 203, reagentNm: 'Triethylamine', casNo: '121-44-8', molFormula: 'C6H15N',
           molWt: 101.19, density: 0.726, roleCcd: 'REAGENT', amount: 0.42, unitCcd: 'ML' },
-        { reagentMno: 204, reagentNm: '디클로로메탄', casNo: '75-09-2', molFormula: 'CH2Cl2',
+        { reagentMno: 204, reagentNm: 'Dichloromethane', casNo: '75-09-2', molFormula: 'CH2Cl2',
           molWt: 84.93, density: 1.326, roleCcd: 'SOLVENT', amount: 20, unitCcd: 'ML' }
       ] }
   ];
@@ -623,13 +623,13 @@
   var nextBlockMno = 20;
 
   var NOTE_USAGE = [
-    { reagentNm: '디클로로메탄', barcode: 'RGT-000304', deltaAmount: -20, unitCcd: 'mL',
+    { reagentNm: 'Dichloromethane', barcode: 'RGT-000304', deltaAmount: -20, unitCcd: 'mL',
       txnDtStr: '2026-07-12 10:02', txnUserNm: '이연구', noteNm: NOTE.noteNm,
       expiryOverrideYn: 'N', reason: null },
-    { reagentNm: '트리에틸아민', barcode: 'RGT-000305', deltaAmount: -0.42, unitCcd: 'mL',
+    { reagentNm: 'Triethylamine', barcode: 'RGT-000305', deltaAmount: -0.42, unitCcd: 'mL',
       txnDtStr: '2026-07-12 10:05', txnUserNm: '이연구', noteNm: NOTE.noteNm,
       expiryOverrideYn: 'N', reason: null },
-    { reagentNm: '탄산칼륨 (무수)', barcode: 'RGT-000302', deltaAmount: -276, unitCcd: 'mg',
+    { reagentNm: 'Potassium carbonate (anhydrous)', barcode: 'RGT-000302', deltaAmount: -276, unitCcd: 'mg',
       txnDtStr: '2026-07-12 10:07', txnUserNm: '이연구', noteNm: NOTE.noteNm,
       expiryOverrideYn: 'Y', reason: '유효기한 경과 — 책임자 승인 후 사용' }
   ];
@@ -638,16 +638,16 @@
      한계시약은 고르는 것이 아니라 반응물 중 mmol 이 가장 작은 행으로 정해진다.
      아래 값은 위 NOTE_USAGE 의 사용량과 분자량에서 나온 것이다. */
   var STOICH_ROWS = [
-    { reagentNm: '탄산칼륨 (무수)', lotNo: null, usedAmount: 276, unitCcd: 'mg',
+    { reagentNm: 'Potassium carbonate (anhydrous)', lotNo: null, usedAmount: 276, unitCcd: 'mg',
       molWt: 138.21, mmol: 1.997, equiv: 1.00, role: 'reactant', limitingYn: 'Y' },
-    { reagentNm: '트리에틸아민', lotNo: null, usedAmount: 0.42, unitCcd: 'mL',
+    { reagentNm: 'Triethylamine', lotNo: null, usedAmount: 0.42, unitCcd: 'mL',
       molWt: 101.19, mmol: 3.013, equiv: 1.51, role: 'reagent', limitingYn: 'N' },
-    { reagentNm: '디클로로메탄', lotNo: null, usedAmount: 20, unitCcd: 'mL',
+    { reagentNm: 'Dichloromethane', lotNo: null, usedAmount: 20, unitCcd: 'mL',
       molWt: 84.93, mmol: 312.257, equiv: 156.37, role: 'solvent', limitingYn: 'N' }
   ];
 
   var STOICH = {
-    limitingNm: '탄산칼륨 (무수)',
+    limitingNm: 'Potassium carbonate (anhydrous)',
     limitingMmol: 1.997,
     yieldPct: null,                    /* 생성물 행이 없다 — 모르는 것은 모른다고 둔다 */
     calcSource: 'LOCAL',
@@ -1283,7 +1283,7 @@
        그 아래 표가 한 줄이면 화면이 자기 자신과 어긋난다 — 같은 목록에서 센다. */
     '/api/lims/project/projectReagentUsage': function () {
       return { usageList: NOTE_USAGE.concat([
-        { reagentNm: '아세토니트릴 (HPLC grade)', barcode: 'RGT-000301', deltaAmount: -200,
+        { reagentNm: 'Acetonitrile (HPLC grade)', barcode: 'RGT-000301', deltaAmount: -200,
           unitCcd: 'mL', txnDtStr: '2026-07-14 16:02', txnUserNm: '김연구',
           noteNm: 'HPLC 순도 분석', expiryOverrideYn: 'N', reason: null }
       ]) };
