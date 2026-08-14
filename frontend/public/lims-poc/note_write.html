@@ -2931,7 +2931,9 @@
           const $sec = $(S2Util.s2Template('template_note_section', {
             sectionCd: sec.cd,
             sectionNm: sec.nm,
-            countDisp: mine.length ? mine.length + '개 블록' : '비어 있음'
+            /* 예전엔 항상 'N개 블록'을 달았다. 블록이 몇 개인지는 연구원이 알아야
+               할 사실이 아니다 — 눈앞에 이미 다 보인다. 비었을 때만 말한다. */
+            countDisp: mine.length ? '' : '비어 있음'
           }));
           const $body = $sec.find('.lims-note-section-body');
 
@@ -7835,8 +7837,7 @@
                     aria-label="블록 순서 바꾸기 — 끌거나, 위·아래 화살표를 누르세요"
                     title="끌어서 순서 변경 (↑ ↓ 로도 이동)"><span aria-hidden="true">⠿</span></button>
             <span class="lims-note-block-ord">{{=ordDisp}}</span>
-            <span class="lims-note-block-kind">텍스트</span>
-            
+                        
             <button type="button" class="lims-note-block-more" aria-label="블록 조작 열기">⋯</button>
             <div class="lims-note-block-tools">
               <button class="button-gray-line-sty01" onclick="removeBlock('{{=blockId}}');"><span>삭제</span></button>
@@ -7859,7 +7860,6 @@
                     aria-label="블록 순서 바꾸기 — 끌거나, 위·아래 화살표를 누르세요"
                     title="끌어서 순서 변경 (↑ ↓ 로도 이동)"><span aria-hidden="true">⠿</span></button>
             <span class="lims-note-block-ord">{{=ordDisp}}</span>
-            <span class="lims-note-block-kind is-struct">구조</span>
             
             <button type="button" class="lims-note-block-more" aria-label="블록 조작 열기">⋯</button>
             <div class="lims-note-block-tools">
@@ -7914,7 +7914,7 @@
                     aria-label="블록 순서 바꾸기 — 끌거나, 위·아래 화살표를 누르세요"
                     title="끌어서 순서 변경 (↑ ↓ 로도 이동)"><span aria-hidden="true">⠿</span></button>
             <span class="lims-note-block-ord">{{=ordDisp}}</span>
-            <span class="lims-note-block-kind">표 · 반응 시약</span>
+            <span class="lims-note-block-caption">반응 시약</span>
             
             <button type="button" class="lims-note-block-more" aria-label="블록 조작 열기">⋯</button>
             <div class="lims-note-block-tools">
