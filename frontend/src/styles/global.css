@@ -57,28 +57,32 @@ body {
 
 .brand {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 8px;
 }
 
+/* 글리프가 아니라 그린 도형이다 — 글꼴에 좌우되지 않고 굵기를 우리가 정한다 */
 .brand-mark {
-  font-size: 22px;
-  color: var(--accent);
-  transform: translateY(2px);
+  width: 18px;
+  height: 18px;
+  flex: none;
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+  align-self: center;
 }
 
 .brand-name {
   font-weight: 700;
-  font-size: 17px;
-  letter-spacing: 0.2px;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  align-self: center;
 }
 
-.brand-sub {
-  font-size: 11px;
-  color: var(--text-soft);
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-}
+/* .brand-sub("PoC · RDKit + Ketcher") 는 지웠다.
+   제품 크롬에 기술 스택을 붙이는 배지는 이 화면을 쓰는 연구원에게 아무
+   정보가 아니다 — 어느 라이브러리로 만들었는지는 회신서가 말할 자리다. */
 
 .menu-bar {
   display: flex;
@@ -86,11 +90,8 @@ body {
   gap: 4px;
 }
 
-.toolbar__hint {
-  margin-left: auto;
-  font-size: 12px;
-  color: var(--text-soft);
-}
+/* .toolbar__hint 는 지웠다 — 도구줄에 사용법을 상시로 박아 두면 매일 쓰는
+   사람에게는 영영 사라지지 않는 잡음이다. 빈 캔버스가 한 번만 말한다. */
 
 .flat-btn,
 .menu-trigger {

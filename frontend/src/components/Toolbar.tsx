@@ -144,9 +144,20 @@ export default function Toolbar({
   return (
     <div className="toolbar">
       <div className="brand">
-        <span className="brand-mark">⬡</span>
-        <span className="brand-name">KMEDIhub ELN</span>
-        <span className="brand-sub">PoC · RDKit + Ketcher</span>
+        {/*
+          유니코드 글리프(⬡)를 아이콘 자리에 세워 두었었다. 글꼴마다 다르게
+          그려지고 굵기도 주변 아이콘과 맞지 않는다 — 그린 도형으로 바꾼다.
+          정육각형: 중심 (10,10), 외접반지름 7, 꼭짓점 위로.
+        */}
+        <svg
+          className="brand-mark"
+          viewBox="0 0 20 20"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <polygon points="10,3 16.06,6.5 16.06,13.5 10,17 3.94,13.5 3.94,6.5" />
+        </svg>
+        <span className="brand-name">구조 입력기</span>
       </div>
 
       <div className="menu-bar">
@@ -156,7 +167,7 @@ export default function Toolbar({
           onClick={handleNew}
           disabled={disabled}
         >
-          New
+          새로
         </button>
 
         <button
@@ -165,10 +176,10 @@ export default function Toolbar({
           onClick={handleOpenClick}
           disabled={disabled}
         >
-          Open…
+          열기
         </button>
 
-        <Menu label="Save As">
+        <Menu label="내보내기">
           {(close) => (
             <ul className="menu-list">
               {EXPORT_FORMATS.map((spec, index) => (
@@ -192,7 +203,7 @@ export default function Toolbar({
           onClick={handlePaste}
           disabled={disabled}
         >
-          Paste
+          붙여넣기
         </button>
 
         {!embed && (
@@ -203,7 +214,7 @@ export default function Toolbar({
               onClick={onToggleSearch}
               disabled={disabled}
             >
-              Search…
+              구조 검색
             </button>
 
             <button
@@ -212,7 +223,7 @@ export default function Toolbar({
               onClick={onToggleStoich}
               disabled={disabled}
             >
-              Stoich…
+              화학량론
             </button>
 
             <button
@@ -221,14 +232,10 @@ export default function Toolbar({
               onClick={onOpenReagents}
               disabled={disabled}
             >
-              Reagents…
+              시약 불러오기
             </button>
           </>
         )}
-      </div>
-
-      <div className="toolbar__hint">
-        Paste a structure (⌘/Ctrl+V) or draw — properties compute below.
       </div>
 
       <input
