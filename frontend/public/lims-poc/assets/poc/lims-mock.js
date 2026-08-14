@@ -585,6 +585,7 @@
   var NOTE_AMENDMENTS = [];
 
   var NOTE_SEED = (window.LIMS_POC_COMPOUNDS || [])[0] || {};
+  var NOTE_REACTION = window.LIMS_POC_REACTION || {};
 
   /*
     섹션(sectionCd)은 화면이 문서를 목적·재료·절차·결과·고찰로 묶어 그리는 근거다.
@@ -603,18 +604,32 @@
       textVal: 'TLC(EA:Hex = 1:2)에서 출발물질 소실 확인. 컬럼 정제 후 백색 고체 312 mg 회수.' },
     { blockMno: 12, blockOrd: 6, blockTpCcd: 'TEXT', sectionCd: 'DISCUSSION',
       textVal: '당량을 낮춰도 전환율에 큰 차이가 없었다. 다음 배치는 이 조건을 기준으로 한다.' },
-    { blockMno: 2, blockOrd: 2, blockTpCcd: 'STRUCTURE', sectionCd: 'MATERIAL',
-      molblock: NOTE_SEED.molblock || '',
-      molFormula: NOTE_SEED.molFormula || '',
-      molWt: NOTE_SEED.molWt === undefined ? null : NOTE_SEED.molWt,
-      exactMolWt: NOTE_SEED.exactMolWt === undefined ? null : NOTE_SEED.exactMolWt,
-      caption: '목적물 ' + (NOTE_SEED.regId || '') },
+    /*
+      재료 및 시약은 목적물 한 장이 아니라 반응식이다 — 재단 회신 N-1.
+      화살표 위의 커플링 시약·염기·용매까지 한 그림에 있어야 실험이 재현된다.
+      그림과 종 목록은 빌드 때 RDKit 이 계산한 것이다(mkcompounds.py).
+    */
+    { blockMno: 2, blockOrd: 2, blockTpCcd: 'REACTION', sectionCd: 'MATERIAL',
+      reactionSmiles: NOTE_REACTION.reactionSmiles || '',
+      reactionSvg: NOTE_REACTION.svg || '',
+      speciesList: NOTE_REACTION.speciesList || [],
+      caption: NOTE_REACTION.caption || '반응식' },
+    /*
+      시약 표는 위 반응식과 같은 반응이어야 한다. 예전 행은 탄산칼륨 알킬화의
+      것이라, 반응식은 아마이드 커플링인데 표는 다른 화학을 말하고 있었다 —
+      한 노트 안에서 화학이 둘로 갈리면 그 자체가 틀린 기록이다.
+      분자량은 반응식 종 목록과 같은 RDKit 값이다.
+    */
     { blockMno: 3, blockOrd: 3, blockTpCcd: 'TABLE', sectionCd: 'MATERIAL', caption: '반응 시약',
       rowList: [
-        { reagentMno: 205, reagentNm: 'Potassium carbonate (anhydrous)', casNo: '584-08-7', molFormula: 'K2CO3',
-          molWt: 138.21, density: null, roleCcd: 'REACTANT', amount: 276, unitCcd: 'MG' },
+        { reagentMno: 206, reagentNm: '4-(Benzyloxy)benzoic acid', casNo: '1486-51-7', molFormula: 'C14H12O3',
+          molWt: 228.25, density: null, roleCcd: 'REACTANT', amount: 456, unitCcd: 'MG' },
+        { reagentMno: 202, reagentNm: '5-Methoxytryptamine', casNo: '608-07-1', molFormula: 'C11H14N2O',
+          molWt: 190.25, density: null, roleCcd: 'REACTANT', amount: 419, unitCcd: 'MG' },
+        { reagentMno: 207, reagentNm: 'HATU', casNo: '148893-10-1', molFormula: 'C10H15N6O+',
+          molWt: 235.27, density: null, roleCcd: 'REAGENT', amount: 564, unitCcd: 'MG' },
         { reagentMno: 203, reagentNm: 'Triethylamine', casNo: '121-44-8', molFormula: 'C6H15N',
-          molWt: 101.19, density: 0.726, roleCcd: 'REAGENT', amount: 0.42, unitCcd: 'ML' },
+          molWt: 101.19, density: 0.726, roleCcd: 'REAGENT', amount: 0.56, unitCcd: 'ML' },
         { reagentMno: 204, reagentNm: 'Dichloromethane', casNo: '75-09-2', molFormula: 'CH2Cl2',
           molWt: 84.93, density: 1.326, roleCcd: 'SOLVENT', amount: 20, unitCcd: 'ML' }
       ] }
@@ -626,10 +641,10 @@
     { reagentNm: 'Dichloromethane', barcode: 'RGT-000304', deltaAmount: -20, unitCcd: 'mL',
       txnDtStr: '2026-07-12 10:02', txnUserNm: '이연구', noteNm: NOTE.noteNm,
       expiryOverrideYn: 'N', reason: null },
-    { reagentNm: 'Triethylamine', barcode: 'RGT-000305', deltaAmount: -0.42, unitCcd: 'mL',
+    { reagentNm: 'Triethylamine', barcode: 'RGT-000305', deltaAmount: -0.56, unitCcd: 'mL',
       txnDtStr: '2026-07-12 10:05', txnUserNm: '이연구', noteNm: NOTE.noteNm,
       expiryOverrideYn: 'N', reason: null },
-    { reagentNm: 'Potassium carbonate (anhydrous)', barcode: 'RGT-000302', deltaAmount: -276, unitCcd: 'mg',
+    { reagentNm: 'HATU', barcode: 'RGT-000308', deltaAmount: -564, unitCcd: 'mg',
       txnDtStr: '2026-07-12 10:07', txnUserNm: '이연구', noteNm: NOTE.noteNm,
       expiryOverrideYn: 'Y', reason: '유효기한 경과 — 책임자 승인 후 사용' }
   ];
@@ -638,16 +653,20 @@
      한계시약은 고르는 것이 아니라 반응물 중 mmol 이 가장 작은 행으로 정해진다.
      아래 값은 위 NOTE_USAGE 의 사용량과 분자량에서 나온 것이다. */
   var STOICH_ROWS = [
-    { reagentNm: 'Potassium carbonate (anhydrous)', lotNo: null, usedAmount: 276, unitCcd: 'mg',
-      molWt: 138.21, mmol: 1.997, equiv: 1.00, role: 'reactant', limitingYn: 'Y' },
-    { reagentNm: 'Triethylamine', lotNo: null, usedAmount: 0.42, unitCcd: 'mL',
-      molWt: 101.19, mmol: 3.013, equiv: 1.51, role: 'reagent', limitingYn: 'N' },
+    { reagentNm: '4-(Benzyloxy)benzoic acid', lotNo: null, usedAmount: 456, unitCcd: 'mg',
+      molWt: 228.25, mmol: 1.998, equiv: 1.00, role: 'reactant', limitingYn: 'Y' },
+    { reagentNm: '5-Methoxytryptamine', lotNo: null, usedAmount: 419, unitCcd: 'mg',
+      molWt: 190.25, mmol: 2.202, equiv: 1.10, role: 'reactant', limitingYn: 'N' },
+    { reagentNm: 'HATU', lotNo: null, usedAmount: 564, unitCcd: 'mg',
+      molWt: 235.27, mmol: 2.397, equiv: 1.20, role: 'reagent', limitingYn: 'N' },
+    { reagentNm: 'Triethylamine', lotNo: null, usedAmount: 0.56, unitCcd: 'mL',
+      molWt: 101.19, mmol: 4.018, equiv: 2.01, role: 'reagent', limitingYn: 'N' },
     { reagentNm: 'Dichloromethane', lotNo: null, usedAmount: 20, unitCcd: 'mL',
-      molWt: 84.93, mmol: 312.257, equiv: 156.37, role: 'solvent', limitingYn: 'N' }
+      molWt: 84.93, mmol: 312.257, equiv: 156.30, role: 'solvent', limitingYn: 'N' }
   ];
 
   var STOICH = {
-    limitingNm: 'Potassium carbonate (anhydrous)',
+    limitingNm: '4-(Benzyloxy)benzoic acid',
     limitingMmol: 1.997,
     yieldPct: null,                    /* 생성물 행이 없다 — 모르는 것은 모른다고 둔다 */
     calcSource: 'LOCAL',

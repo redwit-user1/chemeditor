@@ -2853,6 +2853,11 @@
           molWt: isNum(b.molWt) ? Number(b.molWt) : null,
           exactMolWt: isNum(b.exactMolWt) ? Number(b.exactMolWt) : null,
           calcMs: null,
+          /* 반응식 블록(N-1). 그림과 종 목록은 서버(빌드 때 RDKit)가 계산해
+             내려준 것을 그대로 싣는다 — 화면에서 다시 만들지 않는다. */
+          reactionSmiles: b.reactionSmiles || '',
+          reactionSvg: b.reactionSvg || '',
+          speciesList: asList(b.speciesList),
           rows: asList(b.rowList).map(toEqRow)
         };
       }
@@ -2940,7 +2945,11 @@
           mine.forEach(function (b) {
             $body.append(insertRow(at, sec.cd));
             const common = { blockId: b.blockId, ordDisp: at + 1, captionVal: esc(b.caption) };
-            if (b.blockTpCcd === 'STRUCTURE') {
+            if (b.blockTpCcd === 'REACTION') {
+              /* 반응식 블록 — 재단 회신 N-1. 그림과 종 목록은 목이 내려준
+                 RDKit 계산 결과를 그대로 쓴다. 화면이 화학을 지어내지 않는다. */
+              $body.append(S2Util.s2Template('template_note_block_reaction', common));
+            } else if (b.blockTpCcd === 'STRUCTURE') {
               $body.append(S2Util.s2Template('template_note_block_struct', common));
             } else if (b.blockTpCcd === 'TABLE') {
               $body.append(S2Util.s2Template('template_note_block_table', common));
@@ -2957,7 +2966,11 @@
         /* 렌더가 끝난 뒤 블록별 내용을 채운다. 구조 썸네일은 한 번에 1건씩 순차로 요청한다
            — 블록 수만큼 동시에 던지면 reqAjax 가 뒤엣것을 조용히 버린다. */
         gBlocks.forEach(function (b) {
-          if (b.blockTpCcd === 'STRUCTURE') {
+          if (b.blockTpCcd === 'REACTION') {
+            /* 조립 중인 조각($body)은 아직 문서에 없다 — id 로 못 찾는다.
+               그림·종 목록은 붙은 뒤에 채운다. */
+            paintReaction(b);
+          } else if (b.blockTpCcd === 'STRUCTURE') {
             bindStructBlock(b);
             paintProps(b, false);
           } else if (b.blockTpCcd === 'TABLE') {
@@ -3330,6 +3343,48 @@
         }
         if (!ev.target.closest || !ev.target.closest('#limsNotePicker')) { closePicker(); }
       }, true);
+
+      /* ---------------------------------------------------------------
+         반응식 블록 — 재단 회신 N-1
+
+           "재료 및 시약 부분에 단일구조가 아닌 화살표 들어간 반응식이
+            들어가야 합니다"
+
+         합성 노트의 재료 및 시약은 목적물 한 장이 아니다. 화살표 위에 앉는
+         커플링 시약·염기·용매까지 한 그림에 있어야 실험이 재현된다.
+
+         그림도 종 목록도 여기서 만들지 않는다 — 빌드 때 RDKit 이 계산해 둔
+         것을 받아 그린다. 화면이 분자식이나 분자량을 지어내면 그 자리에서
+         틀린 화학이 노트에 남는다.
+      --------------------------------------------------------------- */
+      const ROLE_NM = { reactant: '반응물', agent: '시약·용매', product: '생성물' };
+
+      function paintReaction(b) {
+        const $scheme = $('#rxn-scheme-' + b.blockId);
+        if ($scheme.length && b.reactionSvg) { $scheme.html(b.reactionSvg); }
+
+        const list = asList(b.speciesList);
+        const $sp = $('#rxn-species-' + b.blockId).empty();
+        if (!list.length) { return; }
+
+        /* 역할 순서는 반응이 읽히는 순서다 — 반응물, 화살표 위, 생성물. */
+        ['reactant', 'agent', 'product'].forEach(function (role) {
+          const mine = list.filter(function (x) { return x.role === role; });
+          if (!mine.length) { return; }
+          const $g = $('<div class="lims-rxn-group"></div>');
+          $g.append('<p class="lims-rxn-role">' + esc(ROLE_NM[role] || role) + '</p>');
+          mine.forEach(function (x) {
+            $g.append(
+              '<div class="lims-rxn-item">'
+              + '<span class="nm">' + esc(x.name || '') + '</span>'
+              + '<span class="mf">' + esc(x.molFormula || '') + '</span>'
+              + '<span class="mw">' + (x.molWt === null || x.molWt === undefined ? '—' : x.molWt) + '</span>'
+              + '</div>'
+            );
+          });
+          $sp.append($g);
+        });
+      }
 
       /* ---------------------------------------------------------------
          지금 보고 있는 섹션
@@ -7802,6 +7857,33 @@
           <div class="lims-note-block-body">
             
             <div class="lims-note-editor" id="editor-host-{{=blockId}}"></div>
+          </div>
+        </section>
+      </script>
+
+      
+      <script id="template_note_block_reaction"
+              type="text/template">
+        <section class="lims-note-block is-reaction" id="block-{{=blockId}}">
+          <div class="lims-note-block-head">
+            <button type="button" class="lims-note-block-drag"
+                    data-block-id="{{=blockId}}"
+                    aria-label="블록 순서 바꾸기 — 끌거나, 위·아래 화살표를 누르세요"
+                    title="끌어서 순서 변경 (↑ ↓ 로도 이동)"><span aria-hidden="true">⠿</span></button>
+            <span class="lims-note-block-ord">{{=ordDisp}}</span>
+            <span class="lims-note-block-caption">{{=captionVal}}</span>
+            <button type="button" class="lims-note-block-more" aria-label="블록 조작 열기">⋯</button>
+            <div class="lims-note-block-tools">
+              <button class="button-blue-full-sty01" onclick="openStructEditor('{{=blockId}}');"><span>구조 입력기</span></button>
+              <button class="button-gray-line-sty01" onclick="removeBlock('{{=blockId}}');"><span>삭제</span></button>
+            </div>
+          </div>
+          <div class="lims-note-block-body">
+            <div class="lims-note-rxn">
+              <div class="lims-rxn-scheme" id="rxn-scheme-{{=blockId}}"
+                   role="img" aria-label="반응식"></div>
+              <div class="lims-rxn-species" id="rxn-species-{{=blockId}}"></div>
+            </div>
           </div>
         </section>
       </script>

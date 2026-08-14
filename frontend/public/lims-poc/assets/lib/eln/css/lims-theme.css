@@ -8190,3 +8190,69 @@ h1.main-title-sty02 {
 #main-body #main-body-left .note-info-box .cont .flex-sty06 > .txt-info-icon {
 	justify-self: start;
 }
+
+/* ============================================================================
+   §59 반응식 블록 — 재단 회신 N-1
+
+   합성 노트의 "재료 및 시약"은 목적물 한 장이 아니라 반응식이다. 그림 아래
+   종 목록이 역할별로 선다 — 반응물 · 화살표 위(시약·용매) · 생성물.
+   ========================================================================== */
+
+.lims-page .lims-note-rxn {
+	display: flex;
+	flex-direction: column;
+	gap: var(--ds-4);
+}
+
+/* 반응식은 가로로 길다. 좁은 화면에서 잘리는 대신 이 판 안에서만 흐른다. */
+.lims-page .lims-rxn-scheme {
+	overflow-x: auto;
+	padding: var(--ds-3) 0;
+	border-bottom: 1px solid var(--ds-line-soft);
+}
+
+.lims-page .lims-rxn-scheme svg {
+	display: block;
+	height: auto;
+	max-width: none;
+}
+
+.lims-page .lims-rxn-species {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--ds-6);
+}
+
+.lims-page .lims-rxn-group {
+	min-width: 0;
+}
+
+.lims-page .lims-rxn-role {
+	margin: 0 0 var(--ds-2);
+	font-size: var(--ds-fs-micro);
+	font-weight: var(--ds-fw-bold);
+	letter-spacing: 0.04em;
+	color: var(--ds-ink-4);
+}
+
+.lims-page .lims-rxn-item {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto auto;
+	align-items: baseline;
+	column-gap: var(--ds-3);
+	padding: 3px 0;
+	font-size: var(--ds-fs-small);
+	line-height: var(--ds-lh-cell);
+}
+
+.lims-page .lims-rxn-item .nm { color: var(--ds-ink-2); }
+
+/* 분자식·분자량은 판독값이다 — 고정폭에 자릿수를 맞춘다. */
+.lims-page .lims-rxn-item .mf,
+.lims-page .lims-rxn-item .mw {
+	font-family: var(--ds-font-id);
+	font-variant-numeric: tabular-nums;
+	color: var(--ds-ink-4);
+}
+
+.lims-page .lims-rxn-item .mw { min-width: 56px; text-align: right; }
