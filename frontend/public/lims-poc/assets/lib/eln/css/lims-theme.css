@@ -6159,74 +6159,10 @@ td.lims-id,
    그 순서를 화면이 미리 세워 두면 쓰는 사람은 구조를 매번 다시 만들지 않고,
    읽는 사람(점검자·감사)은 늘 같은 자리에서 같은 것을 찾는다.
 ------------------------------------------------------------------ */
+/* 아웃라인 레일을 걷어내면서 2열(190px + 본문) 격자도 같이 내렸다.
+   문서면은 이제 한 열이다 — 섹션 제목이 문서 안에서 순서를 이미 말한다. */
 .lims-page .lims-note-canvas {
-	display: grid;
-	grid-template-columns: 190px minmax(0, 1fr);
-	align-items: start;
-}
-
-/* --- 아웃라인 레일 --- */
-.lims-page .lims-note-outline {
-	position: sticky;
-	top: var(--ds-4);
-	padding: var(--ds-8) var(--ds-2) 0 var(--ds-5);
-}
-
-.lims-page .lims-note-outline-label {
-	margin: 0 0 var(--ds-2) var(--ds-3);
-	font-size: var(--ds-fs-micro);
-	font-weight: var(--ds-fw-bold);
-	color: var(--ds-ink-4);
-	letter-spacing: 0.02em;
-}
-
-.lims-page .lims-outline-item {
-	display: flex;
-	align-items: center;
-	gap: var(--ds-2);
-	width: 100%;
-	padding: 5px var(--ds-3);
-	/* 활성 표시가 자리를 밀지 않도록, 안 켜졌을 때도 같은 두께를 비워 둔다 */
-	border: 0;
-	border-left: 2px solid transparent;
-	border-radius: 0 var(--ds-radius-sm) var(--ds-radius-sm) 0;
-	background: transparent;
-	color: var(--ds-ink-3);
-	font-size: var(--ds-fs-small);
-	text-align: left;
-	cursor: pointer;
-	transition: background-color var(--ds-dur) var(--ds-ease), color var(--ds-dur) var(--ds-ease);
-}
-
-.lims-page .lims-outline-item .nm { flex: 1; }
-
-.lims-page .lims-outline-item .cnt {
-	font-size: var(--ds-fs-micro);
-	font-variant-numeric: tabular-nums;
-	color: var(--ds-ink-4);
-}
-
-/*
-  아직 아무것도 안 쓴 섹션. 지운 것이 아니라 남은 일이다.
-  흐리게 두되 --ds-ink-soft(#868E96) 는 쓰지 않는다 — 흰 바탕 11px 에서 3.32 다.
-  그 색은 점·구분선처럼 글자가 아닌 곳의 값이고, 여기는 읽어야 하는 글자다.
-*/
-.lims-page .lims-outline-item.is-empty { color: var(--ds-ink-4); }
-
-.lims-page .lims-outline-item:hover { background: var(--ds-hover); color: var(--ds-ink-3); }
-
-.lims-page .lims-outline-item.is-active {
-	border-left-color: var(--ds-primary);
-	background: var(--ds-primary-weak);
-	color: var(--ds-primary);
-	font-weight: var(--ds-fw-bold);
-}
-
-.lims-page .lims-outline-item.is-active .cnt { color: var(--ds-primary); }
-
-.lims-page .lims-outline-item:focus-visible {
-	outline: none;
-	box-shadow: var(--ds-ring);
+	display: block;
 }
 
 /* --- 섹션 --- */
