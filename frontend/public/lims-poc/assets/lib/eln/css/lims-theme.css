@@ -114,8 +114,8 @@
 
 	/* 셸 */
 	--ds-shell: 232px;
-	--ds-pane: 320px;             /* 에디터 우측 정보 패널(개요 4탭) */
-	--ds-pane-tree: 236px;        /* 에디터 좌측 노트북 트리 */
+	--ds-pane: 330px;             /* 시안 ED1 Pane/컨텍스트 */
+	--ds-pane-tree: 258px;        /* 시안 ED1 Pane/파일 */
 	--ds-header: calc(var(--ds-unit) * 14);     /* 56 */
 
 	/* 색 — 출처: 구축형 GOONO_디자인.fig (REDWIT, 2024) / colors_and_type.css
@@ -8270,3 +8270,103 @@ h1.main-title-sty02 {
 }
 
 .lims-page .lims-rxn-item .mw { min-width: 56px; text-align: right; }
+
+
+/* ============================================================================
+   §60 에디터 3-Pane 을 시안(ED1)에 맞춘다
+   ========================================================================== */
+
+/* --- 좌측 파일 패널 --- */
+.lims-page .lims-tree-group,
+#noteTree .lims-tree-group {
+	margin: var(--ds-3) 0 var(--ds-1);
+	padding: 0 var(--ds-2);
+	font-size: var(--ds-fs-micro);
+	font-weight: var(--ds-fw-medium);
+	letter-spacing: 0.2px;
+	color: var(--ds-ink-4);
+}
+
+#noteTree .lims-tree-file {
+	display: flex;
+	align-items: center;
+	gap: var(--ds-2);
+	padding: var(--ds-1) var(--ds-2) var(--ds-1) var(--ds-5);
+	border-radius: var(--ds-radius);
+	font-size: var(--ds-fs-cell);
+	line-height: var(--ds-lh-cell);
+	color: var(--ds-ink);
+	cursor: pointer;
+}
+
+#noteTree .lims-tree-file:hover { background: var(--ds-hover); }
+#noteTree .lims-tree-file .nm { flex: 1 1 auto; min-width: 0; }
+
+#noteTree .lims-tree-file .meta {
+	flex: none;
+	font-size: var(--ds-fs-micro);
+	font-weight: var(--ds-fw-medium);
+	color: var(--ds-ink-4);
+}
+
+/* 아직 안 쓴 섹션 — 지운 것이 아니라 남은 일이다 */
+#noteTree .lims-tree-file.is-empty .nm { color: var(--ds-ink-4); }
+
+/* --- 보조 도구줄 --- */
+.lims-page .lims-note-assist {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--ds-2);
+	padding: var(--ds-2) var(--ds-5);
+	border-bottom: 1px solid var(--ds-line-soft);
+	background: var(--ds-surface);
+}
+
+.lims-page .lims-note-assist button {
+	height: var(--ds-control-sm);
+	padding: 0 var(--ds-3);
+	border: 0;
+	border-radius: var(--ds-radius);
+	background: var(--ds-hover);
+	color: var(--ds-ink-3);
+	font-size: var(--ds-fs-micro);
+	font-weight: var(--ds-fw-medium);
+	cursor: pointer;
+	transition: background-color var(--ds-dur) var(--ds-ease), color var(--ds-dur) var(--ds-ease);
+}
+
+.lims-page .lims-note-assist button:hover {
+	background: var(--ds-primary-weak);
+	color: var(--ds-primary-dark);
+}
+
+.lims-page .lims-note-assist .hint {
+	margin-left: auto;
+	font-size: var(--ds-fs-micro);
+	color: var(--ds-ink-4);
+}
+
+/* --- 출처 띠 (시안의 Provenance) ---
+   장비에서 자동 수집돼 해시가 고정된 값과 손으로 친 값은 규제상 지위가 다르다.
+   시안이 --color-data-source-linked 를 따로 둔 이유가 그것이다. */
+.lims-page .lims-provenance {
+	display: flex;
+	align-items: center;
+	gap: var(--ds-2);
+	padding: var(--ds-2) var(--ds-3);
+	border-radius: var(--ds-radius-lg);
+	background: var(--ds-data-linked-weak);
+	font-size: var(--ds-fs-cell);
+	line-height: var(--ds-lh-cell);
+	color: var(--ds-ink);
+}
+
+.lims-page .lims-provenance .src { flex: 1 1 auto; min-width: 0; }
+
+.lims-page .lims-provenance .mark {
+	flex: none;
+	font-size: var(--ds-fs-micro);
+	font-weight: var(--ds-fw-medium);
+	color: var(--ds-data-linked);
+}
