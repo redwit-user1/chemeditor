@@ -852,7 +852,10 @@
     LOCATIONS: LOCATIONS, REAGENTS: REAGENTS, CONTAINERS: CONTAINERS,
     NOTE_STATE_LOG: NOTE_STATE_LOG, NOTE_AMENDMENTS: NOTE_AMENDMENTS,
     NOTE_SAVE_HIST: NOTE_SAVE_HIST,
-    DATA_FILES: DATA_FILES,
+    /* DATA_FILES 는 이 줄보다 아래에서 선언된다(1830행). var 호이스팅 탓에
+       여기서는 undefined 가 잡히고, 그러면 저장도 복원도 조용히 건너뛴다 —
+       연구 데이터의 노트 연결이 새로고침마다 사라지고 있었다.
+       실제 배열은 선언 직후에 STATE_SETS 에 다시 건다. */
     NOTE_INSPECTORS: NOTE_INSPECTION.inspectors
   };
 
@@ -1629,6 +1632,25 @@
       };
     },
 
+    /*
+      노트에 원본 데이터를 잇고 끊는다 — 시안 ED1 컨텍스트 패널의 [연결].
+
+      연결은 표시가 아니라 상태다. DATA_FILES 는 이미 상태 보존 대상이라
+      새로고침해도 남고, 데이터 대장(왼쪽 메뉴)에서도 같은 사실이 보인다.
+      한 자리에서만 참인 연결은 기록이 아니다.
+    */
+    '/api/lims/data/linkNote': function (p) {
+      var d = DATA_FILES.filter(function (x) {
+        return String(x.dataMno) === String(p.dataMno);
+      })[0];
+      if (!d) { return { ok: false, message: '데이터를 찾을 수 없습니다.' }; }
+      var on = String(p.linkYn || 'Y') === 'Y';
+      d.noteMno = on ? Number(p.noteMno) : null;
+      d.noteNm = on ? String(p.noteNm || '') : null;
+      saveState();
+      return { ok: true, dataMno: d.dataMno, noteMno: d.noteMno };
+    },
+
     '/api/lims/data/dataList': function (p) {
       var kw = String(p.schKeyword || '').trim().toLowerCase();
       var tp = String(p.schTp || 'ALL');
@@ -1830,6 +1852,9 @@
       noteNm: 'KM00003710 합성 batch A', sampleNo: null,
       sizeDisp: '12 KB', integrityCcd: 'FIXED' }
   ];
+
+  /* 위 주석 참조 — 호이스팅 때문에 여기서 건다. */
+  STATE_SETS.DATA_FILES = DATA_FILES;
 
   /* 범위 밖 동작 — 눌렀을 때 사실을 말한다(기존 관례). 화면들이 공유한다. */
   window.limsScopeOut = function (what) {

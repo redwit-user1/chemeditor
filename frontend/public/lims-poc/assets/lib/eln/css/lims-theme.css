@@ -8370,3 +8370,91 @@ h1.main-title-sty02 {
 	font-weight: var(--ds-fw-medium);
 	color: var(--ds-data-linked);
 }
+
+/* --- §60 이어서: 컨텍스트 패널 (시안 ED1 Pane/컨텍스트) --- */
+
+.lims-ctx-group {
+	margin: var(--ds-3) 0 var(--ds-1);
+	font-size: var(--ds-fs-micro);
+	font-weight: var(--ds-fw-medium);
+	letter-spacing: 0.2px;
+	color: var(--ds-ink-4);
+}
+
+.lims-ctx-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--ds-075, 6px);
+}
+
+.lims-ctx-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--ds-075, 6px);
+	padding: 5px var(--ds-2) 5px var(--ds-2);
+	border-radius: var(--ds-radius);
+	background: var(--ds-hover);
+	color: var(--ds-ink-3);
+	font-size: var(--ds-fs-micro);
+	font-weight: var(--ds-fw-medium);
+	line-height: var(--ds-lh-none);
+}
+
+/* 해시가 고정된 원본은 다른 지위다 — 시안이 이 축을 따로 두는 이유 */
+.lims-ctx-chip.is-fixed {
+	background: var(--ds-primary-weak);
+	color: var(--ds-primary-dark);
+}
+
+.lims-ctx-chip .x {
+	border: 0;
+	padding: 0;
+	background: none;
+	color: var(--ds-ink-4);
+	font-size: var(--ds-fs-micro);
+	line-height: 1;
+	cursor: pointer;
+}
+
+.lims-ctx-chip .x:hover { color: var(--ds-danger-text); }
+
+.lims-ctx-cand {
+	display: flex;
+	align-items: center;
+	gap: var(--ds-2);
+	padding: var(--ds-2) 0;
+}
+
+.lims-ctx-cand .w { flex: 1 1 auto; min-width: 0; display: block; }
+
+.lims-ctx-cand .nm {
+	display: block;
+	font-size: var(--ds-fs-cell);
+	line-height: var(--ds-lh-cell);
+	color: var(--ds-ink);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.lims-ctx-cand .meta {
+	display: block;
+	font-size: var(--ds-fs-micro);
+	font-weight: var(--ds-fw-medium);
+	color: var(--ds-ink-4);
+}
+
+.lims-ctx-cand .b {
+	flex: none;
+	height: var(--ds-control-sm);
+	padding: 0 var(--ds-3);
+	border: 0;
+	border-radius: var(--ds-radius);
+	background: var(--ds-hover);
+	color: var(--ds-ink-3);
+	font-size: var(--ds-fs-micro);
+	font-weight: var(--ds-fw-medium);
+	cursor: pointer;
+}
+
+.lims-ctx-cand .b:hover { background: var(--ds-primary-weak); color: var(--ds-primary-dark); }

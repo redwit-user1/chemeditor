@@ -5176,9 +5176,13 @@
 
         /* 연동 데이터 상자(신설) */
         $('<div class="note-info-box lims-note-databox" data-side="data" id="noteDataBox">'
-          + '<div class="title">연동 데이터</div><div class="cont"><ul></ul>'
-          + '<p class="lims-note-insphint">장비에서 수집된 원시 파일이 이 노트에 연결된 것입니다. '
-          + '전체 대장은 왼쪽 메뉴 [데이터]에 있습니다.</p></div></div>')
+          + '<div class="title">컨텍스트</div><div class="cont">'
+          + '<p class="lims-ctx-group">이 노트가 물고 있는 것</p>'
+          + '<div class="lims-ctx-chips" id="noteCtxChips"></div>'
+          + '<p class="lims-ctx-group">연결 가능한 항목</p>'
+          + '<div class="lims-ctx-cands" id="noteCtxCands"></div>'
+          + '<p class="lims-note-insphint">연결은 표시가 아니라 기록입니다 — '
+          + '데이터 대장에서도 같은 사실이 보입니다.</p></div></div>')
           .insertAfter($btnWrap.length ? $btnWrap : $scroll.children().last());
 
         /* 탭 머리 */
@@ -5186,7 +5190,7 @@
           + '<button type="button" data-tab="overview" class="active">개요</button>'
           + '<button type="button" data-tab="reagent">시약</button>'
           + '<button type="button" data-tab="inspect">점검</button>'
-          + '<button type="button" data-tab="data">데이터<span class="b d-none">0</span></button>'
+          + '<button type="button" data-tab="data">컨텍스트<span class="b d-none">0</span></button>'
           + '</div>');
         $scroll.prepend($tabs).attr('data-side-tab', 'overview');
 
@@ -5209,24 +5213,62 @@
           const rows = asList(res ? res.dataList : null).filter(function (d) {
             return Number(d.noteMno) === Number(gNoteMno);
           });
+          const all = asList(res ? res.dataList : null);
           const $box = $('#noteDataBox');
           if (!$box.length) { done(); return; }
-          const $ul = $box.find('ul').empty();
           $('.lims-note-sidetabs [data-tab="data"] .b')
             .toggleClass('d-none', !rows.length).text(rows.length);
+
+          /* 물고 있는 것 — 칩. 누르면 끊는다. */
+          const $chips = $('#noteCtxChips').empty();
           if (!rows.length) {
-            $ul.append('<li class="lims-note-insphint">연동된 데이터가 없습니다.</li>');
-            done();
-            return;
+            $chips.append('<p class="lims-note-insphint">아직 연결한 것이 없습니다.</p>');
           }
           rows.forEach(function (d) {
-            $ul.append('<li><span class="nm"><i class="bi bi-file-earmark" aria-hidden="true"></i>'
-              + esc(d.fileNm) + '</span>'
-              + '<span class="lims-integ is-' + (d.integrityCcd === 'FIXED' ? 'ok' : d.integrityCcd === 'RECHECK' ? 'warn' : 'danger') + '">'
-              + (d.integrityCcd === 'FIXED' ? '해시 고정' : d.integrityCcd === 'RECHECK' ? '점검' : '미연동') + '</span></li>');
+            const fixed = d.integrityCcd === 'FIXED';
+            const $c = $('<span class="lims-ctx-chip' + (fixed ? ' is-fixed' : '') + '">'
+              + '<span class="nm">' + esc(d.dataId) + '</span>'
+              + '<button type="button" class="x" aria-label="연결 끊기">✕</button></span>');
+            $c.find('.x').on('click', function () { linkData(d, false); });
+            $chips.append($c);
+          });
+
+          /* 연결 가능한 항목 — 아직 어느 노트에도 안 물린 원본. 지어내지 않는다. */
+          const cands = all.filter(function (d) { return !d.noteMno; });
+          const $cd = $('#noteCtxCands').empty();
+          if (!cands.length) {
+            $cd.append('<p class="lims-note-insphint">연결할 수 있는 미연결 원본이 없습니다.</p>');
+          }
+          cands.slice(0, 4).forEach(function (d) {
+            const $r = $('<div class="lims-ctx-cand">'
+              + '<span class="w"><span class="nm">' + esc(d.dataId) + ' · ' + esc(d.fileNm) + '</span>'
+              + '<span class="meta">' + esc(d.collectCcdNm || '') + ' 수집'
+              + (d.instrumentCd ? ' · ' + esc(d.instrumentCd) : '') + ' · 미연결</span></span>'
+              + '<button type="button" class="b">연결</button></div>');
+            $r.find('.b').on('click', function () { linkData(d, true); });
+            $cd.append($r);
           });
           done();
         }, null, function () { done(); });
+      }
+
+      /* 원본 데이터를 이 노트에 잇거나 끊는다.
+
+         목에만 표시를 바꾸는 것이 아니라 상태를 바꾼다 — 데이터 대장(왼쪽
+         메뉴 [데이터])에서도 같은 사실이 보이고, 새로고침해도 남는다.
+         한 자리에서만 참인 연결은 기록이 아니다. */
+      function linkData(d, on) {
+        ajaxPost('/api/lims/data/linkNote', {
+          dataMno: d.dataMno, noteMno: gNoteMno, noteNm: ($('#limsNoteNm').val() || '').trim(), linkYn: on ? 'Y' : 'N'
+        }, null, function (res) {
+          if (!res || res.ok === false) {
+            S2Util.toasts((res && res.message) || '처리하지 못했습니다.', { class: 'Toast-bottom-web' });
+            return;
+          }
+          S2Util.toasts(on ? (d.dataId + ' 을 이 노트에 연결했습니다.')
+                           : (d.dataId + ' 연결을 끊었습니다.'), { class: 'Toast-bottom-web' });
+          loadLinkedData();
+        });
       }
 
       /* 문서 머리 — EXP ID · 제목 · 메타 칩 (목업의 문서 상단) */
