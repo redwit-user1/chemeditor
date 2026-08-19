@@ -52,12 +52,19 @@
 :root {
 	/* 뒤따르는 것들은 Pretendard 가 못 뜰 때만 쓰인다(폐쇄망 초기 로딩 등).
 	   각 OS 의 본문 글꼴이라 자간·높이가 크게 튀지 않는다. */
-	--ds-font: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo',
-		'Segoe UI', 'Malgun Gothic', system-ui, sans-serif;
+	/* 시안 정본(ELN·LIMS Design System v1)의 --font-family-sans 는 Noto Sans KR 이다.
+	   그리고 그것은 이 제품이 원래 쓰던 글꼴이기도 하다 — style.css·lims-ui.css·
+	   core.table.css 가 곳곳에서 'Noto Sans KR' 을 박고 있었고, 이 파일이 그것을
+	   Pretendard 로 통합했던 것이다. 통합 자체는 옳았지만 고른 글꼴이 틀렸다.
+	   정본으로 되돌린다. 번들된 woff2(font-style.css, ../fonts/NotoSans-*)를 쓰므로
+	   폐쇄망에서도 뜬다. */
+	--ds-font: 'Noto Sans KR', 'Noto Sans', -apple-system, BlinkMacSystemFont,
+		'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
 
-	/* 분자식·CAS·수치는 자릿수가 맞아야 위아래로 비교된다.
-	   Pretendard 는 tabular-nums 를 갖고 있으므로 같은 글꼴을 쓴다. */
-	--ds-font-mono: 'Pretendard', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	/* 분자식·CAS·수치는 자릿수가 맞아야 위아래로 비교된다. 본문 글꼴의
+	   tabular-nums 로 맞춘다(정본의 IBM Plex Mono 는 번들에 없고 폐쇄망이라
+	   받아올 수 없다 — 받는 즉시 바꾼다). */
+	--ds-font-mono: 'Noto Sans KR', 'Noto Sans', ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 /*

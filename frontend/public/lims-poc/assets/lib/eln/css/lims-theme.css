@@ -53,7 +53,7 @@
 	--ds-fs-body: var(--ds-fs);                /* 14 — 본문, 버튼, 입력 */
 	--ds-fs-card: calc(var(--ds-fs) + 1px);    /* 15 — 카드 제목 */
 	--ds-fs-lead: calc(var(--ds-fs) + 4px);    /* 18 — 구획 제목 */
-	--ds-fs-title: calc(var(--ds-fs) + 12px);  /* 26 — 페이지 제목 (참고 실측 26/700/-3%) */
+	--ds-fs-title: calc(var(--ds-fs) + 10px);  /* 24 — --font-size-h1 (line-height 32) */
 	--ds-fs-metric: calc(var(--ds-fs) + 12px); /* 26 — 지표 숫자 */
 
 	/* 아래첨자·윗첨자. 화학식(C25H24N2O3)이라 비율은 살리되 바닥을 준다.
@@ -131,13 +131,17 @@
 	--ds-primary-dark: #1557cc;   /* 파랑 글자·홀버. 판독면 캔버스(#EDEFEA)에서 정본 #186CE8 은
 	                                 4.17 로 미달(실측) — 같은 계열 통과값 5.5 */
 	--ds-primary-weak: #edf3fd;   /* primary-100 — 선택/홀버 바탕, info 바탕 */
-	/* 새시 — 분석기기 몸체의 청록먹. 정본 #08204A(네이비)를 계기 월드로 교체.
-	   (2026-08-09 리디자인, DESIGN.md) 로고·주동작 파랑은 브랜드 약속으로 유지. */
-	--ds-primary-deep: #1f2e36;
+	/* GNB(사이드바). 시안 정본 --color-nav-surface.
+	   2026-08-09 에 무인 집행했던 "계기 패널" 월드의 청록먹(#1F2E36)은 폐기했다 —
+	   ELN·LIMS Design System v1 이 이 제품의 정본이고, 내가 고른 세계가 아니다. */
+	--ds-primary-deep: #08204a;
+	--ds-nav-line: #0d2b5e;       /* --color-nav-border */
+	--ds-nav-active: #143a73;     /* --color-nav-item-active */
+	--ds-nav-ink-dim: #a9bcd9;    /* --color-nav-text-muted */
 
 	--ds-ink: #212529;            /* coolgray-900 — 최대 대비 */
 	--ds-ink-2: #343a40;          /* coolgray-800 — 제목 */
-	--ds-ink-3: #495057;          /* coolgray-700 — 본문 */
+	--ds-ink-3: #55606f;          /* --color-text-secondary */
 	/* 정본은 --fg-muted 를 coolgray-600(#868E96) 으로 둔다. 그런데 우리
 	   보조 글자는 11~12px 이고, #868E96 은 흰 바탕에서 3.32:1 이다(실측).
 	   작은 글자에 4.5:1 을 못 맞추면 읽는 사람이 실제로 못 읽는다.
@@ -151,19 +155,17 @@
 	   흰 5.18 · 캔버스 4.91 · 홀버 4.65 (전부 실측).
 	   정본의 coolgray-600 과 700 사이에 있고 같은 색상각이다.
 	   장식(구분점·아이콘)에는 정본 값을 --ds-ink-soft 로 따로 남겨 둔다. */
-	--ds-ink-4: #636a72;         /* 판독면 캔버스(#EDEFEA)에서 #666E76 은 4.47 로 미달(실측)
-	                                 — 전 바닥(캔버스 4.73 · 홀버 4.91 · 표면 5.38) 통과값 */
-	--ds-ink-soft: #868e96;       /* coolgray-600 — 글자 아닌 곳(점·구분·비활성 아이콘).
-	                                 흰 바탕 11px 에서 3.32:1 이다. 글자에 쓰지 않는다 —
-	                                 §45·§46 에서 다섯 곳을 이 값으로 썼다가 실측에서 걸렸다. */
+	--ds-ink-4: #626e7f;          /* --color-text-tertiary */
+	--ds-ink-soft: #adb5bd;       /* --color-text-disabled. 글자 아닌 곳·비활성 전용 —
+	                                 흰 바탕 대비가 낮아 읽어야 하는 글자에 쓰지 않는다. */
 
-	--ds-line: #d9dcd3;
-	--ds-line-2: #c9cdc2;
-	--ds-line-soft: #e7e9e1;
-	--ds-surface: #fdfdfb;      /* 모듈 표면 — 순백이 아니라 판독지 웜 화이트 */
-	/* 판독면 — 실험실 벤치 위 기록지의 웜 그레이그린. 흰 모듈이 그 위에 앉는다. */
-	--ds-canvas: #edefea;
-	--ds-hover: #f2f3ee;
+	/* 면과 선 — 시안 정본. 웜 그레이그린(계기 월드)은 폐기하고 쿨 계열로 돌아온다. */
+	--ds-line: #dee2e6;         /* --color-border-default */
+	--ds-line-2: #ced4da;       /* 한 단 진한 선. 정본에 이름이 없어 같은 계열 다음 단 */
+	--ds-line-soft: #f1f3f5;    /* --color-border-subtle */
+	--ds-surface: #ffffff;      /* --color-surface-default */
+	--ds-canvas: #f8f9fa;       /* --color-bg-canvas */
+	--ds-hover: #f1f3f5;        /* --color-bg-subtle */
 
 	/* 뜻 색.
 	   정본의 success #1CB56C · info #03A9F4 · warning #FFA000 은 배지 채움용
@@ -171,13 +173,13 @@
 	   2.0~2.7:1 이다(둘 다 실측). 즉 그 색 자체로는 글자를 실을 수 없다.
 	   그래서 색상(hue)은 정본을 따르되, 글자로 쓰는 값은 같은 색상에서
 	   대비를 맞춘 단계를 쓴다. 점·아이콘·채움에는 정본 값 그대로가 -dot 이다. */
-	--ds-danger: #e32120;         /* danger — 정본 그대로. 흰 바탕 4.66:1 */
+	--ds-danger: #d92d20;         /* --color-status-danger-solid */
 	/* 옅은 빨강 위에 얹는 글자. 본색 #E32120 을 그대로 쓰면 #FDEDED 위에서
 	   4.11:1 로 미달이다(실측). 정본의 엔티티 칩이 쓰는 어두운 짝을 따른다 —
 	   #B01B1A on #FDEDED = 6.13:1. */
-	--ds-danger-text: #b01b1a;
-	--ds-warn: #8a5a00;           /* 엔티티 칩의 호박색 글자값. 정본 #FFA000 은 -dot */
-	--ds-ok: #1e7f76;             /* 엔티티 칩의 청록 글자값. 정본 #1CB56C 는 -dot */
+	--ds-danger-text: #b42318;    /* --color-status-danger-text */
+	--ds-warn: #b54708;           /* --color-status-warning-text */
+	--ds-ok: #00796b;             /* --color-status-success-text */
 	--ds-ok-dot: #1cb56c;
 	/* 흰 글자를 얹을 수 있는 초록. --ds-ok-dot 은 점(글자 아님)용이라 흰 글자에 2.67 이다. */
 	--ds-ok-deep: #157f4d;
@@ -187,13 +189,25 @@
 	/* 뜻 색의 옅은 짝. 이게 없어서 #fdecea 가 세 파일에 5벌, #fff6e0 이 3벌
 	   흩어져 있었다. 테두리는 본색에서 파생시킨다 — 전에는 --ds-warn(#8a6208)
 	   과 아무 관계 없는 rgba(161,115,10) 이 쓰이고 있었다. */
-	--ds-danger-weak: #fdeded;    /* 엔티티 칩 빨강 바탕 */
-	--ds-warn-weak: #fbf3e1;      /* 엔티티 칩 호박 바탕 */
-	--ds-ok-weak: #e7f4f2;        /* 엔티티 칩 청록 바탕 */
+	--ds-danger-weak: #fef3f2;    /* --color-status-danger-subtle */
+	--ds-warn-weak: #fffaeb;      /* --color-status-warning-subtle */
+	--ds-ok-weak: #e0f2f1;        /* --color-status-success-subtle */
 	--ds-violet: #5b51c0;         /* 엔티티 칩 보라 — 의뢰·과제 */
 	--ds-violet-weak: #f1effb;
 	--ds-info-weak: #e5f6fe;      /* 초안 상태 바탕 — info 파랑의 약면 */
 	--ds-info-text: #026e9b;      /* 초안 상태 글자. #03A9F4 는 2.51 로 미달(실측) */
+
+	/* 규제 상태 — 시안 정본에만 있는 축이다. 일반 status(성공/경고/위험)와
+	   따로 두는 이유가 있다: OOS(기준이탈)·OOT(경향이탈)·감사추적·검토중은
+	   "잘됨/잘못됨"이 아니라 기록의 규제상 지위다. 같은 빨강이라도 "오류"와
+	   "기준이탈"은 다른 말이고, 화면에서 그 둘이 같아 보이면 안 된다. */
+	--ds-reg-oos: #b42318;        --ds-reg-oos-weak: #fef3f2;
+	--ds-reg-oot: #b54708;        --ds-reg-oot-weak: #fffaeb;
+	--ds-reg-review: #b54708;     --ds-reg-review-weak: #fffaeb;
+	--ds-reg-audit: #00796b;      --ds-reg-audit-weak: #e0f2f1;
+	--ds-reg-audit-line: #80cbc4;
+	/* 데이터 출처가 장비·시스템에서 자동 연결된 값 — 손으로 친 값과 구분한다. */
+	--ds-data-linked: #00796b;    --ds-data-linked-weak: #e0f2f1;
 
 	/* 채움 면 위 글자 — 주 파랑·상태색·새시 활성처럼 짙게 칠한 면 위의 흰색.
 	   순백 #fff 를 곳곳에 직접 박으면 어느 것이 "채움 위"이고 어느 것이
@@ -216,23 +230,23 @@
 	   강조 단계가 필요한 곳(되돌릴 수 없는 삭제)만 -strong 을 쓴다. */
 	--ds-line-a: 0.24;
 	--ds-primary-line: rgba(23, 97, 222, 0.24);
-	--ds-danger-line: rgba(227, 33, 32, 0.24);
-	--ds-danger-line-strong: rgba(227, 33, 32, 0.45);
-	--ds-warn-line: rgba(138, 90, 0, 0.24);
-	--ds-ok-line: rgba(30, 127, 118, 0.24);
+	--ds-danger-line: rgba(217, 45, 32, 0.24);
+	--ds-danger-line-strong: rgba(217, 45, 32, 0.45);
+	--ds-warn-line: #fedf89;      /* --color-status-warning-border (정본은 실색을 준다) */
+	--ds-ok-line: #80cbc4;        /* --color-regulated-audit-border */
 
 	/* 모서리·그림자 — 정본 값.
 	   기본이 10 이 아니라 8 이다. 파생값(calc(--ds-radius - 2px) 등)이 여럿
 	   있으므로 이름을 따로 준다 — 8 에서 4 를 빼면 4 가 되어 사다리 밖으로
 	   나간다. 작은 모서리는 정본의 --radius-sm(4) 을 그대로 쓴다. */
-	--ds-radius: 8px;             /* radius-md — 버튼·입력·카드 기본 */
-	--ds-radius-sm: 4px;          /* radius-sm — 배지·칩·작은 태그 */
-	--ds-radius-lg: 12px;         /* radius-lg */
+	--ds-radius: 6px;             /* --radius-md — 버튼·입력 */
+	--ds-radius-sm: 4px;          /* 배지·칩. 정본에 이름이 없어 기존 값을 둔다 */
+	--ds-radius-lg: 8px;          /* --radius-lg — 카드 */
 	--ds-pill: 999px;
 	--ds-shadow: none;            /* 모듈은 테두리 하나로 선다(craft-floor: 고스트 카드 금지).
 	                                 떠 있는 판만 --ds-shadow-pop 을 쓴다. */
 	--ds-shadow-pop: 0 4px 24px rgba(33, 37, 41, 0.10);
-	--ds-veil: rgba(253, 253, 251, 0.92); /* 반투명 표면 — surface 의 알파판(sticky 머리) */
+	--ds-veil: rgba(255, 255, 255, 0.92); /* 반투명 표면 — surface 의 알파판(sticky 머리) */
 	--ds-ring: 0 0 0 3px rgba(23, 97, 222, 0.20);
 
 	/* 이전 파일들이 쓰는 이름을 여기로 잇는다 — 값의 출처를 하나로 모은다. */
