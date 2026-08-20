@@ -4881,6 +4881,9 @@
       var gInsp = { statusCcd: 'WRITING', inspectors: [], tsa: null, rejectMemo: '' };
 
       const WRITE_STATUS = {
+        /* DRAFT(임시저장)는 목록 화면이 실제로 쓰는 상태인데 이 맵에 없어서
+           파일 패널의 상태 라벨이 빈칸으로 나왔다(정합 검사에서 발견). */
+        DRAFT:      { nm: '임시저장', cls: 'is-draft' },
         WRITING:    { nm: '작성중',   cls: 'is-draft' },
         INSPECTION: { nm: '점검중',   cls: 'is-inreview' },
         COMPLETE:   { nm: '점검완료', cls: 'is-signed' },

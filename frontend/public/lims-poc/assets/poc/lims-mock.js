@@ -214,15 +214,15 @@
 
   var WORKLIST = [
     { testItemMno: 8001, testReqstMno: 7001, testReqstNo: 'TR-20260713-02', testItemNm: 'HPLC 순도',
-      methodNm: 'M-HPLC-001', methodVerNo: 3, planDe: '20260730', resultCnt: 1,
+      methodCd: 'M-HPLC-001', methodNm: '유연물질 및 순도 (HPLC)', methodVerNo: 3, planDe: '20260730', resultCnt: 1,
       sampleMno: 5001, sampleNo: 'SMP-20260712-001', sampleNm: 'KM00003710 합성 원료 (batch A)',
       testItemStatusCcd: 'IN_PROGRESS', testItemStatusCcdNm: '시험중', urgentYn: 'Y' },
     { testItemMno: 8002, testReqstMno: 7001, testReqstNo: 'TR-20260713-02', testItemNm: '수분 (KF)',
-      methodNm: 'M-KF-004', methodVerNo: 1, planDe: '20260731', resultCnt: 0,
+      methodCd: 'M-KF-004', methodNm: '수분 (Karl Fischer)', methodVerNo: 1, planDe: '20260731', resultCnt: 0,
       sampleMno: 5001, sampleNo: 'SMP-20260712-001', sampleNm: 'KM00003710 합성 원료 (batch A)',
       testItemStatusCcd: 'ASSIGNED', testItemStatusCcdNm: '배정', urgentYn: 'N' },
     { testItemMno: 8003, testReqstMno: 7002, testReqstNo: 'TR-20260710-01', testItemNm: '잔류용매 (GC)',
-      methodNm: 'M-GC-002', methodVerNo: 2, planDe: '20260728', resultCnt: 2,
+      methodCd: 'M-GC-002', methodNm: '잔류용매 (GC-HS)', methodVerNo: 2, planDe: '20260728', resultCnt: 2,
       sampleMno: 5003, sampleNo: 'SMP-20260705-014', sampleNm: 'HepG2 세포용해물 (P12)',
       testItemStatusCcd: 'OOS_HOLD', testItemStatusCcdNm: '기준이탈', urgentYn: 'N' }
   ];
@@ -246,18 +246,53 @@
       reqstUserNm: '이연구', itemCnt: 2, doneItemCnt: 0, waitingItemCnt: 2, oosItemCnt: 0, urgentYn: 'N' }
   ];
 
+  /*
+    시험 항목 마스터.
+
+    전에는 의뢰 7001 의 세 항목만 있었는데, 워크리스트·검토·기준이탈이
+    참조하는 8003·8005·8006·8007 은 다른 의뢰의 항목이라 마스터에 없었다 —
+    검토 화면 다섯 행 중 세 행이 상세로 갈 수 없는 상태(정합 검사에서 발견).
+    행마다 소속 의뢰(testReqstMno)를 적고, 의뢰 상세는 자기 것만 걸러 간다.
+
+    methodNm 에는 코드(M-HPLC-001)가 들어 있었다 — 이름 자리에 코드가 뜨는
+    필드 오사용. 코드는 methodCd 로 분리하고 이름은 METHODS 의 이름을 쓴다.
+    8004 성상의 시험법 없음(null)은 육안 시험이라 의도된 값이다.
+  */
   var TEST_ITEMS = [
-    { testItemMno: 8001, sortSn: 1, testItemNm: 'HPLC 순도', methodNm: 'M-HPLC-001', methodVerNo: 3,
+    { testItemMno: 8001, testReqstMno: 7001, sortSn: 1, testItemNm: 'HPLC 순도',
+      methodCd: 'M-HPLC-001', methodNm: '유연물질 및 순도 (HPLC)', methodVerNo: 3,
       specNm: 'SPEC-3710-순도', specVerNo: 2, chargeUserNm: '김연구', planDe: '20260730',
       testItemStatusCcd: 'IN_PROGRESS', testItemStatusCcdNm: '시험중', resultCnt: 1,
       finalJudgeCcd: null, finalJudgeCcdNm: null },
-    { testItemMno: 8002, sortSn: 2, testItemNm: '수분 (KF)', methodNm: 'M-KF-004', methodVerNo: 1,
+    { testItemMno: 8002, testReqstMno: 7001, sortSn: 2, testItemNm: '수분 (KF)',
+      methodCd: 'M-KF-004', methodNm: '수분 (Karl Fischer)', methodVerNo: 1,
       specNm: 'SPEC-3710-수분', specVerNo: 1, chargeUserNm: '김연구', planDe: '20260731',
       testItemStatusCcd: 'ASSIGNED', testItemStatusCcdNm: '배정', resultCnt: 0,
       finalJudgeCcd: null, finalJudgeCcdNm: null },
-    { testItemMno: 8004, sortSn: 3, testItemNm: '성상', methodNm: null, methodVerNo: null,
+    { testItemMno: 8004, testReqstMno: 7001, sortSn: 3, testItemNm: '성상',
+      methodCd: null, methodNm: null, methodVerNo: null,
       specNm: null, specVerNo: null, chargeUserNm: null, planDe: null,
       testItemStatusCcd: 'WAITING', testItemStatusCcdNm: '대기', resultCnt: 0,
+      finalJudgeCcd: null, finalJudgeCcdNm: null },
+    { testItemMno: 8003, testReqstMno: 7002, sortSn: 1, testItemNm: '잔류용매 (GC)',
+      methodCd: 'M-GC-002', methodNm: '잔류용매 (GC-HS)', methodVerNo: 2,
+      specNm: null, specVerNo: null, chargeUserNm: '박연구', planDe: '20260725',
+      testItemStatusCcd: 'OOS_HOLD', testItemStatusCcdNm: '기준이탈 보류', resultCnt: 1,
+      finalJudgeCcd: null, finalJudgeCcdNm: null },
+    { testItemMno: 8005, testReqstMno: 7003, sortSn: 1, testItemNm: '수분 (KF)',
+      methodCd: 'M-KF-004', methodNm: '수분 (Karl Fischer)', methodVerNo: 1,
+      specNm: 'SPEC-3710-수분', specVerNo: 1, chargeUserNm: '김연구', planDe: '20260707',
+      testItemStatusCcd: 'OOS_HOLD', testItemStatusCcdNm: '기준이탈 보류', resultCnt: 1,
+      finalJudgeCcd: null, finalJudgeCcdNm: null },
+    { testItemMno: 8006, testReqstMno: 7003, sortSn: 2, testItemNm: '성상',
+      methodCd: null, methodNm: null, methodVerNo: null,
+      specNm: null, specVerNo: null, chargeUserNm: '박연구', planDe: '20260706',
+      testItemStatusCcd: 'DONE', testItemStatusCcdNm: '완료', resultCnt: 1,
+      finalJudgeCcd: 'PASS', finalJudgeCcdNm: '적합' },
+    { testItemMno: 8007, testReqstMno: 7004, sortSn: 1, testItemNm: 'HPLC 순도',
+      methodCd: 'M-HPLC-001', methodNm: '유연물질 및 순도 (HPLC)', methodVerNo: 3,
+      specNm: 'SPEC-3710-순도', specVerNo: 2, chargeUserNm: '이연구', planDe: '20260801',
+      testItemStatusCcd: 'IN_PROGRESS', testItemStatusCcdNm: '시험중', resultCnt: 1,
       finalJudgeCcd: null, finalJudgeCcdNm: null }
   ];
 
@@ -295,7 +330,7 @@
       resultVal: '0.18', unitCcd: '%',
       specJudgeTpCcd: 'RANGE', specLowerVal: 0.0, specUpperVal: 0.5, specExpectVal: null,
       judgeCcd: 'PASS', inputUserNm: '김연구', inputDt: '2026-07-28 09:05',
-      instrumentNm: 'KF-02 (Metrohm 899)',
+      instrumentNm: 'KF-01 (Metrohm 851)',
       inputMemo: null,
       reviewStatusCcd: 'PENDING',
       approveUserNm: null, approveDt: null, noteMno: null, noteNo: null,
@@ -306,7 +341,7 @@
       resultVal: '0.62', unitCcd: '%',
       specJudgeTpCcd: 'RANGE', specLowerVal: 0.0, specUpperVal: 0.5, specExpectVal: null,
       judgeCcd: 'FAIL', inputUserNm: '박연구', inputDt: '2026-07-26 16:40',
-      instrumentNm: 'GC-03 (Agilent 8890)',
+      instrumentNm: 'GC-02 (Agilent 8890)',
       inputMemo: 'DCM 피크가 규격 상한을 넘었습니다.',
       reviewStatusCcd: 'PENDING',
       approveUserNm: null, approveDt: null, noteMno: null, noteNo: null,
@@ -402,6 +437,12 @@
   ];
 
   var INSTRUMENTS = [
+    /* 데이터 대장의 bca_quant 파일이 이 장비를 가리킨다 — 대장에 없는 장비를
+       참조하면 출처 추적이 끊긴다(정합 검사에서 발견). */
+    { instrumentMno: 305, instrumentCd: 'PLT-RD-01', instrumentNm: '플레이트 리더',
+      instrumentTpCcd: 'ETC', modelNm: 'SpectraMax iD3', locationNm: '2층 분석실',
+      instrumentStatusCcd: 'ACTIVE', lastCalDe: '2026-03-11', nextCalDe: '2027-03-11',
+      calState: 'OK' },
     { instrumentMno: 601, instrumentCd: 'HPLC-01', instrumentNm: 'Agilent 1260 Infinity II',
       instrumentTpCcd: 'HPLC', modelNm: '1260 Infinity II', locationNm: '2층 분석실',
       instrumentStatusCcd: 'NORMAL', lastCalDe: '20260511', nextCalDe: '20261111', calState: 'VALID' },
@@ -428,12 +469,18 @@
       level: 1, barcodePrefix: 'L3', temperature: null, containerCnt: 0 },
     { locationMno: 2, locationNm: '냉동고 B', fullPathNm: '3층 시약실 > 냉동고 B', locationTpCcd: 'FREEZER',
       level: 2, barcodePrefix: 'L3-FB', temperature: '-20℃', containerCnt: 0 },
+    /* containerCnt 는 CONTAINERS 목록과 같은 말을 해야 한다 — 12/7 로 적혀
+       있었는데 실제 용기는 각각 2·1개였다(정합 검사에서 발견). HATU 용기가
+       늘어 1단은 3이다. */
     { locationMno: 3, locationNm: '1단', fullPathNm: '3층 시약실 > 냉동고 B > 1단', locationTpCcd: 'SHELF',
-      level: 3, barcodePrefix: 'L3-FB-1', temperature: '-20℃', containerCnt: 12 },
+      level: 3, barcodePrefix: 'L3-FB-1', temperature: '-20℃', containerCnt: 3 },
     { locationMno: 4, locationNm: '2층 분석실', fullPathNm: '2층 분석실', locationTpCcd: 'ROOM',
       level: 1, barcodePrefix: 'L2', temperature: null, containerCnt: 0 },
     { locationMno: 5, locationNm: '상온 선반 1', fullPathNm: '2층 분석실 > 상온 선반 1', locationTpCcd: 'SHELF',
-      level: 2, barcodePrefix: 'L2-S1', temperature: '25℃', containerCnt: 7 }
+      level: 2, barcodePrefix: 'L2-S1', temperature: '25℃', containerCnt: 2 },
+    /* 용기 두 개(RGT-000304·305)가 서 있던 위치인데 대장에 없었다 */
+    { locationMno: 6, locationNm: '상온 선반 2', fullPathNm: '2층 분석실 > 상온 선반 2', locationTpCcd: 'SHELF',
+      level: 2, barcodePrefix: 'L2-S2', temperature: '25℃', containerCnt: 2 }
   ];
 
   /*
@@ -444,31 +491,51 @@
   */
   var REAGENTS = [
     { reagentMno: 201, reagentNm: 'Acetonitrile (HPLC grade)', casNo: '75-05-8', molFormula: 'C2H3N',
-      molWt: 41.05, density: 0.786, ghsCcd: 'GHS02', containerCnt: 4, totalAmountDisp: '3.2 L',
+      molWt: 41.05, density: 0.786, ghsCcd: 'GHS02', containerCnt: 1, totalAmountDisp: '800 mL',
       vendorNm: 'Sigma-Aldrich', msdsYn: 'Y', msdsSrc: '공급사', msdsSyncDtStr: '2026-06-30',
       storageCondNm: '상온 · 인화성' },
     { reagentMno: 202, reagentNm: '5-Methoxytryptamine', casNo: '608-07-1', molFormula: 'C11H14N2O',
-      molWt: 190.24, density: null, ghsCcd: 'GHS07', containerCnt: 2, totalAmountDisp: '4.1 g',
+      molWt: 190.24, density: null, ghsCcd: 'GHS07', containerCnt: 1, totalAmountDisp: '0 g (소진)',
       vendorNm: 'TCI', msdsYn: 'Y', msdsSrc: '안전보건공단', msdsSyncDtStr: '2026-05-18',
       storageCondNm: '냉장 2~8℃' },
     { reagentMno: 203, reagentNm: 'Triethylamine', casNo: '121-44-8', molFormula: 'C6H15N',
-      molWt: 101.19, density: 0.726, ghsCcd: 'GHS02', containerCnt: 1, totalAmountDisp: '500 mL',
+      molWt: 101.19, density: 0.726, ghsCcd: 'GHS02', containerCnt: 1, totalAmountDisp: '95 mL',
       vendorNm: 'Alfa Aesar', msdsYn: 'N', msdsSrc: null, msdsSyncDtStr: null,
       storageCondNm: '상온 · 인화성' },
     { reagentMno: 204, reagentNm: 'Dichloromethane', casNo: '75-09-2', molFormula: 'CH2Cl2',
-      molWt: 84.93, density: 1.326, ghsCcd: 'GHS08', containerCnt: 3, totalAmountDisp: '2.5 L',
+      molWt: 84.93, density: 1.326, ghsCcd: 'GHS08', containerCnt: 1, totalAmountDisp: '480 mL',
       vendorNm: 'Merck', msdsYn: 'Y', msdsSrc: '공급사', msdsSyncDtStr: '2026-07-02',
       storageCondNm: '상온 · 환기' },
     { reagentMno: 205, reagentNm: 'Potassium carbonate (anhydrous)', casNo: '584-08-7', molFormula: 'K2CO3',
-      molWt: 138.21, density: null, ghsCcd: 'GHS07', containerCnt: 2, totalAmountDisp: '1.8 kg',
+      molWt: 138.21, density: null, ghsCcd: 'GHS07', containerCnt: 1, totalAmountDisp: '120 g',
       vendorNm: 'Daejung', msdsYn: 'Y', msdsSrc: '공급사', msdsSyncDtStr: '2026-04-11',
-      storageCondNm: '건조 · 밀폐' }
+      storageCondNm: '건조 · 밀폐' },
+    /* 노트 시약 표(206·207)·화학량론·사용기록이 참조하는데 마스터에 없었다 —
+       N-1 정합 때 표만 고치고 마스터를 안 늘린 결함(정합 검사에서 발견).
+       HATU 는 병에 든 것이 PF6 염이다: 저울 값은 염 380.25 기준. 반응식
+       그림의 양이온(235.27)과 다른 것이 맞다 — 그리는 화학종과 다는 물질. */
+    { reagentMno: 206, reagentNm: '4-(Benzyloxy)benzoic acid', casNo: '1486-51-7',
+      molFormula: 'C14H12O3', molWt: 228.25, density: null, ghsCcd: 'GHS07',
+      containerCnt: 1, totalAmountDisp: '25 g', vendorNm: 'TCI',
+      msdsYn: 'Y', msdsSrc: '공급사', msdsSyncDtStr: '2026-06-20', storageCondNm: '상온 · 밀폐' },
+    { reagentMno: 207, reagentNm: 'HATU', casNo: '148893-10-1',
+      molFormula: 'C10H15F6N6OP', molWt: 380.25, density: null, ghsCcd: 'GHS07',
+      containerCnt: 1, totalAmountDisp: '4.1 g', vendorNm: 'Sigma-Aldrich',
+      msdsYn: 'Y', msdsSrc: '공급사', msdsSyncDtStr: '2026-05-02', storageCondNm: '냉동 · 방습' }
   ];
 
   /* 용기는 시약 품목에 매달린다. reagentMno 가 없으면 본문 @멘션이 "무슨
      시약의 Lot 인지" 를 말할 수 없다 — 바코드만으로는 사람이 못 읽는다.
      노트가 실제로 쓴 세 가지(RGT-000302·304·305)도 여기 있어야 멘션에 뜬다. */
   var CONTAINERS = [
+    /* 사용기록 RGT-000308 이 가리키는 병 — 유효기한 경과 상태여야 사용기록의
+       "책임자 승인 후 사용(override)" 과 아귀가 맞는다. */
+    { containerMno: 4306, reagentMno: 206, barcode: 'RGT-000306', lotNo: 'T2606-03',
+      amount: 25, unitCcd: 'g', locationNm: '2층 분석실 > 상온 선반 1',
+      expiryDt: '2028-06-30', expiredYn: 'N', statusCcd: 'IN_USE' },
+    { containerMno: 4308, reagentMno: 207, barcode: 'RGT-000308', lotNo: 'H2504-11',
+      amount: 4.1, unitCcd: 'g', locationNm: '3층 시약실 > 냉동고 B > 1단',
+      expiryDt: '2026-06-30', expiredYn: 'Y', statusCcd: 'ACTIVE' },
     { containerMno: 301, reagentMno: 201, barcode: 'RGT-000301', lotNo: 'A2026-113', amount: 800, unitCcd: 'mL',
       locationNm: '3층 시약실 > 냉동고 B > 1단', expiryDt: '2027-02-28', expiredYn: 'N', statusCcd: 'IN_USE' },
     { containerMno: 302, reagentMno: 205, barcode: 'RGT-000302', lotNo: 'A2025-908', amount: 120, unitCcd: 'g',
@@ -626,8 +693,8 @@
           molWt: 228.25, density: null, roleCcd: 'REACTANT', amount: 456, unitCcd: 'MG' },
         { reagentMno: 202, reagentNm: '5-Methoxytryptamine', casNo: '608-07-1', molFormula: 'C11H14N2O',
           molWt: 190.25, density: null, roleCcd: 'REACTANT', amount: 419, unitCcd: 'MG' },
-        { reagentMno: 207, reagentNm: 'HATU', casNo: '148893-10-1', molFormula: 'C10H15N6O+',
-          molWt: 235.27, density: null, roleCcd: 'REAGENT', amount: 564, unitCcd: 'MG' },
+        { reagentMno: 207, reagentNm: 'HATU', casNo: '148893-10-1', molFormula: 'C10H15F6N6OP',
+          molWt: 380.25, density: null, roleCcd: 'REAGENT', amount: 912, unitCcd: 'MG' },
         { reagentMno: 203, reagentNm: 'Triethylamine', casNo: '121-44-8', molFormula: 'C6H15N',
           molWt: 101.19, density: 0.726, roleCcd: 'REAGENT', amount: 0.56, unitCcd: 'ML' },
         { reagentMno: 204, reagentNm: 'Dichloromethane', casNo: '75-09-2', molFormula: 'CH2Cl2',
@@ -644,7 +711,7 @@
     { reagentNm: 'Triethylamine', barcode: 'RGT-000305', deltaAmount: -0.56, unitCcd: 'mL',
       txnDtStr: '2026-07-12 10:05', txnUserNm: '이연구', noteNm: NOTE.noteNm,
       expiryOverrideYn: 'N', reason: null },
-    { reagentNm: 'HATU', barcode: 'RGT-000308', deltaAmount: -564, unitCcd: 'mg',
+    { reagentNm: 'HATU', barcode: 'RGT-000308', deltaAmount: -912, unitCcd: 'mg',
       txnDtStr: '2026-07-12 10:07', txnUserNm: '이연구', noteNm: NOTE.noteNm,
       expiryOverrideYn: 'Y', reason: '유효기한 경과 — 책임자 승인 후 사용' }
   ];
@@ -657,8 +724,8 @@
       molWt: 228.25, mmol: 1.998, equiv: 1.00, role: 'reactant', limitingYn: 'Y' },
     { reagentNm: '5-Methoxytryptamine', lotNo: null, usedAmount: 419, unitCcd: 'mg',
       molWt: 190.25, mmol: 2.202, equiv: 1.10, role: 'reactant', limitingYn: 'N' },
-    { reagentNm: 'HATU', lotNo: null, usedAmount: 564, unitCcd: 'mg',
-      molWt: 235.27, mmol: 2.397, equiv: 1.20, role: 'reagent', limitingYn: 'N' },
+    { reagentNm: 'HATU', lotNo: 'H2504-11', usedAmount: 912, unitCcd: 'mg',
+      molWt: 380.25, mmol: 2.398, equiv: 1.20, role: 'reagent', limitingYn: 'N' },
     { reagentNm: 'Triethylamine', lotNo: null, usedAmount: 0.56, unitCcd: 'mL',
       molWt: 101.19, mmol: 4.018, equiv: 2.01, role: 'reagent', limitingYn: 'N' },
     { reagentNm: 'Dichloromethane', lotNo: null, usedAmount: 20, unitCcd: 'mL',
@@ -733,7 +800,10 @@
 
   /* 노트는 프로젝트에 매달린다. projectMno 로 걸러 프로젝트 상세에 뿌린다. */
   var ELN_NOTES = [
+    /* 대상 시료는 상세 전용 객체(NOTE)에만 있고 목록에는 필드가 없었다 —
+       상세와 목록이 다른 스키마(정합 검사에서 발견). NOTE 와 값이 같아야 한다. */
     { noteMno: 9101, projectMno: 301, projectNm: '표적단백질 저해제 발굴', folderMno: 0,
+      sampleMno: 5001, sampleNo: 'SMP-20260712-001', sampleNm: 'KM00003710 합성 원료 (batch A)',
       noteNm: 'KM00003710 합성 batch A', ownerNm: '이연구', modifyDtStr: '2026-07-12 17:40',
       writeStatusCcd: 'COMPLETE', writeStatusCcdNm: '작성완료', keywords: '합성,batch', editorTpCcd: 'EDITOR', editorTpCcdNm: '에디터',
       writeModeCcdNm: '온라인', sharedYn: 'N',
@@ -757,7 +827,9 @@
       noteNm: 'HepG2 세포독성 1차', ownerNm: '박연구', modifyDtStr: '2026-07-20 16:11',
       writeStatusCcd: 'COMPLETE', writeStatusCcdNm: '작성완료', keywords: '합성,batch', editorTpCcd: 'FILE', editorTpCcdNm: '파일', writeModeCcdNm: '온라인', sharedYn: 'N',
       processNm: null, projectPrgrstCcdNm: '진행', securityGradeCcdNm: '2등급' },
-    { noteMno: 9105, projectMno: 303, projectNm: '시험법 검증 (KM-3719)', folderMno: 0,
+    /* 9105 는 위(순도·수분 시험 기록)가 쓴다 — 같은 키가 두 노트에 걸려
+       noteMno 로 찾는 모든 화면(데이터 연결·트리 활성)이 둘을 구분 못 했다. */
+    { noteMno: 9106, projectMno: 303, projectNm: '시험법 검증 (KM-3719)', folderMno: 0,
       noteNm: '직선성·정밀성 검증', ownerNm: '김연구', modifyDtStr: '2026-07-22 09:48',
       writeStatusCcd: 'DRAFT', writeStatusCcdNm: '임시저장', keywords: '검증', editorTpCcd: 'EDITOR', editorTpCcdNm: '에디터',
       writeModeCcdNm: '온라인', sharedYn: 'N',
@@ -998,13 +1070,15 @@
           createDtStr: '2026-07-13 09:41', completeDtStr: null,
           receiptUserNm: '김연구', receiptDtStr: '2026-07-13 11:05'
         },
-        testItemList: TEST_ITEMS
+        testItemList: TEST_ITEMS.filter(function (i) { return i.testReqstMno === 7001; })
       };
     },
     '/api/lims/test/sampleTestHistory': function () {
       // 이력 표는 요청번호와 완료일시도 보여준다. 항목 데이터에 그 둘을 얹는다.
+      var reqNo = {};
+      REQUESTS.forEach(function (r) { reqNo[r.testReqstMno] = r.testReqstNo; });
       return { testHistoryList: TEST_ITEMS.map(function (i) {
-        return Object.assign({ testReqstMno: 7001, testReqstNo: 'TR-20260713-02', completeDt: null }, i);
+        return Object.assign({ testReqstNo: reqNo[i.testReqstMno] || '', completeDt: null }, i);
       }) };
     },
     '/api/lims/test/methodOptionList': function () { return { optionList: METHODS }; },
@@ -1151,7 +1225,7 @@
         testItem: {
           testItemMno: 8001, testItemNm: 'HPLC 순도', testReqstMno: 7001, testReqstNo: 'TR-20260713-02',
           sampleNo: 'SMP-20260712-001', sampleNm: 'KM00003710 합성 원료 (batch A)',
-          methodNm: 'M-HPLC-001', methodVerNo: 3, chargeUserNm: '김연구',
+          methodCd: 'M-HPLC-001', methodNm: '유연물질 및 순도 (HPLC)', methodVerNo: 3, chargeUserNm: '김연구',
           testItemStatusCcd: 'IN_PROGRESS', testItemStatusCcdNm: '시험중'
         },
         spec: SPECS[0],
@@ -1832,7 +1906,7 @@
   --------------------------------------------------------------- */
   var DATA_FILES = [
     { dataMno: 1, dataId: 'DAT-2026-0312', fileNm: 'chromatogram_0417_run2.cdf', tpCcd: 'CDF',
-      collectCcdNm: '자동', instrumentCd: 'HPLC-03', noteMno: 9101,
+      collectCcdNm: '자동', instrumentCd: 'HPLC-01', noteMno: 9101,
       noteNm: 'KM00003710 합성 batch A', sampleNo: 'SMP-20260712-001',
       sizeDisp: '2.4 MB', integrityCcd: 'FIXED' },
     { dataMno: 2, dataId: 'DAT-2026-0308', fileNm: 'bca_quant_batch3.xlsx', tpCcd: 'XLSX',
@@ -1844,11 +1918,11 @@
       noteNm: 'KM00003710 합성 batch A', sampleNo: null,
       sizeDisp: '1.1 MB', integrityCcd: 'FIXED' },
     { dataMno: 4, dataId: 'DAT-2026-0296', fileNm: 'chromatogram_unknown_run6.cdf', tpCcd: 'CDF',
-      collectCcdNm: '자동', instrumentCd: 'HPLC-03', noteMno: null,
+      collectCcdNm: '자동', instrumentCd: 'HPLC-01', noteMno: null,
       noteNm: null, sampleNo: null,
       sizeDisp: '2.2 MB', integrityCcd: 'UNLINKED' },
     { dataMno: 5, dataId: 'DAT-2026-0290', fileNm: 'purity_trend_2026H1.csv', tpCcd: 'CSV',
-      collectCcdNm: '자동', instrumentCd: 'HPLC-03', noteMno: 9101,
+      collectCcdNm: '자동', instrumentCd: 'HPLC-01', noteMno: 9101,
       noteNm: 'KM00003710 합성 batch A', sampleNo: null,
       sizeDisp: '12 KB', integrityCcd: 'FIXED' }
   ];
