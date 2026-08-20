@@ -720,6 +720,24 @@ body,
 	padding: var(--ds-1) var(--ds-2);
 }
 
+/*
+  그룹 구획 제목 — 브레드크럼의 상위 분류(전자연구노트/LIMS)를 사이드바에도
+  세운다. 12항목이 한 열로 서 있으면 두-도메인 구조를 보는 사람이 머리로
+  다시 지어야 한다. 항목보다 낮은 톤(딤 잉크·소문자 크기)으로 물러선다.
+*/
+.nav-menu .nav-group-label {
+	margin: var(--ds-3) 0 var(--ds-1);
+	padding: 0 var(--ds-2);
+	color: var(--ds-nav-ink-dim);
+	font-size: var(--ds-fs-micro);
+	font-weight: var(--ds-fw-medium);
+	letter-spacing: 0.06em;
+}
+
+.nav-menu .nav-group-label:first-child {
+	margin-top: var(--ds-1);
+}
+
 .nav-menu a.menuCd {
 	display: flex;
 	align-items: center;
@@ -788,6 +806,7 @@ body,
 .nav-menu a.menuCd.OPMS_RESEARCH_SUPPORT { --nav-ico: url(../img/lucide/life-buoy-d.svg); }
 .nav-menu a.menuCd.MAIN_COMPLETED_PROJECT { --nav-ico: url(../img/lucide/circle-check-d.svg); }
 .nav-menu a.menuCd.LIMS_NOTES { --nav-ico: url(../img/lucide/notebook-d.svg); }
+.nav-menu a.menuCd.LIMS_NOTE_MNG { --nav-ico: url(../img/lucide/inbox.svg); }
 .nav-menu a.menuCd.LIMS_PROJECT { --nav-ico: url(../img/lucide/folder-d.svg); }
 .nav-menu a.menuCd.LIMS_DATA { --nav-ico: url(../img/lucide/archive-d.svg); }
 .nav-menu a.menuCd.LIMS_REVIEW { --nav-ico: url(../img/lucide/file-check-d.svg); }
@@ -8458,3 +8477,25 @@ h1.main-title-sty02 {
 }
 
 .lims-ctx-cand .b:hover { background: var(--ds-primary-weak); color: var(--ds-primary-dark); }
+
+/* ═══ §61 규제 지위 칩 — 일반 위험과 다른 문법 ══════════════════════════ */
+
+/*
+  긴급(우선순위)과 기준이탈(OOS)이 똑같은 빨강 알약(.expired)을 입고 있었다.
+  --ds-reg-* 축이 토큰에만 있고 화면 문법이 없었던 것이다. 규제 지위는
+  "잘못됨"이 아니라 기록의 지위이므로 세 가지로 구분한다:
+    · 테두리를 두른다 (일반 상태 알약은 틴트 채움만)
+    · 상태점을 각지게 바꾼다 (색약 사용자에게 색 아닌 형태 신호)
+  같은 빨강 계열이라도 "급함"과 "규정 이탈 기록"이 다른 옷을 입는다.
+*/
+.lims-page .lims-state.oos,
+.lims-state.oos {
+	border-color: var(--ds-reg-oos);
+	background: var(--ds-reg-oos-weak);
+	color: var(--ds-reg-oos);
+}
+
+.lims-state.oos::before {
+	border-radius: 1px;          /* LED 점 대신 각진 인장 — 형태로도 구분된다 */
+	box-shadow: none;
+}

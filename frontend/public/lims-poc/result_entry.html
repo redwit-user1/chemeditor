@@ -2774,14 +2774,17 @@
             + ` — ${escapeHtml(r.judgeRsn || '판정기준을 벗어났습니다.')}`
             + (r.oosNo ? ` (조사 ${escapeHtml(r.oosNo)})` : '') + '</div>';
         });
+        /* 배너가 조사의 존재만 말하고 문을 안 달면, 듣는 사람은 어디로 가야
+           하는지 기억으로 찾아야 한다 — 열린 조사 큐로 가는 링크를 함께 둔다. */
         $('#deviationBanner').removeClass('d-none').html(`
           <div class="prop-item">
-            <span class="lims-state expired">기준이탈</span>
+            <span class="lims-state oos">기준이탈</span>
           </div>
           <div class="prop-item">
             <div>
               ${lines}
-              <div class="guidetext-sty01">이탈 결과는 정정할 수 없습니다. 값을 다시 내리려면 OOS 조사에서 재시험을 지시하세요.</div>
+              <div class="guidetext-sty01">이탈 결과는 정정할 수 없습니다. 값을 다시 내리려면 OOS 조사에서 재시험을 지시하세요.
+                <a class="lims-link" href="oos_list.html">열린 조사 보기</a></div>
             </div>
           </div>`);
       }
@@ -2846,7 +2849,8 @@
       }
 
       function judgeBadge(judgeCcd, judgeRsn) {
-        const cls = judgeCcd === 'PASS' ? 'normal' : (judgeCcd === 'FAIL' ? 'expired' : 'soon');
+        /* 부적합(FAIL)·판정불가(NA)는 조사가 열리는 규제 지위다 — §61 칩을 입는다 */
+        const cls = judgeCcd === 'PASS' ? 'normal' : 'oos';
         const label = JUDGE_LABEL[judgeCcd] || judgeCcd || '-';
         const rsn = judgeRsn ? `<br /><span class="guidetext-sty01">${escapeHtml(judgeRsn)}</span>` : '';
         return `<span class="lims-state ${cls}">${escapeHtml(label)}</span>${rsn}`;
@@ -3056,11 +3060,24 @@
               }
               $modal.modal('hide');
               const label = JUDGE_LABEL[res.judgeCcd] || res.judgeCcd;
-              S2Util.toasts(
-                `${res.resultSeqNo}회차 v${res.resultVerNo} 확정 · 판정 ${label}`
-                  + (res.judgeCcd === 'PASS' ? '' : ' — 기준이탈 조사가 열렸습니다.'),
-                { class: 'Toast-bottom-web' }
-              );
+              if (res.judgeCcd === 'PASS') {
+                S2Util.toasts(
+                  `${res.resultSeqNo}회차 v${res.resultVerNo} 확정 · 판정 ${label}`,
+                  { class: 'Toast-bottom-web' }
+                );
+              } else {
+                /*
+                  부적합 확정은 "저장 성공"이 아니라 규제 사건이다. 기본 토스트의
+                  초록 체크 제목을 그대로 쓰면 성공 의미론이 이탈 내용 위에 얹힌다 —
+                  제목을 규제 레지스터로 바꾸고, 방금 열린 조사로 가는 문을 함께 준다.
+                */
+                S2Util.toasts(
+                  `${res.resultSeqNo}회차 v${res.resultVerNo} 확정 · 판정 ${label}`
+                    + ' — 기준이탈 조사가 열렸습니다. <a class="lims-link" href="oos_list.html">조사 열기</a>',
+                  { title: '<i class="fa fa-exclamation-triangle mr-1" style="color: var(--ds-reg-oos);"></i>기준이탈',
+                    class: 'Toast-bottom-web', delay: 5000 }
+                );
+              }
               getResultInfo();
             }
           );
@@ -3436,7 +3453,7 @@
                             <div if="isFolderNm" class="txt-folder c-pointer" title="${note.folderNm}" onclick="gfn_openProjectDetail('/eln/project/projectDetailsNote', ${note.projectMno}, ${note.folderMno})">${note.folderNm}</div>
                             <div else="isFolderNm" class="txt-folder txt_underline" title="${'정보없음'}">${'정보없음'}</div>
                           </div>
-                          <div class="txt-note noteNm" title="${note.noteNm}"><span class="c-pointer" onclick="gfn_openNoteDetail('/eln/note/noteDetails', ${note.noteMno}); return false;">${note.noteNm ? note.noteNm : '제목없음'}</span></div>
+                          <div class="txt-note noteNm" title="${note.noteNm}"><a class="c-pointer" href="/eln/note/noteDetails?schNoteMno=${note.noteMno}" onclick="gfn_openNoteDetail('/eln/note/noteDetails', ${note.noteMno}); return false;">${note.noteNm ? note.noteNm : '제목없음'}</a></div>
                           <div class="txt-info">
                             <div class="flex-sty01">
                               <div class="txt-info-txt">${'작성자'}</div>
@@ -5852,42 +5869,80 @@
             
               
                 
+                  
+                  <div class="nav-group-label">전자연구노트</div>
                   <a class="menuCd MAIN_DASHBOARD"
                      href="dashboard.html">대시보드</a>
                 
+                  
+                  
                   <a class="menuCd LIMS_NOTES"
                      href="my_research_notes.html">연구노트</a>
                 
+                  
+                  
                   <a class="menuCd LIMS_PROJECT"
                      href="participation_project.html">프로젝트</a>
                 
+                  
+                  
+                  <a class="menuCd LIMS_NOTE_MNG"
+                     href="note_management.html">노트 관리</a>
+                
+                  
+                  <div class="nav-group-label">LIMS</div>
                   <a class="menuCd LIMS_SAMPLE"
                      href="sample_list.html">시료</a>
                 
+                  
+                  
                   <a class="menuCd LIMS_REAGENT"
                      href="reagent_list.html">시약</a>
                 
+                  
+                  
                   <a class="menuCd LIMS_COMPOUND"
                      href="compound_list.html">화합물</a>
                 
+                  
+                  
                   <a class="menuCd LIMS_CHEM"
                      href="chem_editor.html">구조 입력기</a>
                 
+                  
+                  
                   <a class="menuCd LIMS_INSTRUMENT"
                      href="instrument_list.html">장비</a>
                 
+                  
+                  
                   <a class="menuCd LIMS_TEST"
-                     href="test_list.html">시험 의뢰</a>
+                     href="test_list.html">시험 요청</a>
                 
+                  
+                  
+                  <a class="menuCd LIMS_OOS"
+                     href="oos_list.html">기준이탈</a>
+                
+                  
+                  
                   <a class="menuCd LIMS_DATA"
                      href="data_list.html">데이터</a>
                 
+                  
+                  
                   <a class="menuCd LIMS_REVIEW"
-                     href="result_review.html">서명 대기</a>
+                     href="result_review.html">결과 검토</a>
                 
+                  
+                  
                   <a class="menuCd AUDIT_TRAIL"
                      href="javascript:limsScopeOut(&#39;감사 추적&#39;)">감사 추적</a>
                 
+              
+            
+              
+            
               
             
               
@@ -5930,30 +5985,34 @@
               <ul>
                 
                   <li>
-                    <a href="#"
+                    
+                    <a href="project_details_note.html?schProjectMno=301"
                        class="projectList"
-                       onclick="gfn_openProjectDetail(&#39;/eln/project/projectDetails&#39;, &#39;301&#39;)"
+                       onclick="gfn_openProjectDetail(&#39;/eln/project/projectDetails&#39;, &#39;301&#39;); return false;"
                        data-project-mno="301"><span title="표적단백질 저해제 발굴">표적단백질 저해제 발굴</span></a>
                   </li>
                 
                   <li>
-                    <a href="#"
+                    
+                    <a href="project_details_note.html?schProjectMno=302"
                        class="projectList"
-                       onclick="gfn_openProjectDetail(&#39;/eln/project/projectDetails&#39;, &#39;302&#39;)"
+                       onclick="gfn_openProjectDetail(&#39;/eln/project/projectDetails&#39;, &#39;302&#39;); return false;"
                        data-project-mno="302"><span title="간독성 스크리닝">간독성 스크리닝</span></a>
                   </li>
                 
                   <li>
-                    <a href="#"
+                    
+                    <a href="project_details_note.html?schProjectMno=303"
                        class="projectList"
-                       onclick="gfn_openProjectDetail(&#39;/eln/project/projectDetails&#39;, &#39;303&#39;)"
+                       onclick="gfn_openProjectDetail(&#39;/eln/project/projectDetails&#39;, &#39;303&#39;); return false;"
                        data-project-mno="303"><span title="시험법 검증 (KM-3719)">시험법 검증 (KM-3719)</span></a>
                   </li>
                 
                   <li>
-                    <a href="#"
+                    
+                    <a href="project_details_note.html?schProjectMno=304"
                        class="projectList"
-                       onclick="gfn_openProjectDetail(&#39;/eln/project/projectDetails&#39;, &#39;304&#39;)"
+                       onclick="gfn_openProjectDetail(&#39;/eln/project/projectDetails&#39;, &#39;304&#39;); return false;"
                        data-project-mno="304"><span title="장기 안정성 시험">장기 안정성 시험</span></a>
                   </li>
                 
@@ -5973,9 +6032,9 @@
               <ul>
                 
                   <li>
-                    <a href="javascript:void(0)"
+                    <a href="note_write.html?schNoteMno=9101"
                        class="noteList"
-                       onclick="gfn_openNoteDetail(&#39;/eln/note/noteDetails&#39;, &#39;9101&#39;)"
+                       onclick="gfn_openNoteDetail(&#39;/eln/note/noteDetails&#39;, &#39;9101&#39;); return false;"
                        data-note-mno="9101">
                       <span title="KM00003710 합성 batch A">KM00003710 합성 batch A</span>
                       
@@ -5983,9 +6042,9 @@
                   </li>
                 
                   <li>
-                    <a href="javascript:void(0)"
+                    <a href="note_write.html?schNoteMno=9102"
                        class="noteList"
-                       onclick="gfn_openNoteDetail(&#39;/eln/note/noteDetails&#39;, &#39;9102&#39;)"
+                       onclick="gfn_openNoteDetail(&#39;/eln/note/noteDetails&#39;, &#39;9102&#39;); return false;"
                        data-note-mno="9102">
                       <span title="HPLC 순도 분석 (M-HPLC-001 v3)">HPLC 순도 분석 (M-HPLC-001 v3)</span>
                       
@@ -5993,9 +6052,9 @@
                   </li>
                 
                   <li>
-                    <a href="javascript:void(0)"
+                    <a href="note_write.html?schNoteMno=9103"
                        class="noteList"
-                       onclick="gfn_openNoteDetail(&#39;/eln/note/noteDetails&#39;, &#39;9103&#39;)"
+                       onclick="gfn_openNoteDetail(&#39;/eln/note/noteDetails&#39;, &#39;9103&#39;); return false;"
                        data-note-mno="9103">
                       <span title="OOS-2026-0007 조사 기록">OOS-2026-0007 조사 기록</span>
                       

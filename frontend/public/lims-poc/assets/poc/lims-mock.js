@@ -1257,7 +1257,12 @@
       return {
         oos: {
           oosMno: 21, oosNo: 'OOS-2026-0007', testItemMno: 8003, testItemNm: '잔류용매 (GC)',
-          reqstNo: 'TR-20260710-01', sampleNo: 'SMP-20260705-014',
+          /* 화면(oos_list 모달)은 testReqstNo·judgeCcd·resultInputUserNm 을 읽는다.
+             예전 응답은 reqstNo 라는 다른 이름을 주고 나머지 둘은 아예 빼서,
+             모달 요약이 "요청 - · 판정 - · 입력자 -" 로 비어 있었다. OOS 목록
+             행(oosMno 21)과 같은 값으로 맞춘다. */
+          testReqstNo: 'TR-20260710-01', sampleNo: 'SMP-20260705-014',
+          judgeCcd: 'FAIL', resultInputUserNm: '박연구',
           resultVal: '0.62', unitCcd: '%', specDisp: '≤ 0.50 %',
           oosStatusCcd: 'PHASE1', oosStatusCcdNm: '실험실조사',
           detectDt: '2026-07-26', invstgUserMno: 1030, invstgUserNm: '최QA',
@@ -2602,6 +2607,39 @@
     installInlineEditorSwap();
     installOutOfScopeNotice();
     installSidebarDecor();
+    installHrefRewrite();
+  }
+
+  /* ---------------------------------------------------------------
+     서버 경로 링크 → 정적 파일 링크.
+
+     화면 스크립트가 만드는 목록 행은 이제 실제 목적지 href 를 단다
+     (/eln/note/noteDetails?schNoteMno=9101 …). 운영에서는 그 주소가 진짜라
+     그대로 두면 되지만, 정적 사이트에는 서버가 없다 — goPage 를 안 거치는
+     경로(키보드 Enter 의 기본 이동, 가운데클릭 새 탭)가 404 로 떨어진다.
+     라우트 표에 있는 경로만 정적 파일명으로 바꿔 단다. 동적으로 붙는 행도
+     있으므로 observer 로 계속 지켜본다.
+  --------------------------------------------------------------- */
+  function installHrefRewrite() {
+    function rewrite(a) {
+      var href = a.getAttribute('href');
+      if (!href || href.charAt(0) !== '/') { return; }
+      var target = toStaticUrl(href);
+      if (!target) { return; }
+      var qi = href.indexOf('?');
+      a.setAttribute('href', qi >= 0 ? target + href.slice(qi) : target);
+    }
+    function sweep(root) {
+      if (!root || !root.querySelectorAll) { return; }
+      if (root.matches && root.matches('a[href^="/"]')) { rewrite(root); }
+      root.querySelectorAll('a[href^="/"]').forEach(rewrite);
+    }
+    sweep(document.body);
+    new MutationObserver(function (muts) {
+      muts.forEach(function (m) {
+        Array.prototype.forEach.call(m.addedNodes, sweep);
+      });
+    }).observe(document.body, { childList: true, subtree: true });
   }
 
   /* ---------------------------------------------------------------
@@ -2631,6 +2669,13 @@
       badge('LIMS_REVIEW', RESULTS.filter(function (r) {
         var rv = findReview(r.resultMno);
         return r.resultStatusCcd === 'SUBMITTED' || (rv && rv.reviewStatusCcd === 'PENDING');
+      }).length);
+    } catch (e) { /* 픽스처 없는 화면 — 배지 생략 */ }
+    try {
+      /* 기준이탈 = 종결 전 조사. 규제상 가장 무거운 큐라 수가 늘 보여야 한다 —
+         "열린 조사 전부"가 내비 한 번으로 닿는 것이 이 배지의 존재 이유다. */
+      badge('LIMS_OOS', OOS.filter(function (o) {
+        return o.oosStatusCcd !== 'CLOSED';
       }).length);
     } catch (e) { /* 픽스처 없는 화면 — 배지 생략 */ }
 

@@ -1164,7 +1164,7 @@
                             <div if="isFolderNm" class="txt-folder c-pointer" title="${note.folderNm}" onclick="gfn_openProjectDetail('/eln/project/projectDetailsNote', ${note.projectMno}, ${note.folderMno})">${note.folderNm}</div>
                             <div else="isFolderNm" class="txt-folder txt_underline" title="${'정보없음'}">${'정보없음'}</div>
                           </div>
-                          <div class="txt-note noteNm" title="${note.noteNm}"><span class="c-pointer" onclick="gfn_openNoteDetail('/eln/note/noteDetails', ${note.noteMno}); return false;">${note.noteNm ? note.noteNm : '제목없음'}</span></div>
+                          <div class="txt-note noteNm" title="${note.noteNm}"><a class="c-pointer" href="/eln/note/noteDetails?schNoteMno=${note.noteMno}" onclick="gfn_openNoteDetail('/eln/note/noteDetails', ${note.noteMno}); return false;">${note.noteNm ? note.noteNm : '제목없음'}</a></div>
                           <div class="txt-info">
                             <div class="flex-sty01">
                               <div class="txt-info-txt">${'작성자'}</div>
@@ -3580,42 +3580,80 @@
             
               
                 
+                  
+                  <div class="nav-group-label">전자연구노트</div>
                   <a class="menuCd MAIN_DASHBOARD"
                      href="dashboard.html">대시보드</a>
                 
+                  
+                  
                   <a class="menuCd LIMS_NOTES"
                      href="my_research_notes.html">연구노트</a>
                 
+                  
+                  
                   <a class="menuCd LIMS_PROJECT"
                      href="participation_project.html">프로젝트</a>
                 
+                  
+                  
+                  <a class="menuCd LIMS_NOTE_MNG"
+                     href="note_management.html">노트 관리</a>
+                
+                  
+                  <div class="nav-group-label">LIMS</div>
                   <a class="menuCd LIMS_SAMPLE"
                      href="sample_list.html">시료</a>
                 
+                  
+                  
                   <a class="menuCd LIMS_REAGENT"
                      href="reagent_list.html">시약</a>
                 
+                  
+                  
                   <a class="menuCd LIMS_COMPOUND"
                      href="compound_list.html">화합물</a>
                 
+                  
+                  
                   <a class="menuCd LIMS_CHEM"
                      href="chem_editor.html">구조 입력기</a>
                 
+                  
+                  
                   <a class="menuCd LIMS_INSTRUMENT"
                      href="instrument_list.html">장비</a>
                 
+                  
+                  
                   <a class="menuCd LIMS_TEST"
-                     href="test_list.html">시험 의뢰</a>
+                     href="test_list.html">시험 요청</a>
                 
+                  
+                  
+                  <a class="menuCd LIMS_OOS"
+                     href="oos_list.html">기준이탈</a>
+                
+                  
+                  
                   <a class="menuCd LIMS_DATA"
                      href="data_list.html">데이터</a>
                 
+                  
+                  
                   <a class="menuCd LIMS_REVIEW"
-                     href="result_review.html">서명 대기</a>
+                     href="result_review.html">결과 검토</a>
                 
+                  
+                  
                   <a class="menuCd AUDIT_TRAIL"
                      href="javascript:limsScopeOut(&#39;감사 추적&#39;)">감사 추적</a>
                 
+              
+            
+              
+            
               
             
               
@@ -3658,30 +3696,34 @@
               <ul>
                 
                   <li>
-                    <a href="#"
+                    
+                    <a href="project_details_note.html?schProjectMno=301"
                        class="projectList active"
-                       onclick="gfn_openProjectDetail(&#39;/eln/project/projectDetails&#39;, &#39;301&#39;)"
+                       onclick="gfn_openProjectDetail(&#39;/eln/project/projectDetails&#39;, &#39;301&#39;); return false;"
                        data-project-mno="301"><span title="표적단백질 저해제 발굴">표적단백질 저해제 발굴</span></a>
                   </li>
                 
                   <li>
-                    <a href="#"
+                    
+                    <a href="project_details_note.html?schProjectMno=302"
                        class="projectList"
-                       onclick="gfn_openProjectDetail(&#39;/eln/project/projectDetails&#39;, &#39;302&#39;)"
+                       onclick="gfn_openProjectDetail(&#39;/eln/project/projectDetails&#39;, &#39;302&#39;); return false;"
                        data-project-mno="302"><span title="간독성 스크리닝">간독성 스크리닝</span></a>
                   </li>
                 
                   <li>
-                    <a href="#"
+                    
+                    <a href="project_details_note.html?schProjectMno=303"
                        class="projectList"
-                       onclick="gfn_openProjectDetail(&#39;/eln/project/projectDetails&#39;, &#39;303&#39;)"
+                       onclick="gfn_openProjectDetail(&#39;/eln/project/projectDetails&#39;, &#39;303&#39;); return false;"
                        data-project-mno="303"><span title="시험법 검증 (KM-3719)">시험법 검증 (KM-3719)</span></a>
                   </li>
                 
                   <li>
-                    <a href="#"
+                    
+                    <a href="project_details_note.html?schProjectMno=304"
                        class="projectList"
-                       onclick="gfn_openProjectDetail(&#39;/eln/project/projectDetails&#39;, &#39;304&#39;)"
+                       onclick="gfn_openProjectDetail(&#39;/eln/project/projectDetails&#39;, &#39;304&#39;); return false;"
                        data-project-mno="304"><span title="장기 안정성 시험">장기 안정성 시험</span></a>
                   </li>
                 
@@ -3701,9 +3743,9 @@
               <ul>
                 
                   <li>
-                    <a href="javascript:void(0)"
+                    <a href="note_write.html?schNoteMno=9101"
                        class="noteList"
-                       onclick="gfn_openNoteDetail(&#39;/eln/note/noteDetails&#39;, &#39;9101&#39;)"
+                       onclick="gfn_openNoteDetail(&#39;/eln/note/noteDetails&#39;, &#39;9101&#39;); return false;"
                        data-note-mno="9101">
                       <span title="KM00003710 합성 batch A">KM00003710 합성 batch A</span>
                       
@@ -3711,9 +3753,9 @@
                   </li>
                 
                   <li>
-                    <a href="javascript:void(0)"
+                    <a href="note_write.html?schNoteMno=9102"
                        class="noteList"
-                       onclick="gfn_openNoteDetail(&#39;/eln/note/noteDetails&#39;, &#39;9102&#39;)"
+                       onclick="gfn_openNoteDetail(&#39;/eln/note/noteDetails&#39;, &#39;9102&#39;); return false;"
                        data-note-mno="9102">
                       <span title="HPLC 순도 분석 (M-HPLC-001 v3)">HPLC 순도 분석 (M-HPLC-001 v3)</span>
                       
@@ -3721,9 +3763,9 @@
                   </li>
                 
                   <li>
-                    <a href="javascript:void(0)"
+                    <a href="note_write.html?schNoteMno=9103"
                        class="noteList"
-                       onclick="gfn_openNoteDetail(&#39;/eln/note/noteDetails&#39;, &#39;9103&#39;)"
+                       onclick="gfn_openNoteDetail(&#39;/eln/note/noteDetails&#39;, &#39;9103&#39;); return false;"
                        data-note-mno="9103">
                       <span title="OOS-2026-0007 조사 기록">OOS-2026-0007 조사 기록</span>
                       
